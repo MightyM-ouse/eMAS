@@ -22,6 +22,7 @@ eMAS is a read-only, mapping-driven migration assessment framework for:
 The approved design baseline is documented here:
 
 - [eMAS Final Enterprise Requirements v3.0](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.0.md)
+- [eMAS Project Flow and Mermaid Diagrams](docs/architecture/eMAS_Project_Flow.md)
 
 ## Intended positioning
 
