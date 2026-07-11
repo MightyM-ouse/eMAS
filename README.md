@@ -6,6 +6,34 @@ eMAS is a read-only, mapping-driven migration assessment framework for:
 - pre-migration readiness assessment;
 - post-migration reconciliation.
 
+## Project flow
+
+```mermaid
+flowchart LR
+    A[Internal Mapping Workbook XLSM] -->|Validate and Export| B[One Runtime JSON]
+
+    B --> C[Pre-Sales Command Line]
+    B --> D[Pre-Migration Command Line or WPF]
+    B --> E[Post-Migration Command Line or WPF]
+
+    C --> F[Shared PowerShell Engine]
+    D --> F
+    E --> F
+
+    F --> G[Phase-Specific Processing]
+    G --> H[Controlled Excel Report]
+    G --> I[Timestamped Execution Log]
+
+    H --> J[Draft]
+    J --> K[Reviewed]
+    K --> L[Project Evidence Archive]
+    I --> L
+```
+
+The detailed project flow, phase-level activities and architecture are available in:
+
+- [eMAS Project Flow and Mermaid Diagrams](docs/architecture/eMAS_Project_Flow.md)
+
 ## Core design
 
 - Business and regulatory rules are maintained in an internal Excel `.xlsm` mapping workbook.
