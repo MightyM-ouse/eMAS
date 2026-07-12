@@ -13,6 +13,7 @@ This page is the navigation entry point for the eMAS repository documentation.
 | Mapping functional requirements | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | Draft for review |
 | Mapping technical requirements | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | Draft for review |
 | Mapping content catalogue | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | Draft for review |
+| Decision register review | [Decision Register](governance/decision-register/README.md) | Open decisions and evidence review |
 | LLM development context | [LLM Development Context](llm-development-context/README.md) | Development guidance |
 
 ## Recommended reading order
@@ -20,9 +21,10 @@ This page is the navigation entry point for the eMAS repository documentation.
 1. Read the [enterprise requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) for the approved scope and constraints.
 2. Review the [project flow](architecture/eMAS_Project_Flow.md) for the end-to-end operating model.
 3. Review the [repository architecture](architecture/eMAS_Repository_Architecture.md) to understand how source components map to runtime and release packages.
-4. Use the [repository structure](repository/eMAS_Repository_Structure.md) when creating or reorganizing a local clone.
-5. Use the three mapping documents when designing or implementing the XLSM workbook and runtime JSON contract.
-6. Use the LLM development context only as focused implementation guidance; the enterprise requirements remain authoritative.
+4. Review the [decision register](governance/decision-register/README.md) before changing any area with unresolved architecture, configuration, regulatory, implementation or release choices.
+5. Review the [repository structure](repository/eMAS_Repository_Structure.md) when creating or reorganizing a local clone.
+6. Use the three mapping documents when designing or implementing the XLSM workbook and runtime JSON contract, subject to approved decisions.
+7. Use the LLM development context only as focused implementation guidance; it must not silently resolve open questions.
 
 ## Documentation areas
 
@@ -62,6 +64,18 @@ This page is the navigation entry point for the eMAS repository documentation.
 
 `docs/governance/` contains decision registers, open questions, traceability records and change-history support.
 
+Current governance references:
+
+- [Decision-register overview](governance/decision-register/README.md)
+- [Evidence-based review summary](governance/decision-register/eMAS_Decision_Register_Review_Summary_2026-07-12.md)
+- [Open-question workflow](governance/decision-register/open-question-workflow.md)
+
+### Archive
+
+`docs/archive/` records superseded or historical documentation without treating it as active implementation authority.
+
+- [Historical Version 2 documentation pack notice](archive/v2-documentation-pack/README.md)
+
 ### Releases
 
 `docs/releases/` contains release-facing documentation, including release notes and known limitations. Generated packages are not stored here.
@@ -74,7 +88,10 @@ This page is the navigation entry point for the eMAS repository documentation.
 - PowerShell controls generic technical processing and phase-specific orchestration.
 - Controlled report templates control workbook presentation and sheet structure.
 - The repository structure document controls placement of source and documentation assets.
+- AI review recommendations remain proposals until recorded in the controlled decision register as approved decisions.
 
 ## Repository safety
 
 Do not commit customer source data, customer reports, migration evidence, credentials, production logs, project-specific accepted exceptions or other confidential project content.
+
+This repository is public. Internal reviewed workbooks, internal Word packs, branding assets and controlled project evidence must remain in approved internal storage or a private repository.
