@@ -89,6 +89,29 @@ eMAS/
 └── dist/         Local generated packages; not source-controlled
 ```
 
+## Create the same structure locally
+
+The preferred approach is to clone the repository because tracked `README.md` and `.gitkeep` files already create the active scaffold:
+
+```powershell
+git clone https://github.com/MightyM-ouse/eMAS.git
+cd eMAS
+```
+
+To create or repair the complete target folder structure in an existing local clone, run:
+
+```powershell
+.\build\Initialize-eMASRepositoryStructure.ps1 -RootPath .
+```
+
+To preview the folders that would be created:
+
+```powershell
+.\build\Initialize-eMASRepositoryStructure.ps1 -RootPath . -WhatIf
+```
+
+The script creates missing directories and placeholder files only. It does not overwrite implementation files.
+
 ## Core design rules
 
 - The internal Excel mapping workbook is the business and regulatory rule-authoring application.
