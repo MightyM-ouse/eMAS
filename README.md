@@ -170,9 +170,18 @@ The customer package must not include the internal mapping workbook, authoring V
 - [Mapping Functional Requirements](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [Mapping Technical Requirements](docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md)
 - [Mapping Content Catalogue](docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md)
+- [Decision Register Review](docs/governance/decision-register/README.md)
 - [LLM Development Context](docs/llm-development-context/README.md)
 
 Use [docs/index.md](docs/index.md) as the repository documentation entry point.
+
+## Decision governance
+
+The evidence-based review currently tracks 171 decision and pending-work items. AI proposals are not approvals. Open questions are discussed and recorded one by one before they are applied to the mapping workbook, runtime JSON contract or implementation.
+
+- [Decision-register overview](docs/governance/decision-register/README.md)
+- [Review summary](docs/governance/decision-register/eMAS_Decision_Register_Review_Summary_2026-07-12.md)
+- [Open-question workflow](docs/governance/decision-register/open-question-workflow.md)
 
 ## Development workflow
 
@@ -196,6 +205,8 @@ Do not commit:
 - temporary development JSON exports.
 
 The production mapping workbook, controlled runtime JSON, official internal templates and confidential branding must only be added after the repository has approved internal access control. They must not be placed in a public repository.
+
+This repository is public. Internal reviewed decision workbooks and historical Word packs remain in approved internal storage; the repository records their status through sanitized Markdown summaries and supersession notices.
 
 ## Intended positioning
 
