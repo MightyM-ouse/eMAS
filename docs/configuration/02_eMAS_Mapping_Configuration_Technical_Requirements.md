@@ -1,10 +1,9 @@
 # eMAS Mapping and Configuration Workbook — Technical Requirements
 
 **Project:** eMAS — eCTD Migration Assessment Script  
-**Document Type:** Technical Requirements Specification  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Draft for Review  
-**Scope:** Internal XLSM Mapping Workbook and Runtime JSON Export  
+**Scope:** XLSM Logical Model, VBA, Validation and Runtime JSON  
 **Classification:** Internal  
 **Branding:** EXTEDO | a cormeo brand
 
@@ -12,9 +11,11 @@
 
 ## 1. Purpose
 
-This document defines the technical requirements for implementing the eMAS mapping and configuration workbook as a Microsoft Excel macro-enabled workbook that validates maintained rules and exports one runtime JSON file directly from Excel.
+This document defines the technical requirements for implementing the eMAS mapping and configuration workbook as a controlled Microsoft Excel XLSM application.
 
-PowerShell shall not read the workbook and shall not generate the runtime JSON.
+The workbook shall maintain business-friendly sheets, normalize their content into a structured in-memory model through VBA, validate the model and export one UTF-8 runtime JSON file directly from Excel.
+
+PowerShell shall not read the workbook and shall not generate the JSON.
 
 ---
 
@@ -22,16 +23,17 @@ PowerShell shall not read the workbook and shall not generate the runtime JSON.
 
 ```mermaid
 flowchart LR
-    A[Excel XLSM Workbook] --> B[Structured Tables]
-    B --> C[VBA Validation Engine]
-    C --> D{Validation Result}
-    D -->|Fail| E[Validation Results Sheet]
-    D -->|Pass| F[VBA JSON Serializer]
-    F --> G[JSON Preview]
-    F --> H[UTF-8 Runtime JSON]
-    H --> I[Pre-Sales Script]
-    H --> J[Pre-Migration Script]
-    H --> K[Post-Migration Script]
+    A[Business-Friendly Excel Tables] --> B[VBA Structural Validation]
+    B --> C[Generated Rule Index]
+    C --> D[Normalized In-Memory Rule Model]
+    D --> E[Business Rule Validation]
+    E -->|Fail| F[Validation Results]
+    E -->|Pass| G[JSON Builder]
+    G --> H[JSON Preview]
+    G --> I[UTF-8 Runtime JSON]
+    I --> J[Pre-Sales]
+    I --> K[Pre-Migration]
+    I --> L[Post-Migration]
 ```
 
 ---
@@ -40,290 +42,347 @@ flowchart LR
 
 | Area | Requirement |
 |---|---|
-| Authoring Platform | Microsoft Excel Desktop |
-| Workbook Type | `.xlsm` |
-| Automation | VBA contained in the workbook |
-| Runtime Output | One UTF-8 JSON file |
-| External Dependencies | None required for export |
-| PowerShell Dependency | Prohibited for JSON generation |
-| Database Dependency | None |
-| Internet Dependency | None |
-| Customer Distribution | Workbook prohibited; JSON only where required |
-| Supported Operating Environment | Windows desktop with an approved Excel version |
+| Workbook | Microsoft Excel `.xlsm` |
+| Initial Excel support | Excel 2019, Excel 2021 and Microsoft 365 for Windows |
+| Office bitness | 32-bit and 64-bit |
+| Automation | VBA contained in workbook |
+| Runtime output | One UTF-8 JSON file |
+| External dependency | None required for validation/export |
+| PowerShell dependency | Prohibited for workbook-to-JSON conversion |
+| Internet dependency | None |
+| Database dependency | None |
+| Production signing | Required before controlled release, subject to corporate certificate process |
 
 ---
 
-## 4. Technical Requirements
-
-### 4.1 Workbook structure
+## 4. Fixed Schema and Dropdown Requirements
 
 | ID | Priority | Requirement |
 |---|---|---|
-| TR-MAP-001 | MUST | The workbook shall use Excel structured tables for all maintained rule data. |
-| TR-MAP-002 | MUST | Each table shall have a stable technical table name. |
-| TR-MAP-003 | MUST | Table names shall not depend on visible sheet names. |
-| TR-MAP-004 | MUST | Required columns shall use stable technical column names. |
-| TR-MAP-005 | MUST | The workbook shall separate user-maintained sheets, validation sheets, code lists and technical support sheets. |
-| TR-MAP-006 | SHOULD | Technical support sheets shall be hidden or very hidden where appropriate. |
-| TR-MAP-007 | MUST | Workbook structure protection shall prevent accidental deletion or renaming of required sheets. |
-| TR-MAP-008 | MUST | Protection shall not prevent authorized maintainers from editing intended input cells. |
+| TR-SCHEMA-001 | MUST | Column headers shall remain fixed, protected and version-controlled. |
+| TR-SCHEMA-002 | MUST | Excel table names shall remain stable and independent of visible sheet names. |
+| TR-SCHEMA-003 | MUST | Every finite value set shall be sourced from `Value_Lists` through data validation. |
+| TR-SCHEMA-004 | MUST | Column headers shall not use dropdowns. |
+| TR-SCHEMA-005 | MUST | Technical field names shall map deterministically to JSON properties. |
+| TR-SCHEMA-006 | MUST | VBA shall identify columns by table and column name, never fixed cell position. |
 
-### 4.2 Recommended technical table names
+---
 
-| Sheet | Table name |
-|---|---|
-| Document_Control | tblDocumentControl |
-| Change_History | tblChangeHistory |
-| Assessment_Profile | tblAssessmentProfile |
-| Regions | tblRegions |
-| Authorities | tblAuthorities |
-| Formats | tblFormats |
-| Dossier_Types | tblDossierTypes |
-| Classification_Rules | tblClassificationRules |
-| Folder_Rules | tblFolderRules |
-| File_Rules | tblFileRules |
-| XML_Detection_Rules | tblXmlDetectionRules |
-| RAG_Rules | tblRagRules |
-| Confidence_Rules | tblConfidenceRules |
-| Effort_Drivers | tblEffortDrivers |
-| Decision_Rules | tblDecisionRules |
-| Recommendations | tblRecommendations |
-| Questionnaire_Map | tblQuestionnaireMap |
-| Aliases | tblAliases |
-| Value_Lists | tblValueLists |
-| Validation_Controls | tblValidationControls |
-| Validation_Results | tblValidationResults |
-| Export_History | tblExportHistory |
+## 5. Normalized Table Architecture
 
-### 4.3 Data typing
+### 5.1 Governance tables
+
+- `tblDocumentControl`
+- `tblChangeHistory`
+- `tblChangeHistoryItems`
+- `tblExportHistory`
+
+### 5.2 Master data tables
+
+- `tblAssessmentProfile`
+- `tblValueLists`
+- `tblFieldCatalogue`
+- `tblMetricCatalogue`
+- `tblRegions`
+- `tblAuthorities`
+- `tblFormats`
+- `tblProductDomains`
+- `tblLifecycleContexts`
+- `tblProductClasses`
+- `tblMasterDataRelationships`
+
+### 5.3 Business rule tables
+
+- `tblClassificationRules`
+- `tblFolderRules`
+- `tblFileRules`
+- `tblXmlDetectionRules`
+- `tblRagRules`
+- `tblConfidenceRules`
+- `tblEffortDriverDefinitions`
+- `tblEffortDriverBands`
+- `tblDecisionRules`
+
+### 5.4 Shared relationship tables
+
+- `tblRulePhaseAssignments`
+- `tblRuleConditions`
+- `tblRuleOutputs`
+- `tblRuleSupersession`
+
+### 5.5 Finding and action tables
+
+- `tblFindings`
+- `tblRecommendations`
+- `tblFindingRecommendationLinks`
+- `tblQuestionnaireMap`
+- `tblExceptionPolicies`
+- `tblAliases`
+
+### 5.6 Validation and technical tables
+
+- `tblValidationControls`
+- `tblValidationResults`
+- `tblRuleIndex`
+- `tblTechnicalSettings`
+
+---
+
+## 6. Field Catalogue and Data Types
 
 | ID | Priority | Requirement |
 |---|---|---|
-| TR-MAP-010 | MUST | Each maintained column shall have a defined data type. |
-| TR-MAP-011 | MUST | Boolean values shall use controlled TRUE/FALSE or Yes/No values and shall serialize consistently. |
-| TR-MAP-012 | MUST | Dates shall serialize as ISO 8601 values. |
-| TR-MAP-013 | MUST | Date-time values shall include timezone offset where available. |
-| TR-MAP-014 | MUST | Numeric thresholds shall remain numeric in JSON. |
-| TR-MAP-015 | MUST | Empty optional values shall serialize as null or be omitted according to the approved schema. |
-| TR-MAP-016 | MUST | Empty required values shall cause validation failure. |
-| TR-MAP-017 | MUST | Multi-value fields shall not use uncontrolled comma-delimited text where a child table or structured array is required. |
+| TR-FIELD-001 | MUST | `Field_Catalogue` shall define every field rules may evaluate. |
+| TR-FIELD-002 | MUST | Each field shall define DataType, AllowedOperators, SupportedPhases, SourceType and EvaluationOrder. |
+| TR-FIELD-003 | MUST | Supported data types shall include String, Code, Integer, Decimal, Boolean, Date, DateTime and Path. |
+| TR-FIELD-004 | MUST | Operators shall be constrained by data type. |
+| TR-FIELD-005 | MUST | Derived fields shall identify the producing engine component. |
+| TR-FIELD-006 | MUST | Unknown field codes shall block export. |
 
-### 4.4 VBA design
+---
 
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-020 | MUST | VBA shall be modular and separated into validation, serialization, export, utility and UI-control modules. |
-| TR-MAP-021 | MUST | Suggested modules shall include modValidation, modJsonSerializer, modExport, modWorkbookControl and modUtilities. |
-| TR-MAP-022 | MUST | VBA procedures shall use explicit variable declarations. |
-| TR-MAP-023 | MUST | Error handling shall capture procedure, error number, description and context. |
-| TR-MAP-024 | MUST | VBA shall not silently suppress export errors. |
-| TR-MAP-025 | MUST | JSON special characters shall be escaped correctly. |
-| TR-MAP-026 | MUST | JSON output shall support Unicode content. |
-| TR-MAP-027 | MUST | Export shall use UTF-8 without introducing an invalid encoding marker. |
-| TR-MAP-028 | SHOULD | VBA source modules should be exportable to repository text files for code review and version control. |
-| TR-MAP-029 | SHOULD | A workbook build process should import approved VBA modules into the release workbook. |
-
-### 4.5 JSON schema
+## 7. Condition Model
 
 | ID | Priority | Requirement |
 |---|---|---|
-| TR-MAP-030 | MUST | The runtime JSON shall have one top-level object. |
-| TR-MAP-031 | MUST | The JSON shall contain a configuration metadata section. |
-| TR-MAP-032 | MUST | The JSON shall include configurationId, mappingVersion, schemaVersion, status, exportedAt and exportedBy. |
-| TR-MAP-033 | MUST | Rule collections shall be serialized as arrays. |
-| TR-MAP-034 | MUST | Stable IDs shall be preserved exactly. |
-| TR-MAP-035 | MUST | Active runtime rules shall be distinguishable by category. |
-| TR-MAP-036 | MUST | JSON property names shall use a single approved naming convention, recommended camelCase. |
-| TR-MAP-037 | MUST | The schema shall define required and optional properties. |
-| TR-MAP-038 | MUST | The schema shall define approved enum values. |
-| TR-MAP-039 | MUST | The schema shall define supported operators and units. |
-| TR-MAP-040 | MUST | The schema shall support compatibility checks by PowerShell. |
+| TR-COND-001 | MUST | One row in `tblRuleConditions` shall represent one condition. |
+| TR-COND-002 | MUST | Conditions shall contain ConditionId, RuleId, GroupId, FieldCode, Operator, Value1, Value2 and Sequence. |
+| TR-COND-003 | MUST | Conditions within one GroupId shall evaluate with AND. |
+| TR-COND-004 | MUST | Separate groups for the same RuleId shall evaluate with OR. |
+| TR-COND-005 | MUST | Maximum logical nesting depth for schema 1.0.0 shall be two levels. |
+| TR-COND-006 | MUST | Arbitrary expression text shall not be supported. |
+| TR-COND-007 | MUST | Allowed operators shall include EQUALS, NOT_EQUALS, IN_LIST, CONTAINS, STARTS_WITH, ENDS_WITH, MATCHES_PATTERN, EXISTS, MISSING, GT, GTE, LT, LTE and BETWEEN. |
+| TR-COND-008 | MUST | Value serialization shall follow the data type from Field_Catalogue. |
 
-### 4.6 Indicative JSON structure
+---
+
+## 8. Priority, Specificity and Conflict Model
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-CONFLICT-001 | MUST | Lower numeric priority shall execute first. |
+| TR-CONFLICT-002 | MUST | Priority shall normally use increments of 100. |
+| TR-CONFLICT-003 | MUST | Each executable rule shall support ConflictGroup, ConflictStrategy, Specificity and StopProcessing. |
+| TR-CONFLICT-004 | MUST | Supported strategies shall include FirstMatch, MostSpecific, MostSevere, Aggregate, ErrorOnMultipleMatch, HighestEvidenceScore and ManualReview. |
+| TR-CONFLICT-005 | MUST | Classification shall default to HighestEvidenceScore. |
+| TR-CONFLICT-006 | MUST | Equal top classification scores shall produce Unknown or ManualReview. |
+| TR-CONFLICT-007 | MUST | Folder/file findings shall default to Aggregate. |
+| TR-CONFLICT-008 | MUST | RAG shall default to MostSevere. |
+| TR-CONFLICT-009 | MUST | Decisions shall use ordered FirstMatch with blocker override. |
+
+---
+
+## 9. Lifecycle and Supersession Model
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-LIFE-001 | MUST | Editable `IsActive` shall not be used on rule tables. |
+| TR-LIFE-002 | MUST | Runtime eligibility shall be derived from Status, EffectiveFrom and EffectiveTo. |
+| TR-LIFE-003 | MUST | `tblRuleSupersession` shall maintain predecessor/successor relationships. |
+| TR-LIFE-004 | MUST | RuleId shall never be reused. |
+| TR-LIFE-005 | MUST | Effective rules only shall enter controlled runtime JSON. |
+| TR-LIFE-006 | SHOULD | Reviewed rules may enter DEV exports only. |
+
+---
+
+## 10. Threshold and Band Model
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-THR-001 | MUST | Thresholds shall contain LowerBound, UpperBound, LowerInclusive, UpperInclusive and Unit. |
+| TR-THR-002 | MUST | Default convention shall be lower-inclusive and upper-exclusive. |
+| TR-THR-003 | MUST | Gaps, overlaps and duplicate bands shall be validation errors for complete band sets. |
+| TR-THR-004 | MUST | Open-ended lowest and highest bands shall be supported. |
+| TR-THR-005 | MUST | Effort-driver definitions and effort bands shall be separate tables. |
+
+---
+
+## 11. Findings, Recommendations and Exception Policies
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-FIND-001 | MUST | Finding definitions shall be separate from rules and recommendations. |
+| TR-FIND-002 | MUST | Finding-to-recommendation relationships shall use a link table. |
+| TR-FIND-003 | MUST | Multiple recommendations shall be supported without fixed numbered columns. |
+| TR-EXC-001 | MUST | Exception policies shall define eligibility and allowed effects. |
+| TR-EXC-002 | MUST | Project-specific exceptions shall not be stored in the master workbook. |
+| TR-EXC-003 | MUST | Original finding, original RAG and adjusted decision impact shall remain separately traceable. |
+
+---
+
+## 12. VBA Architecture
+
+### 12.1 Standard modules
+
+- `modMain`
+- `modConstants`
+- `modWorkbookStructure`
+- `modValidation`
+- `modRuleValidation`
+- `modReferenceValidation`
+- `modConditionValidation`
+- `modThresholdValidation`
+- `modConflictValidation`
+- `modJsonBuilder`
+- `modJsonWriter`
+- `modExportHistory`
+- `modLogging`
+- `modUtilities`
+
+### 12.2 Class modules
+
+- `clsRule`
+- `clsCondition`
+- `clsConditionGroup`
+- `clsRulePhase`
+- `clsFinding`
+- `clsRecommendation`
+- `clsValidationResult`
+- `clsJsonObject`
+
+### 12.3 Engineering requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-VBA-001 | MUST | All modules shall use `Option Explicit`. |
+| TR-VBA-002 | MUST | VBA shall not rely on ActiveCell, Selection or fixed coordinates. |
+| TR-VBA-003 | MUST | Errors shall capture procedure, number, description and object context. |
+| TR-VBA-004 | MUST | JSON generation shall occur in memory before writing to disk. |
+| TR-VBA-005 | MUST | JSON escaping shall support Unicode and special characters. |
+| TR-VBA-006 | MUST | Exported JSON shall be UTF-8 and complete. |
+| TR-VBA-007 | SHOULD | VBA source shall be exported to `.bas`, `.cls` and `.frm` files for source control. |
+| TR-VBA-008 | SHOULD | Release workbook creation should import approved source-controlled VBA modules. |
+
+---
+
+## 13. Validation Architecture
+
+Mandatory validation sequence:
+
+1. Confirm workbook structure.
+2. Read document-control metadata.
+3. Rebuild Rule_Index.
+4. Validate required tables and columns.
+5. Validate code lists.
+6. Validate globally unique IDs.
+7. Validate lifecycle and effective dates.
+8. Validate phase assignments.
+9. Validate field codes and operators.
+10. Validate condition groups.
+11. Validate thresholds for gaps and overlaps.
+12. Validate conflicts, priorities and specificity.
+13. Validate finding references.
+14. Validate recommendation links.
+15. Validate exception policies.
+16. Validate schema and engine compatibility.
+17. Build normalized in-memory objects.
+18. Generate JSON in memory.
+19. Validate generated JSON structure.
+20. Display preview.
+21. Export UTF-8 JSON.
+22. Calculate checksum where enabled.
+23. Record export history.
+
+Critical validations shall be built into VBA and shall not be disableable through `Validation_Controls`.
+
+---
+
+## 14. JSON Technical Contract
+
+| ID | Priority | Requirement |
+|---|---|---|
+| TR-JSON-001 | MUST | SchemaVersion shall use semantic versioning, initially `1.0.0`. |
+| TR-JSON-002 | MUST | MappingVersion shall use semantic versioning independently. |
+| TR-JSON-003 | MUST | JSON shall include MinimumEngineVersion. |
+| TR-JSON-004 | MUST | Unsupported major schema versions shall be rejected by the engine. |
+| TR-JSON-005 | MUST | Unknown executable operators shall be rejected. |
+| TR-JSON-006 | MUST | Unknown descriptive metadata may be ignored with warning. |
+| TR-JSON-007 | MUST | New optional descriptive fields may be backward compatible. |
+| TR-JSON-008 | MUST | Renamed/removed fields, changed data types, new mandatory sections or changed code meanings shall be treated as breaking. |
+
+Indicative top-level sections:
 
 ```json
 {
-  "configuration": {
-    "configurationId": "EMAS-CONFIG-001",
-    "mappingVersion": "1.0",
-    "schemaVersion": "1.0",
-    "status": "Reviewed",
-    "exportedAt": "2026-07-12T12:00:00+02:00",
-    "exportedBy": "DOMAIN\\User"
-  },
+  "configuration": {},
   "valueLists": {},
-  "regions": [],
-  "authorities": [],
-  "formats": [],
-  "dossierTypes": [],
-  "classificationRules": [],
-  "folderRules": [],
-  "fileRules": [],
-  "xmlDetectionRules": [],
-  "ragRules": [],
-  "confidenceRules": [],
-  "effortDrivers": [],
-  "decisionRules": [],
+  "fieldCatalogue": [],
+  "metricCatalogue": [],
+  "masterData": {},
+  "rules": [],
+  "findings": [],
   "recommendations": [],
-  "questionnaireMap": [],
+  "findingRecommendationLinks": [],
+  "exceptionPolicies": [],
   "aliases": []
 }
 ```
 
-### 4.7 Rule-condition model
+---
+
+## 15. JSON Preview and Export
 
 | ID | Priority | Requirement |
 |---|---|---|
-| TR-MAP-050 | MUST | Conditions shall use structured fields rather than executable code. |
-| TR-MAP-051 | MUST | The workbook shall not export VBA expressions, PowerShell expressions or arbitrary script fragments as rules. |
-| TR-MAP-052 | MUST | Supported operators shall be controlled, such as Equals, NotEquals, Contains, StartsWith, EndsWith, MatchesPattern, Exists, Missing, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Between and InList. |
-| TR-MAP-053 | MUST | Each condition shall identify EvidenceField, Operator and ExpectedValue. |
-| TR-MAP-054 | SHOULD | Compound rules shall use ConditionGroupId and logical operator AND/OR. |
-| TR-MAP-055 | MUST | Nested logic depth shall be limited and documented. |
-| TR-MAP-056 | MUST | Invalid or unsupported operators shall fail workbook validation. |
-
-### 4.8 Priority and conflict processing
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-060 | MUST | Every executable rule shall have an integer priority. |
-| TR-MAP-061 | MUST | Priority semantics shall be documented consistently, for example lower number executes first. |
-| TR-MAP-062 | MUST | Conflict strategy shall be represented by controlled values. |
-| TR-MAP-063 | SHOULD | Supported strategies may include FirstMatch, HighestPriority, MostSevere, Aggregate and ManualReview. |
-| TR-MAP-064 | MUST | Conflicting rules that cannot be resolved deterministically shall produce Unknown or Review Required according to rule category. |
-| TR-MAP-065 | MUST | Duplicate active rules with identical scope, condition and priority shall fail validation. |
-
-### 4.9 Threshold representation
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-070 | MUST | Threshold rules shall not rely on descriptive text only. |
-| TR-MAP-071 | MUST | Thresholds shall contain operator, lower value, upper value, unit and boundary behaviour. |
-| TR-MAP-072 | MUST | Inclusive and exclusive boundaries shall be explicit. |
-| TR-MAP-073 | MUST | Overlapping active thresholds in the same scope shall fail validation unless an approved overlap strategy exists. |
-| TR-MAP-074 | MUST | Gaps between mandatory scoring bands shall produce a validation warning or error. |
-
-### 4.10 Validation engine
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-080 | MUST | Validation shall run before JSON preview and export. |
-| TR-MAP-081 | MUST | Validation shall include structural, field, reference, uniqueness, enum, threshold and compatibility checks. |
-| TR-MAP-082 | MUST | Validation results shall be written to tblValidationResults. |
-| TR-MAP-083 | MUST | Each result shall include ValidationId, Severity, Sheet, Table, RowNumber, ObjectId, Field, Message and CorrectiveAction. |
-| TR-MAP-084 | MUST | Critical and Error findings shall block export. |
-| TR-MAP-085 | SHOULD | Warning findings shall require explicit acknowledgement before export. |
-| TR-MAP-086 | MUST | Validation shall be repeatable and shall clear or supersede prior run results. |
-| TR-MAP-087 | MUST | Validation run timestamp and user shall be recorded. |
-
-### 4.11 Export controls
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-090 | MUST | Export shall open a controlled Save As dialog or use a configured export folder. |
-| TR-MAP-091 | MUST | The default file name shall include configuration ID and mapping version. |
-| TR-MAP-092 | MUST | Export shall prevent accidental overwrite unless confirmed. |
-| TR-MAP-093 | MUST | Export shall verify that the resulting JSON can be reopened and parsed by the workbook serializer or validator. |
-| TR-MAP-094 | MUST | Export history shall record success or failure. |
-| TR-MAP-095 | SHOULD | Export shall calculate SHA-256 using an approved implementation if technically feasible without external dependencies. |
-| TR-MAP-096 | MUST | The exported JSON shall not contain hidden workbook data, formulas, VBA source or comments not designated for runtime. |
-
-### 4.12 Security and protection
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-100 | MUST | Macro execution requirements shall be documented. |
-| TR-MAP-101 | SHOULD | The workbook VBA project and workbook structure should be protected against accidental modification. |
-| TR-MAP-102 | SHOULD | The release workbook should be digitally signed where an approved certificate process exists. |
-| TR-MAP-103 | MUST | No credentials, connection strings or customer data shall be embedded in the workbook. |
-| TR-MAP-104 | MUST | The workbook shall operate offline. |
-| TR-MAP-105 | MUST | The exported JSON shall contain business rules only and no customer-specific source evidence. |
-
-### 4.13 Performance
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-110 | SHOULD | Validation shall complete within an acceptable time for the expected rule volume. |
-| TR-MAP-111 | SHOULD | Export shall avoid cell-by-cell processing where table-array processing is possible. |
-| TR-MAP-112 | SHOULD | JSON preview may be truncated or paged if the full content exceeds practical worksheet limits, while exported JSON remains complete. |
-| TR-MAP-113 | MUST | Large rule sets shall not cause silent truncation. |
-
-### 4.14 Compatibility and release
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-120 | MUST | The workbook shall declare supported JSON schema versions. |
-| TR-MAP-121 | MUST | Each script release shall declare supported schema-version range. |
-| TR-MAP-122 | MUST | Export shall warn when the selected target script version is incompatible, if target compatibility is maintained in the workbook. |
-| TR-MAP-123 | SHOULD | Backward-compatible schema changes shall add optional fields without changing existing meaning. |
-| TR-MAP-124 | MUST | Breaking changes shall increment the schema major version. |
-| TR-MAP-125 | MUST | Mapping content changes shall increment mapping version without necessarily changing schema version. |
-
-### 4.15 Testability
-
-| ID | Priority | Requirement |
-|---|---|---|
-| TR-MAP-130 | MUST | VBA functions shall be testable independently where practical. |
-| TR-MAP-131 | MUST | Controlled test workbooks shall cover valid and invalid rule sets. |
-| TR-MAP-132 | MUST | JSON output shall be compared against approved expected-output fixtures. |
-| TR-MAP-133 | MUST | Special characters, Unicode, nulls, dates, booleans and numeric values shall have dedicated tests. |
-| TR-MAP-134 | MUST | Duplicate IDs, broken references, overlapping thresholds and invalid enums shall have negative tests. |
-| TR-MAP-135 | SHOULD | A JSON Schema file should be maintained in the repository for independent validation. |
+| TR-EXP-001 | MUST | JSON preview shall show mapping version, schema version, validation state and section counts. |
+| TR-EXP-002 | SHOULD | Large JSON preview may be truncated in the worksheet. |
+| TR-EXP-003 | MUST | Exported JSON shall never be truncated. |
+| TR-EXP-004 | MUST | Export history shall record user, timestamp, status, filename, path, validation run and checksum when enabled. |
+| TR-EXP-005 | SHOULD | SHA-256 shall be used for controlled release packages. |
+| TR-EXP-006 | MUST | DEV exports shall be clearly named and recorded. |
 
 ---
 
-## 5. Recommended Repository Structure
+## 16. Security and Release Controls
 
-```text
-mapping/
-├── workbook/
-│   └── eMAS_Mapping_Configuration.xlsm
-├── vba/
-│   ├── modValidation.bas
-│   ├── modJsonSerializer.bas
-│   ├── modExport.bas
-│   ├── modWorkbookControl.bas
-│   └── modUtilities.bas
-├── schema/
-│   └── eMAS-runtime-config.schema.json
-├── examples/
-│   └── eMAS_Runtime_Config.example.json
-└── tests/
-    ├── valid/
-    ├── invalid/
-    └── expected-json/
-```
+- Workbook shall operate offline.
+- No credentials or customer data shall be embedded.
+- Workbook structure and VBA project should be protected.
+- Controlled production release should be digitally signed.
+- Signing certificate ownership and re-signing procedure shall be documented.
+- Macro trust requirements shall be included in administrator guidance.
 
 ---
 
-## 6. Open Questions
+## 17. Test Requirements
 
-| ID | Open question | Technical impact |
-|---|---|---|
-| OQ-TR-001 | Which minimum and maximum Excel desktop versions must be supported? | VBA and feature compatibility |
-| OQ-TR-002 | Is digital signing of the workbook/VBA required for the first release? | Deployment and trust settings |
-| OQ-TR-003 | Should JSON preview show the complete JSON or only a formatted summary plus export? | Worksheet limits and usability |
-| OQ-TR-004 | Which conflict strategy is the default for each rule category? | Runtime evaluation design |
-| OQ-TR-005 | What maximum compound-condition nesting depth is required? | Schema and PowerShell evaluator complexity |
-| OQ-TR-006 | Should SHA-256 generation be mandatory, optional or omitted in v1? | Integrity control and VBA implementation |
-| OQ-TR-007 | Should runtime JSON contain rule comments and source rationale, or only executable fields? | File size and traceability |
-| OQ-TR-008 | Should one JSON include report configuration, or should report structure remain fully hardcoded in phase templates/scripts? | JSON scope |
-| OQ-TR-009 | How should scripts behave when JSON contains recognized optional fields from a newer minor schema version? | Forward compatibility |
-| OQ-TR-010 | Should VBA code be source-controlled as exported `.bas` files and rebuilt into the XLSM? | Development governance |
+- Positive and negative workbook fixtures.
+- Expected JSON fixtures.
+- Unicode and special-character tests.
+- Boolean, date, null and numeric serialization tests.
+- Duplicate ID tests.
+- Broken-reference tests.
+- Threshold gap/overlap tests.
+- Conflict and tie tests.
+- Lifecycle and supersession tests.
+- DEV versus Effective export tests.
+- Schema compatibility tests.
+- One end-to-end example for every rule category.
 
 ---
 
-## 7. Technical Acceptance Criteria
+## 18. Open Questions
 
-The technical implementation is acceptable when:
+| ID | Open question |
+|---|---|
+| OQ-TR-001 | Confirm corporate minimum Excel build and macro trust policy. |
+| OQ-TR-002 | Confirm certificate owner and signing/re-signing procedure. |
+| OQ-TR-003 | Confirm whether SHA-256 is mandatory in the first controlled release. |
+| OQ-TR-004 | Confirm maximum expected rule, condition and link volumes. |
+| OQ-TR-005 | Confirm whether JSON Schema validation will also be implemented independently outside VBA. |
+| OQ-TR-006 | Confirm whether report configuration belongs in schema 1.0.0 or remains script/template controlled. |
 
-1. required workbook tables and columns are stable and versioned;
-2. validation detects structural and content defects;
-3. export is blocked on critical defects;
-4. JSON is generated directly by VBA;
-5. JSON is valid UTF-8 and follows the approved schema;
-6. no PowerShell or external dependency is required for export;
-7. one JSON supports all three eMAS phases;
-8. active rules, values and references are exported accurately;
-9. export history is recorded;
-10. schema compatibility can be checked by the PowerShell runtime.
+---
+
+## 19. Technical Acceptance Criteria
+
+The technical design is ready when:
+
+1. the logical tables and keys are frozen;
+2. field/operator/data-type contracts are frozen;
+3. lifecycle and phase relationships are deterministic;
+4. conditions normalize into a two-level model;
+5. conflict strategies are deterministic;
+6. JSON Schema 1.0.0 can represent every relationship;
+7. one representative rule per category can travel Excel → VBA object → JSON → PowerShell result;
+8. validation blocks all known structural and referential defects.
