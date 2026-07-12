@@ -1,6 +1,10 @@
 # Build and Packaging
 
-This folder contains deterministic build, validation and packaging scripts.
+This folder contains deterministic repository initialization, build, validation and packaging scripts.
+
+Available command:
+
+- `Initialize-eMASRepositoryStructure.ps1` — creates or repairs the approved local folder scaffold without overwriting implementation files.
 
 Planned build commands:
 
