@@ -1,0 +1,52 @@
+# Generated runtime outputs
+output/*
+!output/.gitkeep
+
+logs/*
+!logs/.gitkeep
+
+dist/*
+!dist/.gitkeep
+
+# Development runtime configuration exports
+config/runtime/development/*
+!config/runtime/development/.gitkeep
+
+# Local test results and temporary data
+tests/results/
+tests/temp/
+coverage/
+
+# Customer and project evidence must never be committed
+customer-data/
+customer-reports/
+project-evidence/
+migration-evidence/
+accepted-exceptions/
+
+# Credentials and local configuration
+.env
+.env.*
+*.secret
+*.secrets
+*.credential
+*.credentials
+
+# Temporary Microsoft Office files
+~$*.xlsx
+~$*.xlsm
+~$*.docx
+~$*.pptx
+*.tmp
+*.bak
+
+# PowerShell and IDE local files
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Operating-system files
+Thumbs.db
+Desktop.ini
+.DS_Store
