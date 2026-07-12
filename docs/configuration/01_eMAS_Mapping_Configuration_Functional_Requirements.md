@@ -1,8 +1,7 @@
 # eMAS Mapping and Configuration Workbook — Functional Requirements
 
 **Project:** eMAS — eCTD Migration Assessment Script  
-**Document Type:** Functional Requirements Specification  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Draft for Review  
 **Scope:** Internal Mapping and Configuration Workbook  
 **Classification:** Internal  
@@ -14,268 +13,259 @@
 
 This document defines the functional requirements for the internal eMAS mapping and configuration workbook.
 
-The workbook is the controlled internal source for business, regulatory, classification, validation, effort, confidence and recommendation rules used by the eMAS pre-sales, pre-migration and post-migration scripts.
+The workbook shall operate as a controlled rule-management application. It shall allow reviewed business and regulatory rules to be maintained in Excel, normalized internally through structured relationship tables, validated, previewed and exported as one runtime JSON file.
 
-The workbook shall validate its own content and export one runtime JSON file directly from Excel. PowerShell shall not read the workbook and shall not create the JSON.
-
----
-
-## 2. Scope
-
-The workbook shall support:
-
-- controlled rule maintenance;
-- controlled dropdown values;
-- version and change history;
-- dossier region, format and type classification rules;
-- dossier folder-structure rules;
-- mandatory, optional and conditional folder and file rules;
-- RAG criteria;
-- confidence rules;
-- effort drivers and thresholds;
-- recommendations;
-- authority and alias mappings;
-- questionnaire and clarification mappings;
-- rule validation;
-- JSON preview;
-- direct JSON export;
-- export history;
-- traceability from rule to recommendation and requirement.
-
-The workbook shall not:
-
-- execute pre-sales, pre-migration or post-migration assessments;
-- scan customer folders;
-- read customer source data;
-- generate Excel assessment reports;
-- invoke PowerShell to create JSON;
-- be distributed to customers.
+PowerShell shall not read the workbook and shall not create the JSON.
 
 ---
 
-## 3. User Roles
+## 2. Core Functional Model
 
-| Role | Responsibility |
+The workbook shall separate:
+
+- rule definitions;
+- phase assignments;
+- rule conditions;
+- rule outputs;
+- field and metric definitions;
+- finding definitions;
+- recommendation definitions;
+- finding-to-recommendation links;
+- lifecycle and supersession;
+- exception policies;
+- validation rules;
+- JSON export metadata.
+
+The workbook shall not store complex relationships in comma-separated or free-text multi-value cells.
+
+---
+
+## 3. Workbook Usability Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-UX-001 | MUST | Column headers and technical table names shall be fixed, protected and version-controlled. |
+| FR-UX-002 | MUST | Every field with a finite approved value set shall use a dropdown sourced from `Value_Lists`. |
+| FR-UX-003 | MUST | Free-text entry shall be limited to descriptions, comments, rationale and controlled recommendation text. |
+| FR-UX-004 | MUST | Numeric, date, Boolean and identifier fields shall use type-specific validation. |
+| FR-UX-005 | MUST | The workbook shall provide a Home sheet with navigation, status, version, validation and export controls. |
+| FR-UX-006 | MUST | The workbook shall provide buttons for Validate Mapping, Preview JSON, Export Runtime JSON, Clear Validation Results and Open Export Folder. |
+| FR-UX-007 | SHOULD | Required fields shall be visually distinguishable from optional fields. |
+| FR-UX-008 | MUST | User-maintained tables shall be filterable and use frozen headers. |
+
+---
+
+## 4. Governance and Lifecycle Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-GOV-001 | MUST | The workbook shall maintain ConfigurationId, MappingVersion and SchemaVersion separately. |
+| FR-GOV-002 | MUST | Rule lifecycle values shall be Draft, InReview, Reviewed, Effective, Superseded and Retired. |
+| FR-GOV-003 | MUST | Editable `IsActive` fields shall not be used for rule lifecycle control. |
+| FR-GOV-004 | MUST | Runtime eligibility shall be calculated from lifecycle status and effective dates. |
+| FR-GOV-005 | MUST | Only Effective rules shall be included in controlled runtime export. |
+| FR-GOV-006 | SHOULD | Reviewed rules may be included in explicitly marked development exports. |
+| FR-GOV-007 | MUST | Development exports shall contain `DEV` in the filename and remain status Reviewed. |
+| FR-GOV-008 | MUST | Every rule shall contain RuleId, RuleRevision, EffectiveFrom, EffectiveTo and lifecycle status. |
+| FR-GOV-009 | MUST | Superseded rules shall identify SupersededByRuleId and SupersessionReason. |
+| FR-GOV-010 | MUST | Retired and superseded RuleIds shall never be reused. |
+| FR-GOV-011 | MUST | Change history shall identify affected rule IDs through a relationship table, not a comma-separated cell. |
+
+---
+
+## 5. Rule Identity and Revision Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-RULE-001 | MUST | RuleId shall remain stable for nonmaterial wording, formatting and clarification changes. |
+| FR-RULE-002 | MUST | RuleRevision shall increment when an existing rule is revised without changing its fundamental business meaning. |
+| FR-RULE-003 | MUST | A new RuleId shall be created when condition, severity, blocking meaning, result type or phase meaning changes materially. |
+| FR-RULE-004 | MUST | The workbook shall maintain a generated Rule_Index containing RuleId, RuleType, source sheet, source row, revision, status and runtime eligibility. |
+| FR-RULE-005 | MUST | Rule_Index shall be generated by VBA and shall not be manually maintained. |
+
+---
+
+## 6. Phase Assignment Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-PHASE-001 | MUST | Phase behavior shall be stored in `Rule_Phase_Assignment`. |
+| FR-PHASE-002 | MUST | A rule may have separate behavior for PreSales, PreMigration and PostMigration. |
+| FR-PHASE-003 | MUST | Each phase assignment shall support RAG, severity, blocker status, exception eligibility and decision impact. |
+| FR-PHASE-004 | MUST | `All` may be offered as a workbook convenience value but shall be expanded into explicit phase rows before export. |
+| FR-PHASE-005 | MUST | The same condition may produce different phase-specific outcomes. |
+
+---
+
+## 7. Condition Model Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-COND-001 | MUST | Rule conditions shall be maintained in `Rule_Conditions`, one row per condition. |
+| FR-COND-002 | MUST | Each condition shall contain ConditionId, RuleId, GroupId, FieldCode, Operator, Value1 and optional Value2. |
+| FR-COND-003 | MUST | Conditions within a group shall use AND. |
+| FR-COND-004 | MUST | Separate groups shall use OR. |
+| FR-COND-005 | MUST | Version 1 shall support a maximum nesting depth of two logical levels. |
+| FR-COND-006 | MUST | Arbitrary VBA, PowerShell or expression-language code shall not be stored in cells. |
+| FR-COND-007 | MUST | Unsupported fields or operators shall fail validation. |
+| FR-COND-008 | SHOULD | Rules shall reference controlled derived fields rather than direct RuleId-to-RuleId dependencies. |
+| FR-COND-009 | MUST | Circular dependencies shall not be permitted. |
+
+---
+
+## 8. Field and Metric Catalogue Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-FIELD-001 | MUST | The workbook shall maintain a `Field_Catalogue`. |
+| FR-FIELD-002 | MUST | Each field shall define FieldCode, DisplayName, DataType, AllowedOperators, SupportedPhases and SourceType. |
+| FR-FIELD-003 | MUST | The workbook shall maintain a `Metric_Catalogue` for numeric and calculated values. |
+| FR-FIELD-004 | MUST | Operators shall be validated against the field data type. |
+| FR-FIELD-005 | MUST | Derived fields shall define evaluation order and producing component. |
+| FR-FIELD-006 | MUST | Direct references such as `ResultOfRule RULE-001` shall not be supported in version 1. |
+
+---
+
+## 9. Classification Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-CLASS-001 | MUST | Classification shall produce independent results for Region, Format, ProductDomain, LifecycleContext and ProductClass. |
+| FR-CLASS-002 | MUST | ProductDomain shall include Human, Veterinary and MedicalDevice. |
+| FR-CLASS-003 | MUST | LifecycleContext shall include Investigational, PostMarketing and Other. |
+| FR-CLASS-004 | MUST | ProductClass shall include SmallMolecule, Biologic, Vaccine, BloodProduct and Other. |
+| FR-CLASS-005 | MUST | Classification shall preserve matched candidates, evidence and confidence. |
+| FR-CLASS-006 | MUST | Tied or contradictory classification shall produce Unknown or ManualReview. |
+| FR-CLASS-007 | MUST | Classification shall default to HighestEvidenceScore conflict resolution. |
+| FR-CLASS-008 | MUST | Evidence strength shall support Strong, Medium and Weak. |
+
+---
+
+## 10. Folder, File and XML Rule Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-STRUCT-001 | MUST | Folder rules shall support dossier-root, sequence, module and regional-folder checks. |
+| FR-STRUCT-002 | MUST | Folder rules shall support Mandatory, Optional, Conditional, Prohibited and NotApplicable. |
+| FR-STRUCT-003 | MUST | File rules shall support exact name, pattern, extension, relative path, occurrence count, readability and zero-byte behavior. |
+| FR-STRUCT-004 | MUST | XML rules shall support filename, root element, namespace, element path, attribute and expected value. |
+| FR-STRUCT-005 | MUST | Folder and file findings shall use Aggregate conflict behavior. |
+| FR-STRUCT-006 | MUST | RAG aggregation shall default to MostSevere. |
+| FR-STRUCT-007 | MUST | Folder and file matrices shall support region, authority, format and dossier-dimension applicability through relationship tables. |
+| FR-STRUCT-008 | MUST | Multi-value applicability cells shall not be used. |
+
+---
+
+## 11. Findings and Recommendations Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-FIND-001 | MUST | Reusable finding definitions shall be maintained in `Findings`. |
+| FR-FIND-002 | MUST | A finding shall define FindingCode, Title, DefaultRAG, DefaultSeverity and ExceptionEligible. |
+| FR-FIND-003 | MUST | Rules shall reference findings rather than embedding complete finding definitions. |
+| FR-REC-001 | MUST | Recommendations shall be maintained separately from findings. |
+| FR-REC-002 | MUST | Customer-facing and consultant-facing text shall remain separate. |
+| FR-REC-003 | MUST | Finding-to-recommendation links shall be maintained in `Finding_Recommendation_Links`. |
+| FR-REC-004 | MUST | A finding may have multiple recommendations by phase, link type and sequence. |
+| FR-REC-005 | MUST | Recommendation aggregation shall remove duplicates while preserving configured order. |
+
+---
+
+## 12. Evaluation Status and RAG Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-EVAL-001 | MUST | Evaluation status shall be separate from RAG. |
+| FR-EVAL-002 | MUST | Evaluation status values shall be Evaluated, NotAssessed, NotApplicable, Skipped and Error. |
+| FR-EVAL-003 | MUST | RAG values shall be Green, Amber, Red and Unknown. |
+| FR-EVAL-004 | MUST | NotAssessed and NotApplicable shall not be stored as RAG values. |
+| FR-EVAL-005 | MUST | A RAG result shall only be assigned where RAG is meaningful. |
+| FR-EVAL-006 | MUST | Missing input shall never be interpreted as Green. |
+
+---
+
+## 13. Priority and Conflict Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-CONFLICT-001 | MUST | Lower numeric values shall represent higher priority. |
+| FR-CONFLICT-002 | MUST | Priority values shall normally use increments of 100. |
+| FR-CONFLICT-003 | MUST | Rules shall support ConflictGroup, ConflictStrategy, Specificity and StopProcessing. |
+| FR-CONFLICT-004 | MUST | Classification shall default to HighestEvidenceScore. |
+| FR-CONFLICT-005 | MUST | Tied classification shall result in Unknown or ManualReview. |
+| FR-CONFLICT-006 | MUST | Folder and file findings shall Aggregate. |
+| FR-CONFLICT-007 | MUST | RAG shall use MostSevere. |
+| FR-CONFLICT-008 | MUST | Decisions shall use ordered FirstMatch with mandatory blocker override. |
+| FR-CONFLICT-009 | MUST | Unresolved conflicts shall not be silently resolved. |
+
+---
+
+## 14. Threshold and Effort Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-THR-001 | MUST | Thresholds shall define LowerBound, UpperBound, LowerInclusive, UpperInclusive and Unit. |
+| FR-THR-002 | MUST | The default convention shall be lower-inclusive and upper-exclusive. |
+| FR-THR-003 | MUST | Gaps, overlaps and duplicate bands shall fail validation where complete classification is required. |
+| FR-EFF-001 | MUST | Effort shall use a hybrid model combining weighted scores and mandatory minimum-band overrides. |
+| FR-EFF-002 | MUST | Critical conditions may impose a minimum effort band. |
+| FR-EFF-003 | MUST | Effort confidence shall be calculated separately. |
+| FR-EFF-004 | MUST | Customer-facing reports shall show final band, confidence, key drivers, assumptions and missing information. |
+| FR-EFF-005 | SHOULD | Raw numeric score shall remain internal unless explicitly approved for disclosure. |
+
+---
+
+## 15. Exception Policy Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-EXC-001 | MUST | The master workbook shall maintain exception policies, not project-specific exceptions. |
+| FR-EXC-002 | MUST | Policies shall define eligible finding, allowed effect, required role, evidence requirement, expiry and carry-forward behavior. |
+| FR-EXC-003 | MUST | Accepted exceptions shall never erase or replace the original finding. |
+| FR-EXC-004 | MUST | Supported effects shall include AcknowledgeOnly, RemoveBlock, ExcludeFromScope, AcceptDifference and DowngradeDecisionImpact. |
+| FR-EXC-005 | MUST | CarryForwardToPostMigration shall default to False. |
+| FR-EXC-006 | MUST | Actual project exceptions shall remain in project evidence, not the master workbook. |
+
+---
+
+## 16. Validation and Export Requirements
+
+| ID | Priority | Requirement |
+|---|---|---|
+| FR-VAL-001 | MUST | Critical validations shall always run and shall not be disableable. |
+| FR-VAL-002 | MUST | Validation controls shall use structured parameters and shall not contain free-text executable conditions. |
+| FR-VAL-003 | MUST | Validation shall cover required structures, IDs, references, statuses, operators, phase assignments, thresholds, conflicts, findings, recommendations, exception policies and compatibility. |
+| FR-VAL-004 | MUST | Mandatory validation failures shall block export. |
+| FR-VAL-005 | MUST | Acknowledgeable warnings shall record user, timestamp, warning code, reason and export filename. |
+| FR-EXP-001 | MUST | Excel/VBA shall generate one UTF-8 JSON file directly. |
+| FR-EXP-002 | MUST | The workbook shall provide formatted JSON preview and section counts. |
+| FR-EXP-003 | MUST | The actual exported JSON shall never be truncated. |
+| FR-EXP-004 | MUST | Controlled production export shall include Effective rules only. |
+| FR-EXP-005 | SHOULD | SHA-256 checksum shall be added before controlled production release. |
+
+---
+
+## 17. Open Questions
+
+| ID | Open question |
 |---|---|
-| Mapping Administrator | Maintains workbook content and code lists |
-| Regulatory SME | Reviews region, format, type and authority rules |
-| Migration SME | Reviews folder, file, effort and readiness rules |
-| Reviewer | Reviews validation results and change history |
-| Release Owner | Confirms version/status and exports the runtime JSON |
-| Developer | Implements compatible JSON consumption in PowerShell |
+| OQ-FR-001 | Final region, authority, format and folder/file rule content requires SME approval. |
+| OQ-FR-002 | Exact effort thresholds and weights remain to be approved. |
+| OQ-FR-003 | Exact confidence scoring and evidence weights remain to be approved. |
+| OQ-FR-004 | Exact exception approver roles and evidence requirements remain to be approved. |
+| OQ-FR-005 | Corporate Excel support and macro-signing standards remain to be confirmed. |
+| OQ-FR-006 | Whether multilingual recommendation text is required remains open. |
 
 ---
 
-## 4. Functional Requirements
+## 18. Acceptance Criteria
 
-### 4.1 Workbook control
+The functional design is ready for implementation when:
 
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-001 | MUST | The workbook shall display product name, workbook title, version, status and branding on the Home sheet. |
-| FR-MAP-002 | MUST | The workbook shall maintain a unique configuration ID. |
-| FR-MAP-003 | MUST | The workbook shall maintain mapping version and JSON schema version separately. |
-| FR-MAP-004 | MUST | The workbook shall maintain owner, reviewer, effective date, status and change summary. |
-| FR-MAP-005 | MUST | The workbook shall provide Draft, In Review, Reviewed, Effective, Superseded and Retired statuses. |
-| FR-MAP-006 | MUST | Only Reviewed or Effective configurations shall be exportable unless an explicit development override is enabled. |
-| FR-MAP-007 | SHOULD | The workbook shall visibly indicate when the file contains unvalidated changes. |
-| FR-MAP-008 | MUST | The workbook shall maintain a change history with version, date, author, reviewer, reason and affected rule areas. |
-
-### 4.2 Navigation and usability
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-010 | MUST | The Home sheet shall provide navigation links to all maintained rule sections. |
-| FR-MAP-011 | MUST | The workbook shall use consistent tables, headers, filters and frozen rows. |
-| FR-MAP-012 | MUST | Controlled fields shall use dropdown lists sourced from Value_Lists. |
-| FR-MAP-013 | MUST | Free-text entry shall be limited to comments, descriptions and recommendation text. |
-| FR-MAP-014 | SHOULD | Mandatory fields shall be visually distinguishable from optional fields. |
-| FR-MAP-015 | SHOULD | Inactive and superseded rules shall remain visible for traceability but be excluded from normal runtime export. |
-
-### 4.3 Rule identification and traceability
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-020 | MUST | Every rule shall have a unique stable RuleId. |
-| FR-MAP-021 | MUST | RuleId shall not change when wording or thresholds are updated. |
-| FR-MAP-022 | MUST | Each rule shall include RuleVersion, IsActive, Status and Priority. |
-| FR-MAP-023 | MUST | Each rule shall identify applicable phase: PreSales, PreMigration, PostMigration or All. |
-| FR-MAP-024 | MUST | Each rule shall support requirement references and recommendation references. |
-| FR-MAP-025 | SHOULD | Each rule shall support source-reference or rationale fields. |
-| FR-MAP-026 | MUST | The workbook shall reject duplicate RuleIds. |
-
-### 4.4 Region classification
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-030 | MUST | The workbook shall maintain a controlled list of supported regions. |
-| FR-MAP-031 | MUST | Region rules shall support folder, file, XML namespace, metadata, path and name indicators. |
-| FR-MAP-032 | MUST | Region rules shall support strong, medium and weak evidence strength. |
-| FR-MAP-033 | MUST | Region rules shall reference authority where applicable. |
-| FR-MAP-034 | MUST | Region rules shall support Unknown when evidence is insufficient or conflicting. |
-| FR-MAP-035 | SHOULD | Region rules shall support aliases and common customer naming variations. |
-
-### 4.5 Format classification
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-040 | MUST | The workbook shall maintain supported dossier formats. |
-| FR-MAP-041 | MUST | Format rules shall support eCTD 3.2.2, eCTD 4.0, regional eCTD, NeeS, VNeeS, ASMF-related structures, medical-device technical files, paper/non-electronic and Unknown. |
-| FR-MAP-042 | MUST | Format rules shall support sequence-pattern, XML, file, folder and metadata indicators. |
-| FR-MAP-043 | MUST | Format rules shall support authority-specific conditions. |
-| FR-MAP-044 | MUST | Conflicting format evidence shall result in controlled conflict handling rather than silent selection. |
-
-### 4.6 Dossier type classification
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-050 | MUST | The workbook shall maintain controlled dossier types. |
-| FR-MAP-051 | MUST | Supported types shall include Human, Veterinary, Investigational, Post-Marketing, Medical Device, Biologics, Vaccines, Blood Products, Other and Unknown. |
-| FR-MAP-052 | MUST | Type rules shall support metadata, path, folder, file and customer-provided indicators. |
-| FR-MAP-053 | MUST | Type classification shall be independent from region and format unless a conditional rule explicitly links them. |
-
-### 4.7 Folder-structure rules
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-060 | MUST | The workbook shall define valid dossier-root and sequence-folder patterns. |
-| FR-MAP-061 | MUST | Folder rules shall support Mandatory, Optional, Conditional and Prohibited expectations. |
-| FR-MAP-062 | MUST | Folder rules shall support region, format, type and phase applicability. |
-| FR-MAP-063 | MUST | Folder rules shall support parent-child path relationships. |
-| FR-MAP-064 | MUST | Folder rules shall define the consequence of missing, unexpected, empty or inaccessible folders. |
-| FR-MAP-065 | MUST | Folder rules shall support m1 to m5 and authority-specific regional structures. |
-| FR-MAP-066 | SHOULD | Folder rules shall support depth, branch-count and unknown-folder thresholds. |
-
-### 4.8 File rules
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-070 | MUST | The workbook shall define mandatory, optional, conditional and prohibited files. |
-| FR-MAP-071 | MUST | File rules shall support exact filename, wildcard, regex-like pattern, extension and relative path. |
-| FR-MAP-072 | MUST | File rules shall support files such as index.xml, index-md5.txt, regional XML, checksum files and leaf content. |
-| FR-MAP-073 | MUST | File rules shall define missing-file impact, unreadable-file impact and zero-byte-file impact. |
-| FR-MAP-074 | SHOULD | File rules shall support minimum/maximum occurrence counts. |
-| FR-MAP-075 | SHOULD | File rules shall support referenced-file expectations where applicable. |
-
-### 4.9 XML detection rules
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-080 | MUST | XML rules shall support filename, root element, namespace, element and attribute indicators. |
-| FR-MAP-081 | MUST | XML rules shall identify parser hint and expected evidence strength. |
-| FR-MAP-082 | MUST | XML unreadability shall be configurable as warning, Amber or Red depending on context. |
-| FR-MAP-083 | SHOULD | XML rules shall support expected values and value patterns. |
-
-### 4.10 RAG rules
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-090 | MUST | The workbook shall support Green, Amber, Red, Unknown and Not Assessed. |
-| FR-MAP-091 | MUST | RAG rules shall define severity, finding code and recommendation code. |
-| FR-MAP-092 | MUST | RAG rules shall support phase-specific impact. |
-| FR-MAP-093 | MUST | Missing required evidence shall never be automatically treated as Green. |
-| FR-MAP-094 | MUST | Not Assessed shall be used where input is unavailable or not applicable. |
-| FR-MAP-095 | MUST | Unknown shall be used where evidence exists but interpretation is inconclusive. |
-| FR-MAP-096 | MUST | The workbook shall validate all RAG values against the approved code list. |
-
-### 4.11 Confidence rules
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-100 | MUST | The workbook shall support High, Medium, Low and Unknown confidence. |
-| FR-MAP-101 | MUST | Confidence rules shall consider number, strength and agreement of evidence indicators. |
-| FR-MAP-102 | MUST | Conflicting evidence shall reduce confidence. |
-| FR-MAP-103 | SHOULD | Confidence rules shall support weighted evidence. |
-| FR-MAP-104 | MUST | Each classification result shall be traceable to matched rules and evidence. |
-
-### 4.12 Effort drivers
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-110 | MUST | The workbook shall maintain effort-driver categories, thresholds, scores and recommendations. |
-| FR-MAP-111 | MUST | Driver categories shall include volume, size, repository shape, regulatory mix, quality/completeness, migration approach, storage/transfer, customer readiness and technical risk. |
-| FR-MAP-112 | MUST | Thresholds shall support numeric and categorical values. |
-| FR-MAP-113 | MUST | Threshold rules shall define unit, operator, lower bound, upper bound and score impact. |
-| FR-MAP-114 | MUST | Overall effort outputs shall support Very Low, Low, Medium, High and Very High. |
-| FR-MAP-115 | MUST | Pre-sales effort scoring shall remain estimation support and shall not determine migration readiness. |
-
-### 4.13 Recommendations
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-120 | MUST | Each recommendation shall have a unique RecommendationCode. |
-| FR-MAP-121 | MUST | Recommendations shall support customer-facing text, consultant-facing text and next action. |
-| FR-MAP-122 | MUST | Recommendations shall support severity and phase applicability. |
-| FR-MAP-123 | MUST | Rules referencing a missing recommendation shall fail validation. |
-| FR-MAP-124 | SHOULD | One rule may reference one primary and multiple secondary recommendations. |
-
-### 4.14 Questionnaire and clarification mapping
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-130 | MUST | The workbook shall map missing or ambiguous evidence to clarification questions. |
-| FR-MAP-131 | MUST | Each question shall include question ID, text, reason, priority, owner role and impact area. |
-| FR-MAP-132 | SHOULD | Questions shall support phase and migration-scenario applicability. |
-
-### 4.15 Aliases and source-column mappings
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-140 | MUST | The workbook shall maintain approved aliases for input column names and known labels. |
-| FR-MAP-141 | MUST | Alias use shall not modify original source values. |
-| FR-MAP-142 | MUST | Ambiguous aliases shall fail validation. |
-| FR-MAP-143 | MUST | Original misspellings required by source templates, including DossierDirecotry, shall be preserved where required. |
-
-### 4.16 Workbook validation
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-150 | MUST | The workbook shall provide a Validate Mapping function. |
-| FR-MAP-151 | MUST | Validation shall detect missing sheets, columns and required values. |
-| FR-MAP-152 | MUST | Validation shall detect duplicate IDs and duplicate active rules. |
-| FR-MAP-153 | MUST | Validation shall detect invalid references, statuses, RAG values, confidence values, operators and units. |
-| FR-MAP-154 | MUST | Validation results shall show severity, sheet, row, object ID, message and corrective action. |
-| FR-MAP-155 | MUST | Critical validation errors shall block JSON export. |
-| FR-MAP-156 | SHOULD | Warnings may permit export only after explicit confirmation. |
-
-### 4.17 JSON preview and export
-
-| ID | Priority | Requirement |
-|---|---|---|
-| FR-MAP-160 | MUST | The workbook shall provide Preview JSON and Export Runtime JSON functions. |
-| FR-MAP-161 | MUST | JSON shall be generated directly by VBA within Excel. |
-| FR-MAP-162 | MUST | The workbook shall export one UTF-8 JSON file. |
-| FR-MAP-163 | MUST | JSON shall contain configuration metadata, code lists, active rules, recommendations and schema version. |
-| FR-MAP-164 | MUST | PowerShell shall not be invoked during JSON export. |
-| FR-MAP-165 | MUST | Export history shall record file name, path, timestamp, user, workbook version, schema version and result. |
-| FR-MAP-166 | MUST | Inactive, Superseded and Retired rules shall be excluded from runtime JSON unless explicitly required for history metadata. |
-| FR-MAP-167 | SHOULD | The workbook shall support a checksum or hash value for the exported JSON. |
-
-### 4.18 Open questions
-
-| ID | Open question | Impact |
-|---|---|---|
-| OQ-FR-001 | Should only Effective configurations be exportable, or should Reviewed also be allowed? | Release governance |
-| OQ-FR-002 | Can one rule reference multiple recommendations, and how should primary/secondary order work? | JSON and reporting |
-| OQ-FR-003 | Should warning-level validation findings require explicit user confirmation before export? | Export control |
-| OQ-FR-004 | Should superseded rules be included in a non-runtime history section of the JSON? | Traceability and file size |
-| OQ-FR-005 | Should accepted-exception categories and override permissions be maintained in this workbook or separately? | Pre/post-migration governance |
-| OQ-FR-006 | Should the workbook support multilingual recommendation text? | Future international use |
-| OQ-FR-007 | Should report-sheet enablement and output-column visibility be configuration-driven? | Reporting scope |
-
----
-
-## 5. Functional Acceptance Criteria
-
-The functional design is acceptable when:
-
-1. all rule categories can be maintained through controlled tables;
-2. all selectable values are controlled through Value_Lists;
-3. all active rules have unique stable IDs;
-4. invalid references and duplicate IDs are detected;
-5. JSON preview reflects the active workbook content;
-6. one valid UTF-8 JSON file can be exported directly from Excel;
-7. PowerShell is not used for JSON creation;
-8. export history is recorded;
-9. the same JSON can be consumed by all three eMAS phases;
-10. phase-specific script logic remains outside the mapping workbook.
+1. normalized rule, phase, condition, finding, recommendation and exception-policy relationships are approved;
+2. all finite values use dropdowns from controlled code lists;
+3. technical headers remain fixed and protected;
+4. lifecycle and supersession behavior are unambiguous;
+5. one representative rule from every rule category can be validated and exported correctly;
+6. the resulting JSON preserves all required relationships;
+7. PowerShell can consume the JSON without reading the workbook.
