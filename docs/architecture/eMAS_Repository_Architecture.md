@@ -111,8 +111,8 @@ flowchart LR
     G --> I["Pre-Migration"]
     G --> J["Post-Migration"]
 
-    X["PowerShell"] -. "must not read" .-> A
-    X -. "must not generate" .-> D
+    X["PowerShell"] -.->|"must not read"| A
+    X -.->|"must not generate"| D
 ```
 
 The workbook is the internal authoring application. The exported JSON is the runtime contract. PowerShell loads only the JSON and applies phase-specific orchestration through the shared engine.
@@ -138,7 +138,7 @@ flowchart TD
     K --> M["Project evidence folder"]
     L --> M
 
-    N["Repository output/, logs/, dist/"] -. "local generated content only" .-> D
+    N["Repository output/, logs/, dist/"] -.->|"local generated content only"| D
 ```
 
 ## 5. Repository and evidence boundaries
