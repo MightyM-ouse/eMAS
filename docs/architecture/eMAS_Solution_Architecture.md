@@ -36,12 +36,15 @@ flowchart LR
         XLSM[Reviewed mapping workbook XLSM]
         VBA[Controlled VBA validation and export]
         SCHEMA[Runtime JSON Schema 1.0.0]
+        CANDIDATE[Runtime JSON release candidate]
         CI[Independent schema and semantic validation]
         RELEASE[Controlled runtime configuration package]
         XLSM --> VBA
         SCHEMA --> VBA
-        VBA --> RELEASE
-        RELEASE --> CI
+        SCHEMA --> CI
+        VBA --> CANDIDATE
+        CANDIDATE --> CI
+        CI --> RELEASE
     end
 
     subgraph RUNTIME[Execution boundary]
