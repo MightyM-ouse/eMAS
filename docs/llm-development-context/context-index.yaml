@@ -1,0 +1,347 @@
+schemaVersion: "1.0"
+status: Effective
+effectiveDate: "2026-07-13"
+owner: Documentation Owner
+decisionReference: DEC-2026-008
+purpose: >-
+  Machine-readable routing index for selecting authoritative and task-specific
+  eMAS context without loading the complete repository.
+
+precedencePolicy: ../governance/00_authority_and_precedence.md
+documentGovernance: ../governance/eMAS_Document_Governance.md
+controlledTerminology: ../governance/eMAS_Terminology.md
+decisionLog: ../governance/eMAS_Decision_Log.md
+
+artifacts:
+  - id: GOV-DEC
+    path: ../governance/eMAS_Approved_Decision_Baseline_v1.0.md
+    version: "1.0"
+    status: Approved
+    authorityRole: approved-amendment-record
+    owner: Product Owner
+    requiredFor:
+      - all
+
+  - id: REQ-ENT
+    path: ../requirements/eMAS_Final_Enterprise_Requirements_v3.0.md
+    version: "3.0"
+    status: Final
+    authorityRank: 1
+    owner: Product Owner
+    notes: Amended by GOV-DEC until the next consolidated v3.x revision.
+    requiredFor:
+      - requirements
+      - architecture
+      - configuration
+      - powershell
+      - reporting
+      - testing
+      - release
+
+  - id: GOV-AUTH
+    path: ../governance/00_authority_and_precedence.md
+    version: "1.0"
+    status: Effective
+    authorityRole: governance-control
+    owner: Product Owner
+    requiredFor:
+      - all
+
+  - id: GOV-DOC
+    path: ../governance/eMAS_Document_Governance.md
+    version: "1.0"
+    status: Effective
+    authorityRole: governance-control
+    owner: Documentation Owner
+    requiredFor:
+      - requirements
+      - documentation
+      - repository-governance
+      - release
+
+  - id: GOV-TERM
+    path: ../governance/eMAS_Terminology.md
+    version: "1.0"
+    status: Effective
+    authorityRole: terminology-control
+    owner: Documentation Owner
+    requiredFor:
+      - all
+
+  - id: CFG-FUNC
+    path: ../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md
+    version: "2.0"
+    status: Draft
+    authorityRank: 2
+    owner: Product Owner
+    notes: Requires approved-decision synchronization before promotion.
+    optionalFor:
+      - configuration
+      - mapping-workbook
+
+  - id: CFG-TECH
+    path: ../configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md
+    version: "2.0"
+    status: Draft
+    authorityRank: 3
+    owner: Technical Architect
+    notes: Requires approved-decision synchronization before promotion.
+    optionalFor:
+      - configuration
+      - json
+      - mapping-workbook
+      - vba
+
+  - id: CFG-CAT
+    path: ../configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md
+    version: "2.0"
+    status: Draft
+    authorityRank: 4
+    owner: Product Owner and SMEs
+    notes: Controlled values remain subject to required SME approval evidence.
+    optionalFor:
+      - configuration
+      - regulatory-content
+      - rule-content
+
+  - id: CFG-JSON
+    path: ../configuration/04_eMAS_Runtime_JSON_Contract.md
+    version: "1.0"
+    status: Approved
+    authorityRank: 3
+    owner: Technical Architect
+    requiredFor:
+      - json
+      - schema
+      - powershell
+      - mapping-workbook
+
+  - id: CFG-RULE
+    path: ../configuration/05_eMAS_Normalized_Rule_Model.md
+    version: "1.0"
+    status: Approved
+    authorityRank: 2
+    owner: Product Owner and Technical Architect
+    requiredFor:
+      - rule-model
+      - mapping-workbook
+      - json
+      - powershell
+
+  - id: SCHEMA-JSON
+    path: ../../config/schema/eMAS-runtime-config.schema.json
+    version: "1.0.0"
+    status: ApprovedInitialBaseline
+    authorityRank: 5
+    owner: Technical Architect
+    requiredFor:
+      - json
+      - schema
+      - mapping-workbook
+      - powershell
+      - testing
+
+  - id: ARCH-FLOW
+    path: ../architecture/eMAS_Project_Flow.md
+    version: "1.0"
+    status: FinalSyncPending
+    authorityRank: 6
+    owner: Technical Architect
+    optionalFor:
+      - architecture
+      - phases
+      - powershell
+      - reporting
+
+  - id: ARCH-REPO
+    path: ../architecture/eMAS_Repository_Architecture.md
+    status: Approved
+    authorityRank: 6
+    owner: Technical Architect
+    requiredFor:
+      - repository-governance
+      - packaging
+      - release
+
+  - id: REPO-STRUCT
+    path: ../repository/eMAS_Repository_Structure.md
+    status: Approved
+    authorityRank: 6
+    owner: Technical Architect
+    requiredFor:
+      - repository-governance
+      - packaging
+      - file-placement
+
+  - id: CTX-RULES
+    path: llm-development-rules.md
+    status: EffectiveGuidance
+    authorityRank: 7
+    owner: Technical Architect
+    requiredFor:
+      - llm-development
+
+  - id: CTX-DECISION
+    path: decision-boundary.md
+    status: EffectiveGuidance
+    authorityRank: 7
+    owner: Product Owner
+    requiredFor:
+      - llm-development
+
+  - id: CTX-CORE
+    path: core-design.md
+    status: Guidance
+    authorityRank: 7
+    owner: Technical Architect
+    optionalFor:
+      - architecture
+      - powershell
+
+  - id: CTX-PHASES
+    path: phases.md
+    status: Guidance
+    authorityRank: 7
+    owner: Product Owner
+    optionalFor:
+      - phases
+      - reporting
+      - powershell
+
+  - id: CTX-CONFIG
+    path: configuration-rules.md
+    status: Guidance
+    authorityRank: 7
+    owner: Technical Architect
+    optionalFor:
+      - configuration
+      - mapping-workbook
+      - json
+
+  - id: CTX-ENGINE
+    path: engine-patterns.md
+    status: Guidance
+    authorityRank: 7
+    owner: PowerShell Lead
+    optionalFor:
+      - powershell
+      - reporting
+      - logging
+
+  - id: CTX-REG
+    path: ectd-regulatory-expert.md
+    status: GuidanceRequiresSMEForNewContent
+    authorityRank: 7
+    owner: Regulatory SME
+    optionalFor:
+      - regulatory-content
+      - classification
+
+  - id: SKILL-FRAMEWORK
+    path: skills/README.md
+    status: ApprovedFrameworkImplementationPending
+    authorityRank: 8
+    owner: Technical Architect
+    optionalFor:
+      - llm-development
+      - implementation
+
+  - id: GENERATED-AI-OVERVIEW
+    path: ../ai-assistant/emas-gxp-migration-assessment/overview.md
+    status: GeneratedNonAuthoritative
+    authorityRole: generated-summary
+    owner: Documentation Owner
+    prohibitedAsAuthority: true
+
+  - id: ARCHIVE-V2
+    path: ../archive/v2-documentation-pack/README.md
+    status: Superseded
+    authorityRole: historical-only
+    owner: Documentation Owner
+    prohibitedAsAuthority: true
+
+routing:
+  defaultRequired:
+    - GOV-AUTH
+    - GOV-TERM
+    - GOV-DEC
+    - REQ-ENT
+    - CTX-RULES
+    - CTX-DECISION
+
+  byTask:
+    requirements:
+      required:
+        - GOV-DOC
+        - REQ-ENT
+      optional:
+        - CFG-FUNC
+        - CFG-TECH
+        - CFG-CAT
+        - ARCH-FLOW
+
+    mapping-workbook:
+      required:
+        - CFG-FUNC
+        - CFG-TECH
+        - CFG-CAT
+        - CFG-RULE
+        - CFG-JSON
+        - SCHEMA-JSON
+      optional:
+        - CTX-CONFIG
+        - CTX-REG
+
+    json-schema:
+      required:
+        - CFG-TECH
+        - CFG-JSON
+        - CFG-RULE
+        - SCHEMA-JSON
+      optional:
+        - CTX-CONFIG
+
+    powershell:
+      required:
+        - CFG-JSON
+        - CFG-RULE
+        - SCHEMA-JSON
+      optional:
+        - ARCH-FLOW
+        - CTX-CORE
+        - CTX-PHASES
+        - CTX-ENGINE
+
+    regulatory-content:
+      required:
+        - CFG-CAT
+        - CFG-RULE
+      optional:
+        - CTX-REG
+      stopUnless:
+        - required SME evidence is available
+        - the value is already approved controlled content
+
+    testing-release:
+      required:
+        - GOV-DOC
+        - ARCH-REPO
+        - REPO-STRUCT
+      optional:
+        - SCHEMA-JSON
+
+prohibitedSources:
+  - archived or superseded documents as current requirements
+  - generated assistant profiles as authority
+  - unapproved AI recommendations
+  - illustrative examples as requirements
+  - customer-specific project evidence as general product requirements
+  - code comments that conflict with approved requirements
+
+stopConditions:
+  - regulatory interpretation conflict
+  - JSON compatibility conflict
+  - phase decision or report-meaning conflict
+  - evidence-traceability conflict
+  - missing required SME approval
+  - missing authoritative context required by the selected task

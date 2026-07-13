@@ -1,0 +1,29 @@
+# eMAS CODEOWNERS
+#
+# This file routes repository review to the repository owner. Domain approvals
+# required by docs/governance/eMAS_Document_Governance.md must additionally be
+# recorded in the pull request when the approver is not represented by a GitHub
+# account or team.
+
+* @MightyM-ouse
+
+# Governance and requirements
+/docs/governance/ @MightyM-ouse
+/docs/requirements/ @MightyM-ouse
+/docs/configuration/ @MightyM-ouse
+/config/schema/ @MightyM-ouse
+
+# Architecture, implementation and controlled outputs
+/docs/architecture/ @MightyM-ouse
+/docs/repository/ @MightyM-ouse
+/engine/ @MightyM-ouse
+/scripts/ @MightyM-ouse
+/config/ @MightyM-ouse
+/templates/ @MightyM-ouse
+/ui/ @MightyM-ouse
+
+# Quality and release
+/tests/ @MightyM-ouse
+/build/ @MightyM-ouse
+/releases/ @MightyM-ouse
+/.github/ @MightyM-ouse

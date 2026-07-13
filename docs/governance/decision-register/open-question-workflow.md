@@ -1,83 +1,97 @@
 # Open-Question Decision Workflow
 
-This workflow is used to discuss and approve eMAS open questions one by one before the mapping workbook and dependent documents are finalized.
+**Status:** Historical for the original 171-item review; reusable for new unresolved questions  
+**Superseded outcome:** All 171 reviewed recommendations were approved on 2026-07-13. See [Approved Decision Baseline](../eMAS_Approved_Decision_Baseline_v1.0.md) and [Decision Log](../eMAS_Decision_Log.md).
 
-## 1. Select the next item
+This workflow documents how the original open questions were reviewed and remains the approved process for any genuinely new issue not covered by the current decision baseline.
 
-Choose the highest-priority unblocked Item ID from the decision register. Follow dependency order rather than worksheet order.
+## 1. Confirm that the question is genuinely unresolved
 
-The recommended first sequence is:
+Before opening a new decision:
 
-1. AP-001 — authority and precedence;
-2. AP-002 — source-of-truth terminology;
-3. AP-003 — document statuses;
-4. AP-004 — conflict and stop procedure;
-5. DOC-001 — enterprise baseline confirmation;
-6. JSON-021 and DOC-020 — canonical JSON and workbook structures;
-7. RM-018 and RM-008 — evaluation/RAG and evidence provenance;
-8. DOC-013 and AP-010 — phase terminology and glossary;
-9. REG-003 and REG-004 — regulatory taxonomy direction.
+1. consult the [Canonical Document Index](../../CANONICAL_DOCUMENT_INDEX.md);
+2. apply the [Authority and Precedence Policy](../00_authority_and_precedence.md);
+3. search the [Decision Log](../eMAS_Decision_Log.md);
+4. verify whether the matter is instead approved but still pending synchronization, implementation, SME evidence, testing or release control.
 
-## 2. Prepare the decision brief
+Do not reopen an approved decision merely because implementation is incomplete.
 
-For the selected Item ID, prepare:
+## 2. Select and identify the item
+
+Assign a stable Item ID or issue reference. Follow dependency order rather than document or worksheet order.
+
+A new question is required when:
+
+- no approved source or DecisionId covers the behavior;
+- two approved sources conflict and authority cannot safely resolve the result;
+- a regulatory interpretation requires new SME judgment;
+- a breaking compatibility choice is not covered by the approved JSON policy;
+- a change would alter phase outcome meaning or customer-facing controlled terminology.
+
+## 3. Prepare the decision brief
+
+Include:
 
 - the exact question;
 - current repository state;
-- conflicting statements;
-- AI recommendation;
+- governing source and authority rank;
+- conflicting statements or missing evidence;
+- recommendation;
 - realistic alternatives;
-- business and technical impact;
+- business, regulatory and technical impact;
 - affected artifacts;
 - required approver or SME;
 - implementation and compatibility consequences;
 - proposed acceptance criteria.
 
-Do not combine unrelated Item IDs into one decision unless the register explicitly identifies them as one shared deliverable.
+Do not combine unrelated items unless they are one inseparable decision or shared deliverable.
 
-## 3. Record the decision
+## 4. Record the decision
 
-Update the controlled decision workbook fields:
+The approved decision must be written as a testable statement and recorded in:
 
-- User Decision;
-- Decision Rationale / Notes;
-- Owner;
-- Target Date;
-- Status.
+- the controlled internal decision evidence;
+- [eMAS Decision Log](../eMAS_Decision_Log.md) using the next DecisionId;
+- affected requirements or design documents;
+- the canonical index when authority, status or routing changes.
 
-The decision should be written as a testable statement. Avoid entries such as `agreed`, `use recommendation` or `follow best practice` without the actual approved behavior.
+Avoid entries such as `agreed`, `use recommendation` or `follow best practice` without the approved behavior.
 
-## 4. Check dependent items
+## 5. Check dependencies and delivery state
 
 After approval:
 
 - identify items unblocked by the decision;
-- identify rows whose recommendation or status must change;
-- identify superseded proposals;
-- verify whether an SME approval or implementation spike is still required.
+- identify superseded proposals and documents;
+- confirm whether SME approval evidence is still required;
+- create or link implementation, synchronization, test and release work;
+- retain the original delivery state until the work is complete.
 
-## 5. Apply controlled document changes
-
-Update only the artifacts affected by the approved decision. Each change must reference the Item ID.
+## 6. Apply controlled changes
 
 Typical order:
 
-1. enterprise or functional requirement;
-2. technical requirement and content catalogue;
-3. architecture or schema;
-4. LLM context and operational skill;
-5. implementation and tests;
-6. user and administrator guidance.
+1. governance and terminology;
+2. enterprise or functional requirement;
+3. technical requirement and content catalogue;
+4. architecture, logical model or schema;
+5. LLM context and operational skills;
+6. implementation and tests;
+7. user, administrator and release guidance;
+8. supersession and archive records.
 
-## 6. Verify closure
+Each pull request must cite the DecisionId and applicable requirement IDs.
 
-An item is closed only when:
+## 7. Verify closure
 
-- the decision is recorded;
+A decision-related item is closed only when:
+
+- the decision is permanently recorded;
 - active documents no longer conflict;
-- required implementation work is completed or separately tracked;
-- required tests exist and pass;
-- obsolete documents are identified as superseded;
-- downstream traceability is updated.
+- implementation work is complete or separately tracked with an accurate state;
+- required SME and technical approvals exist;
+- required tests pass;
+- obsolete documents are registered as superseded or archived;
+- downstream traceability and canonical indexes are updated.
 
-A decision alone does not close an item when documentation or implementation remains pending.
+A decision alone does not prove implementation, verification or release completion.

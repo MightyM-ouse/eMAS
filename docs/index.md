@@ -1,36 +1,47 @@
 # eMAS Documentation Index
 
-This page is the navigation entry point for the eMAS repository documentation.
+This page is the repository navigation entry point. Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority rank, status, ownership, supersession or LLM context routing matters.
 
-## Current approved baseline
+## Governance and routing
+
+| Area | Primary document | Status |
+|---|---|---|
+| Approved decisions | [Approved Decision Baseline v1.0](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | Approved |
+| Permanent decisions | [eMAS Decision Log](governance/eMAS_Decision_Log.md) | Effective |
+| Authority and precedence | [Authority and Precedence Policy](governance/00_authority_and_precedence.md) | Effective |
+| Document governance | [Document Governance and Change Control](governance/eMAS_Document_Governance.md) | Effective |
+| Terminology | [Controlled Terminology](governance/eMAS_Terminology.md) | Effective |
+| Human-readable canonical index | [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) | Effective |
+| Machine-readable LLM index | [LLM Context Index](llm-development-context/context-index.yaml) | Effective |
+| Superseded documents | [Superseded Document Register](archive/SUPERSEDED_DOCUMENT_REGISTER.md) | Effective governance record |
+
+## Current product and design baseline
 
 | Area | Primary document | Status |
 |---|---|---|
 | Enterprise requirements | [eMAS Final Enterprise Requirements v3.0](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) | Final baseline, amended by approved decisions pending consolidated v3.x revision |
-| Approved decisions | [Approved Decision Baseline v1.0](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | Approved |
-| Authority and precedence | [Authority and Precedence Policy](governance/00_authority_and_precedence.md) | Approved |
-| Terminology | [Controlled Terminology](governance/eMAS_Terminology.md) | Approved |
-| Project flow | [eMAS Project Flow](architecture/eMAS_Project_Flow.md) | Final design baseline; synchronization pending |
+| Project flow | [eMAS Project Flow](architecture/eMAS_Project_Flow.md) | Final design baseline; approved-decision synchronization pending |
 | Repository architecture | [eMAS Repository Architecture](architecture/eMAS_Repository_Architecture.md) | Approved structure baseline |
 | Repository structure | [eMAS Repository Structure](repository/eMAS_Repository_Structure.md) | Approved structure baseline |
 | Mapping functional requirements | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | Draft requiring approved-decision synchronization |
 | Mapping technical requirements | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | Draft requiring approved-decision synchronization |
-| Mapping content catalogue | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | Draft requiring approved-decision synchronization |
+| Mapping content catalogue | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | Draft requiring approved-decision synchronization and SME evidence |
 | Runtime JSON contract | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | Approved design baseline |
 | Normalized rule model | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | Approved design baseline |
-| Runtime schema | [eMAS Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | Initial approved schema baseline; fixtures and validation pending |
-| LLM development context | [LLM Development Context](llm-development-context/README.md) | Development guidance |
+| Runtime schema | [eMAS Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | Initial approved schema baseline; fixtures and independent validation pending |
+| LLM development context | [LLM Development Context](llm-development-context/README.md) | Effective subordinate guidance |
 | Operational skills | [Operational LLM Skills](llm-development-context/skills/README.md) | Approved framework; skill implementation pending |
 
 ## Required reading order
 
-1. Read the [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md).
+1. Read the [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md) and [Decision Log](governance/eMAS_Decision_Log.md).
 2. Apply the [Authority and Precedence Policy](governance/00_authority_and_precedence.md).
-3. Use the [Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) for product scope, subject to approved amendments.
-4. Use [Controlled Terminology](governance/eMAS_Terminology.md) for phase, status, RAG, provenance and classification terms.
-5. Use the [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) and [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) for configuration and schema work.
-6. Review architecture and repository structure for component placement and package boundaries.
-7. Use LLM context and operational skills only as implementation guidance; they remain subordinate to canonical requirements.
+3. Use [Document Governance](governance/eMAS_Document_Governance.md) for statuses, approvals, examples, supersession and repository workflow.
+4. Use the [Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) for product scope, subject to approved amendments.
+5. Use [Controlled Terminology](governance/eMAS_Terminology.md) for phase, status, RAG, provenance and classification terms.
+6. Use the [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md), [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) and [JSON Schema](../config/schema/eMAS-runtime-config.schema.json) for configuration and runtime work.
+7. Review architecture and repository structure for component placement and package boundaries.
+8. Use LLM context and operational skills only as implementation guidance; they remain subordinate to canonical requirements.
 
 ## Source-of-truth rules
 
@@ -50,9 +61,23 @@ This page is the navigation entry point for the eMAS repository documentation.
 - `docs/development/` — PowerShell, VBA, WPF, OpenXML and coding standards.
 - `docs/testing/` and `docs/validation/` — test strategy, traceability and release evidence.
 - `docs/operations/` — execution, administration, troubleshooting and retention guidance.
-- `docs/governance/` — authority, terminology, decisions, open questions and change history.
-- `docs/archive/` — superseded or historical documentation.
+- `docs/governance/` — authority, terminology, decisions, change control and review history.
+- `docs/archive/` — superseded or historical documentation and registers.
+- `docs/ai-assistant/` — generated, non-authoritative assistant profiles.
+
+## Decision and delivery state
+
+The 171 reviewed recommendations are approved decisions. Associated work may still be:
+
+- Documentation Sync Pending;
+- Implementation Pending;
+- SME Review Pending;
+- Test Pending;
+- Release-Control Pending;
+- Supersession Pending.
+
+Do not describe a design decision as implemented, verified or released without evidence.
 
 ## Repository safety
 
-Do not commit customer source data, customer reports, migration evidence, credentials, production logs, project-specific accepted exceptions or confidential internal artifacts. The public repository uses sanitized Markdown records for internal decisions and superseded document packs.
+Do not commit customer source data, customer reports, migration evidence, credentials, production logs, project-specific accepted exceptions or confidential internal artifacts. The public repository uses sanitized Markdown records for internal decisions and historical binary packs.
