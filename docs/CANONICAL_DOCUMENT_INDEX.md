@@ -1,10 +1,10 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.4  
+**Version:** 1.5  
 **Status:** Effective  
 **Effective date:** 2026-07-13  
 **Owner:** Documentation Owner  
-**Decision reference:** DEC-2026-008 / AP-008; approved requirements, logical-model, schema-verification and architecture synchronization
+**Decision reference:** DEC-2026-008 / AP-008; approved requirements, logical-model, schema-verification, architecture and operational-skill synchronization
 
 ## Purpose
 
@@ -48,6 +48,22 @@ This index routes eMAS work to the correct authoritative, architectural, verific
 | PHASE-PO | 6 | [Post-Migration Phase Contract](architecture/phase-contracts/03_eMAS_PostMigration_Verification_Phase_Contract.md) | v1.0 Effective | Product Owner / Migration SME / Technical Architect |
 | REPO-STRUCT | 6 | [Repository Structure](repository/eMAS_Repository_Structure.md) | Approved | Technical Architect |
 
+## Operational skill contracts
+
+| ID | Rank | Artifact | Version/status | Owner |
+|---|---:|---|---|---|
+| SKILL-CAT | 8 | [Operational Skill Catalogue](llm-development-context/skills/README.md) | v1.0.0 Effective | Technical Architect |
+| SKILL-MACHINE | 8 | [Machine-readable Skill Catalogue](llm-development-context/skills/skill-catalog.json) | v1.0.0 Effective | Technical Architect |
+| SKILL-CONFIG | 8 | [Modify Configuration Model](llm-development-context/skills/modify-configuration-model.md) | v1.0.0 Effective | Product Owner / Technical Architect |
+| SKILL-SCHEMA | 8 | [Update Runtime JSON Schema](llm-development-context/skills/update-json-schema.md) | v1.0.0 Effective | Technical Architect / QA Lead |
+| SKILL-POWERSHELL | 8 | [Implement PowerShell Module](llm-development-context/skills/implement-powershell-module.md) | v1.0.0 Effective | PowerShell Lead / Technical Architect |
+| SKILL-REGULATORY | 8 | [Add Regulatory Classification](llm-development-context/skills/add-regulatory-classification.md) | v1.0.0 Effective | Regulatory SME / Product Owner |
+| SKILL-REPORT | 8 | [Modify Report Contract](llm-development-context/skills/modify-report-contract.md) | v1.0.0 Effective | Product Owner / Reporting Lead |
+| SKILL-REVIEW | 8 | [Review Repository Change](llm-development-context/skills/review-change.md) | v1.0.0 Effective | Technical Architect / QA Lead |
+| SKILL-DEFECT | 8 | [Investigate Defect](llm-development-context/skills/investigate-defect.md) | v1.0.0 Effective | Technical Lead / QA Lead |
+
+Operational skills are subordinate procedures. They never override requirements, configuration contracts, schemas, architecture or phase contracts.
+
 ## Verification and implementation guidance
 
 | ID | Role | Artifact | Status |
@@ -55,11 +71,13 @@ This index routes eMAS work to the correct authoritative, architectural, verific
 | BUILD-SCHEMA | Implementation verification | `build/validate_emas_schema.py` | Effective independent validator |
 | TEST-SCHEMA | Verification evidence | `tests/schema/test_schema_fixtures.py` | Effective automated test |
 | CI-SCHEMA | Verification control | `.github/workflows/schema-validation.yml` | Effective workflow |
+| BUILD-SKILLS | Implementation verification | `build/validate_operational_skills.py` | Effective independent validator |
+| TEST-SKILLS | Verification evidence | `tests/skills/test_operational_skills.py` | Effective automated test |
+| CI-SKILLS | Verification control | `.github/workflows/operational-skills-validation.yml` | Effective workflow |
 | CTX-INDEX | Guidance | [LLM Development Context](llm-development-context/README.md) | Subordinate guidance |
 | CTX-MACHINE | Routing | [Machine-readable Context Index](llm-development-context/context-index.yaml) | Effective |
 | CTX-RULES | Mandatory guidance | [LLM Development Rules](llm-development-context/llm-development-rules.md) | Effective |
 | CTX-DECISION | Mandatory guidance | [LLM Decision Boundary](llm-development-context/decision-boundary.md) | Effective |
-| SKILLS | Guidance | [Operational LLM Skills](llm-development-context/skills/README.md) | Framework approved; implementation pending |
 
 ## Historical and non-authoritative material
 
@@ -73,33 +91,55 @@ This index routes eMAS work to the correct authoritative, architectural, verific
 
 ## Required reading by task
 
-### Architecture or phase behavior
+### Configuration-model work
 
 1. GOV-AUTH, GOV-TERM, GOV-DEC and REQ-ENT
-2. CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT and SCHEMA-JSON
-3. ARCH-SOL and ARCH-FLOW
-4. applicable phase contract
-5. ARCH-REPO and REPO-STRUCT where file/package placement is affected
+2. CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT and CFG-JSON
+3. ARCH-SOL and applicable phase contract
+4. SKILL-CONFIG
+5. SKILL-REVIEW before merge
 
-### Mapping workbook or regulatory content
+### JSON Schema work
 
 1. governance and REQ-ENT
-2. CFG-FUNC, CFG-TECH and CFG-CAT
-3. CFG-RULE, CFG-REL and CFG-DICT
-4. CFG-JSON, CFG-VERIFY and SCHEMA-JSON
-5. applicable SME evidence
+2. CFG-JSON, CFG-REL, CFG-DICT and CFG-VERIFY
+3. SCHEMA-JSON and SCHEMA-FIX
+4. SKILL-SCHEMA
+5. BUILD-SCHEMA, TEST-SCHEMA and SKILL-REVIEW
 
 ### PowerShell or WPF
 
 1. governance, REQ-ENT and CTX-RULES
 2. CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY and SCHEMA-JSON
 3. ARCH-SOL and applicable phase contract
-4. ARCH-REPO and relevant tests
+4. SKILL-POWERSHELL and SKILL-REVIEW
+5. ARCH-REPO and relevant tests
+
+### Regulatory content
+
+1. governance and REQ-ENT
+2. CFG-CAT, CFG-RULE, CFG-REL and CFG-DICT
+3. applicable primary evidence and SME review
+4. SKILL-REGULATORY and SKILL-REVIEW
+
+### Reporting
+
+1. governance, REQ-ENT and applicable phase contract
+2. CFG-JSON, CFG-DICT and ARCH-SOL
+3. SKILL-REPORT, then SKILL-POWERSHELL for implementation
+4. SKILL-REVIEW before merge
+
+### Defect investigation
+
+1. governing requirement/architecture/phase/report contract
+2. SKILL-DEFECT
+3. root-cause-specific implementation skill
+4. SKILL-REVIEW before merge
 
 ### Testing and release
 
 1. GOV-DOC and applicable DecisionIds
-2. governing requirement/configuration/architecture contracts
+2. governing requirement/configuration/architecture/skill contracts
 3. CFG-VERIFY, SCHEMA-JSON and SCHEMA-FIX
 4. implementation under test
 5. release manifest, checksum and rollback evidence
@@ -110,4 +150,4 @@ Do not use archived requirements, generated profiles, unapproved AI recommendati
 
 ## Maintenance rule
 
-Update this index whenever an artifact is approved, made Effective, superseded, renamed, moved, assigned a new owner/version or added to an LLM task route.
+Update this index whenever an artifact is approved, made Effective, superseded, renamed, moved, assigned a new owner/version or added to a task route.

@@ -33,6 +33,18 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
   - [Pre-Migration Readiness](architecture/phase-contracts/02_eMAS_PreMigration_Readiness_Phase_Contract.md)
   - [Post-Migration Verification](architecture/phase-contracts/03_eMAS_PostMigration_Verification_Phase_Contract.md)
 
+## Effective operational skills
+
+- [Operational Skill Catalogue](llm-development-context/skills/README.md)
+- [Machine-readable Skill Catalogue](llm-development-context/skills/skill-catalog.json)
+- [Modify Configuration Model](llm-development-context/skills/modify-configuration-model.md)
+- [Update Runtime JSON Schema](llm-development-context/skills/update-json-schema.md)
+- [Implement PowerShell Module](llm-development-context/skills/implement-powershell-module.md)
+- [Add Regulatory Classification](llm-development-context/skills/add-regulatory-classification.md)
+- [Modify Report Contract](llm-development-context/skills/modify-report-contract.md)
+- [Review Repository Change](llm-development-context/skills/review-change.md)
+- [Investigate Defect](llm-development-context/skills/investigate-defect.md)
+
 ## Implementation and verification
 
 - [Repository Structure](repository/eMAS_Repository_Structure.md)
@@ -40,7 +52,6 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - [Build and Validation](../build/README.md)
 - [Tests](../tests/README.md)
 - [LLM Development Context](llm-development-context/README.md)
-- [Operational Skills](llm-development-context/skills/README.md)
 
 ## Source-of-truth rules
 
@@ -50,6 +61,7 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - Shared PowerShell engine performs generic technical processing.
 - Phase contracts control phase-specific orchestration and result language.
 - Controlled templates control workbook presentation.
+- Effective operational skills control repeatable task procedure and evidence expectations.
 
 ## Completed dependency stages
 
@@ -58,8 +70,9 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 3. Logical-model freeze.
 4. Schema 1.0.0 and independent fixture validation.
 5. Solution architecture and phase contracts.
+6. Operational LLM skills and automated catalogue validation.
 
-Pending stages include operational skills, XLSM/VBA implementation and fixture conformance, PowerShell/OpenXML implementation and loader conformance, controlled templates, detailed SME content and full release/rollback controls.
+Pending stages include XLSM/VBA implementation and fixture conformance, PowerShell/OpenXML implementation and loader conformance, controlled templates, detailed SME content and full release/rollback controls.
 
 ## Repository safety
 

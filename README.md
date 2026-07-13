@@ -33,13 +33,14 @@ flowchart LR
 
 ## Effective baseline
 
-The Product Owner approved the 171-item decision baseline on 13 July 2026. The following stages are complete:
+The Product Owner approved the 171-item decision baseline on 13 July 2026. The following dependency stages are complete:
 
 1. authority, precedence, terminology and document governance;
 2. Enterprise and configuration requirement synchronization;
 3. normalized relationship matrix and data-dictionary freeze;
 4. Runtime JSON Schema 1.0.0, fixtures and independent semantic validation;
-5. Solution Architecture and three Effective phase contracts.
+5. Solution Architecture and three Effective phase contracts;
+6. seven Effective operational LLM skills with automated catalogue validation.
 
 Primary references:
 
@@ -54,8 +55,30 @@ Primary references:
 - [Solution Architecture v1.0](docs/architecture/eMAS_Solution_Architecture.md)
 - [Project Flow v2.0](docs/architecture/eMAS_Project_Flow.md)
 - [Phase Contracts](docs/architecture/phase-contracts/README.md)
+- [Operational LLM Skills v1.0.0](docs/llm-development-context/skills/README.md)
 - [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
 - [Approved Decision Baseline](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
+
+## Operational skills
+
+The Effective skill catalogue provides repeatable procedures for:
+
+- modifying the configuration model;
+- updating Runtime JSON Schema;
+- implementing PowerShell modules;
+- adding regulatory classification content;
+- modifying report contracts/templates;
+- reviewing repository changes;
+- investigating defects.
+
+Each skill defines invocation boundaries, required inputs, preconditions, ordered procedure, outputs, stop conditions, validation evidence and Definition of Done. Use [skill-catalog.json](docs/llm-development-context/skills/skill-catalog.json) for machine-readable routing.
+
+Validate the skills with:
+
+```bash
+python build/validate_operational_skills.py
+python -m unittest discover -s tests/skills -p "test_*.py" -v
+```
 
 ## Phase outcomes
 
@@ -81,8 +104,8 @@ eMAS/
 ├── config/       XLSM authoring, VBA, schema, fixtures and runtime configuration
 ├── templates/    Controlled phase-specific report templates
 ├── ui/           Optional Pre-/Post-Migration WPF
-├── docs/         Requirements, architecture, governance and guidance
-├── tests/        Schema, unit, integration, scenario and performance tests
+├── docs/         Requirements, architecture, governance, skills and guidance
+├── tests/        Schema, skill, unit, integration, scenario and performance tests
 ├── build/        Independent validation and packaging scripts
 ├── releases/     Release notes and manifests
 ├── output/       Local generated reports; not source-controlled
@@ -95,10 +118,12 @@ eMAS/
 1. Start from current `main` on a dedicated branch.
 2. Apply the canonical index, authority policy and approved decision baseline.
 3. Use the frozen logical model, Schema 1.0.0, Solution Architecture and applicable phase contract.
-4. Keep business/regulatory interpretation in approved configuration.
-5. Update affected contracts, tests, templates and guidance together.
-6. Stop when a conflict affects regulatory meaning, schema compatibility, phase results, report meaning or evidence traceability.
-7. Merge through a reviewed pull request.
+4. Select and follow the narrowest applicable Effective operational skill.
+5. Keep business/regulatory interpretation in approved configuration.
+6. Update affected contracts, tests, templates and guidance together.
+7. Stop when a conflict affects regulatory meaning, schema compatibility, phase results, report meaning or evidence traceability.
+8. Use the review skill before merging material changes.
+9. Merge through a reviewed pull request.
 
 ## Repository safety
 

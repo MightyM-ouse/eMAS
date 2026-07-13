@@ -23,7 +23,7 @@ Approval establishes the design decision. It does not mean every implementation,
 
 The approved decisions are consolidated into:
 
-- `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`;
+- Enterprise Requirements Version 3.1;
 - configuration requirements Versions 3.0;
 - Runtime JSON Contract Version 1.2;
 - Normalized Rule Model Version 1.1;
@@ -34,7 +34,8 @@ The approved decisions are consolidated into:
 - Solution Architecture Version 1.0;
 - Project Flow Version 2.0;
 - Repository Architecture Version 1.1;
-- Pre-Sales, Pre-Migration and Post-Migration Phase Contracts Version 1.0.
+- three Phase Contracts Version 1.0;
+- seven Operational LLM Skills Version 1.0.0 and their automated catalogue validation.
 
 Enterprise Requirements v3.1 remains the active authority-rank-1 product baseline.
 
@@ -47,6 +48,7 @@ Enterprise Requirements v3.1 remains the active authority-rank-1 product baselin
 - The normalized relationship matrix and logical data dictionary are frozen at Version 1.0.
 - The independent schema/semantic fixture contract is Effective.
 - Solution Architecture Version 1.0 and all three phase contracts are Effective.
+- Operational skills are Effective subordinate procedures and do not create or override requirements.
 - Evaluation status, RAG and value-source provenance remain separate.
 - Technical standard, regional implementation and procedure context remain separate.
 - ASMF is ProcedureContext, not TechnicalStandard.
@@ -57,6 +59,7 @@ Enterprise Requirements v3.1 remains the active authority-rank-1 product baselin
 - Pre-Migration creates the approved reusable comparison baseline.
 - Post-Migration consumes the approved baseline and agreed `MigrationSummary.xlsx` detail.
 - Accepted exceptions never erase original findings, RAG, discrepancies or evidence.
+- LLM-generated regulatory content remains Draft until required Regulatory SME and Product Owner approval.
 
 ## Implementation-state rule
 
@@ -64,7 +67,7 @@ Items classified as `Implementation Pending`, `SME Review Pending`, `Test Pendin
 
 Detailed regulatory values, authority relationships, folder/file content, effort weights, confidence weights, thresholds and exception-role content still require the approved owner or SME evidence before Effective configuration status.
 
-Completing architecture and phase contracts does not mean the XLSM/VBA exporter, PowerShell loader/engine, WPF, report templates or release packages implement those contracts. Conformance remains separately tracked.
+Completing operational skills does not mean the XLSM/VBA exporter, PowerShell loader/engine, WPF, report templates or release packages implement those procedures. Conformance remains separately tracked.
 
 ## Public-repository handling
 
@@ -77,7 +80,7 @@ The detailed internal decision workbook is not committed to the public repositor
 3. Freeze the normalized logical model, relationship matrix and data dictionary. **Completed in PR #7.**
 4. Complete and validate JSON Schema 1.0.0 and fixtures. **Completed in PR #8.**
 5. Update architecture and phase contracts. **Completed in PR #9.**
-6. Implement operational skills.
+6. Implement operational skills. **Completed in PR #10.**
 7. Complete the XLSM/VBA proof of concept and validator conformance.
 8. Complete the PowerShell OpenXML/reporting spike, engine contracts and loader/phase conformance.
 9. Populate regulatory and migration content under the approved SME workflow.
@@ -99,3 +102,5 @@ The detailed internal decision workbook is not committed to the public repositor
 - `docs/architecture/eMAS_Project_Flow.md`
 - `docs/architecture/eMAS_Repository_Architecture.md`
 - `docs/architecture/phase-contracts/README.md`
+- `docs/llm-development-context/skills/README.md`
+- `docs/llm-development-context/skills/skill-catalog.json`
