@@ -1,0 +1,82 @@
+name: PowerShell runtime contracts
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
+      - "tests/runtime/**"
+      - ".github/workflows/powershell-runtime-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
+      - "tests/runtime/**"
+      - ".github/workflows/powershell-runtime-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  static-runtime-contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run runtime contract unit tests
+        run: python -m unittest discover -s tests/runtime -p "test_*.py" -v
+
+  windows-powershell-51-contracts:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import shared core and Windows PowerShell 5.1 adapter contracts
+        shell: powershell
+        run: |
+          if ($PSVersionTable.PSEdition -ne 'Desktop') {
+            throw "Expected Windows PowerShell Desktop edition, got $($PSVersionTable.PSEdition)"
+          }
+          if ($PSVersionTable.PSVersion.Major -ne 5 -or $PSVersionTable.PSVersion.Minor -lt 1) {
+            throw "Expected Windows PowerShell 5.1, got $($PSVersionTable.PSVersion)"
+          }
+          Import-Module .\engine\core\eMAS.Configuration.Contract.psm1 -Force
+          Import-Module .\engine\powershell51\eMAS.RuntimeAdapter.PS51.Contract.psm1 -Force
+          if (-not (Test-eMASEvaluationStatusCode -Code 'Warning')) {
+            throw 'Warning EvaluationStatus must be accepted by the loader contract.'
+          }
+          if (Test-eMASEvaluationStatusCode -Code 'RecoverableWarning') {
+            throw 'Unknown EvaluationStatus codes must be rejected by the loader contract.'
+          }
+          $adapter = Get-eMASRuntimeAdapterContract
+          if ($adapter.Adapter -ne 'powershell51' -or $adapter.SupportedPhases -contains 'PRE_MIGRATION') {
+            throw 'PowerShell 5.1 adapter contract must be limited to Pre-Sales.'
+          }
+
+  powershell-76-contracts:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import shared core and PowerShell 7.6 adapter contracts
+        shell: pwsh
+        run: |
+          if ($PSVersionTable.PSEdition -ne 'Core') {
+            throw "Expected PowerShell Core edition, got $($PSVersionTable.PSEdition)"
+          }
+          if ($PSVersionTable.PSVersion.Major -ne 7 -or $PSVersionTable.PSVersion.Minor -lt 6) {
+            throw "Expected PowerShell 7.6 LTS or later approved 7.6-compatible runner, got $($PSVersionTable.PSVersion)"
+          }
+          Import-Module .\engine\core\eMAS.Configuration.Contract.psm1 -Force
+          Import-Module .\engine\powershell7\eMAS.RuntimeAdapter.PS7.Contract.psm1 -Force
+          if (-not (Test-eMASEvaluationStatusCode -Code 'Warning')) {
+            throw 'Warning EvaluationStatus must be accepted by the loader contract.'
+          }
+          if (Test-eMASEvaluationStatusCode -Code 'RecoverableWarning') {
+            throw 'Unknown EvaluationStatus codes must be rejected by the loader contract.'
+          }
+          $adapter = Get-eMASRuntimeAdapterContract
+          if ($adapter.Adapter -ne 'powershell7' -or $adapter.SupportedPhases -contains 'PRE_SALES') {
+            throw 'PowerShell 7 adapter contract must be limited to Pre-/Post-Migration.'
+          }

@@ -5,6 +5,7 @@ This folder contains controlled automated and scenario testing for schemas, oper
 ## Available tests
 
 - `schema/` — Runtime JSON Schema 1.0.0, manifest, semantic and encoding tests.
+- `runtime/` — PowerShell runtime profile and initial loader contract boundary tests.
 - `skills/` — operational skill catalogue and contract tests.
 - `vba/` — synthetic workbook generation, table/fixture semantics, deterministic golden hash and VBA source-contract tests.
 
@@ -14,6 +15,7 @@ Run:
 python -m pip install -r build/requirements-schema-validation.txt
 python build/validate_emas_schema.py
 python -m unittest discover -s tests/schema -p "test_*.py" -v
+python -m unittest discover -s tests/runtime -p "test_*.py" -v
 python build/validate_operational_skills.py
 python -m unittest discover -s tests/skills -p "test_*.py" -v
 python build/validate_xlsm_vba_poc.py

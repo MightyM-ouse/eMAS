@@ -126,6 +126,27 @@ Every execution records:
 - engine and adapter versions;
 - runtime-compatibility result.
 
+## 5.1 Initial loader contract
+
+The initial source boundary is implemented as:
+
+```text
+engine/
+├── core/eMAS.Configuration.Contract.psm1
+├── powershell51/eMAS.RuntimeAdapter.PS51.Contract.psm1
+└── powershell7/eMAS.RuntimeAdapter.PS7.Contract.psm1
+```
+
+The contract establishes:
+
+- Schema 1.0.0 as the current runtime JSON compatibility boundary;
+- the required top-level runtime JSON sections;
+- approved EvaluationStatus values, including `Warning`;
+- rejection of unknown EvaluationStatus values at the loader-contract boundary;
+- runtime adapter phase ownership for Pre-Sales versus Pre-/Post-Migration.
+
+This contract does not implement business or regulatory interpretation. It does not read the XLSM, generate runtime JSON, repair runtime JSON, scan source evidence or perform phase decision logic.
+
 ## 6. Testing matrix
 
 | Test area | macOS PS 7.6 | Windows PS 5.1 | Windows PS 7.6 |
@@ -153,6 +174,14 @@ Every material PowerShell pull request should run:
 6. Windows-specific integration tests when the changed code touches discovery, paths, permissions, WPF or report generation.
 
 A macOS-only pass cannot authorize release.
+
+The repository includes `.github/workflows/powershell-runtime-contracts.yml` as the initial automated CI plan for:
+
+- static runtime contract tests;
+- Windows PowerShell 5.1 contract import and EvaluationStatus checks;
+- PowerShell 7.6 contract import and EvaluationStatus checks.
+
+These jobs provide automated contract evidence only. They do not replace Windows release qualification, NTFS/UNC testing, WPF testing or desktop Microsoft Excel qualification.
 
 ## 8. Packaging
 
