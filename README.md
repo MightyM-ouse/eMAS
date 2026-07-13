@@ -30,12 +30,16 @@ flowchart LR
 - Shared technical processing belongs in `engine/`.
 - Source evidence remains read-only.
 
-## Approved decision baseline
+## Effective requirements baseline
 
-The Product Owner approved the evidence-based recommendation for all 171 reviewed items on 13 July 2026. Approval establishes the design decisions; documentation synchronization, implementation, verification and release completion remain separately tracked states.
+The Product Owner approved all 171 reviewed recommendations on 13 July 2026. The decisions are consolidated into Enterprise Requirements v3.1 and the three Version 3.0 configuration documents. Implementation, verification, SME content approval and release completion remain separately tracked states.
 
-Primary approved references:
+Primary effective references:
 
+- [Enterprise Requirements v3.1](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
+- [Mapping Configuration Functional Requirements v3.0](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
+- [Mapping Configuration Technical Requirements v3.0](docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md)
+- [Mapping Configuration Content Catalogue v3.0](docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md)
 - [Approved Decision Baseline v1.0](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
 - [Permanent Decision Log](docs/governance/eMAS_Decision_Log.md)
 - [Authority and Precedence Policy](docs/governance/00_authority_and_precedence.md)
