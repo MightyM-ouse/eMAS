@@ -126,7 +126,7 @@ Every execution records:
 - engine and adapter versions;
 - runtime-compatibility result.
 
-## 5.1 Initial configuration-loader contract boundary
+## 5.1 Runtime configuration consumption foundation
 
 The initial source boundary is implemented as:
 
@@ -137,7 +137,7 @@ engine/
 └── powershell7/eMAS.RuntimeAdapter.PS7.Contract.psm1
 ```
 
-The contract boundary establishes:
+The compatibility contract and phase-neutral loader foundation establish:
 
 - Schema 1.0.0 as the current runtime JSON compatibility boundary;
 - the required top-level runtime JSON sections;
@@ -145,7 +145,9 @@ The contract boundary establishes:
 - rejection of unknown EvaluationStatus values at the configuration-contract boundary;
 - runtime adapter phase ownership for Pre-Sales versus Pre-/Post-Migration.
 
-This module is not a functioning Runtime JSON loader. Functional configuration loading, checksum verification, duplicate/reference validation, stop-before-scan enforcement and phase entry scripts remain pending. The contract does not implement business or regulatory interpretation, read the XLSM, generate or repair runtime JSON, scan source evidence or perform phase decision logic.
+`eMAS.RuntimeConfiguration.psm1` now provides defensive UTF-8 loading, file SHA-256 identity, stable wrapper/accessors, minimum structural checks, phase-neutral semantic hooks and structured validation results. The three phase entry scripts invoke this layer and stop before assessment processing on blocking findings.
+
+This foundation does not perform exact Draft 2020-12 JSON Schema validation at runtime, controlled-package checksum verification, source scanning, business or regulatory interpretation, or phase decision logic. Property-name assumptions remain centralized for reconciliation with the final approved Runtime JSON design. Build/release schema validation, complete semantic conformance, final-schema reconciliation and native Windows qualification remain pending.
 
 ## 6. Testing matrix
 
@@ -178,6 +180,7 @@ A macOS-only pass cannot authorize release.
 The repository includes `.github/workflows/powershell-runtime-contracts.yml` as the initial automated CI plan for:
 
 - static runtime contract tests;
+- dependency-free Runtime JSON loading/validation and phase-bootstrap tests;
 - Windows PowerShell 5.1 contract import and EvaluationStatus checks;
 - PowerShell 7.6 contract import and EvaluationStatus checks on Windows;
 - PowerShell 7.6 shared-contract import, schema validation and pure contract tests on macOS.

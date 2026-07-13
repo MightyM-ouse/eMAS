@@ -1,4 +1,4 @@
-schemaVersion: "1.6"
+schemaVersion: "1.7"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
@@ -220,8 +220,24 @@ artifacts:
     status: InitialContractBoundary
     authorityRole: implementation-contract
     owner: PowerShell Lead and Technical Architect
-    description: Initial runtime boundary and configuration-loader/runtime-adapter contract source; functional loader pending.
+    description: Runtime configuration consumption/validation foundation and adapter contracts; final-schema reconciliation and complete package integrity pending.
     requiredFor: [powershell, architecture, testing, packaging]
+
+  - id: DOC-RUNTIME-CONSUMPTION
+    path: ../development/runtime-json-consumption.md
+    status: EffectiveImplementationNote
+    authorityRole: implementation-guidance
+    owner: PowerShell Lead and Technical Architect
+    description: Developer implementation note, provisional compatibility assumptions and final-schema reconciliation route.
+    requiredFor: [powershell, architecture, testing]
+
+  - id: TEST-RUNTIME-PS
+    path: ../../tests/runtime/Test-eMASRuntimeConfiguration.ps1
+    status: EffectiveAutomatedTest
+    authorityRole: verification-evidence
+    owner: QA Lead and PowerShell Lead
+    description: Dependency-free synthetic Runtime JSON loader and phase-bootstrap tests.
+    requiredFor: [powershell, testing]
 
   - id: CI-RUNTIME
     path: ../../.github/workflows/powershell-runtime-contracts.yml
@@ -419,12 +435,12 @@ routing:
       optional: [CTX-CONFIG, ARCH-SOL, SKILL-REVIEW]
 
     powershell:
-      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, ARCH-SOL, ARCH-RUNTIME, ARCH-REPO, ENGINE-RUNTIME, SKILL-POWERSHELL]
+      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, ARCH-SOL, ARCH-RUNTIME, ARCH-REPO, ENGINE-RUNTIME, DOC-RUNTIME-CONSUMPTION, SKILL-POWERSHELL]
       conditional:
         PRE_SALES: [PHASE-PS]
         PRE_MIGRATION: [PHASE-PM]
         POST_MIGRATION: [PHASE-PO]
-      optional: [ARCH-FLOW, CI-RUNTIME, CTX-CORE, CTX-PHASES, CTX-ENGINE, SKILL-REVIEW]
+      optional: [ARCH-FLOW, TEST-RUNTIME-PS, CI-RUNTIME, CTX-CORE, CTX-PHASES, CTX-ENGINE, SKILL-REVIEW]
 
     reporting:
       required: [CFG-JSON, CFG-DICT, ARCH-SOL, SKILL-REPORT]
@@ -454,7 +470,7 @@ routing:
       optional: [CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SKILLS, TEST-SKILLS]
 
     testing-release:
-      required: [GOV-DOC, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, ARCH-SOL, ARCH-RUNTIME, ARCH-REPO, REPO-STRUCT, CI-RUNTIME, SKILL-REVIEW]
+      required: [GOV-DOC, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, TEST-RUNTIME-PS, ARCH-SOL, ARCH-RUNTIME, ARCH-REPO, REPO-STRUCT, CI-RUNTIME, SKILL-REVIEW]
       conditional:
         PRE_SALES: [PHASE-PS]
         PRE_MIGRATION: [PHASE-PM]

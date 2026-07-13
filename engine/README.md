@@ -36,8 +36,10 @@ Business and regulatory meaning remains configuration-driven. Source evidence re
 
 Runtime adapters may optimize technical behavior such as file enumeration, encoding, runtime diagnostics, OpenXML packaging or controlled parallel processing. They must not duplicate classification, rule, finding, recommendation, RAG, effort, readiness or reconciliation interpretation.
 
-## Initial configuration-loader contract boundary
+## Runtime configuration foundation
 
-The initial configuration-loader contract boundary is defined in `core/eMAS.Configuration.Contract.psm1`. It exposes the approved Schema 1.0.0 structural boundary and controlled `EvaluationStatus` compatibility set, including `Warning`.
+The centralized compatibility contract is defined in `core/eMAS.Configuration.Contract.psm1`. It exposes the approved Schema 1.0.0 structural boundary, provisional property-name candidates and controlled `EvaluationStatus` compatibility set, including `Warning`.
 
-This contract is intentionally small and is not a functioning Runtime JSON loader. Loader implementation remains pending; the current module does not read the XLSM, load or generate JSON, verify checksums, repair JSON, scan source evidence or implement phase decision logic.
+`core/eMAS.RuntimeConfiguration.psm1` provides the phase-neutral defensive consumption foundation: safe UTF-8 loading, SHA-256 identity, structural checks, semantic hooks, stable accessors and sanitized configuration log events. It does not read the XLSM, generate or repair JSON, scan source evidence or implement phase decision logic.
+
+Claude's final Runtime JSON design remains authoritative for the final property/section binding. Exact JSON Schema validation, controlled-package checksum verification, complete relationship semantics and native Windows qualification remain separate release work.

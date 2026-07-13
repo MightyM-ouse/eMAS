@@ -13,6 +13,39 @@ class RuntimeProfileContractTests(unittest.TestCase):
             with self.subTest(path=relative):
                 self.assertTrue((ROOT / relative).is_dir())
 
+    def test_runtime_configuration_module_exposes_stable_interface(self):
+        module = (
+            ROOT / "engine" / "core" / "eMAS.RuntimeConfiguration.psm1"
+        ).read_text(encoding="utf-8")
+        for function_name in (
+            "Import-eMASRuntimeConfiguration",
+            "Test-eMASRuntimeConfiguration",
+            "Get-eMASConfigurationMetadata",
+            "Get-eMASConfigurationSection",
+            "Get-eMASConfigurationValue",
+            "Get-eMASRuleCollection",
+            "Get-eMASCodeList",
+            "Resolve-eMASConfigurationPath",
+        ):
+            with self.subTest(function=function_name):
+                self.assertIn(f"function {function_name}", module)
+        self.assertIn("eMAS.RuntimeConfiguration", module)
+        self.assertIn("FileHashSha256", module)
+        self.assertIn("BlockingIssueCount", module)
+
+    def test_phase_entry_scripts_accept_one_runtime_configuration_path(self):
+        for script_name in (
+            "eMAS-PreSalesAssessment.ps1",
+            "eMAS-PreMigrationReadiness.ps1",
+            "eMAS-PostMigrationVerification.ps1",
+        ):
+            with self.subTest(script=script_name):
+                script = (ROOT / "scripts" / script_name).read_text(encoding="utf-8")
+                self.assertIn("$RuntimeConfigurationPath", script)
+                self.assertIn("Initialize-eMASPhaseRuntime", script)
+                self.assertNotIn(".xlsm", script.lower())
+                self.assertNotIn(".xlsx", script.lower())
+
     def test_core_contract_contains_warning_and_rejects_unknown_by_contract(self):
         contract = (ROOT / "engine" / "core" / "eMAS.Configuration.Contract.psm1").read_text(encoding="utf-8")
         self.assertIn("'Warning'", contract)
@@ -43,11 +76,61 @@ class RuntimeProfileContractTests(unittest.TestCase):
         )
 
     def test_core_contract_avoids_powershell7_only_syntax(self):
-        contract = (ROOT / "engine" / "core" / "eMAS.Configuration.Contract.psm1").read_text(encoding="utf-8")
-        prohibited_tokens = ("??", "ForEach-Object -Parallel", "&&", "||")
-        for token in prohibited_tokens:
-            with self.subTest(token=token):
-                self.assertNotIn(token, contract)
+        sources = list((ROOT / "engine" / "core").rglob("*.ps1"))
+        sources.extend((ROOT / "engine" / "core").rglob("*.psm1"))
+        prohibited_tokens = (
+            "??",
+            "ForEach-Object -Parallel",
+            "&&",
+            "||",
+            "Test-Json",
+        )
+        for source_path in sources:
+            source = source_path.read_text(encoding="utf-8")
+            for token in prohibited_tokens:
+                with self.subTest(path=source_path.name, token=token):
+                    self.assertNotIn(token, source)
+
+    def test_runtime_configuration_fixtures_are_synthetic_and_bounded(self):
+        fixture_root = ROOT / "tests" / "fixtures" / "runtime-config"
+        self.assertTrue((fixture_root / "valid-minimal.json").is_file())
+        for fixture_path in fixture_root.glob("*.json"):
+            payload = fixture_path.read_bytes()
+            self.assertFalse(payload.startswith(b"\xef\xbb\xbf"))
+            text = payload.decode("utf-8")
+            self.assertNotIn("customer", text.lower())
+            self.assertNotIn(".xlsm", text.lower())
+            if fixture_path.name not in {"invalid-malformed.json", "invalid-empty.json"}:
+                json.loads(text)
+
+    def test_dependency_free_powershell_harness_covers_required_boundaries(self):
+        harness_path = ROOT / "tests" / "runtime" / "Test-eMASRuntimeConfiguration.ps1"
+        harness = harness_path.read_text(encoding="utf-8")
+        self.assertNotIn("Import-Module Pester", harness)
+        for coverage_marker in (
+            "valid minimal JSON",
+            "malformed JSON",
+            "empty JSON",
+            "missing file",
+            "missing metadata",
+            "missing schema version",
+            "unsupported schema version",
+            "duplicate rule identifiers",
+            "missing recommendation reference",
+            "invalid RAG value",
+            "configured code list",
+            "missing optional code list",
+            "path containing spaces",
+            "UTF-8 metadata",
+            "SHA-256 identity",
+            "source Runtime JSON remains read-only",
+            "all phase entry scripts accept one valid Runtime JSON path",
+            "all phase entry scripts stop",
+        ):
+            with self.subTest(marker=coverage_marker):
+                self.assertIn(coverage_marker, harness)
+        workflow = (ROOT / ".github" / "workflows" / "powershell-runtime-contracts.yml").read_text(encoding="utf-8")
+        self.assertEqual(3, workflow.count("Test-eMASRuntimeConfiguration.ps1"))
 
     def test_adapter_contracts_keep_phase_runtime_split(self):
         ps51 = (ROOT / "engine" / "powershell51" / "eMAS.RuntimeAdapter.PS51.Contract.psm1").read_text(encoding="utf-8")
@@ -75,6 +158,8 @@ class RuntimeProfileContractTests(unittest.TestCase):
             "tests/schema/**",
             "docs/configuration/**",
             "engine/**",
+            "scripts/**",
+            "tests/fixtures/runtime-config/**",
             "tests/runtime/**",
         ):
             with self.subTest(path=path_filter):

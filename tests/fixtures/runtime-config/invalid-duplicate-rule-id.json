@@ -1,0 +1,34 @@
+{
+  "configuration": {
+    "configurationId": "CFG-SYNTHETIC-DUPLICATE",
+    "schemaVersion": "1.0.0",
+    "mappingVersion": "1.0.0",
+    "status": "Effective"
+  },
+  "valueLists": {
+    "PHASE": [{ "code": "PRE_SALES" }],
+    "RAG": [{ "code": "UNKNOWN", "displayValue": "Unknown" }],
+    "CONFIDENCE": [{ "code": "UNKNOWN", "displayValue": "Unknown" }],
+    "MIGRATION_SCENARIO": [{ "code": "NOTSPECIFIED", "displayValue": "NotSpecified" }]
+  },
+  "fieldCatalogue": [],
+  "metricCatalogue": [],
+  "masterData": {},
+  "relationships": [],
+  "rules": [
+    { "ruleId": "RULE-DUPLICATE", "priority": 0 },
+    { "ruleId": "RULE-DUPLICATE", "priority": 1 }
+  ],
+  "rulePhases": [],
+  "conditionGroups": [],
+  "ruleConditions": [],
+  "ruleOutputs": [],
+  "findings": [],
+  "recommendations": [],
+  "findingRecommendationLinks": [],
+  "exceptionPolicies": [],
+  "aliases": [],
+  "policies": {},
+  "questionnaireMap": [],
+  "reportTerminology": {}
+}

@@ -66,12 +66,12 @@ The following Issue #12 schema/runtime-contract portions are synchronized in the
 - schema examples plus valid, boundary and invalid fixtures;
 - independent semantic validation for required and unknown controlled codes;
 - synthetic POC seed and generated-source synchronization;
-- the initial PowerShell configuration-loader contract boundary and runtime adapter contracts.
+- the PowerShell configuration-loader contract, defensive consumption foundation, phase bootstrap boundary and runtime adapter contracts.
 
 The following remain explicitly pending:
 
 - controlled XLSX template corrections;
-- functional configuration-loader implementation;
+- final-schema reconciliation and complete configuration-loader/package-integrity implementation;
 - phase entry-script runtime enforcement;
 - Windows PowerShell 5.1 qualification;
 - PowerShell 7.6 qualification on Windows;

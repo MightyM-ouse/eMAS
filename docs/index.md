@@ -45,6 +45,7 @@ The runtime-profile and `Warning` decisions amend conflicting baseline statement
 - [Reviewable VBA source](../config/vba/README.md)
 - [Schema Package](../config/schema/README.md)
 - [Runtime engine contract boundary](../engine/README.md)
+- [Runtime JSON consumption foundation](development/runtime-json-consumption.md)
 - [PowerShell runtime contract CI workflow](../.github/workflows/powershell-runtime-contracts.yml)
 - [Build and Validation](../build/README.md)
 - [Tests](../tests/README.md)
@@ -72,9 +73,9 @@ The runtime-profile and `Warning` decisions amend conflicting baseline statement
 5. Solution architecture and phase contracts — completed.
 6. Operational skills and catalogue validation — completed.
 7. XLSM/VBA POC source and automated conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
-8. Runtime-profile and `Warning` amendment — approved; schema/fixture/semantic-validator and initial configuration-loader/runtime-adapter contract synchronization implemented; controlled template and functional runtime-loader implementation remain pending.
+8. Runtime-profile and `Warning` amendment — approved; schema/fixture/semantic-validator and phase-neutral Runtime JSON consumption/validation foundation implemented; final-schema reconciliation, controlled package integrity, controlled templates and phase orchestration remain pending.
 
-Next implementation work covers controlled template corrections, the full PowerShell configuration loader, OpenXML/reporting and phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
+Next implementation work covers reconciliation with the final Runtime JSON design, controlled package/checksum enforcement, controlled template corrections, OpenXML/reporting and phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
 
 ## Repository safety
 

@@ -23,6 +23,9 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - `Warning` EvaluationStatus synchronized across schema/runtime requirements, Runtime JSON Schema 1.0.0 definitions, seed data, valid/boundary/invalid fixtures and semantic validator constants;
 - initial PowerShell configuration-loader/runtime-adapter contract boundary under `engine/core`, `engine/powershell51` and `engine/powershell7`; functional loader implementation remains pending;
 - initial runtime contract tests and Windows PowerShell 5.1, Windows PowerShell 7.6 and macOS PowerShell 7.6 development CI workflow plan.
+- phase-neutral Runtime JSON consumption module with strict UTF-8 loading, SHA-256 identity, structured validation, stable accessors and sanitized configuration log events;
+- configuration-only Pre-Sales, Pre-Migration and Post-Migration entry-script bootstraps that stop before assessment processing on blocking findings;
+- synthetic Runtime JSON compatibility fixtures and a dependency-free PowerShell test harness covering file, schema, semantic, accessor, traceability and read-only behavior.
 
 ### Changed
 
@@ -40,7 +43,7 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - execute and review native XLSM/VBA conformance evidence on supported Windows/Excel;
 - qualify supported Excel versions, Office bitness and German/English locales;
 - implement the complete controlled-workbook validation sequence and production signing;
-- implement PowerShell configuration-loader, engine and phase-contract conformance;
+- reconcile the configuration-loader compatibility map with the final approved Runtime JSON, complete controlled package/checksum validation, and implement wider engine and phase-contract conformance;
 - complete native Windows PowerShell 5.1 and PowerShell 7.6 execution qualification for the runtime contracts and future loader implementation;
 - complete the OpenXML report-generation spike and controlled phase templates;
 - implement the controlled Pre-Migration baseline format and Post-Migration/MigrationSummary readers;

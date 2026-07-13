@@ -2,12 +2,14 @@
 
 This folder contains user-facing phase entry scripts and lightweight launchers.
 
-Planned entry points:
+Phase entry points and launcher status:
 
 - `eMAS-PreSalesAssessment.ps1`;
 - `eMAS-PreMigrationReadiness.ps1`;
 - `eMAS-PostMigrationVerification.ps1`;
-- `launchers/Start-eMAS-PreSales.cmd`.
+- planned: `launchers/Start-eMAS-PreSales.cmd`.
+
+The three PowerShell entry scripts currently implement run identity, execution-log selection and blocking Runtime JSON validation only. They intentionally stop before assessment processing; phase inputs, discovery, calculations, reporting and final result orchestration remain later work. The command launcher remains planned.
 
 Entry scripts must:
 

@@ -5,7 +5,8 @@ This folder contains controlled automated and scenario testing for schemas, oper
 ## Available tests
 
 - `schema/` — Runtime JSON Schema 1.0.0, manifest, semantic and encoding tests.
-- `runtime/` — PowerShell runtime profile and initial configuration-loader/runtime-adapter contract tests.
+- `runtime/` — PowerShell runtime profile, configuration-loader, runtime-adapter and phase-bootstrap contract tests. `Test-eMASRuntimeConfiguration.ps1` is dependency-free because the repository does not currently use Pester.
+- `fixtures/runtime-config/` — synthetic provisional compatibility fixtures for Runtime JSON consumption tests; these are not the final Runtime JSON template or production rule content.
 - `skills/` — operational skill catalogue and contract tests.
 - `vba/` — synthetic workbook generation, table/fixture semantics, deterministic golden hash and VBA source-contract tests.
 
@@ -16,6 +17,7 @@ python -m pip install -r build/requirements-schema-validation.txt
 python build/validate_emas_schema.py
 python -m unittest discover -s tests/schema -p "test_*.py" -v
 python -m unittest discover -s tests/runtime -p "test_*.py" -v
+pwsh -NoProfile -File tests/runtime/Test-eMASRuntimeConfiguration.ps1
 python build/validate_operational_skills.py
 python -m unittest discover -s tests/skills -p "test_*.py" -v
 python build/validate_xlsm_vba_poc.py

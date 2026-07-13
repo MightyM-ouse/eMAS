@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "configurationId": "CFG-SYNTHETIC-REFERENCE",
+    "schemaVersion": "1.0.0",
+    "mappingVersion": "1.0.0",
+    "status": "Effective"
+  },
+  "valueLists": {
+    "PHASE": [{ "code": "PRE_SALES" }],
+    "RAG": [{ "code": "UNKNOWN", "displayValue": "Unknown" }],
+    "CONFIDENCE": [{ "code": "UNKNOWN", "displayValue": "Unknown" }],
+    "MIGRATION_SCENARIO": [{ "code": "NOTSPECIFIED", "displayValue": "NotSpecified" }]
+  },
+  "fieldCatalogue": [],
+  "metricCatalogue": [],
+  "masterData": {},
+  "relationships": [],
+  "rules": [],
+  "rulePhases": [],
+  "conditionGroups": [],
+  "ruleConditions": [],
+  "ruleOutputs": [],
+  "findings": [{ "findingCode": "FND-SYNTHETIC-REFERENCE" }],
+  "recommendations": [],
+  "findingRecommendationLinks": [
+    {
+      "linkId": "FRL-SYNTHETIC-REFERENCE",
+      "findingCode": "FND-SYNTHETIC-REFERENCE",
+      "recommendationCode": "REC-DOES-NOT-EXIST",
+      "phase": "PRE_SALES",
+      "sequence": 0
+    }
+  ],
+  "exceptionPolicies": [],
+  "aliases": [],
+  "policies": {},
+  "questionnaireMap": [],
+  "reportTerminology": {}
+}

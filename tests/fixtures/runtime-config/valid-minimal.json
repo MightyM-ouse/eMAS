@@ -1,0 +1,91 @@
+{
+  "configuration": {
+    "configurationId": "CFG-SYNTHETIC-001",
+    "configurationName": "Synthetic UTF-8 – Prüfung",
+    "schemaVersion": "1.0.0",
+    "mappingVersion": "1.0.0",
+    "status": "Effective",
+    "effectiveFrom": "2026-07-13"
+  },
+  "valueLists": {
+    "PHASE": [
+      { "code": "PRE_SALES", "displayValue": "Pre-Sales" },
+      { "code": "PRE_MIGRATION", "displayValue": "Pre-Migration" },
+      { "code": "POST_MIGRATION", "displayValue": "Post-Migration" }
+    ],
+    "RAG": [
+      { "code": "GREEN", "displayValue": "Green" },
+      { "code": "AMBER", "displayValue": "Amber" },
+      { "code": "RED", "displayValue": "Red" },
+      { "code": "UNKNOWN", "displayValue": "Unknown" }
+    ],
+    "CONFIDENCE": [
+      { "code": "HIGH", "displayValue": "High" },
+      { "code": "MEDIUM", "displayValue": "Medium" },
+      { "code": "LOW", "displayValue": "Low" },
+      { "code": "UNKNOWN", "displayValue": "Unknown" }
+    ],
+    "MIGRATION_SCENARIO": [
+      { "code": "NOTSPECIFIED", "displayValue": "NotSpecified" }
+    ],
+    "RULE_LIFECYCLE_STATUS": [
+      { "code": "DRAFT", "displayValue": "Draft" },
+      { "code": "EFFECTIVE", "displayValue": "Effective" },
+      { "code": "RETIRED", "displayValue": "Retired" }
+    ]
+  },
+  "fieldCatalogue": [],
+  "metricCatalogue": [],
+  "masterData": {},
+  "relationships": [],
+  "rules": [
+    {
+      "ruleId": "RULE-SYNTHETIC-001",
+      "ruleType": "SYNTHETIC_TEST",
+      "status": "Effective",
+      "priority": 0
+    }
+  ],
+  "rulePhases": [
+    {
+      "rulePhaseId": "RPH-SYNTHETIC-001",
+      "ruleId": "RULE-SYNTHETIC-001",
+      "phase": "PRE_SALES",
+      "rag": "Unknown",
+      "sequence": 0
+    }
+  ],
+  "conditionGroups": [],
+  "ruleConditions": [],
+  "ruleOutputs": [],
+  "findings": [
+    {
+      "findingCode": "FND-SYNTHETIC-001",
+      "defaultRag": "Unknown"
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendationCode": "REC-SYNTHETIC-001",
+      "priority": 0
+    }
+  ],
+  "findingRecommendationLinks": [
+    {
+      "linkId": "FRL-SYNTHETIC-001",
+      "findingCode": "FND-SYNTHETIC-001",
+      "recommendationCode": "REC-SYNTHETIC-001",
+      "phase": "PRE_SALES",
+      "sequence": 0
+    }
+  ],
+  "exceptionPolicies": [],
+  "aliases": [],
+  "policies": {
+    "effortThresholds": [
+      { "lowerBound": 0, "upperBound": 10 }
+    ]
+  },
+  "questionnaireMap": [],
+  "reportTerminology": {}
+}

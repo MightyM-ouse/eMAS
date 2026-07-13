@@ -9,7 +9,10 @@ on:
       - "tests/schema/**"
       - "docs/configuration/**"
       - "engine/**"
+      - "scripts/**"
+      - "tests/fixtures/runtime-config/**"
       - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
+      - "docs/development/runtime-json-consumption.md"
       - "tests/runtime/**"
       - ".github/workflows/powershell-runtime-contracts.yml"
   push:
@@ -21,7 +24,10 @@ on:
       - "tests/schema/**"
       - "docs/configuration/**"
       - "engine/**"
+      - "scripts/**"
+      - "tests/fixtures/runtime-config/**"
       - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
+      - "docs/development/runtime-json-consumption.md"
       - "tests/runtime/**"
       - ".github/workflows/powershell-runtime-contracts.yml"
 
@@ -64,6 +70,9 @@ jobs:
           if ($adapter.Adapter -ne 'powershell51' -or $adapter.SupportedPhases -contains 'PRE_MIGRATION') {
             throw 'PowerShell 5.1 adapter contract must be limited to Pre-Sales.'
           }
+      - name: Run dependency-free Runtime JSON configuration tests
+        shell: powershell
+        run: .\tests\runtime\Test-eMASRuntimeConfiguration.ps1
 
   windows-powershell-76-contracts:
     runs-on: windows-latest
@@ -90,6 +99,9 @@ jobs:
           if ($adapter.Adapter -ne 'powershell7' -or $adapter.SupportedPhases -contains 'PRE_SALES') {
             throw 'PowerShell 7 adapter contract must be limited to Pre-/Post-Migration.'
           }
+      - name: Run dependency-free Runtime JSON configuration tests
+        shell: pwsh
+        run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
 
   macos-powershell-76-development-contracts:
     runs-on: macos-latest
@@ -114,6 +126,9 @@ jobs:
           if (Test-eMASEvaluationStatusCode -Code 'RecoverableWarning') {
             throw 'Unknown EvaluationStatus codes must be rejected by the configuration contract.'
           }
+      - name: Run dependency-free Runtime JSON configuration tests
+        shell: pwsh
+        run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
       - name: Install schema validation dependencies
         run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
       - name: Run schema, fixture and pure runtime-contract tests
