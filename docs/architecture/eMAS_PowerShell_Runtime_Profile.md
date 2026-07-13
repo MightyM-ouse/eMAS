@@ -126,12 +126,33 @@ Every execution records:
 - engine and adapter versions;
 - runtime-compatibility result.
 
+## 5.1 Initial configuration-loader contract boundary
+
+The initial source boundary is implemented as:
+
+```text
+engine/
+├── core/eMAS.Configuration.Contract.psm1
+├── powershell51/eMAS.RuntimeAdapter.PS51.Contract.psm1
+└── powershell7/eMAS.RuntimeAdapter.PS7.Contract.psm1
+```
+
+The contract boundary establishes:
+
+- Schema 1.0.0 as the current runtime JSON compatibility boundary;
+- the required top-level runtime JSON sections;
+- approved EvaluationStatus values, including `Warning`;
+- rejection of unknown EvaluationStatus values at the configuration-contract boundary;
+- runtime adapter phase ownership for Pre-Sales versus Pre-/Post-Migration.
+
+This module is not a functioning Runtime JSON loader. Functional configuration loading, checksum verification, duplicate/reference validation, stop-before-scan enforcement and phase entry scripts remain pending. The contract does not implement business or regulatory interpretation, read the XLSM, generate or repair runtime JSON, scan source evidence or perform phase decision logic.
+
 ## 6. Testing matrix
 
 | Test area | macOS PS 7.6 | Windows PS 5.1 | Windows PS 7.6 |
 |---|---:|---:|---:|
 | JSON/schema fixtures | Required during development | Compatibility where applicable | Required |
-| Semantic validator | Required during development | Required for common loader behavior | Required |
+| Semantic validator | Required during development | Required for future common loader behavior | Required |
 | Shared rule engine | Required | Required | Required |
 | Classification and effort | Required | Required | Required |
 | Pre-Sales end-to-end | Development support only | **Mandatory** | Optional compatibility |
@@ -153,6 +174,15 @@ Every material PowerShell pull request should run:
 6. Windows-specific integration tests when the changed code touches discovery, paths, permissions, WPF or report generation.
 
 A macOS-only pass cannot authorize release.
+
+The repository includes `.github/workflows/powershell-runtime-contracts.yml` as the initial automated CI plan for:
+
+- static runtime contract tests;
+- Windows PowerShell 5.1 contract import and EvaluationStatus checks;
+- PowerShell 7.6 contract import and EvaluationStatus checks on Windows;
+- PowerShell 7.6 shared-contract import, schema validation and pure contract tests on macOS.
+
+The hosted macOS image controls which PowerShell patch is preinstalled. CI therefore applies an explicit major/minor guard and fails unless the runner is on the approved 7.6 LTS line; it does not install or qualify a substitute runtime. These jobs provide automated contract evidence only. They do not replace Windows release qualification, NTFS/UNC testing, WPF testing or desktop Microsoft Excel qualification.
 
 ## 8. Packaging
 

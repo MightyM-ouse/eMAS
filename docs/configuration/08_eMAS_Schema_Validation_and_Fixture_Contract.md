@@ -60,6 +60,7 @@ A boundary fixture is valid and exercises one or more edge conditions, such as:
 - leap-day date-time parsing;
 - lower-inclusive and upper-exclusive threshold contact;
 - open-ended final threshold bands;
+- `Warning` EvaluationStatus kept separate from RAG/phase result behavior;
 - explicit false Boolean values.
 
 Boundary fixtures must pass both structural and semantic validation.
@@ -77,7 +78,10 @@ The initial materialized invalid suite covers:
 - operator not allowed for the referenced field;
 - overlapping thresholds;
 - exception policy referencing an ineligible finding;
-- output target that does not resolve.
+- output target that does not resolve;
+- unknown EvaluationStatus value;
+- missing mandatory `Warning` value-list code;
+- unknown EvaluationStatus value-list code.
 
 An invalid fixture passes the test suite only when it fails validation for the expected reason.
 
@@ -108,7 +112,7 @@ The independent semantic validator checks requirements that JSON Schema cannot r
 - composite-key uniqueness;
 - master-data code uniqueness;
 - mandatory value-list categories;
-- mandatory phase, RAG, evaluation-status, provenance and export codes.
+- mandatory phase, RAG, evaluation-status including `Warning`, provenance and export codes.
 
 ### 5.2 Relationships
 
@@ -152,6 +156,7 @@ The validator emits machine-readable codes before the path and message. Initial 
 | `SEM_SCHEMA_VERSION` | Unsupported or inconsistent schema version |
 | `SEM_REQUIRED_VALUE_LIST` | Mandatory controlled list missing |
 | `SEM_REQUIRED_CODE` | Mandatory controlled code missing |
+| `SEM_UNKNOWN_CODE` | Controlled code is not approved for a mandatory controlled list |
 | `SEM_DUPLICATE_ID` | Duplicate primary identifier |
 | `SEM_DUPLICATE_COMPOSITE` | Duplicate composite key |
 | `SEM_BROKEN_REFERENCE` | Required reference cannot be resolved |

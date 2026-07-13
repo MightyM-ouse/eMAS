@@ -154,6 +154,7 @@ Evaluation status:
 - NotAssessed
 - NotApplicable
 - Skipped
+- Warning
 - Error
 - InsufficientEvidence
 - Conflict
@@ -166,6 +167,8 @@ RAG:
 - Unknown
 
 `NotAssessed` and `NotApplicable` are never RAG values.
+
+`Warning` means evaluation completed with a usable result, but a recoverable condition requires attention. It does not independently determine RAG, severity, blocker state, effort band, readiness result or reconciliation result.
 
 ## 10. Conflicts
 

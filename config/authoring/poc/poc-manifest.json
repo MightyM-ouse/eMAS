@@ -5,7 +5,7 @@
   "schemaVersion": "1.0.0",
   "mappingVersion": "0.1.0",
   "sourceWorkbookVersion": "0.1.0",
-  "expectedJsonSha256": "ab89a3a69fb40450465a96c6c8ced583373d7c8af0343b8f52d2e79b19628732",
+  "expectedJsonSha256": "fb56f6f8625cedfeeb333b13a9366cbf190613d48ec3532fb7a6a5c7c9706eea",
   "fixtureManifest": "fixtures/manifest.json",
   "vbaSourceDirectory": "../../vba/modules",
   "vbaModuleCount": 9,
@@ -16,6 +16,6 @@
   "runtimeDependencyBoundary": "Python reference validation is build/CI-only; Excel/VBA produces the runtime JSON in the native POC.",
   "workbookSourceDefinition": "workbook-source.json",
   "generatedSourceWorkbook": "output/poc/eMAS_Mapping_Configuration_POC_Source.xlsx",
-  "generatedSourceWorkbookSha256": "49516caeee5524ea6a4922f82a8eaffc93d71e7098e3d0ea7b42496afe374804",
-  "workbookSourceBundleSha256": "2982fe3fe647dc2237faa705dba474224ee15a520268376f963210ad755a999f"
+  "generatedSourceWorkbookSha256": "c67f7da321a1c0389390c2ce6ab2898df0ccda5f86b48b0b3de086af0c7f6832",
+  "workbookSourceBundleSha256": "bade5815821b5987eb7dfed7a3d7c33b08c7b8d15f419c59021ed3465f2a3e58"
 }

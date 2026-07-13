@@ -4,6 +4,7 @@
     {"id":"POC-VALID-BASE","patch":null,"expectedValid":true,"expectedErrorCodes":[]},
     {"id":"POC-VALID-CONTROLLED","patch":"valid-controlled.json","expectedValid":true,"expectedErrorCodes":[]},
     {"id":"POC-BOUNDARY-001","patch":"boundary-version-and-date.json","expectedValid":true,"expectedErrorCodes":[]},
+    {"id":"POC-WARNING-VALID-001","patch":"warning-evaluation-status.json","expectedValid":true,"expectedErrorCodes":[]},
     {"id":"POC-INVALID-001","patch":"invalid-duplicate-rule.json","expectedValid":false,"expectedErrorCodes":["SEM_DUPLICATE_ID"]},
     {"id":"POC-INVALID-002","patch":"invalid-broken-field-reference.json","expectedValid":false,"expectedErrorCodes":["SEM_BROKEN_REFERENCE"]},
     {"id":"POC-INVALID-003","patch":"invalid-relationship-endpoint.json","expectedValid":false,"expectedErrorCodes":["SEM_RELATIONSHIP_ENDPOINT"]},

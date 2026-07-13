@@ -257,9 +257,12 @@ Required list categories include:
 - NotAssessed
 - NotApplicable
 - Skipped
+- Warning
 - Error
 - InsufficientEvidence
 - Conflict
+
+`Warning` means evaluation completed with a usable result, but a recoverable condition requires attention. It remains separate from RAG, severity and phase result terminology.
 
 ### 10.4 RAG
 

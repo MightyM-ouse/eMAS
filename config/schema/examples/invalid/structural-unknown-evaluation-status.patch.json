@@ -1,0 +1,1 @@
+{"rulePhases":[{"rulePhaseId":"RPH-001","ruleId":"RULE-001","phase":"PRE_SALES","evaluationStatusOnMissingInput":"RecoverableWarning","rag":"Amber","severity":"MEDIUM","isBlocker":false,"exceptionEligible":true,"decisionImpact":"CLARIFY","sequence":0}]}

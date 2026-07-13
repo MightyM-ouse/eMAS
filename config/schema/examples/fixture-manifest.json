@@ -134,6 +134,65 @@
         "base/03-rules-and-outputs.json",
         "base/04-policies-and-reporting.json"
       ]
+    },
+    {
+      "patch": "valid/warning-evaluation-status-valid.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "boundary/warning-rag-separation-valid.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/structural-unknown-evaluation-status.patch.json",
+      "expectedValid": false,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ],
+      "expectedErrorCodes": [
+        "SCHEMA_ERROR"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-missing-warning-code.patch.json",
+      "expectedValid": false,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ],
+      "expectedErrorCodes": [
+        "SEM_REQUIRED_CODE"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-unknown-evaluation-status-code.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_UNKNOWN_CODE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
     }
   ]
 }
