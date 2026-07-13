@@ -10,120 +10,99 @@ eMAS is a read-only, mapping-driven migration assessment framework supporting:
 
 ```mermaid
 flowchart LR
-    A[Internal Mapping Workbook XLSM] -->|Validate and export| B[eMAS_Runtime_Config.json]
+    A[Reviewed internal mapping workbook XLSM] -->|Validate and export| B[eMAS_Runtime_Config.json]
+    S[Runtime JSON Schema 1.0.0 and independent validation] --> B
     B --> C[Pre-Sales CLI]
     B --> D[Pre-Migration CLI or WPF]
     B --> E[Post-Migration CLI or WPF]
-    C --> F[Shared PowerShell Engine]
+    C --> F[Shared PowerShell engine]
     D --> F
     E --> F
-    F --> G[Phase-Specific Excel Report]
-    F --> H[Timestamped Execution Log]
+    F --> G[Phase-specific XLSX report]
+    F --> H[Timestamped execution log]
 ```
 
 - **Authoring source of truth:** reviewed internal XLSM.
 - **Runtime source of truth:** validated immutable JSON exported from the approved XLSM.
 - **Execution source:** exact JSON version and checksum loaded for a run.
-- PowerShell never reads the XLSM and never creates, repairs or reinterprets the runtime JSON.
-- The same runtime JSON is used by all three phases.
-- Each phase defines its own inputs, checks, depth, decisions and controlled report template.
-- Shared technical processing belongs in `engine/`.
+- PowerShell never reads the XLSM and never creates, repairs or reinterprets runtime JSON.
+- The same runtime JSON is used by all phases.
+- Phase scripts own orchestration; shared technical processing belongs in `engine/`.
 - Source evidence remains read-only.
+- Normal runtime execution is offline and requires no central database.
 
-## Effective requirements and logical-model baseline
+## Effective baseline
 
-The Product Owner approved all 171 reviewed recommendations on 13 July 2026. The decisions are consolidated into Enterprise Requirements v3.1 and the three Version 3.0 configuration documents. The normalized relationship matrix and logical data dictionary are frozen at Version 1.0. Implementation, verification, SME content approval and release completion remain separately tracked states.
+The Product Owner approved the 171-item decision baseline on 13 July 2026. The following stages are complete:
 
-Primary effective references:
+1. authority, precedence, terminology and document governance;
+2. Enterprise and configuration requirement synchronization;
+3. normalized relationship matrix and data-dictionary freeze;
+4. Runtime JSON Schema 1.0.0, fixtures and independent semantic validation;
+5. Solution Architecture and three Effective phase contracts.
+
+Primary references:
 
 - [Enterprise Requirements v3.1](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
-- [Configuration Documentation Index](docs/configuration/README.md)
-- [Mapping Configuration Functional Requirements v3.0](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
-- [Mapping Configuration Technical Requirements v3.0](docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md)
-- [Mapping Configuration Content Catalogue v3.0](docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md)
-- [Runtime JSON Contract](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
-- [Normalized Rule Model](docs/configuration/05_eMAS_Normalized_Rule_Model.md)
+- [Configuration Documentation](docs/configuration/README.md)
+- [Runtime JSON Contract v1.2](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
+- [Normalized Rule Model v1.1](docs/configuration/05_eMAS_Normalized_Rule_Model.md)
 - [Normalized Relationship Matrix v1.0](docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md)
 - [Logical Data Dictionary v1.0](docs/configuration/07_eMAS_Data_Dictionary.md)
-- [Runtime JSON Schema](config/schema/eMAS-runtime-config.schema.json)
-- [Approved Decision Baseline v1.0](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
-- [Permanent Decision Log](docs/governance/eMAS_Decision_Log.md)
-- [Authority and Precedence Policy](docs/governance/00_authority_and_precedence.md)
-- [Document Governance and Change Control](docs/governance/eMAS_Document_Governance.md)
-- [Controlled Terminology](docs/governance/eMAS_Terminology.md)
+- [Schema Validation and Fixture Contract v1.0](docs/configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
+- [Runtime JSON Schema 1.0.0](config/schema/eMAS-runtime-config.schema.json)
+- [Solution Architecture v1.0](docs/architecture/eMAS_Solution_Architecture.md)
+- [Project Flow v2.0](docs/architecture/eMAS_Project_Flow.md)
+- [Phase Contracts](docs/architecture/phase-contracts/README.md)
 - [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
-- [Machine-readable LLM Context Index](docs/llm-development-context/context-index.yaml)
-- [Operational LLM Skills](docs/llm-development-context/skills/README.md)
+- [Approved Decision Baseline](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
 
-## Logical-model freeze
+## Phase outcomes
 
-Version 1.0 freezes:
-
-- entity inventory and stable primary keys;
-- dedicated link entities and approved polymorphic references;
-- relationship endpoint pairs, cardinalities and temporal-validity rules;
-- field names, data types and requiredness;
-- workbook-to-JSON ownership and serialization conventions.
-
-Detailed regulatory relationships, folder/file rules, effort weights, confidence weights, thresholds and exception-role values still require the applicable owner or SME approval before Effective configuration status.
-
-## Assessment outcomes
-
-| Phase | Execution | Approved outcome terminology |
+| Phase | Execution | Controlled outcome |
 |---|---|---|
-| Pre-Sales Assessment | CLI or simple launcher | Complexity band, confidence, scope and clarifications |
+| Pre-Sales Assessment | CLI or simple launcher | Complexity, confidence, scope, drivers and clarifications |
 | Pre-Migration Readiness | CLI or optional WPF | Ready, Ready with Accepted Exceptions, Blocked |
 | Post-Migration Verification | CLI or optional WPF | Reconciled, Reconciled with Accepted Exceptions, Review Required, Not Reconciled |
 
-Pre-Sales remains intentionally lightweight and customer-friendly. Pre-Migration creates the reusable baseline consumed by Post-Migration Verification.
+Pre-Sales remains lightweight and customer-friendly. Pre-Migration creates the approved baseline. Post-Migration consumes that baseline and agreed `MigrationSummary.xlsx` detail.
+
+## Reporting rules
+
+Each phase uses a separate controlled XLSX template. Reports keep `EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` distinct, preserve findings and accepted-exception traceability, include execution/configuration metadata and state intended use and limitations. Raw scoring remains internal by default.
 
 ## Repository structure
 
 ```text
 eMAS/
 ├── .github/      Pull-request, ownership and CI controls
-├── scripts/      Phase entry scripts
+├── scripts/      Phase entry scripts and launchers
 ├── engine/       Shared PowerShell modules
-├── config/       XLSM authoring source, VBA, schema and runtime configuration
+├── config/       XLSM authoring, VBA, schema, fixtures and runtime configuration
 ├── templates/    Controlled phase-specific report templates
-├── ui/           Optional pre/post WPF interfaces
+├── ui/           Optional Pre-/Post-Migration WPF
 ├── docs/         Requirements, architecture, governance and guidance
-├── tests/        Unit, integration, scenario and performance tests
-├── build/        Validation and packaging scripts
+├── tests/        Schema, unit, integration, scenario and performance tests
+├── build/        Independent validation and packaging scripts
 ├── releases/     Release notes and manifests
 ├── output/       Local generated reports; not source-controlled
 ├── logs/         Local generated logs; not source-controlled
 └── dist/         Local generated packages; not source-controlled
 ```
 
-See:
-
-- [Documentation Index](docs/index.md)
-- [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
-- [Repository Structure](docs/repository/eMAS_Repository_Structure.md)
-- [Repository Architecture](docs/architecture/eMAS_Repository_Architecture.md)
-- [Project Flow](docs/architecture/eMAS_Project_Flow.md)
-- [Superseded Document Register](docs/archive/SUPERSEDED_DOCUMENT_REGISTER.md)
-
 ## Development controls
 
-1. Start from the latest `main` on a dedicated branch.
-2. Apply the canonical index and authority policy.
-3. Cite applicable DecisionIds and requirement IDs.
-4. Use the frozen relationship matrix and data dictionary for workbook, schema, PowerShell and test work.
-5. Keep business and regulatory interpretation in approved configuration, not PowerShell.
-6. Update dependent schema, requirements, architecture, tests and guidance or track them explicitly.
-7. Obtain approvals required by the change-authority matrix.
-8. Stop when a conflict affects the logical model, regulatory interpretation, JSON compatibility, phase decisions, report meaning or evidence traceability.
-9. Merge through a reviewed pull request; do not commit directly to `main`.
-
-Repository workflow is defined in [CONTRIBUTING.md](CONTRIBUTING.md), [CODEOWNERS](.github/CODEOWNERS) and the pull-request template.
+1. Start from current `main` on a dedicated branch.
+2. Apply the canonical index, authority policy and approved decision baseline.
+3. Use the frozen logical model, Schema 1.0.0, Solution Architecture and applicable phase contract.
+4. Keep business/regulatory interpretation in approved configuration.
+5. Update affected contracts, tests, templates and guidance together.
+6. Stop when a conflict affects regulatory meaning, schema compatibility, phase results, report meaning or evidence traceability.
+7. Merge through a reviewed pull request.
 
 ## Repository safety
 
-Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific accepted exceptions, temporary JSON exports, confidential internal workbooks or uncontrolled generated packages.
-
-This repository is public. Internal reviewed workbooks, confidential branding, controlled project evidence and historical internal Word packs remain in approved internal storage or a private repository. Their governance status is represented through sanitized repository records.
+Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific exceptions, temporary JSON exports, confidential internal workbooks or uncontrolled generated packages. Committed fixtures must be synthetic.
 
 ## Positioning
 

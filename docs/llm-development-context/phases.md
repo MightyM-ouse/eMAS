@@ -1,44 +1,49 @@
 # eMAS Assessment Phases
 
+**Version:** 2.0  
 **Status:** Effective implementation guidance  
-**Controlled terminology source:** `docs/governance/eMAS_Terminology.md`
+**Controlled terminology source:** `docs/governance/eMAS_Terminology.md`  
+**Authoritative phase contracts:** `docs/architecture/phase-contracts/`
 
-## 1. Pre-Sales Assessment
+This file is a concise implementation routing summary. The Effective phase contracts prevail for inputs, checks, exclusions, outputs and failure behavior.
+
+## Pre-Sales Assessment
 
 - **Code:** `PRE_SALES`
-- **Execution:** CLI or simple launcher
-- **Purpose:** Lightweight migration scope, complexity, confidence and clarification assessment before project initiation
-- **Typical inputs:** Minimal customer-provided paths and sizing information
-- **Outputs:** Complexity band, estimate confidence, scope summary, effort drivers and customer clarifications
-- **Approved result language:** Very Low, Low, Medium, High or Very High complexity; High, Medium, Low or Unknown confidence
-- **Rules:** Keep lightweight. Do not perform deep validation, decide readiness or imply migration acceptance.
+- **Execution:** CLI or simple launcher; no WPF requirement
+- **Purpose:** Lightweight scope, complexity, confidence and clarification assessment before project initiation
+- **Inputs:** Minimal accessible evidence roots and customer-provided size/context information
+- **Primary outputs:** Complexity band, effort confidence, scope/volume summary, key drivers, assumptions and customer clarification register
+- **Report rules:** No readiness terminology; raw score internal by default; raw inventory optional; include intended-use/non-validation statement
+- **Do not:** Perform mandatory deep readiness/reconciliation checks or imply validation/acceptance
 
-## 2. Pre-Migration Readiness
+## Pre-Migration Readiness
 
 - **Code:** `PRE_MIGRATION`
-- **Execution:** CLI or optional portable WPF
-- **Purpose:** Detailed source-data readiness assessment and reusable baseline creation
-- **Key checks:** Dossier and sequence structure, mandatory and referenced files, XML readability, access, backup, storage, transfer readiness, zero-byte files and accepted exceptions
-- **Outputs:** Detailed findings, cleanup actions, accepted exceptions, decision support and the baseline consumed by Post-Migration Verification
-- **Approved result language:** Ready, Ready with Accepted Exceptions or Blocked
-- **Rules:** Produce attributable and auditable evidence. Accepted exceptions may change blocker treatment but never erase original findings.
+- **Execution:** CLI or optional portable WPF invoking the same script
+- **Purpose:** Detailed source readiness assessment and reusable baseline creation
+- **Checks:** Dossier/sequence structure, mandatory and referenced evidence, XML/technical integrity, access, storage, backup, staging/transfer and accepted exceptions as applicable
+- **Results:** Ready, Ready with Accepted Exceptions or Blocked
+- **Baseline:** Stable comparison identifiers, expected measures, scope/exclusions, exception carry-forward, limitations and integrity metadata
+- **Exception rule:** Never erase original findings, RAG or evidence
 
-## 3. Post-Migration Verification
+## Post-Migration Verification
 
 - **Code:** `POST_MIGRATION`
-- **Execution:** CLI or optional portable WPF
-- **Purpose:** Reconcile migrated evidence against the approved Pre-Migration baseline
-- **Inputs:** Approved baseline, import report evidence, post-import verification evidence and accepted exceptions
-- **Outputs:** Dossier, sequence and available file/size reconciliation; discrepancies; exception treatment; review actions
-- **Approved result language:** Reconciled, Reconciled with Accepted Exceptions, Review Required or Not Reconciled
-- **Rules:** Always load and compare against the Phase 2 baseline. Preserve source evidence and do not claim formal customer validation or acceptance.
+- **Execution:** CLI or optional portable WPF invoking the same script
+- **Purpose:** Reconcile migrated/import evidence against the approved Pre-Migration baseline
+- **Required evidence:** Approved baseline, `MigrationSummary.xlsx` detail, available post-import verification and applicable accepted exceptions
+- **Results:** Reconciled, Reconciled with Accepted Exceptions, Review Required or Not Reconciled
+- **Evidence rule:** Preserve baseline values, migrated values, discrepancy category, EvaluationStatus, RAG, ValueSource, confidence, ReviewRequired and exception treatment
+- **Do not:** Claim formal customer validation or acceptance
 
-## Terminology control
+## Common rules
 
-`Reconciliation` is the principal technical activity within Post-Migration Verification. It is not a separate product phase.
-
-The following legacy wording is not approved for current use:
-
-- `Ready with Exceptions` — use `Ready with Accepted Exceptions`;
-- `Post-Migration Reconciliation` as the phase name — use `Post-Migration Verification`;
-- `Reconciled with Exceptions` — use `Reconciled with Accepted Exceptions`.
+- all phases use the same immutable Runtime JSON Schema 1.0.0 configuration;
+- phase scripts orchestrate shared engine modules;
+- `EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` remain separate;
+- every run creates one controlled XLSX report and one timestamped log;
+- source evidence remains read-only;
+- business/regulatory meaning is configuration-driven;
+- missing optional evidence is not automatically Green;
+- legacy wording `Ready with Exceptions`, `Post-Migration Reconciliation` as a phase name and `Reconciled with Exceptions` is prohibited.

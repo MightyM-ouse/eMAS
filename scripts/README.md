@@ -1,12 +1,22 @@
 # Scripts
 
-This folder contains the three user-facing phase entry scripts and lightweight launchers.
+This folder contains user-facing phase entry scripts and lightweight launchers.
 
 Planned entry points:
 
-- `eMAS-PreSalesAssessment.ps1`
-- `eMAS-PreMigrationReadiness.ps1`
-- `eMAS-PostMigrationVerification.ps1`
-- `launchers/Start-eMAS-PreSales.cmd`
+- `eMAS-PreSalesAssessment.ps1`;
+- `eMAS-PreMigrationReadiness.ps1`;
+- `eMAS-PostMigrationVerification.ps1`;
+- `launchers/Start-eMAS-PreSales.cmd`.
 
-Entry scripts define parameters, validate phase inputs, select the required shared-engine modules and coordinate report generation. Shared processing logic must remain in `engine/`.
+Entry scripts must:
+
+- conform to the applicable Effective phase contract under `docs/architecture/phase-contracts/`;
+- validate phase parameters and output location;
+- load one immutable runtime JSON through the shared configuration module;
+- establish run metadata and logging;
+- orchestrate only required shared-engine modules;
+- select the correct controlled template;
+- report clear console progress and completion/output paths.
+
+They must not duplicate shared technical logic, hardcode business/regulatory interpretation, read the XLSM or generate/repair runtime JSON.

@@ -6,83 +6,56 @@
 
 ## Approval statement
 
-The Product Owner reviewed the evidence-based recommendation register and approved adoption of the AI-recommended decision for all 171 tracked items across:
+The Product Owner approved adoption of the AI-recommended decision for all 171 tracked items across governance, runtime JSON, normalized rule/configuration models, operational skills, PowerShell, requirements/documentation, XLSM/VBA/regulatory content and testing/release.
 
-1. Authority, precedence and governance
-2. Runtime JSON contract
-3. Normalized rule model
-4. Operational LLM skills
-5. PowerShell engine and functions
-6. Requirements and documentation synchronization
-7. XLSM, VBA and regulatory content
-8. Testing, compatibility and release
+Approval establishes design decisions. It does not automatically complete implementation, testing, SME content approval or controlled release.
 
-Approval establishes the design decision. It does not mean every implementation, PowerShell module, workbook component, template, test or release control is complete.
+## Consolidated effective baselines
 
-## Consolidation status
+- Enterprise Requirements v3.1;
+- Mapping Configuration Requirements and Content Catalogue v3.0;
+- Runtime JSON Contract v1.2;
+- Normalized Rule Model v1.1;
+- Normalized Relationship Matrix v1.0;
+- Logical Data Dictionary v1.0;
+- Runtime JSON Schema 1.0.0 and Schema Validation/Fixture Contract v1.0;
+- Solution Architecture v1.0;
+- Project Flow v2.0 and Repository Architecture v1.1;
+- three Phase Contracts v1.0.
 
-The approved decisions are consolidated into:
+## Canonical decisions
 
-- `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`;
-- configuration requirements Versions 3.0;
-- Runtime JSON Contract Version 1.2;
-- Normalized Rule Model Version 1.1;
-- Normalized Relationship Matrix Version 1.0;
-- Logical Data Dictionary Version 1.0;
-- Schema Validation and Fixture Contract Version 1.0;
-- Runtime JSON Schema Version 1.0.0 and its fixture suite.
-
-Enterprise Requirements v3.1 remains the active authority-rank-1 product baseline.
-
-## Immediate canonical decisions
-
-- The authority and precedence policy is Effective.
-- Authoring, runtime and execution source terminology is Effective.
-- Runtime JSON Schema 1.0.0 is the Effective machine-readable baseline.
-- The normalized rule, lifecycle, phase, condition, output, finding, recommendation, conflict and exception models are approved.
-- The normalized relationship matrix and logical data dictionary are frozen at Version 1.0.
-- The independent schema/semantic fixture contract is Effective.
-- Evaluation status, RAG and value-source provenance remain separate.
-- Technical standard, regional implementation and procedure context remain separate.
-- ASMF is ProcedureContext, not TechnicalStandard.
-- Windows PowerShell 5.1 remains the runtime baseline unless changed through controlled change.
-- Source XLSX generation must run without Microsoft Excel installed and without unapproved external PowerShell modules; the OpenXML implementation spike remains required.
-- Python and `jsonschema` are build/CI validation dependencies only, not customer or runtime dependencies.
+- reviewed internal XLSM = authoring source;
+- validated immutable exported JSON = runtime source;
+- exact JSON/checksum loaded for a run = execution source;
+- PowerShell never reads the XLSM or generates/repairs JSON;
+- one shared runtime JSON and shared PowerShell engine serve all phases;
+- phase scripts control phase-specific orchestration;
+- WPF is limited to Pre-/Post-Migration and invokes the same scripts;
+- source evidence remains read-only;
+- findings/recommendations, EvaluationStatus/RAG/ValueSource/confidence and original finding/exception treatment remain separate;
+- ASMF is ProcedureContext, not TechnicalStandard;
+- Python schema tooling is build/CI-only;
+- report generation must be OpenXML-compatible and must not require Excel on the execution host.
 
 ## Implementation-state rule
 
-Items classified as `Implementation Pending`, `SME Review Pending`, `Test Pending`, `Release-Control Pending`, `Deferred`, `Obsolete` or `Blocked` retain that delivery state unless completion evidence exists.
-
-Detailed regulatory values, authority relationships, folder/file content, effort weights, confidence weights, thresholds and exception-role content still require the approved owner or SME evidence before Effective configuration status.
-
-Completing the independent schema validator does not mean the XLSM/VBA exporter or PowerShell loader implements the same checks. Conformance of those layers remains separately tracked.
-
-## Public-repository handling
-
-The detailed internal decision workbook is not committed to the public repository. This sanitized baseline is the repository traceability record. All committed fixtures are synthetic.
+Detailed regulatory values, authority relationships, folder/file content, weights, thresholds and exception-role content still require approved owner/SME evidence. Completing architecture contracts does not mean entry scripts, engine modules, WPF, XLSM/VBA, templates or release packages are implemented.
 
 ## Primary implementation sequence
 
-1. Apply authority, precedence, statuses and terminology. **Completed in PR #5.**
-2. Synchronize Enterprise Requirements and configuration requirements. **Completed in PR #6.**
-3. Freeze the normalized logical model, relationship matrix and data dictionary. **Completed in PR #7.**
-4. Complete and validate JSON Schema 1.0.0 and fixtures. **Completed in PR #8.**
-5. Update architecture and phase contracts.
-6. Implement operational skills.
-7. Complete the XLSM/VBA proof of concept and validator conformance.
-8. Complete the PowerShell OpenXML/reporting spike, engine contracts and loader conformance.
-9. Populate regulatory and migration content under the approved SME workflow.
-10. Complete report templates, broader tests, release manifest, rollback and recall controls.
-11. Supersede or archive all conflicting Version 2 documentation.
+1. Authority, precedence, statuses and terminology — **Completed in PR #5**.
+2. Enterprise/configuration requirements synchronization — **Completed in PR #6**.
+3. Logical-model, relationship-matrix and data-dictionary freeze — **Completed in PR #7**.
+4. Runtime JSON Schema 1.0.0 and independent fixture validation — **Completed in PR #8**.
+5. Solution Architecture and three phase contracts — **Completed in PR #9**.
+6. Implement operational LLM skills.
+7. Complete XLSM/VBA proof of concept and schema-fixture conformance.
+8. Complete PowerShell/OpenXML spike, engine contracts and loader/phase conformance.
+9. Populate regulatory/migration content under SME workflow.
+10. Complete controlled templates, broader tests, release manifest, rollback and recall controls.
+11. Close remaining Version 2 supersession actions.
 
-## Related canonical documents
+## Public-repository handling
 
-- `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`
-- `docs/configuration/README.md`
-- `docs/configuration/04_eMAS_Runtime_JSON_Contract.md`
-- `docs/configuration/05_eMAS_Normalized_Rule_Model.md`
-- `docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md`
-- `docs/configuration/07_eMAS_Data_Dictionary.md`
-- `docs/configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md`
-- `config/schema/eMAS-runtime-config.schema.json`
-- `config/schema/examples/fixture-manifest.json`
+The detailed internal decision workbook, controlled internal XLSM and customer/project evidence are not committed to the public repository. Repository fixtures remain synthetic.
