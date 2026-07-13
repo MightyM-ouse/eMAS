@@ -2,7 +2,19 @@
 
 This folder contains controlled automated and scenario testing for scripts, engine modules, runtime configuration and report templates.
 
-Planned areas:
+## Available tests
+
+- `schema/` — Runtime JSON Schema 1.0.0, fixture-manifest, semantic-validation and UTF-8 encoding tests.
+
+Run:
+
+```bash
+python -m pip install -r build/requirements-schema-validation.txt
+python build/validate_emas_schema.py
+python -m unittest discover -s tests/schema -p "test_*.py" -v
+```
+
+## Planned areas
 
 - `unit/` — isolated module and function behavior;
 - `integration/` — complete phase execution with controlled inputs;

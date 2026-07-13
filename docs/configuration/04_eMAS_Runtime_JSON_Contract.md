@@ -1,26 +1,30 @@
 # eMAS Runtime JSON Contract
 
-**Version:** 1.1  
-**Status:** Approved design baseline  
+**Version:** 1.2  
+**Status:** Effective Runtime Contract  
 **Effective date:** 2026-07-13  
 **Owner:** Technical Architect  
 **Decision references:** JSON-001 through JSON-023, AP-002, RM-001, RM-017, RM-018  
-**Canonical logical-model references:** Normalized Relationship Matrix v1.0; Logical Data Dictionary v1.0
+**Canonical logical-model references:** Normalized Relationship Matrix v1.0; Logical Data Dictionary v1.0  
+**Verification reference:** Schema Validation and Fixture Contract v1.0
 
 ## 1. Ownership
 
-The Technical Architect owns the JSON Schema. Schema changes require Product Owner and PowerShell Lead approval. Regulatory content changes must not require schema changes unless the structure itself changes.
+The Technical Architect owns Runtime JSON Schema 1.0.0. Schema changes require Product Owner and PowerShell Lead approval. Regulatory content changes must not require schema changes unless the structure itself changes.
 
-The [Normalized Relationship Matrix](06_eMAS_Normalized_Relationship_Matrix.md) controls cross-entity semantics, endpoint pairs, cardinality and temporal validity. The [Logical Data Dictionary](07_eMAS_Data_Dictionary.md) controls entity fields, keys, logical types and requiredness. The JSON Schema controls exact machine-readable serialization.
+The [Normalized Relationship Matrix](06_eMAS_Normalized_Relationship_Matrix.md) controls cross-entity semantics, endpoint pairs, cardinality and temporal validity. The [Logical Data Dictionary](07_eMAS_Data_Dictionary.md) controls fields, keys, logical types and requiredness. The JSON Schema controls exact serialization. The [Schema Validation and Fixture Contract](08_eMAS_Schema_Validation_and_Fixture_Contract.md) controls independent verification.
 
 ## 2. Canonical files
 
-- Schema: `config/schema/eMAS-runtime-config.schema.json`
+- Root schema: `config/schema/eMAS-runtime-config.schema.json`
+- Schema definitions: `config/schema/defs/*.schema.json`
+- Fixture manifest: `config/schema/examples/fixture-manifest.json`
 - Valid fixtures: `config/schema/examples/valid/`
+- Boundary fixtures: `config/schema/examples/boundary/`
 - Invalid fixtures: `config/schema/examples/invalid/`
+- Independent validator: `build/validate_emas_schema.py`
+- Unit tests: `tests/schema/test_schema_fixtures.py`
 - Controlled runtime file name: `eMAS_Runtime_Config.json`
-- Relationship contract: `docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md`
-- Field contract: `docs/configuration/07_eMAS_Data_Dictionary.md`
 
 The schema uses JSON Schema Draft 2020-12.
 
@@ -28,23 +32,23 @@ The schema uses JSON Schema Draft 2020-12.
 
 All versions use Semantic Versioning 2.0.0.
 
-- `schemaVersion`: structure and contract version.
+- `schemaVersion`: runtime structure and contract version.
 - `mappingVersion`: business/configuration release version.
-- `sourceWorkbookVersion`: source XLSM version.
+- `sourceWorkbookVersion`: source XLSM implementation version.
 - `minimumEngineVersion`: minimum compatible engine version.
 - `maximumTestedEngineVersion`: optional compatibility evidence.
 
-Schema version rules:
+Schema-version rules:
 
-- MAJOR: breaking change, including removed/renamed fields, changed types, new mandatory sections, changed relationship/cardinality meaning or changed code meaning.
-- MINOR: backward-compatible optional additions.
+- MAJOR: incompatible removal, rename, type change, mandatory-section change, relationship/cardinality change or code-meaning change.
+- MINOR: backward-compatible optional structure.
 - PATCH: clarification or non-structural correction.
 
-Mapping versions evolve independently of schema versions. A relationship-matrix or data-dictionary change requires explicit schema compatibility analysis even when the JSON top-level sections do not change.
+Schema 1.0.0 was completed before the first controlled software release. The synchronization work therefore finalizes the 1.0.0 baseline rather than introducing a post-release breaking change.
 
-## 4. Top-level model
+Mapping versions evolve independently. Relationship-matrix or data-dictionary changes require schema compatibility analysis even when top-level sections do not change.
 
-The runtime JSON is normalized and explicitly represents workbook relationships. The canonical top-level sections are:
+## 4. Canonical top-level model
 
 ```json
 {
@@ -64,119 +68,161 @@ The runtime JSON is normalized and explicitly represents workbook relationships.
   "findingRecommendationLinks": [],
   "exceptionPolicies": [],
   "aliases": [],
+  "policies": {},
+  "questionnaireMap": [],
   "reportTerminology": {}
 }
 ```
 
-Enterprise Requirements v3.1 and the Effective configuration requirements use this normalized model. The earlier flat indicative structure in Enterprise Requirements v3.0 is superseded.
+`policies` contains conflict, RAG, confidence, effort-driver, effort-threshold and decision-policy collections. `questionnaireMap` contains controlled clarification triggers. `reportTerminology` contains ordered report definitions and phase-result codes.
 
-Dedicated authoring link entities may be folded into their runtime parent representation where the schema defines an array, for example field/operator, field/phase and metric/phase links. The relationship matrix controls the source relationship even when serialization is nested.
+Dedicated workbook link entities may be folded into runtime parent arrays where explicitly defined, including field/operator, field/phase, metric/phase and effort-driver/phase links. The frozen relationship matrix remains authoritative for source relationships.
 
-## 5. Required configuration metadata
+## 5. Configuration metadata
 
-The `configuration` object must include:
+The `configuration` object includes:
 
-- configuration identifier;
-- schema version;
-- mapping version;
-- source workbook version;
-- minimum engine version;
-- export type (`DEV` or `CONTROLLED`);
-- export timestamp in UTC;
-- exporting Windows identity;
-- document/configuration status;
-- effective date;
-- validation run identifier;
-- checksum algorithm and value for controlled releases.
+- configuration ID;
+- schema version fixed to `1.0.0`;
+- mapping, workbook and engine versions;
+- DEV or CONTROLLED export type;
+- UTC export timestamp and exporting identity;
+- Reviewed or Effective status;
+- validation-run ID;
+- optional maximum-tested engine version.
+
+A CONTROLLED export additionally requires:
+
+- Effective status and effective date;
+- approval reference;
+- release-manifest reference;
+- SHA-256 algorithm and value;
+- checksum scope `CanonicalConfigurationExcludingChecksumFields`.
 
 Controlled JSON is immutable after export. PowerShell must never repair, rewrite or enrich it in place.
 
-## 6. Referential integrity
+## 6. Serialization rules
 
-The schema and semantic validators must cover every mandatory relationship in the frozen relationship matrix, including:
-
-- rule to explicit phase assignment;
-- rule to condition group and condition;
-- rule to output and output target;
-- optional primary rule finding and additional finding outputs;
-- finding to recommendation link;
-- condition to field catalogue entry and allowed operator;
-- field and metric to explicit supported phases;
-- master-data relationship endpoint types and codes;
-- predecessor and successor rule supersession;
-- exception policy to eligible finding;
-- alias to an allowed canonical field, value or master-data target;
-- validation run to validation results and export evidence where applicable.
-
-Every relationship must comply with the frozen cardinality, mandatory/optional, temporal and validating-layer rules. JSON Schema validation alone is insufficient for cross-collection referential integrity.
-
-## 7. Compatibility and unknown content
-
-The engine must reject:
-
-- invalid JSON syntax;
-- unsupported schema major versions;
-- missing mandatory sections;
-- duplicate identifiers or violated composite uniqueness;
-- broken mandatory references;
-- disallowed relationship endpoint pairs;
-- invalid effective-date alignment;
-- unknown executable operators or output types;
-- invalid controlled values;
-- failed checksum for a controlled package.
-
-The engine may warn and continue for:
-
-- unknown descriptive metadata explicitly permitted by the schema;
-- new optional descriptive fields compatible with the supported schema;
-- missing optional customer evidence, which becomes an evaluation status such as `NotAssessed` rather than a configuration error.
-
-## 8. Determinism and serialization
-
-JSON export must be:
+Runtime JSON must be:
 
 - UTF-8 without BOM;
 - complete and never truncated;
-- culture-invariant for decimal, Boolean, date and date-time values;
-- deterministic in property and collection ordering where required by the release contract;
+- culture invariant for numbers, Booleans, dates and date-times;
 - free of locale-specific separators;
+- deterministic in property and collection ordering where required by the release contract;
 - validated before release.
 
-Dates and times must use ISO 8601-compatible representations. Numbers must use a period as the decimal separator regardless of Windows or Excel locale. Workbook PascalCase columns map deterministically to schema-defined camelCase properties.
+Dates use `YYYY-MM-DD`. Date-times use UTC ISO 8601 with `Z`. Workbook PascalCase columns map to schema-defined camelCase properties. Runtime controlled-list names and technical codes use stable uppercase-compatible identifiers; display values remain separate.
 
-## 9. Phase use
+## 7. Structural validation
 
-The same JSON is used by all three phases. It defines shared interpretation and controlled values; it does not define the complete workflow of each phase.
+JSON Schema validates:
 
-Phase-specific scripts remain responsible for:
+- mandatory top-level sections;
+- object and primitive types;
+- required fields;
+- prohibited unknown properties;
+- identifier, Semantic Version, date, date-time and checksum formats;
+- controlled enumerations;
+- CONTROLLED export conditional metadata;
+- operator-specific condition values;
+- policy and report-terminology object shapes.
 
-- required inputs;
-- assessment depth;
-- checks executed;
-- performance behaviour;
+Schema validation alone does not prove referential integrity.
+
+## 8. Semantic validation
+
+Independent semantic validation covers every mandatory relationship in the frozen matrix, including:
+
+- primary and composite uniqueness;
+- mandatory value-list categories and codes;
+- master-data relationship endpoint types and existence;
+- rule-to-phase, group, condition and output completeness;
+- condition field, operator and phase compatibility;
+- output target resolution by OutputType;
+- finding-to-recommendation links;
+- exception policy to eligible finding;
+- alias to approved canonical target;
+- threshold ranges, gaps and overlaps;
+- decision-policy and questionnaire references;
+- effective-date ranges and supersession cycles.
+
+The independent validator emits stable machine-readable error codes documented in the verification contract.
+
+## 9. Compatibility and failure behavior
+
+The exporter, release validator and engine loader must reject:
+
+- invalid JSON syntax or schema structure;
+- unsupported schema version;
+- missing mandatory sections;
+- duplicate identifiers or composite keys;
+- broken mandatory references;
+- disallowed relationship endpoint pairs;
+- invalid temporal ranges;
+- unknown executable operators or output types;
+- invalid controlled values;
+- failed controlled-package checksum.
+
+Missing optional customer evidence is not a configuration error. It produces the configured evaluation status, such as `NotAssessed` or `InsufficientEvidence`.
+
+## 10. Phase use
+
+The same JSON is used by all three phases. It defines shared interpretation, controlled values and policy data; it does not define the complete workflow of each phase.
+
+Phase scripts remain responsible for:
+
+- required input parameters;
+- assessment depth and checks;
+- performance behavior;
 - report structure;
-- final decision/result language.
+- final phase result terminology.
 
-## 10. Validation layers
+## 11. Validation layers
 
-- XLSM/VBA performs structural, referential, temporal and business validation before export.
-- JSON Schema validation runs in CI and release validation.
-- A semantic release validator checks the complete frozen relationship matrix, composite uniqueness and cross-collection references.
-- The Windows PowerShell 5.1 loader performs defensive structural, semantic and compatibility checks because `Test-Json` is not available in Windows PowerShell 5.1.
+| Layer | Responsibility |
+|---|---|
+| XLSM/VBA | Structural, referential, temporal and business validation before export |
+| JSON Schema | Exact machine-readable object shape and primitive constraints |
+| Independent Python validator | Cross-collection semantic validation and fixture expectation enforcement |
+| Release validation | Complete schema, semantic, compatibility, checksum and package checks |
+| PowerShell loader | Defensive fail-fast validation before execution |
 
-The same invalid-reference and boundary fixtures should be applied, where practical, to workbook validation, release validation and the PowerShell loader.
+Python and `jsonschema` are build/CI dependencies only. They are not customer-package or PowerShell runtime dependencies.
 
-## 11. Release integrity
+The same negative and boundary fixtures should be reused as conformance evidence for XLSM/VBA and PowerShell-loader implementation.
 
-Controlled releases must record the JSON file name, mapping version, schema version, source workbook version, relationship-matrix version, data-dictionary version, file size, SHA-256 checksum, validation result and release manifest reference.
+## 12. Fixtures and expected results
 
-## 12. Synchronization state
+`fixture-manifest.json` identifies every fixture, expected validity and expected semantic error code.
 
-The relationship matrix and data dictionary are frozen. The current JSON Schema remains the initial approved baseline and must be reconciled against the frozen contracts through the next schema-fixture stage. Any identified mismatch is a tracked implementation gap; it must not be resolved by silently weakening the frozen logical model.
+- Valid fixtures must produce no issue.
+- Boundary fixtures are valid and must produce no issue.
+- Invalid fixtures must fail for their expected reason.
+- All fixtures must be synthetic and UTF-8 without BOM.
 
-## 13. Revision history
+## 13. Release integrity
+
+Controlled releases record:
+
+- runtime file name;
+- schema, mapping, workbook, relationship-matrix and data-dictionary versions;
+- minimum and tested engine versions;
+- file size and SHA-256 checksum;
+- validation result;
+- fixture/validator version where applicable;
+- release-manifest reference.
+
+## 14. Synchronization state
+
+Runtime JSON Schema 1.0.0, the fixture manifest, valid/invalid/boundary fixtures and the independent semantic validator are synchronized with the frozen relationship matrix and data dictionary.
+
+This completes schema-contract synchronization. It does not mean the XLSM/VBA exporter or PowerShell loader has implemented every validation rule; those remain separate delivery stages.
+
+## 15. Revision history
 
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-07-13 | Initial approved runtime JSON contract |
 | 1.1 | 2026-07-13 | Bound runtime serialization and semantic validation to the frozen relationship matrix and data dictionary |
+| 1.2 | 2026-07-13 | Finalized Schema 1.0.0 top-level serialization, fixture classes, independent semantic validation and verification boundaries |

@@ -1,0 +1,362 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/defs/catalog.schema.json",
+  "title": "eMAS Runtime Configuration catalog definitions",
+  "$defs": {
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configurationId",
+        "schemaVersion",
+        "mappingVersion",
+        "sourceWorkbookVersion",
+        "minimumEngineVersion",
+        "exportType",
+        "exportedAtUtc",
+        "exportedBy",
+        "status",
+        "validationRunId"
+      ],
+      "properties": {
+        "configurationId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "mappingVersion": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "sourceWorkbookVersion": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "minimumEngineVersion": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "maximumTestedEngineVersion": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "exportType": {
+          "enum": [
+            "DEV",
+            "CONTROLLED"
+          ]
+        },
+        "exportedAtUtc": {
+          "$ref": "common.schema.json#/$defs/dateTime"
+        },
+        "exportedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "Reviewed",
+            "Effective"
+          ]
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "validationRunId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "approvalReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "releaseManifestReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksumAlgorithm": {
+          "const": "SHA-256"
+        },
+        "checksumScope": {
+          "const": "CanonicalConfigurationExcludingChecksumFields"
+        },
+        "checksumValue": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "exportType": {
+                "const": "CONTROLLED"
+              }
+            },
+            "required": [
+              "exportType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "Effective"
+              }
+            },
+            "required": [
+              "effectiveFrom",
+              "approvalReference",
+              "releaseManifestReference",
+              "checksumAlgorithm",
+              "checksumScope",
+              "checksumValue"
+            ]
+          }
+        }
+      ]
+    },
+    "fieldDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fieldCode",
+        "displayName",
+        "dataType",
+        "valueSource",
+        "allowedOperators",
+        "supportedPhases",
+        "producingComponent",
+        "evaluationOrder",
+        "isSensitive"
+      ],
+      "properties": {
+        "fieldCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataType": {
+          "enum": [
+            "String",
+            "Code",
+            "Integer",
+            "Decimal",
+            "Boolean",
+            "Date",
+            "DateTime",
+            "Path"
+          ]
+        },
+        "valueSource": {
+          "enum": [
+            "Observed",
+            "CustomerProvided",
+            "Imported",
+            "Derived",
+            "Assumed"
+          ]
+        },
+        "allowedOperators": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/operator"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "supportedPhases": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/phase"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "producingComponent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluationOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "isSensitive": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "metricDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metricCode",
+        "displayName",
+        "dataType",
+        "unit",
+        "calculationSource",
+        "supportedPhases",
+        "requiredForCompleteBanding",
+        "roundingRule"
+      ],
+      "properties": {
+        "metricCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataType": {
+          "enum": [
+            "Integer",
+            "Decimal"
+          ]
+        },
+        "unit": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "calculationSource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supportedPhases": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/phase"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "requiredForCompleteBanding": {
+          "type": "boolean"
+        },
+        "roundingRule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "reportTerminology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "definitions",
+        "phaseResults"
+      ],
+      "properties": {
+        "definitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reportDefinition"
+          }
+        },
+        "phaseResults": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "PRE_SALES",
+            "PRE_MIGRATION",
+            "POST_MIGRATION"
+          ],
+          "properties": {
+            "PRE_SALES": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/codeValue"
+              }
+            },
+            "PRE_MIGRATION": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/codeValue"
+              }
+            },
+            "POST_MIGRATION": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/codeValue"
+              }
+            }
+          }
+        }
+      }
+    },
+    "reportDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reportDefinitionId",
+        "phase",
+        "reportCode",
+        "displayTitle",
+        "sheetCode",
+        "sheetDisplayName",
+        "columnCode",
+        "columnDisplayName",
+        "dataType",
+        "required",
+        "sequence",
+        "sourceReference"
+      ],
+      "properties": {
+        "reportDefinitionId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "phase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "reportCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "displayTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sheetCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sheetDisplayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columnCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "columnDisplayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataType": {
+          "enum": [
+            "String",
+            "Code",
+            "Integer",
+            "Decimal",
+            "Boolean",
+            "Date",
+            "DateTime",
+            "Path"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "terminologyCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

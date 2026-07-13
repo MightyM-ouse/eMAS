@@ -1,4 +1,4 @@
-schemaVersion: "1.2"
+schemaVersion: "1.3"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
@@ -75,20 +75,20 @@ artifacts:
     status: EffectiveLogicalModel
     authorityRank: 4
     owner: Product Owner and SMEs
-    notes: Detailed regulatory and migration content requires owner or SME evidence before Effective content status.
+    notes: Detailed regulatory and migration content requires owner or SME evidence before Effective status.
     requiredFor: [configuration, regulatory-content, rule-content, mapping-workbook]
 
   - id: CFG-JSON
     path: ../configuration/04_eMAS_Runtime_JSON_Contract.md
-    version: "1.0"
-    status: Approved
+    version: "1.2"
+    status: EffectiveRuntimeContract
     authorityRank: 3
     owner: Technical Architect
-    requiredFor: [json, schema, powershell, mapping-workbook]
+    requiredFor: [json, schema, powershell, mapping-workbook, testing]
 
   - id: CFG-RULE
     path: ../configuration/05_eMAS_Normalized_Rule_Model.md
-    version: "1.0"
+    version: "1.1"
     status: Approved
     authorityRank: 2
     owner: Product Owner and Technical Architect
@@ -100,7 +100,6 @@ artifacts:
     status: EffectiveLogicalModelContract
     authorityRank: 4
     owner: Product Owner and Technical Architect
-    notes: Frozen entity relationships, endpoint pairs, cardinalities, temporal rules and runtime ownership.
     requiredFor: [configuration, mapping-workbook, rule-model, json, schema, powershell, testing]
 
   - id: CFG-DICT
@@ -109,17 +108,46 @@ artifacts:
     status: EffectiveLogicalModelContract
     authorityRank: 4
     owner: Product Owner and Technical Architect
-    notes: Frozen entity fields, keys, types, requiredness and serialization conventions.
     requiredFor: [configuration, mapping-workbook, rule-model, json, schema, powershell, testing]
+
+  - id: CFG-VERIFY
+    path: ../configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md
+    version: "1.0"
+    status: EffectiveVerificationContract
+    authorityRank: 5
+    owner: Technical Architect and QA Lead
+    requiredFor: [json, schema, testing, release, mapping-workbook, powershell]
 
   - id: SCHEMA-JSON
     path: ../../config/schema/eMAS-runtime-config.schema.json
     version: "1.0.0"
-    status: ApprovedInitialBaseline
+    status: Effective
     authorityRank: 5
     owner: Technical Architect
-    notes: Fixture and semantic-validation synchronization against CFG-REL and CFG-DICT is pending.
     requiredFor: [json, schema, mapping-workbook, powershell, testing]
+
+  - id: SCHEMA-FIX
+    path: ../../config/schema/examples/fixture-manifest.json
+    version: "1.0.0"
+    status: EffectiveVerificationBaseline
+    authorityRank: 5
+    owner: Technical Architect and QA Lead
+    notes: All listed fixtures are synthetic; regulatory content remains illustrative.
+    requiredFor: [schema, testing, mapping-workbook, powershell, release]
+
+  - id: BUILD-SCHEMA
+    path: ../../build/validate_emas_schema.py
+    status: EffectiveIndependentValidator
+    authorityRole: implementation-verification
+    owner: Technical Architect
+    requiredFor: [schema, testing, release]
+
+  - id: TEST-SCHEMA
+    path: ../../tests/schema/test_schema_fixtures.py
+    status: EffectiveAutomatedTest
+    authorityRole: verification-evidence
+    owner: QA Lead
+    requiredFor: [schema, testing]
 
   - id: ARCH-FLOW
     path: ../architecture/eMAS_Project_Flow.md
@@ -230,19 +258,19 @@ routing:
       optional: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-REL, CFG-DICT, ARCH-FLOW]
 
     mapping-workbook:
-      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, SCHEMA-JSON]
+      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX]
       optional: [CTX-CONFIG, CTX-REG]
 
     logical-model:
       required: [CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON]
-      optional: [CFG-FUNC, CFG-TECH, SCHEMA-JSON]
+      optional: [CFG-FUNC, CFG-TECH, CFG-VERIFY, SCHEMA-JSON]
 
     json-schema:
-      required: [CFG-TECH, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON]
+      required: [CFG-TECH, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA]
       optional: [CTX-CONFIG]
 
     powershell:
-      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON]
+      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX]
       optional: [ARCH-FLOW, CTX-CORE, CTX-PHASES, CTX-ENGINE]
 
     regulatory-content:
@@ -253,21 +281,23 @@ routing:
         - the value is already approved controlled content
 
     testing-release:
-      required: [GOV-DOC, CFG-REL, CFG-DICT, ARCH-REPO, REPO-STRUCT]
-      optional: [SCHEMA-JSON]
+      required: [GOV-DOC, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, ARCH-REPO, REPO-STRUCT]
 
 prohibitedSources:
   - Enterprise Requirements v3.0 or archived documents as current requirements
   - generated assistant profiles as authority
   - unapproved AI recommendations
   - illustrative examples as requirements
+  - fixtures not listed in the fixture manifest as verification authority
+  - fixtures as regulatory-content authority
   - customer-specific project evidence as general product requirements
   - code comments that conflict with approved requirements
 
 stopConditions:
   - regulatory interpretation conflict
-  - JSON compatibility conflict
+  - JSON compatibility or schema conflict
   - logical-model or data-dictionary conflict
+  - fixture expectation or semantic error-code conflict
   - phase decision or report-meaning conflict
   - evidence-traceability conflict
   - missing required SME approval

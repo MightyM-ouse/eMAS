@@ -1,0 +1,40 @@
+name: Runtime schema validation
+
+on:
+  pull_request:
+    paths:
+      - "config/schema/**"
+      - "build/validate_emas_schema.py"
+      - "build/emas_schema_*.py"
+      - "build/requirements-schema-validation.txt"
+      - "tests/schema/**"
+      - ".github/workflows/schema-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "config/schema/**"
+      - "build/validate_emas_schema.py"
+      - "build/emas_schema_*.py"
+      - "build/requirements-schema-validation.txt"
+      - "tests/schema/**"
+      - ".github/workflows/schema-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-runtime-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: build/requirements-schema-validation.txt
+      - name: Install schema validation dependency
+        run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
+      - name: Validate schema and fixtures
+        run: python build/validate_emas_schema.py
+      - name: Run schema unit tests
+        run: python -m unittest discover -s tests/schema -p "test_*.py" -v

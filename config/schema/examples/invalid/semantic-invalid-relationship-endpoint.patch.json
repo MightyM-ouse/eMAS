@@ -1,0 +1,1 @@
+{"relationships":[{"relationshipId":"REL-001","relationshipType":"AUTHORITY_TO_REGION","sourceEntityType":"AUTHORITY","sourceEntityCode":"EMA","targetEntityType":"TECHNICAL_STANDARD","targetEntityCode":"EU","cardinality":"MANY_TO_MANY","isMandatory":true,"status":"Effective","effectiveFrom":"2026-07-13","sourceReference":"ILLUSTRATIVE"}]}

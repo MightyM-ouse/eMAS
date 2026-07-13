@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/defs/common.schema.json",
+  "title": "eMAS Runtime Configuration common definitions",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "phase": {
+      "enum": [
+        "PRE_SALES",
+        "PRE_MIGRATION",
+        "POST_MIGRATION"
+      ]
+    },
+    "rag": {
+      "enum": [
+        "Green",
+        "Amber",
+        "Red",
+        "Unknown"
+      ]
+    },
+    "evaluationStatus": {
+      "enum": [
+        "Evaluated",
+        "NotAssessed",
+        "NotApplicable",
+        "Skipped",
+        "Error",
+        "InsufficientEvidence",
+        "Conflict"
+      ]
+    },
+    "conflictStrategy": {
+      "enum": [
+        "FirstMatch",
+        "MostSpecific",
+        "MostSevere",
+        "Aggregate",
+        "ErrorOnMultipleMatch",
+        "HighestEvidenceScore",
+        "ManualReview"
+      ]
+    },
+    "exceptionEffect": {
+      "enum": [
+        "AcknowledgeOnly",
+        "RemoveBlock",
+        "ExcludeFromScope",
+        "AcceptDifference",
+        "DowngradeDecisionImpact"
+      ]
+    },
+    "outputType": {
+      "enum": [
+        "ClassificationCandidate",
+        "Finding",
+        "RAG",
+        "ConfidenceImpact",
+        "EffortImpact",
+        "DecisionImpact",
+        "ClarificationTrigger"
+      ]
+    },
+    "operator": {
+      "enum": [
+        "EQUALS",
+        "NOT_EQUALS",
+        "IN_LIST",
+        "CONTAINS",
+        "STARTS_WITH",
+        "ENDS_WITH",
+        "MATCHES_PATTERN",
+        "EXISTS",
+        "MISSING",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "BETWEEN"
+      ]
+    },
+    "codeValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "displayValue",
+        "status",
+        "effectiveFrom"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/identifier"
+        },
+        "displayValue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "#/$defs/date"
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceReference": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "1.0.0",
+  "fixtureFormat": "json-merge-patch-v1",
+  "fixtures": [
+    {
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "valid/controlled-valid.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "boundary/inclusive-exclusive-boundary-valid.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/structural-missing-configuration.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SCHEMA_ERROR"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-broken-field-reference.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_BROKEN_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-duplicate-rule-id.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_DUPLICATE_ID"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-invalid-relationship-endpoint.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_RELATIONSHIP_ENDPOINT"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-operator-not-allowed.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_OPERATOR_NOT_ALLOWED"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-threshold-overlap.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_THRESHOLD_OVERLAP"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-exception-ineligible.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_EXCEPTION_INELIGIBLE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/semantic-broken-output-target.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_OUTPUT_TARGET"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    }
+  ]
+}

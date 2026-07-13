@@ -1,0 +1,1 @@
+{"findings":[{"findingCode":"FND-001","title":"Backbone detected","findingCategory":"STRUCTURE","description":"A structured backbone indicator was detected.","defaultEvaluationStatus":"Evaluated","defaultRag":"Green","defaultSeverity":"MEDIUM","exceptionEligible":false,"customerVisible":true,"status":"Effective","effectiveFrom":"2026-07-13","sourceReference":"ILLUSTRATIVE"}]}

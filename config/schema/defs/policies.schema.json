@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/defs/policies.schema.json",
+  "title": "eMAS Runtime Configuration policies definitions",
+  "$defs": {
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conflictPolicies",
+        "ragPolicies",
+        "confidencePolicies",
+        "effortDrivers",
+        "effortThresholds",
+        "decisionPolicies"
+      ],
+      "properties": {
+        "conflictPolicies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/conflictPolicy"
+          }
+        },
+        "ragPolicies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ragPolicy"
+          }
+        },
+        "confidencePolicies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/confidencePolicy"
+          }
+        },
+        "effortDrivers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effortDriver"
+          }
+        },
+        "effortThresholds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effortThreshold"
+          }
+        },
+        "decisionPolicies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/decisionPolicy"
+          }
+        }
+      }
+    },
+    "conflictPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conflictPolicyId",
+        "ruleType",
+        "conflictStrategy",
+        "tieBehavior",
+        "stopBehavior",
+        "defaultPriorityIncrement",
+        "status",
+        "description"
+      ],
+      "properties": {
+        "conflictPolicyId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "conflictStrategy": {
+          "$ref": "common.schema.json#/$defs/conflictStrategy"
+        },
+        "tieBehavior": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "stopBehavior": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "defaultPriorityIncrement": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ragPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ragPolicyId",
+        "scope",
+        "aggregationStrategy",
+        "greenDefinition",
+        "amberDefinition",
+        "redDefinition",
+        "unknownDefinition",
+        "status",
+        "sourceReference"
+      ],
+      "properties": {
+        "ragPolicyId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "scope": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "aggregationStrategy": {
+          "$ref": "common.schema.json#/$defs/conflictStrategy"
+        },
+        "greenDefinition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amberDefinition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "redDefinition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unknownDefinition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "confidencePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "confidencePolicyId",
+        "scope",
+        "evidenceStrength",
+        "weightOrScore",
+        "agreementRequirement",
+        "missingEvidenceBehavior",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "confidencePolicyId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "scope": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "evidenceStrength": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "weightOrScore": {
+          "type": "number"
+        },
+        "agreementRequirement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missingEvidenceBehavior": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "effortDriver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effortDriverId",
+        "driverCode",
+        "driverName",
+        "category",
+        "weight",
+        "minimumBandOverrideEligible",
+        "supportedPhases",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "effortDriverId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "driverCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "driverName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "metricCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "cap": {
+          "type": "number"
+        },
+        "floor": {
+          "type": "number"
+        },
+        "minimumBandOverrideEligible": {
+          "type": "boolean"
+        },
+        "doubleCountGroup": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "supportedPhases": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/phase"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "effortThreshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effortThresholdId",
+        "thresholdScopeType",
+        "thresholdScopeCode",
+        "bandCode",
+        "lowerInclusive",
+        "upperInclusive",
+        "unit",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "effortThresholdId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "thresholdScopeType": {
+          "enum": [
+            "DRIVER",
+            "OVERALL_MODEL"
+          ]
+        },
+        "thresholdScopeCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "bandCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "lowerBound": {
+          "type": "number"
+        },
+        "upperBound": {
+          "type": "number"
+        },
+        "lowerInclusive": {
+          "type": "boolean"
+        },
+        "upperInclusive": {
+          "type": "boolean"
+        },
+        "unit": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "minimumBandOverride": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "decisionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decisionPolicyId",
+        "phase",
+        "resultCode",
+        "priority",
+        "requiredConditionType",
+        "requiredConditionReference",
+        "mandatoryBlockerOverride",
+        "exceptionBehavior",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "decisionPolicyId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "phase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "resultCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requiredConditionType": {
+          "enum": [
+            "CONDITION_GROUP",
+            "DERIVED_FIELD"
+          ]
+        },
+        "requiredConditionReference": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "mandatoryBlockerOverride": {
+          "type": "boolean"
+        },
+        "exceptionBehavior": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "questionnaireEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "questionnaireMapId",
+        "triggerType",
+        "triggerCode",
+        "questionCode",
+        "customerQuestion",
+        "reason",
+        "priority",
+        "supportedPhase",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "questionnaireMapId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "triggerType": {
+          "enum": [
+            "FIELD",
+            "FINDING"
+          ]
+        },
+        "triggerCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "questionCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "customerQuestion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supportedPhase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
