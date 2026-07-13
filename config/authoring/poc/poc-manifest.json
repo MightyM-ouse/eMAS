@@ -1,0 +1,21 @@
+{
+  "artifactId": "EMAS-XLSM-VBA-POC",
+  "version": "0.1.0",
+  "status": "SyntheticProofOfConcept",
+  "schemaVersion": "1.0.0",
+  "mappingVersion": "0.1.0",
+  "sourceWorkbookVersion": "0.1.0",
+  "expectedJsonSha256": "ab89a3a69fb40450465a96c6c8ced583373d7c8af0343b8f52d2e79b19628732",
+  "fixtureManifest": "fixtures/manifest.json",
+  "vbaSourceDirectory": "../../vba/modules",
+  "vbaModuleCount": 9,
+  "nativeExcelBuild": "build/Build-eMASMappingPoc.ps1",
+  "nativeExcelTest": "build/Test-eMASMappingPoc.ps1",
+  "nativeExcelExecutionStatus": "ManualRequiredOnSupportedWindowsExcel",
+  "dataClassification": "SyntheticOnly",
+  "runtimeDependencyBoundary": "Python reference validation is build/CI-only; Excel/VBA produces the runtime JSON in the native POC.",
+  "workbookSourceDefinition": "workbook-source.json",
+  "generatedSourceWorkbook": "output/poc/eMAS_Mapping_Configuration_POC_Source.xlsx",
+  "generatedSourceWorkbookSha256": "49516caeee5524ea6a4922f82a8eaffc93d71e7098e3d0ea7b42496afe374804",
+  "workbookSourceBundleSha256": "2982fe3fe647dc2237faa705dba474224ee15a520268376f963210ad755a999f"
+}

@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "fixtures": [
+    {"id":"POC-VALID-BASE","patch":null,"expectedValid":true,"expectedErrorCodes":[]},
+    {"id":"POC-VALID-CONTROLLED","patch":"valid-controlled.json","expectedValid":true,"expectedErrorCodes":[]},
+    {"id":"POC-BOUNDARY-001","patch":"boundary-version-and-date.json","expectedValid":true,"expectedErrorCodes":[]},
+    {"id":"POC-INVALID-001","patch":"invalid-duplicate-rule.json","expectedValid":false,"expectedErrorCodes":["SEM_DUPLICATE_ID"]},
+    {"id":"POC-INVALID-002","patch":"invalid-broken-field-reference.json","expectedValid":false,"expectedErrorCodes":["SEM_BROKEN_REFERENCE"]},
+    {"id":"POC-INVALID-003","patch":"invalid-relationship-endpoint.json","expectedValid":false,"expectedErrorCodes":["SEM_RELATIONSHIP_ENDPOINT"]},
+    {"id":"POC-INVALID-004","patch":"invalid-operator-not-allowed.json","expectedValid":false,"expectedErrorCodes":["SEM_OPERATOR_NOT_ALLOWED"]},
+    {"id":"POC-INVALID-005","patch":"invalid-threshold-overlap.json","expectedValid":false,"expectedErrorCodes":["SEM_THRESHOLD_OVERLAP"]},
+    {"id":"POC-INVALID-006","patch":"invalid-exception-ineligible.json","expectedValid":false,"expectedErrorCodes":["SEM_EXCEPTION_INELIGIBLE"]},
+    {"id":"POC-INVALID-007","patch":"invalid-output-target.json","expectedValid":false,"expectedErrorCodes":["SEM_OUTPUT_TARGET"]}
+  ]
+}

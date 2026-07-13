@@ -1,0 +1,49 @@
+name: XLSM VBA POC validation
+
+on:
+  pull_request:
+    paths:
+      - "config/authoring/poc/**"
+      - "config/vba/**"
+      - "build/emas_xlsx_poc*.py"
+      - "build/generate_emas_mapping_poc_workbook.py"
+      - "build/validate_xlsm_vba_poc.py"
+      - "build/Build-eMASMappingPoc.ps1"
+      - "build/Test-eMASMappingPoc.ps1"
+      - "tests/vba/**"
+      - "config/schema/**"
+      - "build/validate_emas_schema.py"
+      - "build/emas_schema_*.py"
+      - ".github/workflows/xlsm-vba-poc-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "config/authoring/poc/**"
+      - "config/vba/**"
+      - "build/emas_xlsx_poc*.py"
+      - "build/generate_emas_mapping_poc_workbook.py"
+      - "build/validate_xlsm_vba_poc.py"
+      - "build/Build-eMASMappingPoc.ps1"
+      - "build/Test-eMASMappingPoc.ps1"
+      - "tests/vba/**"
+      - "config/schema/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-xlsm-vba-poc-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: build/requirements-schema-validation.txt
+      - name: Install independent schema validation dependency
+        run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
+      - name: Validate workbook source, VBA contract, fixtures and Schema 1.0.0 conformance
+        run: python build/validate_xlsm_vba_poc.py
+      - name: Run XLSM/VBA POC unit tests
+        run: python -m unittest discover -s tests/vba -p "test_*.py" -v

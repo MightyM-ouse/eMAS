@@ -1,0 +1,27 @@
+{
+  "formatVersion": "1.0.0",
+  "workbookName": "eMAS_Mapping_Configuration_POC.xlsm",
+  "classification": "SyntheticProofOfConcept",
+  "startSheet": {
+    "name": "Start_Here",
+    "title": "eMAS Mapping Configuration — Synthetic POC",
+    "instructions": [
+      "Use this source only for proof-of-concept and conformance testing.",
+      "Run validation before preview or DEV export.",
+      "Controlled export is intentionally disabled in the public POC."
+    ]
+  },
+  "parts": [
+    "workbook-source-parts/01-tables.json",
+    "workbook-source-parts/02-tables.json",
+    "workbook-source-parts/03-tables.json",
+    "workbook-source-parts/04-tables.json",
+    "workbook-source-parts/05-tables.json",
+    "workbook-source-parts/06-tables.json",
+    "workbook-source-parts/07-tables.json",
+    "workbook-source-parts/08-tables.json",
+    "workbook-source-parts/09-tables.json",
+    "workbook-source-parts/10-tables.json",
+    "workbook-source-parts/11-tables.json"
+  ]
+}

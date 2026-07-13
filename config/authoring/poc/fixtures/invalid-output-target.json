@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblRuleOutputs","action":"set","keyField":"RuleOutputId","keyValue":"OUT-001","field":"OutputCode","value":"FND-MISSING"}]}
