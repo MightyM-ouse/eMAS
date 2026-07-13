@@ -1,0 +1,330 @@
+{
+  "resultContractVersion": "1.0.0",
+  "phaseCode": "POST_MIGRATION",
+  "phaseName": "Post-Migration Verification",
+  "mappingId": "EMAS-MAP-POSTMIGRATION",
+  "mappingVersion": "1.0.0",
+  "templateId": "EMAS-TPL-POSTMIGRATION",
+  "templateVersion": "1.1.1",
+  "executionId": "DEMO-POST_MIGRATION-20260713-001",
+  "generatedAtUtc": "2026-07-13T20:00:00Z",
+  "finalResult": "Reconciled with Accepted Exceptions",
+  "runtimeTrace": {
+    "schemaVersion": "1.0.0",
+    "configurationId": "EMAS-DEMO-CONFIG",
+    "configurationVersion": "1.0.0",
+    "runtimeJsonSha256": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+  },
+  "verificationScope": [
+    {
+      "scopeItemId": "SCOPE-001",
+      "scopeArea": "Dossier and sequence reconciliation",
+      "baselineSource": "Demo baselineSource 1",
+      "migratedEvidenceSource": "Demo migratedEvidenceSource 1",
+      "comparisonKey": "STABLE-DOS-001",
+      "included": "Yes",
+      "exclusionId": "DEMO-EXCLUSIONID-001",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "confidence": "High",
+      "reviewRequired": "Yes",
+      "limitation": "Demo limitation 1",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "baselineComparison": [
+    {
+      "reconciliationMetricId": "DEMO-RECONCILIATIONMETRICID-001",
+      "metricCode": "DEMO-METRICCODE-001",
+      "metricName": "Demo metricName 1",
+      "entityScope": "Dossier",
+      "baselineValue": "Demo baselineValue 1",
+      "importValue": "Demo importValue 1",
+      "postImportValue": "Demo postImportValue 1",
+      "difference": "Demo difference 1",
+      "unit": "Count",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "confidence": "High",
+      "comparisonRuleId": "DEMO-COMPARISONRULEID-001",
+      "tolerance": 1.0,
+      "reconciliationStatus": "Reconciled",
+      "rag": "Green",
+      "reviewRequired": "Yes",
+      "discrepancyId": "DEMO-DISCREPANCYID-001",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "dossierReconciliation": [
+    {
+      "dossierComparisonId": "DCMP-001",
+      "stableComparisonId": "STABLE-DOS-001",
+      "baselineDossierId": "DOS-001",
+      "baselinePresent": "Yes",
+      "importReportPresent": "Yes",
+      "postImportPresent": "Yes",
+      "baselineDossierName": "Demo dossier",
+      "migratedDossierName": "Demo dossier",
+      "expectedSequenceCount": 1,
+      "observedSequenceCount": 1,
+      "importStatusSummary": "Demo importStatusSummary 1",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "confidence": "High",
+      "acceptedException": "No",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "originalRAG": "Green",
+      "rag": "Green",
+      "reconciliationStatus": "Reconciled",
+      "reviewRequired": "Yes",
+      "discrepancyIds": "Demo discrepancyIds 1",
+      "recommendedAction": "Demo recommendedAction 1",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "sequenceReconciliation": [
+    {
+      "sequenceComparisonId": "SCMP-001",
+      "stableComparisonId": "STABLE-SEQ-001",
+      "baselineSequenceId": "SEQ-001",
+      "baselineDossierId": "DOS-001",
+      "sequenceDisplayName": "Sequence 0001",
+      "baselinePresent": "Yes",
+      "importReportPresent": "Yes",
+      "postImportPresent": "Yes",
+      "expectedValue": "1",
+      "observedValue": "1",
+      "importStatus": "Demo importStatus 1",
+      "importStatusCode": "Demo importStatusCode 1",
+      "postImportRegion": "Demo postImportRegion 1",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "confidence": "High",
+      "acceptedException": "No",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "originalRAG": "Green",
+      "rag": "Green",
+      "reconciliationStatus": "Reconciled",
+      "reviewRequired": "Yes",
+      "discrepancyIds": "Demo discrepancyIds 1",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "fileSizeReconciliation": [
+    {
+      "fileSizeComparisonId": "DEMO-FILESIZECOMPARISONID-001",
+      "entityType": "Dossier",
+      "entityId": "DEMO-ENTITYID-001",
+      "metricCode": "DEMO-METRICCODE-001",
+      "expectedValue": 1,
+      "observedValue": 1,
+      "difference": 1,
+      "unit": "Count",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "confidence": "High",
+      "comparisonRuleId": "DEMO-COMPARISONRULEID-001",
+      "tolerance": 1.0,
+      "acceptedException": "Yes",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "rag": "Green",
+      "reconciliationStatus": "Reconciled",
+      "reviewRequired": "Yes",
+      "discrepancyId": "DEMO-DISCREPANCYID-001",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "importEvidence": [
+    {
+      "importEvidenceId": "IMP-001",
+      "sourceRowReference": "Import Report Detail!2",
+      "sourceName": "MigrationSummary.xlsx",
+      "dossierTitle": "Demo dossier",
+      "submission": "0001",
+      "rawStatus": "Warning",
+      "rawStatusCode": "W01",
+      "rawDescription": "Recoverable import warning",
+      "rawComments": "Demo rawComments 1",
+      "rawDate": "2026-07-13",
+      "normalizedEvidenceCategory": "Demo normalizedEvidenceCategory 1",
+      "valueSource": "Derived",
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "findingCode": "DEMO-FINDINGCODE-001",
+      "relatedDossierComparisonId": "DEMO-RELATEDDOSSIERCOMPARISONID-001",
+      "relatedSequenceComparisonId": "DEMO-RELATEDSEQUENCECOMPARISONID-001",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "discrepancies": [
+    {
+      "discrepancyId": "DISC-001",
+      "priority": "High",
+      "discrepancyType": "Metadata",
+      "entityType": "Sequence",
+      "entityId": "SEQ-001",
+      "dossierId": "DEMO-DOSSIERID-001",
+      "sequenceId": "DEMO-SEQUENCEID-001",
+      "expectedValue": "Expected title",
+      "observedValue": "Imported title",
+      "evidenceSource": "Post Import Verification",
+      "evidenceReference": "Post Import Verification!2",
+      "valueSource": "Derived",
+      "evaluationStatus": "Warning",
+      "originalRAG": "Red",
+      "rag": "Red",
+      "confidence": "High",
+      "severity": "Warning",
+      "impact": "Manual review required",
+      "recommendationCode": "DEMO-RECOMMENDATIONCODE-001",
+      "recommendedAction": "Demo recommendedAction 1",
+      "owner": "Demo owner 1",
+      "status": "Open",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "actions": [
+    {
+      "actionId": "DEMO-ACTIONID-001",
+      "discrepancyId": "DEMO-DISCREPANCYID-001",
+      "priority": "Medium",
+      "actionCategory": "Demo actionCategory 1",
+      "requiredAction": "Demo requiredAction 1",
+      "responsibleParty": "Demo responsibleParty 1",
+      "targetDate": "2026-07-13",
+      "status": "Open",
+      "completionEvidence": "Demo completionEvidence 1",
+      "acceptanceCriteria": "Demo acceptanceCriteria 1",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "acceptedExceptions": [
+    {
+      "exceptionId": "EXC-POST-001",
+      "sourceExceptionId": "DEMO-SOURCEEXCEPTIONID-001",
+      "exceptionPolicyId": "DEMO-EXCEPTIONPOLICYID-001",
+      "findingOrDiscrepancyId": "DISC-HIST-001",
+      "entityType": "Dossier",
+      "entityId": "DOS-001",
+      "originalEvaluationStatus": "Error",
+      "originalRAG": "Red",
+      "originalReconciliationImpact": "Blocked",
+      "originalEvidenceReference": "Demo originalEvidenceReference 1",
+      "acceptedEffect": "Accepted",
+      "justification": "Approved historical metadata variance.",
+      "approvedBy": "Demo approvedBy 1",
+      "approvalDate": "2026-07-13",
+      "evidenceReference": "Demo evidenceReference 1",
+      "exceptionStatus": "Accepted",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "rawImportReportDetail": [
+    {
+      "sourceName": "MigrationSummary.xlsx",
+      "dossierTitle": "Demo dossier",
+      "submission": "0001",
+      "status": "Warning",
+      "statusCode": "W01",
+      "description": "Recoverable import warning",
+      "comments": "Synthetic raw row",
+      "date": "2026-07-13"
+    }
+  ],
+  "rawPostImportVerification": [
+    {
+      "dossierTitle": "Demo dossier",
+      "sequenceCount": 1,
+      "dossierDirectory": "/demo/migrated/dossier",
+      "submissionTitle": "Sequence 0001",
+      "submissionDirectory": "/demo/migrated/dossier/0001",
+      "region": "EU",
+      "createdDate": "2026-07-13"
+    }
+  ],
+  "reviewMetadata": [
+    {
+      "section": "Review",
+      "field": "ReportStatus",
+      "value": "Draft for Review"
+    }
+  ],
+  "summaryMetrics": [
+    {
+      "area": "Dossier Reconciliation",
+      "metric": "Matched Dossier Count",
+      "value": 1,
+      "evaluationStatus": "Evaluated",
+      "rag": "Green",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Import Evidence",
+      "metric": "Import Warning Count",
+      "value": 1,
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Review",
+      "metric": "Accepted Exception Count",
+      "value": 1,
+      "evaluationStatus": "Evaluated",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Review",
+      "metric": "Unresolved Discrepancy Count",
+      "value": 1,
+      "evaluationStatus": "Warning",
+      "rag": "Red",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Decision",
+      "metric": "Final Reconciliation Result",
+      "value": "Reconciled with Accepted Exceptions",
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    }
+  ],
+  "assumptions": [
+    {
+      "section": "Purpose",
+      "item": "Intended use",
+      "detail": "Read-only reconciliation demo using synthetic baseline and import evidence.",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "reviewRequired": "No",
+      "owner": "Demo Architect",
+      "status": "Open",
+      "comments": "Synthetic demo fixture."
+    }
+  ],
+  "executionMetadata": [
+    {
+      "section": "Execution",
+      "field": "ExecutionId",
+      "value": "DEMO-POST_MIGRATION-20260713-001"
+    }
+  ]
+}

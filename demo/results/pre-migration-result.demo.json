@@ -1,0 +1,314 @@
+{
+  "resultContractVersion": "1.0.0",
+  "phaseCode": "PRE_MIGRATION",
+  "phaseName": "Pre-Migration Readiness",
+  "mappingId": "EMAS-MAP-PREMIGRATION",
+  "mappingVersion": "1.0.0",
+  "templateId": "EMAS-TPL-PREMIGRATION",
+  "templateVersion": "1.1.1",
+  "executionId": "DEMO-PRE_MIGRATION-20260713-001",
+  "generatedAtUtc": "2026-07-13T20:00:00Z",
+  "finalResult": "Ready with Accepted Exceptions",
+  "runtimeTrace": {
+    "schemaVersion": "1.0.0",
+    "configurationId": "EMAS-DEMO-CONFIG",
+    "configurationVersion": "1.0.0",
+    "runtimeJsonSha256": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+  },
+  "readinessDecision": [
+    {
+      "decisionId": "DEC-PM-001",
+      "readinessResult": "Ready with Accepted Exceptions",
+      "decisionRationale": "Historical blocker is resolved and covered by accepted exception EXC-001.",
+      "blockerCount": 1,
+      "warningCount": 1,
+      "acceptedExceptionCount": 1,
+      "exclusionCount": 1,
+      "requiredAction": "Carry exception evidence forward.",
+      "responsibleParty": "Demo responsibleParty 1",
+      "targetDate": "2026-07-13",
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "reviewRequired": "Yes",
+      "status": "Approved",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "inputChecks": [
+    {
+      "checkId": "CHK-001",
+      "checkArea": "Access",
+      "checkName": "Source repository access",
+      "requirement": "Read access available",
+      "mandatory": "Yes",
+      "expectedValue": "Demo expectedValue 1",
+      "observedValue": "Available with one warning",
+      "unit": "Count",
+      "valueSource": "Derived",
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "severity": "Warning",
+      "blocker": "No",
+      "evidenceReference": "Demo evidenceReference 1",
+      "ruleId": "DEMO-RULEID-001",
+      "findingCode": "DEMO-FINDINGCODE-001",
+      "recommendationCode": "DEMO-RECOMMENDATIONCODE-001",
+      "requiredAction": "Demo requiredAction 1",
+      "owner": "Demo owner 1",
+      "targetDate": "2026-07-13",
+      "status": "Open",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "dossierBaseline": [
+    {
+      "baselineDossierId": "DEMO-BASELINEDOSSIERID-001",
+      "stableComparisonId": "DEMO-STABLECOMPARISONID-001",
+      "product": "Demo product 1",
+      "dossierDisplayName": "Demo dossierDisplayName 1",
+      "dossierPath": "/demo/read-only/source/1",
+      "region": "Demo region 1",
+      "authority": "Demo authority 1",
+      "technicalStandard": "Demo technicalStandard 1",
+      "regionalImplementation": "Demo regionalImplementation 1",
+      "productDomain": "Demo productDomain 1",
+      "lifecycleContext": "Demo lifecycleContext 1",
+      "productClass": "Demo productClass 1",
+      "procedureContext": "Demo procedureContext 1",
+      "sourcePresentation": "Demo sourcePresentation 1",
+      "primaryDossierType": "Demo primaryDossierType 1",
+      "classificationConfidence": "High",
+      "evaluationStatus": "Evaluated",
+      "valueSource": "Derived",
+      "expectedSequenceCount": 1,
+      "expectedFileCount": 1,
+      "expectedFolderCount": 1,
+      "expectedSizeBytes": 1,
+      "displaySizeGB": 1.0,
+      "rag": "Green",
+      "reviewRequired": "Yes",
+      "includedInMigrationScope": "Yes",
+      "exclusionId": "DEMO-EXCLUSIONID-001",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "findingCount": 1,
+      "baselineComments": "Demo baselineComments 1"
+    }
+  ],
+  "sequenceBaseline": [
+    {
+      "baselineSequenceId": "DEMO-BASELINESEQUENCEID-001",
+      "stableComparisonId": "DEMO-STABLECOMPARISONID-001",
+      "baselineDossierId": "DEMO-BASELINEDOSSIERID-001",
+      "sequenceDisplayName": "Demo sequenceDisplayName 1",
+      "sequencePath": "/demo/read-only/source/1",
+      "expectedFileCount": 1,
+      "expectedFolderCount": 1,
+      "expectedSizeBytes": 1,
+      "displaySizeMB": 1.0,
+      "backboneXmlStatus": "Demo backboneXmlStatus 1",
+      "checksumStatus": "Demo checksumStatus 1",
+      "regionalXmlStatus": "Demo regionalXmlStatus 1",
+      "referencedFileStatus": "Demo referencedFileStatus 1",
+      "zeroByteFileCount": 1,
+      "longPathCount": 1,
+      "missingMandatoryItems": "Demo missingMandatoryItems 1",
+      "evaluationStatus": "Evaluated",
+      "valueSource": "Derived",
+      "rag": "Green",
+      "confidence": "High",
+      "reviewRequired": "Yes",
+      "includedInMigrationScope": "Yes",
+      "exclusionId": "DEMO-EXCLUSIONID-001",
+      "exceptionId": "DEMO-EXCEPTIONID-001",
+      "findingCount": 1,
+      "comments": "Demo comments 1"
+    }
+  ],
+  "fileXmlPathChecks": [
+    {
+      "technicalCheckId": "DEMO-TECHNICALCHECKID-001",
+      "entityType": "Dossier",
+      "entityId": "DEMO-ENTITYID-001",
+      "checkType": "Demo checkType 1",
+      "expectedValue": "Demo expectedValue 1",
+      "observedValue": "Demo observedValue 1",
+      "unit": "Count",
+      "valueSource": "Derived",
+      "evidencePath": "/demo/read-only/source/1",
+      "evidenceReference": "Demo evidenceReference 1",
+      "evaluationStatus": "Evaluated",
+      "rag": "Green",
+      "confidence": "High",
+      "severity": "Warning",
+      "blocker": "Yes",
+      "ruleId": "DEMO-RULEID-001",
+      "findingCode": "DEMO-FINDINGCODE-001",
+      "recommendationCode": "DEMO-RECOMMENDATIONCODE-001",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "FND-PM-001",
+      "findingCode": "DEMO-HISTORICAL-BLOCKER",
+      "entityType": "Dossier",
+      "entityId": "DEMO-ENTITYID-001",
+      "findingCategory": "Demo",
+      "findingTitle": "Historical access blocker",
+      "evidenceSummary": "Access was restored before readiness decision.",
+      "evidenceReference": "Demo evidenceReference 1",
+      "evaluationStatus": "Evaluated",
+      "rag": "Red",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "severity": "Warning",
+      "blocker": "Yes",
+      "originalDecisionImpact": "Demo originalDecisionImpact 1",
+      "customerFacingDescription": "Demo customerFacingDescription 1",
+      "consultantFacingNote": "Demo consultantFacingNote 1",
+      "recommendationCodes": "Demo recommendationCodes 1",
+      "reviewRequired": "Yes",
+      "status": "Resolved",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "actions": [
+    {
+      "actionId": "DEMO-ACTIONID-001",
+      "findingId": "DEMO-FINDINGID-001",
+      "priority": "Medium",
+      "actionCategory": "Demo actionCategory 1",
+      "requiredAction": "Demo requiredAction 1",
+      "responsibleParty": "Demo responsibleParty 1",
+      "targetDate": "2026-07-13",
+      "status": "Open",
+      "completionEvidence": "Demo completionEvidence 1",
+      "acceptanceCriteria": "Demo acceptanceCriteria 1",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "exceptions": [
+    {
+      "exceptionId": "EXC-001",
+      "exceptionPolicyId": "DEMO-EXCEPTIONPOLICYID-001",
+      "findingId": "FND-PM-001",
+      "entityType": "Dossier",
+      "entityId": "DEMO-ENTITYID-001",
+      "originalEvaluationStatus": "Error",
+      "originalRAG": "Red",
+      "originalDecisionImpact": "Blocked",
+      "originalEvidenceReference": "Demo originalEvidenceReference 1",
+      "exceptionEffect": "Accepted",
+      "justification": "Access restored; historical evidence retained.",
+      "requestedBy": "Demo requestedBy 1",
+      "reviewedBy": "Demo reviewedBy 1",
+      "decisionDate": "2026-07-13",
+      "evidenceReference": "Demo evidenceReference 1",
+      "carryForwardToPostMigration": "Yes",
+      "exceptionStatus": "Accepted",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "exclusions": [
+    {
+      "exclusionId": "EXCL-001",
+      "entityType": "Sequence",
+      "entityId": "SEQ-TEST",
+      "scopeArea": "Test content",
+      "reason": "Approved non-production test sequence.",
+      "originalEvidenceReference": "Demo originalEvidenceReference 1",
+      "approvedBy": "Demo approvedBy 1",
+      "decisionDate": "2026-07-13",
+      "evidenceReference": "Demo evidenceReference 1",
+      "impact": "No readiness impact",
+      "status": "Approved",
+      "reviewRequired": "Yes",
+      "comments": "Demo comments 1"
+    }
+  ],
+  "reviewMetadata": [
+    {
+      "section": "Review",
+      "field": "ReportStatus",
+      "value": "Draft for Review"
+    }
+  ],
+  "summaryMetrics": [
+    {
+      "area": "Assessment",
+      "metric": "Blocker Count",
+      "value": 1,
+      "evaluationStatus": "Evaluated",
+      "rag": "Red",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Assessment",
+      "metric": "Warning Count",
+      "value": 1,
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Assessment",
+      "metric": "Accepted Exception Count",
+      "value": 1,
+      "evaluationStatus": "Evaluated",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Assessment",
+      "metric": "Exclusion Count",
+      "value": 1,
+      "evaluationStatus": "Evaluated",
+      "rag": "Green",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    },
+    {
+      "area": "Decision",
+      "metric": "Final Readiness Result",
+      "value": "Ready with Accepted Exceptions",
+      "evaluationStatus": "Warning",
+      "rag": "Amber",
+      "confidence": "High",
+      "valueSource": "Derived",
+      "reviewRequired": "No"
+    }
+  ],
+  "assumptions": [
+    {
+      "section": "Purpose",
+      "item": "Intended use",
+      "detail": "Read-only readiness demo using synthetic evidence.",
+      "valueSource": "Derived",
+      "evaluationStatus": "Evaluated",
+      "reviewRequired": "No",
+      "owner": "Demo Architect",
+      "status": "Open",
+      "comments": "Synthetic demo fixture."
+    }
+  ],
+  "executionMetadata": [
+    {
+      "section": "Execution",
+      "field": "ExecutionId",
+      "value": "DEMO-PRE_MIGRATION-20260713-001"
+    }
+  ]
+}

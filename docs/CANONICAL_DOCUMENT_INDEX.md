@@ -1,6 +1,6 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.8
+**Version:** 1.9
 **Status:** Effective  
 **Effective date:** 2026-07-13  
 **Owner:** Documentation Owner  
@@ -76,6 +76,9 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 | DOC-RUNTIME-CONSUMPTION | [Runtime JSON consumption foundation](development/runtime-json-consumption.md) | Developer implementation note, provisional compatibility assumptions and final-schema reconciliation route |
 | TEST-RUNTIME-PS | `tests/runtime/Test-eMASRuntimeConfiguration.ps1` | Dependency-free synthetic Runtime JSON loader and phase-bootstrap tests |
 | CI-RUNTIME | `.github/workflows/powershell-runtime-contracts.yml` | Initial Windows PowerShell 5.1, Windows PowerShell 7.6 and macOS PowerShell 7.6 development contract workflow |
+| MAP-REPORT | [Report template mapping contract](demo/eMAS_Report_Template_Mapping_Contract.md) and `config/report-mappings/` | Draft technical mapping schema 1.0.0 for controlled template version 1.1.1 |
+| ENGINE-REPORT-DEMO | [End-to-end report generation demo](development/end-to-end-report-generation-demo.md) | MVP implementation evidence; not production or validation authority |
+| TEST-REPORT-DEMO | `tests/reporting/test_report_generation.py` | Synthetic mapping/write-mode/OpenXML preservation regression evidence |
 | BUILD-SKILLS | `build/validate_operational_skills.py` | Operational-skill validation |
 
 ## Required reading by task
@@ -99,7 +102,7 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 
 ## Delivery-state boundary
 
-The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation and the phase-neutral Runtime JSON consumption/validation foundation are synchronized for the current schema/runtime scope. Final-schema reconciliation, controlled package/checksum enforcement, template dropdown/report validation, full phase orchestration and broader regression evidence remain pending before controlled release. The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
+The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation and the phase-neutral Runtime JSON consumption/validation foundation are synchronized for the current schema/runtime scope. Controlled template version 1.1.1 and report mapping schema 1.0.0 are implemented with a mapping-driven demo; this remains subordinate MVP evidence. Native supported-Excel execution, Windows phase qualification, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
 
 ## Historical and prohibited authority
 

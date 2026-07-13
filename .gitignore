@@ -16,6 +16,7 @@ config/runtime/development/*
 tests/results/
 tests/temp/
 coverage/
+demo/output/
 
 # Customer and project evidence must never be committed
 customer-data/

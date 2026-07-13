@@ -1,4 +1,4 @@
-schemaVersion: "1.7"
+schemaVersion: "1.8"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
@@ -238,6 +238,30 @@ artifacts:
     owner: QA Lead and PowerShell Lead
     description: Dependency-free synthetic Runtime JSON loader and phase-bootstrap tests.
     requiredFor: [powershell, testing]
+
+  - id: MAP-REPORT
+    path: ../../config/report-mappings/report-template-map.schema.json
+    implementationPaths: [../../config/report-mappings, ../../templates/controlled]
+    version: "1.0.0"
+    status: DraftTechnicalContract
+    authorityRole: implementation-contract
+    owner: Technical Architect
+    description: Mapping contract for controlled report template version 1.1.1; contains no business interpretation.
+    requiredFor: [reporting, powershell, testing]
+
+  - id: DOC-REPORT-DEMO
+    path: ../development/end-to-end-report-generation-demo.md
+    status: MvpImplementationNote
+    authorityRole: implementation-guidance
+    owner: PowerShell Lead and Technical Architect
+    requiredFor: [reporting, powershell, testing]
+
+  - id: TEST-REPORT-DEMO
+    path: ../../tests/reporting/test_report_generation.py
+    status: MvpAutomatedTest
+    authorityRole: verification-evidence
+    owner: QA Lead and PowerShell Lead
+    requiredFor: [reporting, testing]
 
   - id: CI-RUNTIME
     path: ../../.github/workflows/powershell-runtime-contracts.yml

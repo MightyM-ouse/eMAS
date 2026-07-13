@@ -8,7 +8,8 @@ The approved runtime boundary is:
 engine/
 ├── core/
 ├── powershell51/
-└── powershell7/
+├── powershell7/
+└── reporting/
 ```
 
 `core` is the single shared business-engine boundary and remains Windows PowerShell 5.1-compatible. `powershell51` and `powershell7` contain runtime-specific technical adapters only.
@@ -43,3 +44,12 @@ The centralized compatibility contract is defined in `core/eMAS.Configuration.Co
 `core/eMAS.RuntimeConfiguration.psm1` provides the phase-neutral defensive consumption foundation: safe UTF-8 loading, SHA-256 identity, structural checks, semantic hooks, stable accessors and sanitized configuration log events. It does not read the XLSM, generate or repair JSON, scan source evidence or implement phase decision logic.
 
 Claude's final Runtime JSON design remains authoritative for the final property/section binding. Exact JSON Schema validation, controlled-package checksum verification, complete relationship semantics and native Windows qualification remain separate release work.
+
+## Reporting/OpenXML demo
+
+`reporting/eMAS.ReportPopulation.psm1` exposes the phase-neutral
+`Export-eMASResultToTemplate` command. Its MVP helper performs mapping-driven
+ZIP/XML updates against copied template version 1.1.1 workbooks, validates the
+report mapping schema, preserves protected/static structures and returns stable
+`RPT-*` findings. It is an implementation spike, not a qualified production
+reporting engine.

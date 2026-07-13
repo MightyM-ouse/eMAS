@@ -26,6 +26,10 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - phase-neutral Runtime JSON consumption module with strict UTF-8 loading, SHA-256 identity, structured validation, stable accessors and sanitized configuration log events;
 - configuration-only Pre-Sales, Pre-Migration and Post-Migration entry-script bootstraps that stop before assessment processing on blocking findings;
 - synthetic Runtime JSON compatibility fixtures and a dependency-free PowerShell test harness covering file, schema, semantic, accessor, traceability and read-only behavior.
+- controlled report template version 1.1.1 and mapping schema 1.0.0 integration;
+- phase-neutral `Export-eMASResultToTemplate` PowerShell command with a generic direct-OpenXML MVP helper;
+- synthetic normalized result demos and phase wrapper scripts for all three eMAS phases;
+- 28 mapping/write-mode/negative-contract and OpenXML preservation regression tests.
 
 ### Changed
 
@@ -37,6 +41,7 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - canonical, documentation and LLM indexes include POC assets and the manual qualification gate.
 - Runtime JSON Contract documents the approved in-place Schema 1.0.0 compatibility amendment for `Warning` before controlled release;
 - POC source seed data and deterministic manifest hashes include the `WARNING` controlled code.
+- runtime-loader compatibility remains at schema 1.0.0; reporting mappings remain a separate technical binding contract and do not alter runtime interpretation.
 
 ### Pending implementation and qualification
 
@@ -45,7 +50,7 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - implement the complete controlled-workbook validation sequence and production signing;
 - reconcile the configuration-loader compatibility map with the final approved Runtime JSON, complete controlled package/checksum validation, and implement wider engine and phase-contract conformance;
 - complete native Windows PowerShell 5.1 and PowerShell 7.6 execution qualification for the runtime contracts and future loader implementation;
-- complete the OpenXML report-generation spike and controlled phase templates;
+- qualify the OpenXML report-generation spike on Windows/Excel and implement safe row shifting beyond pre-provisioned capacity;
 - implement the controlled Pre-Migration baseline format and Post-Migration/MigrationSummary readers;
 - populate regulatory/migration content under approved SME workflow;
 - complete broader tests, release manifests, rollback/recall controls and Version 2 archive closure.
