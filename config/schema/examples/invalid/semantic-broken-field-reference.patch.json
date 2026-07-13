@@ -1,0 +1,1 @@
+{"ruleConditions":[{"conditionId":"COND-001","ruleId":"RULE-001","conditionGroupId":"CG-001","sequence":0,"fieldCode":"MISSING_FIELD","operator":"EQUALS","value1":true,"valueDataType":"Boolean","caseSensitive":false,"negate":false}]}

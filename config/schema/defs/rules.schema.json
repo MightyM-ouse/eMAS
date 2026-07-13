@@ -1,0 +1,630 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/defs/rules.schema.json",
+  "title": "eMAS Runtime Configuration rules definitions",
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "ruleRevision",
+        "ruleType",
+        "title",
+        "description",
+        "status",
+        "effectiveFrom",
+        "priority",
+        "conflictStrategy",
+        "specificity",
+        "stopProcessing",
+        "requirementReference"
+      ],
+      "properties": {
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ruleType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conflictGroup": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "conflictStrategy": {
+          "$ref": "common.schema.json#/$defs/conflictStrategy"
+        },
+        "specificity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stopProcessing": {
+          "type": "boolean"
+        },
+        "findingCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "requirementReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceReference": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "rulePhase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rulePhaseId",
+        "ruleId",
+        "phase",
+        "evaluationStatusOnMissingInput",
+        "isBlocker",
+        "exceptionEligible",
+        "sequence"
+      ],
+      "properties": {
+        "rulePhaseId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "phase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "evaluationStatusOnMissingInput": {
+          "$ref": "common.schema.json#/$defs/evaluationStatus"
+        },
+        "rag": {
+          "$ref": "common.schema.json#/$defs/rag"
+        },
+        "severity": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "isBlocker": {
+          "type": "boolean"
+        },
+        "exceptionEligible": {
+          "type": "boolean"
+        },
+        "decisionImpact": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "outputCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "conditionGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conditionGroupId",
+        "ruleId",
+        "groupSequence",
+        "groupOperator"
+      ],
+      "properties": {
+        "conditionGroupId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "groupSequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "groupOperator": {
+          "const": "AND"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conditionId",
+        "ruleId",
+        "conditionGroupId",
+        "sequence",
+        "fieldCode",
+        "operator",
+        "caseSensitive",
+        "negate"
+      ],
+      "properties": {
+        "conditionId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "conditionGroupId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fieldCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "operator": {
+          "$ref": "common.schema.json#/$defs/operator"
+        },
+        "value1": {},
+        "value2": {},
+        "valueDataType": {
+          "enum": [
+            "String",
+            "Code",
+            "Integer",
+            "Decimal",
+            "Boolean",
+            "Date",
+            "DateTime",
+            "Path"
+          ]
+        },
+        "caseSensitive": {
+          "type": "boolean"
+        },
+        "negate": {
+          "type": "boolean"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "enum": [
+                  "EXISTS",
+                  "MISSING"
+                ]
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "value1"
+                  ]
+                },
+                {
+                  "required": [
+                    "value2"
+                  ]
+                },
+                {
+                  "required": [
+                    "valueDataType"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "BETWEEN"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "value1",
+              "value2",
+              "valueDataType"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "enum": [
+                  "EQUALS",
+                  "NOT_EQUALS",
+                  "IN_LIST",
+                  "CONTAINS",
+                  "STARTS_WITH",
+                  "ENDS_WITH",
+                  "MATCHES_PATTERN",
+                  "GT",
+                  "GTE",
+                  "LT",
+                  "LTE"
+                ]
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "value1",
+              "valueDataType"
+            ]
+          }
+        }
+      ]
+    },
+    "ruleOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleOutputId",
+        "ruleId",
+        "phase",
+        "outputType",
+        "outputCode",
+        "sequence"
+      ],
+      "properties": {
+        "ruleOutputId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ruleId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "phase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "outputType": {
+          "$ref": "common.schema.json#/$defs/outputType"
+        },
+        "outputCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "outputValue": {},
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findingCode",
+        "title",
+        "findingCategory",
+        "description",
+        "defaultEvaluationStatus",
+        "exceptionEligible",
+        "customerVisible",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "findingCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "findingCategory": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "defaultEvaluationStatus": {
+          "$ref": "common.schema.json#/$defs/evaluationStatus"
+        },
+        "defaultRag": {
+          "$ref": "common.schema.json#/$defs/rag"
+        },
+        "defaultSeverity": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "exceptionEligible": {
+          "type": "boolean"
+        },
+        "customerVisible": {
+          "type": "boolean"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recommendationCode",
+        "title",
+        "customerFacingText",
+        "consultantFacingText",
+        "priority",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "recommendationCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "customerFacingText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consultantFacingText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "findingRecommendationLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "linkId",
+        "findingCode",
+        "recommendationCode",
+        "phase",
+        "linkType",
+        "sequence",
+        "status",
+        "effectiveFrom"
+      ],
+      "properties": {
+        "linkId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "findingCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "recommendationCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "phase": {
+          "$ref": "common.schema.json#/$defs/phase"
+        },
+        "linkType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "applicabilityConditionReference": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        }
+      }
+    },
+    "exceptionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exceptionPolicyId",
+        "eligibleFindingCode",
+        "allowedEffect",
+        "requiredApproverRole",
+        "evidenceRequirement",
+        "expiryRequired",
+        "carryForwardToPostMigration",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "exceptionPolicyId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "eligibleFindingCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "allowedEffect": {
+          "$ref": "common.schema.json#/$defs/exceptionEffect"
+        },
+        "requiredApproverRole": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "evidenceRequirement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expiryRequired": {
+          "type": "boolean"
+        },
+        "maximumValidityDays": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "carryForwardToPostMigration": {
+          "type": "boolean"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "expiryRequired": {
+                "const": true
+              }
+            },
+            "required": [
+              "expiryRequired"
+            ]
+          },
+          "then": {
+            "required": [
+              "maximumValidityDays"
+            ]
+          }
+        }
+      ]
+    },
+    "alias": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aliasId",
+        "aliasScope",
+        "sourceSystem",
+        "sourceFieldOrValue",
+        "canonicalEntityType",
+        "canonicalCode",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "aliasId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "aliasScope": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sourceSystem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceFieldOrValue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonicalEntityType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "canonicalCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

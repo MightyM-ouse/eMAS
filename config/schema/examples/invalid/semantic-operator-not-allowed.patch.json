@@ -1,0 +1,1 @@
+{"ruleConditions":[{"conditionId":"COND-001","ruleId":"RULE-001","conditionGroupId":"CG-001","sequence":0,"fieldCode":"INDEX_XML_EXISTS","operator":"GTE","value1":1,"valueDataType":"Integer","caseSensitive":false,"negate":false}]}

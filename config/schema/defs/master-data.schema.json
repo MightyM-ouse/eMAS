@@ -1,0 +1,511 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/defs/master-data.schema.json",
+  "title": "eMAS Runtime Configuration master-data definitions",
+  "$defs": {
+    "masterData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regions",
+        "authorities",
+        "technicalStandards",
+        "regionalImplementations",
+        "productDomains",
+        "lifecycleContexts",
+        "productClasses",
+        "procedureContexts",
+        "sourcePresentations"
+      ],
+      "properties": {
+        "regions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/region"
+          }
+        },
+        "authorities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/authority"
+          }
+        },
+        "technicalStandards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/technicalStandard"
+          }
+        },
+        "regionalImplementations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/regionalImplementation"
+          }
+        },
+        "productDomains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/productDomain"
+          }
+        },
+        "lifecycleContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lifecycleContext"
+          }
+        },
+        "productClasses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/productClass"
+          }
+        },
+        "procedureContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/procedureContext"
+          }
+        },
+        "sourcePresentations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourcePresentation"
+          }
+        }
+      }
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regionCode",
+        "regionName",
+        "status",
+        "effectiveFrom",
+        "sourceReference",
+        "regionType"
+      ],
+      "properties": {
+        "regionCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "regionName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "regionType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorityCode",
+        "authorityName",
+        "status",
+        "effectiveFrom",
+        "sourceReference",
+        "countryOrJurisdiction"
+      ],
+      "properties": {
+        "authorityCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "authorityName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "countryOrJurisdiction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "technicalStandard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "technicalStandardCode",
+        "technicalStandardName",
+        "status",
+        "effectiveFrom",
+        "sourceReference",
+        "standardVersion"
+      ],
+      "properties": {
+        "technicalStandardCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "technicalStandardName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "standardVersion": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "regionalImplementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regionalImplementationCode",
+        "regionalImplementationName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "regionalImplementationCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "regionalImplementationName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "productDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "productDomainCode",
+        "productDomainName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "productDomainCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "productDomainName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "lifecycleContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycleContextCode",
+        "lifecycleContextName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "lifecycleContextCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "lifecycleContextName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "productClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "productClassCode",
+        "productClassName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "productClassCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "productClassName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "procedureContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "procedureContextCode",
+        "procedureContextName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "procedureContextCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "procedureContextName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sourcePresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePresentationCode",
+        "sourcePresentationName",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "sourcePresentationCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sourcePresentationName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationshipId",
+        "relationshipType",
+        "sourceEntityType",
+        "sourceEntityCode",
+        "targetEntityType",
+        "targetEntityCode",
+        "cardinality",
+        "isMandatory",
+        "status",
+        "effectiveFrom",
+        "sourceReference"
+      ],
+      "properties": {
+        "relationshipId": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "relationshipType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sourceEntityType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "sourceEntityCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "targetEntityType": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "targetEntityCode": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "cardinality": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "isMandatory": {
+          "type": "boolean"
+        },
+        "status": {
+          "const": "Effective"
+        },
+        "effectiveFrom": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "effectiveTo": {
+          "$ref": "common.schema.json#/$defs/date"
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
