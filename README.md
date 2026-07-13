@@ -30,16 +30,22 @@ flowchart LR
 - Shared technical processing belongs in `engine/`.
 - Source evidence remains read-only.
 
-## Effective requirements baseline
+## Effective requirements and logical-model baseline
 
-The Product Owner approved all 171 reviewed recommendations on 13 July 2026. The decisions are consolidated into Enterprise Requirements v3.1 and the three Version 3.0 configuration documents. Implementation, verification, SME content approval and release completion remain separately tracked states.
+The Product Owner approved all 171 reviewed recommendations on 13 July 2026. The decisions are consolidated into Enterprise Requirements v3.1 and the three Version 3.0 configuration documents. The normalized relationship matrix and logical data dictionary are frozen at Version 1.0. Implementation, verification, SME content approval and release completion remain separately tracked states.
 
 Primary effective references:
 
 - [Enterprise Requirements v3.1](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
+- [Configuration Documentation Index](docs/configuration/README.md)
 - [Mapping Configuration Functional Requirements v3.0](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [Mapping Configuration Technical Requirements v3.0](docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md)
 - [Mapping Configuration Content Catalogue v3.0](docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md)
+- [Runtime JSON Contract](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
+- [Normalized Rule Model](docs/configuration/05_eMAS_Normalized_Rule_Model.md)
+- [Normalized Relationship Matrix v1.0](docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md)
+- [Logical Data Dictionary v1.0](docs/configuration/07_eMAS_Data_Dictionary.md)
+- [Runtime JSON Schema](config/schema/eMAS-runtime-config.schema.json)
 - [Approved Decision Baseline v1.0](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
 - [Permanent Decision Log](docs/governance/eMAS_Decision_Log.md)
 - [Authority and Precedence Policy](docs/governance/00_authority_and_precedence.md)
@@ -47,10 +53,19 @@ Primary effective references:
 - [Controlled Terminology](docs/governance/eMAS_Terminology.md)
 - [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
 - [Machine-readable LLM Context Index](docs/llm-development-context/context-index.yaml)
-- [Runtime JSON Contract](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
-- [Normalized Rule Model](docs/configuration/05_eMAS_Normalized_Rule_Model.md)
-- [Runtime JSON Schema](config/schema/eMAS-runtime-config.schema.json)
 - [Operational LLM Skills](docs/llm-development-context/skills/README.md)
+
+## Logical-model freeze
+
+Version 1.0 freezes:
+
+- entity inventory and stable primary keys;
+- dedicated link entities and approved polymorphic references;
+- relationship endpoint pairs, cardinalities and temporal-validity rules;
+- field names, data types and requiredness;
+- workbook-to-JSON ownership and serialization conventions.
+
+Detailed regulatory relationships, folder/file rules, effort weights, confidence weights, thresholds and exception-role values still require the applicable owner or SME approval before Effective configuration status.
 
 ## Assessment outcomes
 
@@ -95,11 +110,12 @@ See:
 1. Start from the latest `main` on a dedicated branch.
 2. Apply the canonical index and authority policy.
 3. Cite applicable DecisionIds and requirement IDs.
-4. Keep business and regulatory interpretation in approved configuration, not PowerShell.
-5. Update dependent schema, requirements, architecture, tests and guidance or track them explicitly.
-6. Obtain approvals required by the change-authority matrix.
-7. Stop when a conflict affects regulatory interpretation, JSON compatibility, phase decisions, report meaning or evidence traceability.
-8. Merge through a reviewed pull request; do not commit directly to `main`.
+4. Use the frozen relationship matrix and data dictionary for workbook, schema, PowerShell and test work.
+5. Keep business and regulatory interpretation in approved configuration, not PowerShell.
+6. Update dependent schema, requirements, architecture, tests and guidance or track them explicitly.
+7. Obtain approvals required by the change-authority matrix.
+8. Stop when a conflict affects the logical model, regulatory interpretation, JSON compatibility, phase decisions, report meaning or evidence traceability.
+9. Merge through a reviewed pull request; do not commit directly to `main`.
 
 Repository workflow is defined in [CONTRIBUTING.md](CONTRIBUTING.md), [CODEOWNERS](.github/CODEOWNERS) and the pull-request template.
 
