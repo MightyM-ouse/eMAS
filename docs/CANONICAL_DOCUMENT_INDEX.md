@@ -25,17 +25,17 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 
 | ID | Rank | Artifact | Version/status | Owner |
 |---|---:|---|---|---|
-| CFG-FUNC | 2 | [Mapping Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 Effective; amendment synchronization pending | Product Owner |
-| CFG-TECH | 3 | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 Effective; amendment synchronization pending | Technical Architect |
-| CFG-CAT | 4 | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 Effective logical model; `Warning` synchronization pending | Product Owner / SMEs |
-| CFG-JSON | 3–5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 Effective; amendment synchronization pending | Technical Architect |
-| CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.1 Approved; amendment synchronization pending | Product Owner / Technical Architect |
+| CFG-FUNC | 2 | [Mapping Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 Effective; `Warning` amendment synchronized for schema/runtime scope | Product Owner |
+| CFG-TECH | 3 | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 Effective; `Warning` amendment synchronized for schema/runtime scope | Technical Architect |
+| CFG-CAT | 4 | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 Effective logical model; `Warning` amendment synchronized for schema/runtime scope | Product Owner / SMEs |
+| CFG-JSON | 3–5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 Effective with in-place Schema 1.0.0 `Warning` compatibility amendment | Technical Architect |
+| CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.1 Approved; `Warning` amendment synchronized for schema/runtime scope | Product Owner / Technical Architect |
 | CFG-REL | 4 | [Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Product Owner / Technical Architect |
-| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 Effective; semantic-code amendment pending | Product Owner / Technical Architect |
-| CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.0 Effective; amendment synchronization pending | Technical Architect / QA Lead |
+| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 Effective; `Warning` semantic-code amendment synchronized for schema/runtime scope | Product Owner / Technical Architect |
+| CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.0 Effective; `Warning` fixtures and semantic checks added for schema/runtime scope | Technical Architect / QA Lead |
 | CFG-XLSM-POC | 5–8 | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.0 Effective POC verification contract | Technical Architect / QA Lead |
-| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective; `Warning` compatibility update pending | Technical Architect |
-| SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective; `Warning` fixtures pending | Technical Architect / QA Lead |
+| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective with approved in-place `Warning` compatibility update | Technical Architect |
+| SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective with valid, boundary and invalid `Warning` fixtures | Technical Architect / QA Lead |
 
 ## Architecture and phase contracts
 
@@ -72,6 +72,8 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 | TEST-POC | `tests/vba/test_xlsm_vba_poc.py` | Automated POC regression evidence |
 | CI-POC | `.github/workflows/xlsm-vba-poc-validation.yml` | Automated Linux source/schema conformance |
 | BUILD-SCHEMA | `build/validate_emas_schema.py` | Independent Runtime JSON validation |
+| ENGINE-RUNTIME | `engine/core`, `engine/powershell51`, `engine/powershell7` | Initial runtime boundary and loader-contract source |
+| CI-RUNTIME | `.github/workflows/powershell-runtime-contracts.yml` | Initial Windows PowerShell 5.1 / PowerShell 7.6 contract workflow |
 | BUILD-SKILLS | `build/validate_operational_skills.py` | Operational-skill validation |
 
 ## Required reading by task
@@ -95,7 +97,7 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 
 ## Delivery-state boundary
 
-The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation, loader, templates and regression evidence must still be synchronized before controlled release. The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
+The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation and the initial loader-contract boundary are synchronized for the schema/runtime scope. Template dropdown/report validation, full PowerShell loader implementation and broader regression evidence must still be synchronized before controlled release. The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
 
 ## Historical and prohibited authority
 

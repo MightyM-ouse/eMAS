@@ -24,7 +24,7 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - [XLSM/VBA POC and Conformance Contract v1.0](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
 - [Runtime JSON Schema 1.0.0](../config/schema/eMAS-runtime-config.schema.json)
 
-The runtime-profile and `Warning` decisions amend conflicting baseline statements pending synchronized implementation and the next consolidated document/schema revisions.
+The runtime-profile and `Warning` decisions amend conflicting baseline statements. The schema/runtime portion has been synchronized through the Runtime JSON Schema 1.0.0 compatibility amendment, fixtures, semantic validator constants and initial PowerShell loader contracts; controlled template synchronization remains separate.
 
 ## Effective architecture and skills
 
@@ -70,9 +70,9 @@ The runtime-profile and `Warning` decisions amend conflicting baseline statement
 5. Solution architecture and phase contracts — completed.
 6. Operational skills and catalogue validation — completed.
 7. XLSM/VBA POC source and automated conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
-8. Runtime-profile and `Warning` amendment — approved; synchronized schema/fixture/loader/template/test implementation remains pending.
+8. Runtime-profile and `Warning` amendment — approved; schema/fixture/semantic-validator and initial loader-contract synchronization implemented; controlled template and full runtime-loader implementation remain pending.
 
-Next implementation work covers controlled template corrections, `Warning` synchronization, the PowerShell configuration loader, shared core/runtime adapters, OpenXML/reporting and phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
+Next implementation work covers controlled template corrections, the full PowerShell configuration loader, OpenXML/reporting and phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
 
 ## Repository safety
 

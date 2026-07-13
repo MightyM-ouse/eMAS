@@ -20,6 +20,9 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - Windows/Excel XLSM build and native conformance scripts;
 - POC unit tests and focused GitHub Actions workflow;
 - XLSM/VBA POC and Conformance Contract v1.0 and focused LLM route.
+- `Warning` EvaluationStatus synchronized across schema/runtime requirements, Runtime JSON Schema 1.0.0 definitions, seed data, valid/boundary/invalid fixtures and semantic validator constants;
+- initial PowerShell runtime boundary under `engine/core`, `engine/powershell51` and `engine/powershell7`;
+- initial runtime contract tests and Windows PowerShell 5.1 / PowerShell 7.6 CI workflow plan.
 
 ### Changed
 
@@ -29,6 +32,8 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - build/test guidance distinguishes automated Linux CI verification from native Windows/Excel qualification;
 - delivery-state wording records repository POC/automated conformance as complete without claiming native Excel execution;
 - canonical, documentation and LLM indexes include POC assets and the manual qualification gate.
+- Runtime JSON Contract documents the approved in-place Schema 1.0.0 compatibility amendment for `Warning` before controlled release;
+- POC source seed data and deterministic manifest hashes include the `WARNING` controlled code.
 
 ### Pending implementation and qualification
 
@@ -36,6 +41,7 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - qualify supported Excel versions, Office bitness and German/English locales;
 - implement the complete controlled-workbook validation sequence and production signing;
 - implement PowerShell configuration-loader, engine and phase-contract conformance;
+- complete native Windows PowerShell 5.1 and PowerShell 7.6 execution qualification for the runtime contracts and future loader implementation;
 - complete the OpenXML report-generation spike and controlled phase templates;
 - implement the controlled Pre-Migration baseline format and Post-Migration/MigrationSummary readers;
 - populate regulatory/migration content under approved SME workflow;
