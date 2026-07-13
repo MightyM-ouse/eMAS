@@ -5,6 +5,7 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 ## Governance
 
 - [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md)
+- [Runtime Profile and Warning Amendment](governance/decisions/DEC-2026-07-13_Runtime_Profile_and_Warning.md)
 - [Authority and Precedence](governance/00_authority_and_precedence.md)
 - [Document Governance](governance/eMAS_Document_Governance.md)
 - [Controlled Terminology](governance/eMAS_Terminology.md)
@@ -23,10 +24,13 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - [XLSM/VBA POC and Conformance Contract v1.0](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
 - [Runtime JSON Schema 1.0.0](../config/schema/eMAS-runtime-config.schema.json)
 
+The runtime-profile and `Warning` decisions amend conflicting baseline statements pending synchronized implementation and the next consolidated document/schema revisions.
+
 ## Effective architecture and skills
 
 - [Architecture Index](architecture/README.md)
 - [Solution Architecture v1.0](architecture/eMAS_Solution_Architecture.md)
+- [PowerShell Runtime Profile v1.0](architecture/eMAS_PowerShell_Runtime_Profile.md)
 - [Project Flow v2.0](architecture/eMAS_Project_Flow.md)
 - [Repository Architecture v1.1](architecture/eMAS_Repository_Architecture.md)
 - [Phase Contracts](architecture/phase-contracts/README.md)
@@ -36,6 +40,7 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 
 ## Implementation and verification
 
+- [Runtime/Warning/Template Work Package](implementation/WORK_PACKAGE_Runtime_Profile_Warning_and_Template_Corrections.md)
 - [Synthetic XLSM/VBA POC source](../config/authoring/poc/README.md)
 - [Reviewable VBA source](../config/vba/README.md)
 - [Schema Package](../config/schema/README.md)
@@ -48,7 +53,10 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - Reviewed internal XLSM = authoring source.
 - Validated immutable exported JSON = runtime source.
 - Exact JSON version/checksum loaded for a run = execution source.
-- Shared PowerShell engine performs generic technical processing.
+- Shared PowerShell core performs generic technical processing and remains Windows PowerShell 5.1 compatible.
+- Pre-Sales uses Windows PowerShell 5.1 on Windows.
+- Pre-Migration and Post-Migration use PowerShell 7.6 LTS on Windows.
+- PowerShell 7.6 LTS on macOS is permitted for development and non-Windows unit/fixture testing only.
 - Phase contracts control phase orchestration/result language.
 - Controlled templates control workbook presentation.
 - Operational skills control repeatable task procedure/evidence.
@@ -62,8 +70,9 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 5. Solution architecture and phase contracts — completed.
 6. Operational skills and catalogue validation — completed.
 7. XLSM/VBA POC source and automated conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
+8. Runtime-profile and `Warning` amendment — approved; synchronized schema/fixture/loader/template/test implementation remains pending.
 
-Next implementation work covers the PowerShell OpenXML/reporting spike, engine contracts and configuration-loader/phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
+Next implementation work covers controlled template corrections, `Warning` synchronization, the PowerShell configuration loader, shared core/runtime adapters, OpenXML/reporting and phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
 
 ## Repository safety
 
