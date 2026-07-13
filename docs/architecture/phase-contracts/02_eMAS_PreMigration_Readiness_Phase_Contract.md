@@ -1,11 +1,12 @@
 # eMAS Pre-Migration Readiness Phase Contract
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Effective Phase Contract  
 **Effective date:** 2026-07-13  
 **Phase code:** `PRE_MIGRATION`  
 **Owner:** Product Owner, Migration SME and Technical Architect  
-**Canonical references:** Enterprise Requirements v3.1 §14.2; Solution Architecture v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0
+**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
+**Canonical references:** Enterprise Requirements v3.1 §14.2; Solution Architecture v1.0; PowerShell Runtime Profile v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0 plus approved amendments
 
 ## 1. Purpose
 
@@ -17,8 +18,10 @@ The phase supports migration planning and evidence; it does not migrate data or 
 
 Execution methods:
 
-- Windows PowerShell 5.1 CLI;
-- optional portable WPF that invokes the same entry script and contains no independent business logic.
+- PowerShell 7.6 LTS CLI on Windows using `pwsh.exe`;
+- optional portable WPF that invokes the same PowerShell 7.6 entry script and contains no independent business logic.
+
+Development and pure unit/fixture testing may use PowerShell 7.6 LTS on macOS. Windows PowerShell 7.6 execution remains the authoritative phase-qualification gate.
 
 Primary actors are the consultant/migration team, customer IT/data owners and required exception approvers.
 
@@ -46,6 +49,7 @@ Project-specific accepted exceptions are external evidence. They are not written
 
 ## 4. Preconditions
 
+- PowerShell 7.6 LTS runtime check passes;
 - configuration, checksum, schema and semantic validation pass;
 - source evidence is accessible read-only;
 - output/template initialization succeeds;
@@ -56,7 +60,7 @@ Project-specific accepted exceptions are external evidence. They are not written
 
 The phase must:
 
-1. initialize run metadata and detailed logging;
+1. initialize run metadata and detailed logging, including exact PowerShell/.NET/runtime-adapter information;
 2. perform detailed discovery of dossiers, sequences, folders and files;
 3. evaluate normalized region/authority/technical-standard/regional-implementation/product dimensions where evidence permits;
 4. check configured folder and mandatory-file expectations;
@@ -69,6 +73,8 @@ The phase must:
 11. determine the phase result using configured decision policies and blocker override;
 12. create the reusable comparison baseline;
 13. populate the controlled Pre-Migration report and timestamped log.
+
+PowerShell 7-specific performance features may be used only through approved runtime adapters and must not change business interpretation or deterministic outcomes.
 
 ## 6. Accepted-exception contract
 
@@ -95,6 +101,8 @@ Permitted results:
 - `Blocked`.
 
 Decision evaluation uses ordered configured policies with mandatory blocker override. Missing required evidence, unresolved conflicts or failed critical checks must not be converted to Ready.
+
+`Warning` is an approved EvaluationStatus for a completed usable evaluation with a recoverable condition requiring attention. It does not independently determine RAG, blocker state or readiness result.
 
 ## 8. Baseline contract
 
@@ -130,11 +138,11 @@ The controlled Pre-Migration report must include, at minimum:
 
 ## 10. Logging and progress
 
-Console and log output must clearly identify major discovery/validation steps, progress and completion. The log records inaccessible paths, skipped checks, rule/evidence references, exception treatment, baseline creation and generated file paths.
+Console and log output must clearly identify major discovery/validation steps, progress and completion. The log records exact PowerShell 7.6/.NET/adapter information, inaccessible paths, skipped checks, rule/evidence references, exception treatment, baseline creation and generated file paths.
 
 ## 11. Failure behavior
 
-Stop before assessment for invalid configuration/package/template, inaccessible mandatory source roots or output initialization failure.
+Stop before assessment for missing/unsupported PowerShell 7.6, invalid configuration/package/template, inaccessible mandatory source roots or output initialization failure.
 
 Return `Blocked` or an explicit failed-execution state, according to the failure point, when critical evidence cannot be evaluated. A technical execution failure must not be presented as a completed readiness decision.
 
@@ -142,10 +150,12 @@ Return `Blocked` or an explicit failed-execution state, according to the failure
 
 The phase conforms when:
 
-- CLI and optional WPF invoke the same orchestration;
+- CLI and optional WPF invoke the same PowerShell 7.6 orchestration;
+- the common business core remains compatible with the shared engine contract and runtime adapters contain no independent interpretation;
 - detailed checks are performed without modifying source evidence;
 - accepted exceptions preserve original findings/evidence;
 - only approved readiness terminology is used;
 - a stable compatible baseline is generated;
 - one controlled XLSX report and one detailed log are produced;
-- all result-driving evidence and policies are traceable.
+- all result-driving evidence and policies are traceable;
+- Windows PowerShell 7.6 qualification evidence is recorded.
