@@ -1,4 +1,4 @@
-schemaVersion: "1.1"
+schemaVersion: "1.2"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
@@ -94,13 +94,31 @@ artifacts:
     owner: Product Owner and Technical Architect
     requiredFor: [rule-model, mapping-workbook, json, powershell]
 
+  - id: CFG-REL
+    path: ../configuration/06_eMAS_Normalized_Relationship_Matrix.md
+    version: "1.0"
+    status: EffectiveLogicalModelContract
+    authorityRank: 4
+    owner: Product Owner and Technical Architect
+    notes: Frozen entity relationships, endpoint pairs, cardinalities, temporal rules and runtime ownership.
+    requiredFor: [configuration, mapping-workbook, rule-model, json, schema, powershell, testing]
+
+  - id: CFG-DICT
+    path: ../configuration/07_eMAS_Data_Dictionary.md
+    version: "1.0"
+    status: EffectiveLogicalModelContract
+    authorityRank: 4
+    owner: Product Owner and Technical Architect
+    notes: Frozen entity fields, keys, types, requiredness and serialization conventions.
+    requiredFor: [configuration, mapping-workbook, rule-model, json, schema, powershell, testing]
+
   - id: SCHEMA-JSON
     path: ../../config/schema/eMAS-runtime-config.schema.json
     version: "1.0.0"
     status: ApprovedInitialBaseline
     authorityRank: 5
     owner: Technical Architect
-    notes: Fixtures and independent validation remain pending.
+    notes: Fixture and semantic-validation synchronization against CFG-REL and CFG-DICT is pending.
     requiredFor: [json, schema, mapping-workbook, powershell, testing]
 
   - id: ARCH-FLOW
@@ -209,29 +227,33 @@ routing:
   byTask:
     requirements:
       required: [GOV-DOC, REQ-ENT]
-      optional: [CFG-FUNC, CFG-TECH, CFG-CAT, ARCH-FLOW]
+      optional: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-REL, CFG-DICT, ARCH-FLOW]
 
     mapping-workbook:
-      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-JSON, SCHEMA-JSON]
+      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, SCHEMA-JSON]
       optional: [CTX-CONFIG, CTX-REG]
 
+    logical-model:
+      required: [CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON]
+      optional: [CFG-FUNC, CFG-TECH, SCHEMA-JSON]
+
     json-schema:
-      required: [CFG-TECH, CFG-JSON, CFG-RULE, SCHEMA-JSON]
+      required: [CFG-TECH, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON]
       optional: [CTX-CONFIG]
 
     powershell:
-      required: [CFG-JSON, CFG-RULE, SCHEMA-JSON]
+      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON]
       optional: [ARCH-FLOW, CTX-CORE, CTX-PHASES, CTX-ENGINE]
 
     regulatory-content:
-      required: [CFG-CAT, CFG-RULE]
+      required: [CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT]
       optional: [CTX-REG]
       stopUnless:
         - required SME evidence is available
         - the value is already approved controlled content
 
     testing-release:
-      required: [GOV-DOC, ARCH-REPO, REPO-STRUCT]
+      required: [GOV-DOC, CFG-REL, CFG-DICT, ARCH-REPO, REPO-STRUCT]
       optional: [SCHEMA-JSON]
 
 prohibitedSources:
@@ -245,6 +267,7 @@ prohibitedSources:
 stopConditions:
   - regulatory interpretation conflict
   - JSON compatibility conflict
+  - logical-model or data-dictionary conflict
   - phase decision or report-meaning conflict
   - evidence-traceability conflict
   - missing required SME approval
