@@ -30,15 +30,23 @@ All material changes to eMAS source, configuration contracts, templates and cont
 - approved runtime JSON contract;
 - initial JSON Schema Draft 2020-12 baseline;
 - approved normalized rule model;
+- Version 1.0 Effective normalized relationship matrix;
+- Version 1.0 Effective logical data dictionary;
+- configuration-document routing index;
 - operational LLM skill framework and skill template;
 - historical Version 2 documentation-pack supersession notice.
 
 ### Changed
 
 - all AI recommendations in the reviewed decision register are adopted as approved design decisions;
-- Enterprise Requirements v3.1 now consolidates the approved decision baseline and supersedes v3.0 for implementation use;
+- Enterprise Requirements v3.1 consolidates the approved decision baseline and supersedes v3.0 for implementation use;
 - mapping functional, technical and content-catalogue documents are synchronized and promoted to Version 3.0 Effective baselines;
-- the canonical and machine-readable indexes route requirements work to Enterprise v3.1 and configuration v3.0;
+- the canonical and machine-readable indexes route logical-model work through the frozen relationship matrix and data dictionary;
+- the entity inventory, primary keys, relationship endpoint pairs, cardinalities, temporal-validity rules and runtime ownership are frozen at Version 1.0;
+- field names, logical types, requiredness, controlled link entities and serialization conventions are frozen at Version 1.0;
+- dedicated `Field_Operator_Links`, `Field_Phase_Links`, `Metric_Phase_Links` and `Effort_Driver_Phase_Links` replace repeated multi-value fields;
+- `Validation_Runs` is defined as the parent execution record for validation results and export evidence;
+- polymorphic references now require explicit type discriminators and approved target sets;
 - the approved normalized JSON model replaces the earlier flat Enterprise v3.0 example;
 - authority policy governs statuses, conflicts, approved changes and source-of-truth terminology;
 - repository contribution and pull-request workflows require DecisionIds, authority checks, change-class approvals and delivery-state accuracy;
@@ -51,12 +59,12 @@ All material changes to eMAS source, configuration contracts, templates and cont
 - classification separates technical standard, regional implementation, procedure context and source presentation;
 - ASMF is governed as procedure context rather than technical submission format;
 - runtime JSON serialization is specified as deterministic, culture-invariant UTF-8 without BOM;
-- the superseded-document register now includes Enterprise v3.0 and configuration v2.0 revisions.
+- the superseded-document register includes Enterprise v3.0 and configuration v2.0 revisions.
 
 ### Pending implementation and synchronization
 
-- freeze the complete normalized relationship matrix and data dictionary;
-- complete JSON fixtures and independent schema validation;
+- synchronize JSON Schema 1.0.0 and golden/negative fixtures with the frozen relationship and field contracts;
+- implement semantic referential-integrity validation in workbook, release validation and PowerShell loader layers;
 - update architecture and phase contracts;
 - implement the remaining operational skills;
 - complete XLSM/VBA and PowerShell/OpenXML proof-of-concept work;
