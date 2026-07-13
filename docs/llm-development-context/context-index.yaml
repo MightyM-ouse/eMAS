@@ -1,0 +1,55 @@
+version: 1.0.0
+status: Approved
+authority_document: docs/llm-development-context/00-authority-and-precedence.md
+canonical_sources:
+  enterprise_requirements:
+    path: docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md
+    version: "3.1"
+    status: Effective
+    authority_rank: 1
+  software_requirements:
+    path: docs/requirements/eMAS_Software_Requirements_Specification_v3.1.md
+    version: "3.1"
+    status: Approved
+    authority_rank: 2
+  mapping_functional:
+    path: docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements_v3.1.md
+    version: "3.1"
+    status: Approved
+    authority_rank: 3
+  mapping_technical:
+    path: docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements_v3.1.md
+    version: "3.1"
+    status: Approved
+    authority_rank: 4
+  mapping_catalogue:
+    path: docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue_v3.1.md
+    version: "3.1"
+    status: Approved
+    authority_rank: 5
+  json_schema:
+    path: schemas/eMAS-runtime-config.schema.json
+    version: "1.0.0"
+    status: Approved
+    authority_rank: 6
+skills:
+  modify-configuration-model:
+    path: docs/llm-development-context/skills/modify-configuration-model.md
+  add-regulatory-classification:
+    path: docs/llm-development-context/skills/add-regulatory-classification.md
+  update-json-schema:
+    path: docs/llm-development-context/skills/update-json-schema.md
+  implement-powershell-module:
+    path: docs/llm-development-context/skills/implement-powershell-module.md
+  modify-report-template:
+    path: docs/llm-development-context/skills/modify-report-template.md
+  create-tests:
+    path: docs/llm-development-context/skills/create-tests.md
+  investigate-defect:
+    path: docs/llm-development-context/skills/investigate-defect.md
+  review-change:
+    path: docs/llm-development-context/skills/review-change.md
+prohibited_sources:
+  - docs/archive/v2-documentation-pack/
+  - superseded external Word packs
+  - manually edited runtime JSON
