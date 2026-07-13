@@ -1,11 +1,12 @@
 # eMAS Pre-Sales Assessment Phase Contract
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Effective Phase Contract  
 **Effective date:** 2026-07-13  
 **Phase code:** `PRE_SALES`  
 **Owner:** Product Owner and Technical Architect  
-**Canonical references:** Enterprise Requirements v3.1 §14.1; Solution Architecture v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0
+**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
+**Canonical references:** Enterprise Requirements v3.1 §14.1; Solution Architecture v1.0; PowerShell Runtime Profile v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0 plus approved amendments
 
 ## 1. Purpose
 
@@ -23,22 +24,25 @@ Pre-Sales is not a readiness assessment, migration validation, regulatory valida
 
 Execution methods:
 
-- Windows PowerShell 5.1 CLI;
+- Windows PowerShell 5.1 CLI on Windows using `powershell.exe`;
 - optional simple command launcher;
+- no PowerShell 7 prerequisite for the customer package;
 - no WPF requirement and no Pre-Migration/Post-Migration interface in the customer package.
+
+Development may use PowerShell 7.6 LTS on macOS, but Windows PowerShell 5.1 execution is the authoritative phase-qualification gate.
 
 ## 3. Package contract
 
 The package contains only:
 
 - `eMAS-PreSalesAssessment.ps1` and optional launcher;
-- required shared-engine modules;
+- required Windows PowerShell 5.1-compatible common-core and adapter modules;
 - controlled `eMAS_Runtime_Config.json` and checksum/integrity evidence;
 - controlled Pre-Sales XLSX template;
 - concise customer execution instructions;
 - designated output location.
 
-It excludes the internal XLSM, VBA source, WPF, other phase scripts, internal tests, governance material and confidential assets.
+It excludes the internal XLSM, VBA source, WPF, PowerShell 7-only adapters, other phase scripts, internal tests, governance material and confidential assets.
 
 ## 4. Inputs
 
@@ -64,6 +68,7 @@ Exact parameter names are defined by the script-interface implementation and mus
 
 ## 5. Preconditions
 
+- Windows PowerShell 5.1 runtime check passes;
 - package integrity and runtime JSON compatibility pass;
 - required evidence roots are accessible read-only;
 - output path is writable;
@@ -74,7 +79,7 @@ Exact parameter names are defined by the script-interface implementation and mus
 
 The phase must:
 
-1. initialize run metadata and timestamped logging;
+1. initialize run metadata and timestamped logging, including exact PowerShell edition/version and adapter version;
 2. show clear console progress for long-running steps;
 3. perform proportionate folder/file discovery and volume calculation;
 4. collect or derive permitted storage/database/archive/export measures;
@@ -95,7 +100,7 @@ Pre-Sales must not:
 - expose raw internal scoring by default;
 - treat missing evidence as Green or Pass;
 - include customer-specific or internal Confluence identifiers in output filenames;
-- include Pre-Migration/Post-Migration UI or internal configuration assets.
+- include PowerShell 7-only adapters, Pre-Migration/Post-Migration UI or internal configuration assets.
 
 Deeper technical checks may be introduced only as explicitly optional and proportionate checks that do not change the phase into a readiness assessment.
 
@@ -111,7 +116,7 @@ Required customer-facing results:
 - customer clarification register;
 - review-required indicators.
 
-`EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` remain separate fields/concepts.
+`EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` remain separate fields/concepts. `Warning` is an approved EvaluationStatus for a completed usable evaluation with a recoverable condition requiring attention; it does not itself set RAG or complexity.
 
 Unknown or conflicting classification evidence must remain visible and must not be silently forced to a known value.
 
@@ -137,9 +142,10 @@ The report must not use `Readiness`, `Ready`, `Validation Passed` or equivalent 
 The log records:
 
 - run and version metadata;
+- exact PowerShell edition/version, Windows version, process architecture and adapter version;
 - sanitized parameters;
 - each major processing step and duration;
-- inaccessible locations, skipped checks and limitations;
+- inaccessible locations, skipped checks, warnings and limitations;
 - runtime JSON checksum and template version;
 - output paths and final completion state.
 
@@ -147,7 +153,7 @@ The script must clearly tell the customer which generated files should be shared
 
 ## 11. Failure behavior
 
-Stop before assessment when package/configuration/template integrity fails, mandatory inputs are missing or the output location cannot be initialized.
+Stop before assessment when runtime, package/configuration/template integrity fails, mandatory inputs are missing or the output location cannot be initialized.
 
 During assessment, inaccessible optional evidence becomes an explicit evaluation status, assumption, limitation or clarification item according to configuration. It must not be reported as Green.
 
@@ -155,11 +161,12 @@ During assessment, inaccessible optional evidence becomes an explicit evaluation
 
 The phase conforms when:
 
-- it runs from CLI without WPF dependency;
+- it runs from CLI under Windows PowerShell 5.1 without PowerShell 7 or WPF dependency;
 - it remains read-only and offline;
-- it uses the shared engine and one controlled runtime JSON;
+- it uses the shared 5.1-compatible core, applicable adapter and one controlled runtime JSON;
 - it completes the required lightweight processing without mandatory deep readiness checks;
 - it generates one controlled XLSX report and one timestamped log;
 - report terminology contains no readiness/acceptance claim;
 - complexity, confidence and clarification outputs are traceable to evidence and configuration;
-- completion output identifies files to share.
+- completion output identifies files to share;
+- Windows PowerShell 5.1 qualification evidence is recorded.

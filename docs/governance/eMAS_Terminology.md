@@ -2,7 +2,7 @@
 
 **Status:** Approved  
 **Effective date:** 2026-07-13  
-**Decision references:** AP-002, AP-010, DOC-013, RM-008, RM-017, RM-018, RM-025, REG-003, REG-004
+**Decision references:** AP-002, AP-010, DOC-013, RM-008, RM-017, RM-018, RM-025, REG-003, REG-004, DEC-2026-07-13-EVAL-WARNING, DEC-2026-07-13-PS-RUNTIME
 
 ## Assessment phases
 
@@ -52,9 +52,12 @@ Evaluation status is separate from RAG:
 - NotAssessed
 - NotApplicable
 - Skipped
+- Warning
 - Error
 - InsufficientEvidence
 - Conflict
+
+`Warning` means that evaluation completed and produced a usable result, but one or more recoverable conditions require attention. It does not by itself determine RAG, severity, readiness or reconciliation outcome. The related warning/finding, evidence and decision impact must remain separately traceable.
 
 ## RAG
 
@@ -127,6 +130,16 @@ They must not be treated as mutually exclusive alternatives to the underlying te
 ### ProcedureContext
 
 ASMF is a regulatory procedure or dossier context, not a technical submission format. Its technical standard and regional implementation are classified independently. Medical-device technical-file context must likewise be modelled in the appropriate product/procedure dimensions rather than automatically as a submission format.
+
+## PowerShell runtime profile
+
+- **Development runtime:** PowerShell 7.6 LTS on macOS is permitted for source development, pure unit tests, schema/fixture tests and non-Windows tooling.
+- **Shared business-engine baseline:** common engine modules remain compatible with Windows PowerShell 5.1 language and API constraints unless a runtime-specific adapter is explicitly used.
+- **Pre-Sales runtime:** Windows PowerShell 5.1 on Windows is mandatory to minimize customer prerequisites.
+- **Pre-Migration runtime:** PowerShell 7.6 LTS on Windows is mandatory.
+- **Post-Migration runtime:** PowerShell 7.6 LTS on Windows is mandatory.
+- **Runtime adapters:** runtime-specific modules may optimize technical processing but must not duplicate or alter business/regulatory interpretation.
+- **Qualification:** Windows execution is authoritative for NTFS, UNC paths, Windows identity, WPF and Microsoft Excel compatibility.
 
 ## Source-of-truth terms
 
