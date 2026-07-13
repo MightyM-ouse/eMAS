@@ -1,0 +1,373 @@
+{
+  "mappingId": "EMAS-MAP-PRESALES",
+  "mappingVersion": "1.0.0",
+  "phaseCode": "PRE_SALES",
+  "phaseName": "Pre-Sales Assessment",
+  "description": "Technical report-binding contract for the Pre-Sales Assessment controlled template. Defines exactly where the shared PowerShell reporting engine writes normalized result-object fields. Contains no business rules, RAG logic, classification logic or effort logic; those remain governed exclusively by the Runtime JSON Contract, Normalized Rule Model and Runtime JSON Schema.",
+  "template": {
+    "templateId": "EMAS-TPL-PRESALES",
+    "templateName": "eMAS_PreSales_Template.xlsx",
+    "templateVersion": "1.1.1",
+    "templateFilePath": "templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx",
+    "templateControlTable": "tblPreSalesTemplateControl"
+  },
+  "requiredSheetOrder": [
+    "01_Executive_Summary",
+    "02_Scope_&_Effort",
+    "03_Dossier_Inventory",
+    "04_Sequence_Inventory",
+    "05_Findings_&_Clarifications",
+    "06_Path_&_Volume",
+    "07_Assumptions_&_Method",
+    "08_Execution_Details"
+  ],
+  "protectedTables": [
+    {
+      "sheetName": "08_Execution_Details",
+      "tableName": "tblPreSalesTemplateControl",
+      "protection": "readOnly",
+      "preserveHeadersExactly": false,
+      "reason": "Release-managed template identity/version/status metadata (TemplateId, TemplateVersion, PhaseCode, Status, ChangeSummary, RequiredSheetNames, RequiredTableNames). Set only at controlled template release, never written by the reporting engine at execution time. The engine may read TemplateVersion/RequiredTableNames from this table for compatibility verification only."
+    }
+  ],
+  "tableMappings": [
+    {
+      "sheetName": "01_Executive_Summary",
+      "tableName": "tblPreSalesSummary",
+      "sourceCollection": "summaryMetrics",
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Area", "Metric"],
+      "allowAppendAdditionalRows": false,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 30,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "30 pre-authored metric rows (Report Context, Scope and Volume, Classification, Structure and Quality, Estimate). The engine locates each row by its existing Area+Metric text and fills only the Value/EvaluationStatus/RAG/Confidence/ValueSource/ReviewRequired columns; it must not add, remove or reorder metric rows.",
+      "columns": [
+        { "targetColumn": "Area", "sourceField": "area", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Metric", "sourceField": "metric", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Value", "sourceField": "value", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Description", "sourceField": null, "required": false, "dataType": "LongText", "controlledValueList": null, "format": null, "notes": "Pre-authored template guidance text; never written by the engine." }
+      ]
+    },
+    {
+      "sheetName": "02_Scope_&_Effort",
+      "tableName": "tblPreSalesEffortDrivers",
+      "sourceCollection": "effortDrivers",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 5,
+        "rowInsertionBehavior": "insertAndShiftFollowingTable",
+        "followingTable": "tblPreSalesRecommendations"
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "Shares its sheet with tblPreSalesRecommendations, whose header sits 5 rows below this table's first data row. A driver set larger than 5 rows requires the engine to insert rows here and shift tblPreSalesRecommendations (and its data) down by the same count before appending further driver rows.",
+      "columns": [
+        { "targetColumn": "DriverId", "sourceField": "driverId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "DriverCode", "sourceField": "driverCode", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "DriverName", "sourceField": "driverName", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "DriverCategory", "sourceField": "driverCategory", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "MetricCode", "sourceField": "metricCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ObservedValue", "sourceField": "observedValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Unit", "sourceField": "unit", "required": false, "dataType": "Code", "controlledValueList": "Unit", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Severity", "sourceField": "severity", "required": false, "dataType": "Code", "controlledValueList": "Severity", "format": null },
+        { "targetColumn": "EffortImpact", "sourceField": "effortImpact", "required": false, "dataType": "Code", "controlledValueList": "EffortConfidenceImpact", "format": null, "notes": "Qualitative-only dropdown (Increases Band / Neutral / Decreases Band); raw numeric weights must never be written here." },
+        { "targetColumn": "ConfidenceImpact", "sourceField": "confidenceImpact", "required": false, "dataType": "Code", "controlledValueList": "EffortConfidenceImpact", "format": null, "notes": "Same qualitative-only dropdown as EffortImpact." },
+        { "targetColumn": "MinimumBandOverride", "sourceField": "minimumBandOverride", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "EvidenceSummary", "sourceField": "evidenceSummary", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RuleId", "sourceField": "ruleId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "FindingCode", "sourceField": "findingCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "CustomerFacingExplanation", "sourceField": "customerFacingExplanation", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendationCode", "sourceField": "recommendationCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendedAction", "sourceField": "recommendedAction", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "02_Scope_&_Effort",
+      "tableName": "tblPreSalesRecommendations",
+      "sourceCollection": "recommendations",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 12,
+      "firstDataRow": 13,
+      "notes": "Additional source collection beyond the phase's required baseline list; needed because tblPreSalesRecommendations exists in the finalized template and requires a source. Last table on its sheet; no shift required.",
+      "columns": [
+        { "targetColumn": "RecommendationId", "sourceField": "recommendationId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendationCode", "sourceField": "recommendationCode", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Area", "sourceField": "area", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "CustomerFacingRecommendation", "sourceField": "customerFacingRecommendation", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ConsultantFacingNote", "sourceField": "consultantFacingNote", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Reason", "sourceField": "reason", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Priority", "sourceField": "priority", "required": false, "dataType": "Code", "controlledValueList": "Priority", "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "RequestedFrom", "sourceField": "requestedFrom", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "BeforeFinalEstimate", "sourceField": "beforeFinalEstimate", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "03_Dossier_Inventory",
+      "tableName": "tblPreSalesDossiers",
+      "sourceCollection": "dossierInventory",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "DossierId", "sourceField": "dossierId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Product", "sourceField": "product", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "DossierDisplayName", "sourceField": "dossierDisplayName", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "DossierPath", "sourceField": "dossierPath", "required": false, "dataType": "Path", "controlledValueList": null, "format": null },
+        { "targetColumn": "Region", "sourceField": "region", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "Authority", "sourceField": "authority", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "TechnicalStandard", "sourceField": "technicalStandard", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RegionalImplementation", "sourceField": "regionalImplementation", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ProductDomain", "sourceField": "productDomain", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "LifecycleContext", "sourceField": "lifecycleContext", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ProductClass", "sourceField": "productClass", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ProcedureContext", "sourceField": "procedureContext", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "SourcePresentation", "sourceField": "sourcePresentation", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "PrimaryDossierType", "sourceField": "primaryDossierType", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ClassificationConfidence", "sourceField": "classificationConfidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvidenceSummary", "sourceField": "evidenceSummary", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "MatchedCandidates", "sourceField": "matchedCandidates", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "MatchedRuleIds", "sourceField": "matchedRuleIds", "required": false, "dataType": "String", "controlledValueList": null, "format": null, "notes": "Delimited list of RuleIds; stored as a single text value." },
+        { "targetColumn": "SequenceCount", "sourceField": "sequenceCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "SizeBytes", "sourceField": "sizeBytes", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "DisplaySizeGB", "sourceField": "displaySizeGB", "required": false, "dataType": "Decimal", "controlledValueList": null, "format": "#,##0.00" },
+        { "targetColumn": "FileCount", "sourceField": "fileCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "FolderCount", "sourceField": "folderCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "FindingCount", "sourceField": "findingCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "RecommendationCode", "sourceField": "recommendationCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendedAction", "sourceField": "recommendedAction", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "04_Sequence_Inventory",
+      "tableName": "tblPreSalesSequences",
+      "sourceCollection": "sequenceInventory",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "DossierId", "sourceField": "dossierId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceId", "sourceField": "sequenceId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceDisplayName", "sourceField": "sequenceDisplayName", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequencePath", "sourceField": "sequencePath", "required": false, "dataType": "Path", "controlledValueList": null, "format": null },
+        { "targetColumn": "TechnicalStandard", "sourceField": "technicalStandard", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RegionalImplementation", "sourceField": "regionalImplementation", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "SizeBytes", "sourceField": "sizeBytes", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "DisplaySizeMB", "sourceField": "displaySizeMB", "required": false, "dataType": "Decimal", "controlledValueList": null, "format": "#,##0.00" },
+        { "targetColumn": "FileCount", "sourceField": "fileCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "FolderCount", "sourceField": "folderCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "BackboneXmlStatus", "sourceField": "backboneXmlStatus", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ChecksumStatus", "sourceField": "checksumStatus", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RegionalXmlStatus", "sourceField": "regionalXmlStatus", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ModuleSummary", "sourceField": "moduleSummary", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "MissingExpectedItems", "sourceField": "missingExpectedItems", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "UnknownItems", "sourceField": "unknownItems", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "RuleIds", "sourceField": "ruleIds", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "05_Findings_&_Clarifications",
+      "tableName": "tblPreSalesFindings",
+      "sourceCollection": "findings",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 5,
+        "rowInsertionBehavior": "insertAndShiftFollowingTable",
+        "followingTable": "tblPreSalesClarifications"
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "Shares its sheet with tblPreSalesClarifications, whose header sits 5 rows below this table's first data row. A findings set larger than 5 rows requires the engine to insert rows here and shift tblPreSalesClarifications down by the same count.",
+      "columns": [
+        { "targetColumn": "FindingId", "sourceField": "findingId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "FindingCode", "sourceField": "findingCode", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "EntityType", "sourceField": "entityType", "required": true, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "EntityId", "sourceField": "entityId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Product", "sourceField": "product", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "DossierId", "sourceField": "dossierId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceId", "sourceField": "sequenceId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "FindingCategory", "sourceField": "findingCategory", "required": true, "dataType": "Code", "controlledValueList": "FindingCategory", "format": null },
+        { "targetColumn": "FindingTitle", "sourceField": "findingTitle", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvidenceSummary", "sourceField": "evidenceSummary", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvidenceReference", "sourceField": "evidenceReference", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "Severity", "sourceField": "severity", "required": false, "dataType": "Code", "controlledValueList": "Severity", "format": null },
+        { "targetColumn": "Blocker", "sourceField": "blocker", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "EffortImpact", "sourceField": "effortImpact", "required": false, "dataType": "Code", "controlledValueList": "EffortConfidenceImpact", "format": null },
+        { "targetColumn": "ConfidenceImpact", "sourceField": "confidenceImpact", "required": false, "dataType": "Code", "controlledValueList": "EffortConfidenceImpact", "format": null },
+        { "targetColumn": "CustomerFacingDescription", "sourceField": "customerFacingDescription", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ConsultantFacingNote", "sourceField": "consultantFacingNote", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendationCodes", "sourceField": "recommendationCodes", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendedAction", "sourceField": "recommendedAction", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "05_Findings_&_Clarifications",
+      "tableName": "tblPreSalesClarifications",
+      "sourceCollection": "clarifications",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 12,
+      "firstDataRow": 13,
+      "notes": "Last table on its sheet; no shift required.",
+      "columns": [
+        { "targetColumn": "ClarificationId", "sourceField": "clarificationId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Priority", "sourceField": "priority", "required": false, "dataType": "Code", "controlledValueList": "Priority", "format": null },
+        { "targetColumn": "Question", "sourceField": "question", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Reason", "sourceField": "reason", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RelatedEntityType", "sourceField": "relatedEntityType", "required": false, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "RelatedEntityId", "sourceField": "relatedEntityId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ImpactOnEstimate", "sourceField": "impactOnEstimate", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "RequestedFrom", "sourceField": "requestedFrom", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "CustomerResponse", "sourceField": "customerResponse", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ResponseSource", "sourceField": "responseSource", "required": false, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": false, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "06_Path_&_Volume",
+      "tableName": "tblPreSalesPaths",
+      "sourceCollection": "pathVolumeMetrics",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "RootId", "sourceField": "rootId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SourceType", "sourceField": "sourceType", "required": true, "dataType": "Code", "controlledValueList": "SourceType", "format": null },
+        { "targetColumn": "RootPath", "sourceField": "rootPath", "required": true, "dataType": "Path", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "Accessible", "sourceField": "accessible", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "SizeBytes", "sourceField": "sizeBytes", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "DisplaySizeGB", "sourceField": "displaySizeGB", "required": false, "dataType": "Decimal", "controlledValueList": null, "format": "#,##0.00" },
+        { "targetColumn": "FileCount", "sourceField": "fileCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "FolderCount", "sourceField": "folderCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "LargestFolder", "sourceField": "largestFolder", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "LargestFile", "sourceField": "largestFile", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "LongPathCount", "sourceField": "longPathCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "SpecialCharacterCount", "sourceField": "specialCharacterCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "AccessIssueCount", "sourceField": "accessIssueCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "FindingCodes", "sourceField": "findingCodes", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "07_Assumptions_&_Method",
+      "tableName": "tblPreSalesAssumptions",
+      "sourceCollection": "assumptions",
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Section", "Item"],
+      "allowAppendAdditionalRows": true,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 500,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "7 pre-authored standard boundary/method rows (Purpose, Boundary, Method, Limitation) must be located by Section+Item and filled in, never removed. Project-specific assumptions may be appended as additional rows per the template's own instruction text.",
+      "columns": [
+        { "targetColumn": "Section", "sourceField": "section", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Item", "sourceField": "item", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Detail", "sourceField": "detail", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": false, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": false, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "08_Execution_Details",
+      "tableName": "tblPreSalesExecution",
+      "sourceCollection": "executionMetadata",
+      "additionalSourceCollections": ["reviewMetadata"],
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Section", "Field"],
+      "allowAppendAdditionalRows": false,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 29,
+        "rowInsertionBehavior": "notApplicable",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "Fixed set of 29 pre-authored field rows. executionMetadata supplies the Execution/Version/Configuration/Scope/Output rows (Section values Execution, Version, Configuration, Scope, Output); reviewMetadata supplies the 4 Review rows (ReportStatus, ReviewedBy, ReviewDate, ReviewComments). Only the Value column is written by the engine; Section/Field/Required/ValueSource/Description are pre-authored template text and must not be altered.",
+      "columns": [
+        { "targetColumn": "Section", "sourceField": null, "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "Field", "sourceField": null, "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "Value", "sourceField": "value", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "notes": "GeneratedAtUTC uses format yyyy-mm-dd hh:mm:ss; ReviewDate uses format yyyy-mm-dd; both already applied in the template." },
+        { "targetColumn": "Required", "sourceField": null, "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "ValueSource", "sourceField": null, "required": false, "dataType": "Code", "controlledValueList": "ValueSource", "format": null, "notes": "Pre-authored per field (Derived/Observed/Imported/CustomerProvided as applicable); read, not written." },
+        { "targetColumn": "Description", "sourceField": null, "required": false, "dataType": "LongText", "controlledValueList": null, "format": null, "notes": "Pre-authored; read, not written." }
+      ]
+    }
+  ],
+  "directCellMappings": []
+}

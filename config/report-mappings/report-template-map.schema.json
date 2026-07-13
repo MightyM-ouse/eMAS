@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/report-mappings/report-template-map.schema.json",
+  "title": "eMAS Report Template Mapping Contract",
+  "description": "Technical report-binding contract shape shared by all phase template-map files. Defines exactly where the shared PowerShell reporting engine must write normalized result-object fields inside a controlled, already-approved XLSX report template. This schema and the files that conform to it contain write-location, write-mode and formatting facts only. They must never contain business rules, RAG logic, classification logic, effort logic, readiness logic or reconciliation logic; that content lives exclusively in the Runtime JSON Contract, the Normalized Rule Model and Runtime JSON Schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mappingId",
+    "mappingVersion",
+    "phaseCode",
+    "template",
+    "requiredSheetOrder",
+    "protectedTables",
+    "tableMappings",
+    "directCellMappings"
+  ],
+  "properties": {
+    "mappingId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$",
+      "description": "Stable identifier for this mapping contract, e.g. EMAS-MAP-PRESALES."
+    },
+    "mappingVersion": {
+      "$ref": "#/$defs/semver",
+      "description": "Version of this mapping contract file. Independent of, but must be reviewed alongside, templateVersion."
+    },
+    "phaseCode": {
+      "type": "string",
+      "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"]
+    },
+    "phaseName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["templateId", "templateName", "templateVersion", "templateFilePath", "templateControlTable"],
+      "properties": {
+        "templateId": {
+          "type": "string",
+          "description": "Stable controlled template identifier as recorded in the workbook's Template Control table (TemplateId field)."
+        },
+        "templateName": {
+          "type": "string",
+          "description": "Controlled template filename without embedded version, as recorded in the workbook's Template Control table (TemplateName field)."
+        },
+        "templateVersion": {
+          "$ref": "#/$defs/semver",
+          "description": "Must equal the TemplateVersion value found in both the workbook's quick-reference Version row and its Template Control table at the time this mapping was authored."
+        },
+        "templateFilePath": {
+          "type": "string",
+          "description": "Repository-relative path to the exact finalized XLSX this mapping was authored against."
+        },
+        "templateControlTable": {
+          "type": "string",
+          "description": "Excel table name of the Template Control table on this workbook (read-only reference; never a write target for this mapping)."
+        }
+      }
+    },
+    "requiredSheetOrder": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Exact required worksheet name order, copied from the workbook's Template Control table (RequiredSheetNames)."
+    },
+    "protectedTables": {
+      "type": "array",
+      "description": "Tables/sheets the reporting engine must never overwrite arbitrarily, or may only append/copy into verbatim.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sheetName", "tableName", "protection", "reason"],
+        "properties": {
+          "sheetName": { "type": "string" },
+          "tableName": { "type": "string" },
+          "protection": {
+            "type": "string",
+            "enum": ["readOnly", "appendOnly"],
+            "description": "readOnly = the reporting engine must not write to this table at runtime at all (e.g. Template Control, release-managed). appendOnly = rows may only be appended/copied verbatim, never edited or reordered (e.g. Post-Migration raw evidence sheets)."
+          },
+          "preserveHeadersExactly": {
+            "type": "boolean",
+            "default": false,
+            "description": "When true, the exact column header text (including any preserved historical spelling such as DossierDirecotry) must never be corrected, renamed or reordered by tooling."
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "tableMappings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/tableMapping" }
+    },
+    "directCellMappings": {
+      "type": "array",
+      "description": "Direct worksheet-cell writes used only where a value is genuinely outside every Excel Table on the sheet. Expected to be empty for these three templates, since every runtime-writable value falls within a declared Table; kept for schema completeness and future templates.",
+      "items": { "$ref": "#/$defs/directCellMapping" }
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "writeMode": {
+      "type": "string",
+      "enum": [
+        "appendRows",
+        "matchRowByLabelColumns",
+        "singleRowUpdate",
+        "copyFromExternalSourceAppendOnly",
+        "staticReleaseManaged"
+      ],
+      "description": "appendRows: one new Table row per element of the source collection array, in array order. matchRowByLabelColumns: locate an existing Table row whose labelColumns values match the source object, then update the remaining mapped columns in place; only rows explicitly permitted by allowAppendAdditionalRows may add further rows beyond the template's pre-authored set. singleRowUpdate: exactly one row is ever written or updated for the whole execution (the table has exactly one data row by template design). copyFromExternalSourceAppendOnly: rows are copied verbatim from an external, already-produced source file (e.g. MigrationSummary.xlsx) with no field transformation; used only for protected raw sheets. staticReleaseManaged: the reporting engine does not write this table at runtime; its values are set only at controlled template release."
+    },
+    "rowCapacity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxPreProvisionedRows", "rowInsertionBehavior"],
+      "properties": {
+        "maxPreProvisionedRows": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Rows currently available to this table on the physical sheet before either the sheet's practical row limit is reached or, for tables that share a sheet with a following table, the following table's header row would be overwritten."
+        },
+        "rowInsertionBehavior": {
+          "type": "string",
+          "enum": ["notApplicable", "appendWithinPreProvisionedRange", "insertAndShiftFollowingTable"],
+          "description": "notApplicable: fixed/single-row table. appendWithinPreProvisionedRange: this table is alone or last on its sheet; rows may be appended up to maxPreProvisionedRows without affecting any other table. insertAndShiftFollowingTable: this table shares its sheet with a following table within maxPreProvisionedRows; a result set larger than maxPreProvisionedRows requires the reporting engine to perform a genuine OpenXML row insertion that shifts the following table (its ref, its own data, and any dependent DV/CF ranges) down by the same number of rows before appending further rows here. This is a technical write-mechanics fact, not a business rule."
+        },
+        "followingTable": {
+          "type": ["string", "null"],
+          "description": "Excel table name of the table immediately below on the same sheet that a row insertion would need to shift, or null if not applicable."
+        }
+      }
+    },
+    "columnMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetColumn", "sourceField", "required", "dataType"],
+      "properties": {
+        "targetColumn": {
+          "type": "string",
+          "description": "Exact Excel Table column name (tableColumn/@name) in the finalized workbook."
+        },
+        "sourceField": {
+          "type": ["string", "null"],
+          "description": "Dot-path field name within one element of the mapped source collection (or, for matchRowByLabelColumns tables, within the matched source object). Null only for labelColumns that are pre-authored template text and never written by the engine."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the reporting engine must supply a non-blank value for this column on every written/updated row."
+        },
+        "dataType": {
+          "type": "string",
+          "enum": ["String", "LongText", "Code", "Integer", "Decimal", "Boolean", "Date", "DateTimeUtc", "Path", "HashSha256", "Identifier"],
+          "description": "Logical data type, aligned to the eMAS Logical Data Dictionary type vocabulary."
+        },
+        "controlledValueList": {
+          "type": ["string", "null"],
+          "description": "Name of the approved controlled value list this column's dropdown enforces (e.g. EvaluationStatus, RAG, ValueSource), or null if the column is free-form. This mapping does not restate the list's approved values; it only names which controlled list already governs the target column's data validation."
+        },
+        "format": {
+          "type": ["string", "null"],
+          "description": "Excel number-format code already applied to the target column/cell in the finalized template (e.g. yyyy-mm-dd hh:mm:ss), stated for engine reference only. The reporting engine must write a value compatible with this format; it must not change the template's number format."
+        },
+        "isLabelColumn": {
+          "type": "boolean",
+          "default": false,
+          "description": "True when this column is one of the labelColumns used to locate the row under matchRowByLabelColumns; such columns are pre-authored template text and are read, not written, unless allowAppendAdditionalRows permits a brand-new labeled row."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "tableMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sheetName", "tableName", "sourceCollection", "writeMode", "columns"],
+      "properties": {
+        "sheetName": { "type": "string" },
+        "tableName": { "type": "string" },
+        "sourceCollection": {
+          "type": "string",
+          "description": "Name of the normalized PowerShell result collection this table is populated from (e.g. findings, dossierInventory). One physical table may draw from more than one collection only when explicitly split via matchRowByLabelColumns sections (e.g. executionMetadata + reviewMetadata both target the Execution table by row label)."
+        },
+        "additionalSourceCollections": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Extra normalized source collections that also write into this same table (in addition to sourceCollection), used only for matchRowByLabelColumns tables whose rows are split across more than one collection by label."
+        },
+        "writeMode": { "$ref": "#/$defs/writeMode" },
+        "labelColumns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required when writeMode is matchRowByLabelColumns: the target column name(s) whose combined value identifies which pre-authored row a source object updates."
+        },
+        "allowAppendAdditionalRows": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only meaningful when writeMode is matchRowByLabelColumns. When true, a source object whose labelColumns value does not match any pre-authored row may be appended as a new row (e.g. project-specific assumptions beyond the template's standard boundary statements)."
+        },
+        "rowCapacity": { "$ref": "#/$defs/rowCapacity" },
+        "headerRow": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Row number of the Excel Table's own header row, from its ref."
+        },
+        "firstDataRow": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/columnMapping" }
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "writeMode": { "const": "matchRowByLabelColumns" } } },
+          "then": { "required": ["labelColumns"] }
+        }
+      ]
+    },
+    "directCellMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sheetName", "cellRef", "sourceField", "required", "dataType", "reason"],
+      "properties": {
+        "sheetName": { "type": "string" },
+        "cellRef": {
+          "type": "string",
+          "pattern": "^[A-Z]+[0-9]+$",
+          "description": "Exact worksheet cell reference, used only because the value is genuinely outside every Excel Table on the sheet."
+        },
+        "sourceField": { "type": ["string", "null"] },
+        "required": { "type": "boolean" },
+        "dataType": {
+          "type": "string",
+          "enum": ["String", "LongText", "Code", "Integer", "Decimal", "Boolean", "Date", "DateTimeUtc", "Path", "HashSha256", "Identifier"]
+        },
+        "format": { "type": ["string", "null"] },
+        "reason": {
+          "type": "string",
+          "description": "Why this specific value cannot be expressed as an Excel Table column mapping."
+        }
+      }
+    }
+  }
+}
