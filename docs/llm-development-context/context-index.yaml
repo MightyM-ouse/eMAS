@@ -1,16 +1,17 @@
-schemaVersion: "1.4"
+schemaVersion: "1.5"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
 decisionReference: DEC-2026-008
 purpose: >-
-  Machine-readable routing index for selecting authoritative and task-specific
-  eMAS context without loading the complete repository.
+  Machine-readable routing index for selecting authoritative, architectural,
+  operational-skill and task-specific eMAS context without loading the complete repository.
 
 precedencePolicy: ../governance/00_authority_and_precedence.md
 documentGovernance: ../governance/eMAS_Document_Governance.md
 controlledTerminology: ../governance/eMAS_Terminology.md
 decisionLog: ../governance/eMAS_Decision_Log.md
+skillCatalog: skills/skill-catalog.json
 
 artifacts:
   - id: REQ-ENT
@@ -204,6 +205,20 @@ artifacts:
     owner: QA Lead
     requiredFor: [schema, testing]
 
+  - id: BUILD-SKILLS
+    path: ../../build/validate_operational_skills.py
+    status: EffectiveIndependentValidator
+    authorityRole: implementation-verification
+    owner: Technical Architect
+    requiredFor: [llm-development, skills, testing]
+
+  - id: TEST-SKILLS
+    path: ../../tests/skills/test_operational_skills.py
+    status: EffectiveAutomatedTest
+    authorityRole: verification-evidence
+    owner: QA Lead
+    requiredFor: [llm-development, skills, testing]
+
   - id: CTX-RULES
     path: llm-development-rules.md
     status: EffectiveGuidance
@@ -254,12 +269,77 @@ artifacts:
     owner: Regulatory SME
     optionalFor: [regulatory-content, classification]
 
-  - id: SKILL-FRAMEWORK
+  - id: SKILL-CATALOG
     path: skills/README.md
-    status: ApprovedFrameworkImplementationPending
+    version: "1.0.0"
+    status: EffectiveOperationalSkillCatalogue
     authorityRank: 8
     owner: Technical Architect
-    optionalFor: [llm-development, implementation]
+    requiredFor: [llm-development, implementation]
+
+  - id: SKILL-MACHINE
+    path: skills/skill-catalog.json
+    version: "1.0.0"
+    status: EffectiveMachineReadableCatalogue
+    authorityRank: 8
+    owner: Technical Architect
+    requiredFor: [llm-development, implementation]
+
+  - id: SKILL-CONFIG
+    path: skills/modify-configuration-model.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Product Owner and Technical Architect
+    requiredFor: [configuration-model]
+
+  - id: SKILL-SCHEMA
+    path: skills/update-json-schema.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Technical Architect and QA Lead
+    requiredFor: [json-schema]
+
+  - id: SKILL-POWERSHELL
+    path: skills/implement-powershell-module.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: PowerShell Lead and Technical Architect
+    requiredFor: [powershell]
+
+  - id: SKILL-REGULATORY
+    path: skills/add-regulatory-classification.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Regulatory SME and Product Owner
+    requiredFor: [regulatory-content]
+
+  - id: SKILL-REPORT
+    path: skills/modify-report-contract.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Product Owner and Reporting Lead
+    requiredFor: [reporting]
+
+  - id: SKILL-REVIEW
+    path: skills/review-change.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Technical Architect and QA Lead
+    requiredFor: [change-review]
+
+  - id: SKILL-DEFECT
+    path: skills/investigate-defect.md
+    version: "1.0.0"
+    status: EffectiveOperationalSkill
+    authorityRank: 8
+    owner: Technical Lead and QA Lead
+    requiredFor: [defect-investigation]
 
   - id: GENERATED-AI-OVERVIEW
     path: ../ai-assistant/emas-gxp-migration-assessment/overview.md
@@ -281,57 +361,74 @@ artifacts:
     prohibitedAsAuthority: true
 
 routing:
-  defaultRequired: [GOV-AUTH, GOV-TERM, GOV-DEC, REQ-ENT, CTX-RULES, CTX-DECISION]
+  defaultRequired: [GOV-AUTH, GOV-TERM, GOV-DEC, REQ-ENT, CTX-RULES, CTX-DECISION, SKILL-CATALOG]
 
   byTask:
     architecture:
       required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, ARCH-SOL, ARCH-FLOW]
-      optional: [ARCH-REPO, REPO-STRUCT, CTX-CORE]
+      optional: [ARCH-REPO, REPO-STRUCT, CTX-CORE, SKILL-REVIEW]
 
     pre-sales:
       required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON, ARCH-SOL, PHASE-PS]
-      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE]
+      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE, SKILL-POWERSHELL, SKILL-REPORT]
 
     pre-migration:
       required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON, ARCH-SOL, PHASE-PM]
-      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE]
+      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE, SKILL-POWERSHELL, SKILL-REPORT]
 
     post-migration:
       required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, SCHEMA-JSON, ARCH-SOL, PHASE-PO]
-      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE]
+      optional: [ARCH-FLOW, CTX-PHASES, CTX-ENGINE, SKILL-POWERSHELL, SKILL-REPORT]
+
+    configuration-model:
+      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, ARCH-SOL, SKILL-CONFIG]
+      optional: [CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, CTX-CONFIG, SKILL-REVIEW]
 
     mapping-workbook:
-      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX]
-      optional: [CTX-CONFIG, CTX-REG]
+      required: [CFG-FUNC, CFG-TECH, CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, CFG-JSON, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, SKILL-CONFIG]
+      optional: [CTX-CONFIG, CTX-REG, SKILL-REVIEW]
 
     json-schema:
-      required: [CFG-TECH, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA]
-      optional: [CTX-CONFIG, ARCH-SOL]
+      required: [CFG-TECH, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, SKILL-SCHEMA]
+      optional: [CTX-CONFIG, ARCH-SOL, SKILL-REVIEW]
 
     powershell:
-      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, ARCH-SOL, ARCH-REPO]
+      required: [CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, ARCH-SOL, ARCH-REPO, SKILL-POWERSHELL]
       conditional:
         PRE_SALES: [PHASE-PS]
         PRE_MIGRATION: [PHASE-PM]
         POST_MIGRATION: [PHASE-PO]
-      optional: [ARCH-FLOW, CTX-CORE, CTX-PHASES, CTX-ENGINE]
+      optional: [ARCH-FLOW, CTX-CORE, CTX-PHASES, CTX-ENGINE, SKILL-REVIEW]
 
     reporting:
-      required: [CFG-JSON, CFG-DICT, ARCH-SOL]
+      required: [CFG-JSON, CFG-DICT, ARCH-SOL, SKILL-REPORT]
       conditional:
         PRE_SALES: [PHASE-PS]
         PRE_MIGRATION: [PHASE-PM]
         POST_MIGRATION: [PHASE-PO]
+      optional: [SKILL-POWERSHELL, SKILL-REVIEW]
 
     regulatory-content:
-      required: [CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT]
-      optional: [CTX-REG]
+      required: [CFG-CAT, CFG-RULE, CFG-REL, CFG-DICT, SKILL-REGULATORY]
+      optional: [CTX-REG, SKILL-REVIEW]
       stopUnless:
         - required SME evidence is available
-        - the value is already approved controlled content
+        - the value is already approved controlled content or remains Draft
+
+    defect-investigation:
+      required: [ARCH-SOL, SKILL-DEFECT]
+      conditional:
+        PRE_SALES: [PHASE-PS]
+        PRE_MIGRATION: [PHASE-PM]
+        POST_MIGRATION: [PHASE-PO]
+      optional: [CFG-JSON, CFG-VERIFY, SCHEMA-JSON, SKILL-REVIEW]
+
+    change-review:
+      required: [GOV-DOC, ARCH-SOL, ARCH-REPO, SKILL-REVIEW]
+      optional: [CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SKILLS, TEST-SKILLS]
 
     testing-release:
-      required: [GOV-DOC, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, ARCH-SOL, ARCH-REPO, REPO-STRUCT]
+      required: [GOV-DOC, CFG-REL, CFG-DICT, CFG-VERIFY, SCHEMA-JSON, SCHEMA-FIX, BUILD-SCHEMA, TEST-SCHEMA, ARCH-SOL, ARCH-REPO, REPO-STRUCT, SKILL-REVIEW]
       conditional:
         PRE_SALES: [PHASE-PS]
         PRE_MIGRATION: [PHASE-PM]
@@ -345,7 +442,7 @@ prohibitedSources:
   - fixtures not listed in the fixture manifest as verification authority
   - fixtures as regulatory-content authority
   - customer-specific project evidence as general product requirements
-  - code comments that conflict with approved requirements or phase contracts
+  - code comments that conflict with approved requirements, architecture, phase or skill contracts
 
 stopConditions:
   - regulatory interpretation conflict
@@ -353,7 +450,8 @@ stopConditions:
   - logical-model or data-dictionary conflict
   - phase contract or result-meaning conflict
   - baseline compatibility conflict
+  - report-contract or disclosure conflict
   - fixture expectation or semantic error-code conflict
   - evidence-traceability conflict
   - missing required SME approval
-  - missing authoritative context required by the selected task
+  - missing authoritative context or applicable Effective skill

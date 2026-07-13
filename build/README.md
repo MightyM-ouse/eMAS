@@ -6,16 +6,26 @@ This folder contains deterministic repository initialization, build, validation 
 
 - `Initialize-eMASRepositoryStructure.ps1` — creates or repairs the approved local folder scaffold without overwriting implementation files.
 - `validate_emas_schema.py` — independently validates Runtime JSON Schema 1.0.0, fixture expectations and frozen cross-collection semantics.
+- `emas_schema_model.py` and `emas_schema_semantics.py` — schema validation model and semantic checks.
 - `requirements-schema-validation.txt` — pins the build-only Python dependency used by schema validation.
+- `validate_operational_skills.py` — validates the Effective skill catalogue, metadata, required sections, procedure/evidence minimums and canonical-source paths.
 
-Install and run schema validation from the repository root:
+Run schema validation from the repository root:
 
 ```bash
 python -m pip install -r build/requirements-schema-validation.txt
 python build/validate_emas_schema.py
+python -m unittest discover -s tests/schema -p "test_*.py" -v
 ```
 
-Python and `jsonschema` are build/CI dependencies only. They are not eMAS customer-package or PowerShell runtime dependencies.
+Run operational-skill validation:
+
+```bash
+python build/validate_operational_skills.py
+python -m unittest discover -s tests/skills -p "test_*.py" -v
+```
+
+Python and `jsonschema` are build/CI dependencies only. They are not eMAS customer-package or PowerShell runtime dependencies. Operational-skill validation uses only the Python standard library.
 
 ## Planned build commands
 
@@ -27,5 +37,3 @@ Python and `jsonschema` are build/CI dependencies only. They are not eMAS custom
 - `Import-eMASVbaSource.ps1`
 
 Generated packages belong in local `dist/` and must not be committed. Release notes and manifests belong in `releases/`.
-
-The validator is split into `validate_emas_schema.py`, `emas_schema_model.py` and `emas_schema_semantics.py`; all three form one build-time validation component.
