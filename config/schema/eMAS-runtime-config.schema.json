@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/eMAS-runtime-config.schema.json",
+  "title": "eMAS Runtime Configuration",
+  "description": "Approved normalized runtime contract exported by the internal eMAS XLSM mapping workbook.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "configuration",
+    "valueLists",
+    "fieldCatalogue",
+    "metricCatalogue",
+    "masterData",
+    "relationships",
+    "rules",
+    "rulePhases",
+    "conditionGroups",
+    "ruleConditions",
+    "ruleOutputs",
+    "findings",
+    "recommendations",
+    "findingRecommendationLinks",
+    "exceptionPolicies",
+    "aliases",
+    "reportTerminology"
+  ],
+  "properties": {
+    "configuration": { "$ref": "#/$defs/configuration" },
+    "valueLists": { "type": "object", "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/codeValue" } } },
+    "fieldCatalogue": { "type": "array", "items": { "$ref": "#/$defs/fieldDefinition" } },
+    "metricCatalogue": { "type": "array", "items": { "$ref": "#/$defs/metricDefinition" } },
+    "masterData": { "type": "object" },
+    "relationships": { "type": "array", "items": { "$ref": "#/$defs/relationship" } },
+    "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+    "rulePhases": { "type": "array", "items": { "$ref": "#/$defs/rulePhase" } },
+    "conditionGroups": { "type": "array", "items": { "$ref": "#/$defs/conditionGroup" } },
+    "ruleConditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+    "ruleOutputs": { "type": "array", "items": { "$ref": "#/$defs/ruleOutput" } },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "recommendations": { "type": "array", "items": { "$ref": "#/$defs/recommendation" } },
+    "findingRecommendationLinks": { "type": "array", "items": { "$ref": "#/$defs/findingRecommendationLink" } },
+    "exceptionPolicies": { "type": "array", "items": { "$ref": "#/$defs/exceptionPolicy" } },
+    "aliases": { "type": "array", "items": { "$ref": "#/$defs/alias" } },
+    "reportTerminology": { "type": "object" }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configurationId",
+        "schemaVersion",
+        "mappingVersion",
+        "sourceWorkbookVersion",
+        "minimumEngineVersion",
+        "exportType",
+        "exportedAtUtc",
+        "exportedBy",
+        "status",
+        "validationRunId"
+      ],
+      "properties": {
+        "configurationId": { "$ref": "#/$defs/identifier" },
+        "schemaVersion": { "$ref": "#/$defs/semver" },
+        "mappingVersion": { "$ref": "#/$defs/semver" },
+        "sourceWorkbookVersion": { "$ref": "#/$defs/semver" },
+        "minimumEngineVersion": { "$ref": "#/$defs/semver" },
+        "maximumTestedEngineVersion": { "$ref": "#/$defs/semver" },
+        "exportType": { "enum": ["DEV", "CONTROLLED"] },
+        "exportedAtUtc": { "type": "string", "format": "date-time" },
+        "exportedBy": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["Reviewed", "Effective"] },
+        "effectiveFrom": { "type": "string", "format": "date" },
+        "validationRunId": { "$ref": "#/$defs/identifier" },
+        "checksumAlgorithm": { "enum": ["SHA-256"] },
+        "checksumValue": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" }
+      }
+    },
+    "codeValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "displayValue", "status"],
+      "properties": {
+        "code": { "$ref": "#/$defs/identifier" },
+        "displayValue": { "type": "string" },
+        "status": { "enum": ["Effective", "Superseded", "Retired"] },
+        "description": { "type": "string" },
+        "sortOrder": { "type": "integer" }
+      }
+    },
+    "fieldDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fieldCode", "displayName", "dataType", "sourceType", "supportedPhases"],
+      "properties": {
+        "fieldCode": { "$ref": "#/$defs/identifier" },
+        "displayName": { "type": "string" },
+        "dataType": { "enum": ["String", "Code", "Integer", "Decimal", "Boolean", "Date", "DateTime", "Path"] },
+        "sourceType": { "enum": ["Observed", "CustomerProvided", "Imported", "Derived", "Assumed"] },
+        "allowedOperators": { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "uniqueItems": true },
+        "supportedPhases": { "type": "array", "items": { "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"] }, "minItems": 1, "uniqueItems": true },
+        "producingComponent": { "type": "string" },
+        "evaluationOrder": { "type": "integer", "minimum": 0 },
+        "description": { "type": "string" }
+      }
+    },
+    "metricDefinition": {
+      "type": "object",
+      "required": ["metricCode", "displayName", "dataType", "supportedPhases"],
+      "properties": {
+        "metricCode": { "$ref": "#/$defs/identifier" },
+        "displayName": { "type": "string" },
+        "dataType": { "enum": ["Integer", "Decimal"] },
+        "unit": { "type": "string" },
+        "supportedPhases": { "type": "array", "items": { "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"] }, "minItems": 1, "uniqueItems": true },
+        "requiredForCompleteBanding": { "type": "boolean" },
+        "description": { "type": "string" }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["relationshipId", "relationshipType", "sourceCode", "targetCode"],
+      "properties": {
+        "relationshipId": { "$ref": "#/$defs/identifier" },
+        "relationshipType": { "$ref": "#/$defs/identifier" },
+        "sourceCode": { "$ref": "#/$defs/identifier" },
+        "targetCode": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ruleId", "ruleRevision", "ruleType", "title", "status", "priority", "conflictStrategy"],
+      "properties": {
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "ruleRevision": { "type": "integer", "minimum": 1 },
+        "ruleType": { "$ref": "#/$defs/identifier" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "enum": ["Effective"] },
+        "effectiveFrom": { "type": "string", "format": "date" },
+        "effectiveTo": { "type": "string", "format": "date" },
+        "priority": { "type": "integer", "minimum": 0 },
+        "conflictGroup": { "type": "string" },
+        "conflictStrategy": { "enum": ["FirstMatch", "MostSpecific", "MostSevere", "Aggregate", "ErrorOnMultipleMatch", "HighestEvidenceScore", "ManualReview"] },
+        "specificity": { "type": "integer", "minimum": 0 },
+        "stopProcessing": { "type": "boolean" },
+        "findingCode": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "rulePhase": {
+      "type": "object",
+      "required": ["rulePhaseId", "ruleId", "phase", "evaluationStatusOnMissingInput", "sequence"],
+      "properties": {
+        "rulePhaseId": { "$ref": "#/$defs/identifier" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "phase": { "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"] },
+        "evaluationStatusOnMissingInput": { "enum": ["NotAssessed", "NotApplicable", "Skipped", "Error", "InsufficientEvidence", "Conflict"] },
+        "rag": { "enum": ["Green", "Amber", "Red", "Unknown"] },
+        "severity": { "type": "string" },
+        "isBlocker": { "type": "boolean" },
+        "exceptionEligible": { "type": "boolean" },
+        "decisionImpact": { "type": "string" },
+        "outputCode": { "type": "string" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "conditionGroup": {
+      "type": "object",
+      "required": ["groupId", "ruleId", "groupOperator", "sequence"],
+      "properties": {
+        "groupId": { "$ref": "#/$defs/identifier" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "groupOperator": { "const": "AND" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "required": ["conditionId", "ruleId", "groupId", "sequence", "fieldCode", "operator"],
+      "properties": {
+        "conditionId": { "$ref": "#/$defs/identifier" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "groupId": { "$ref": "#/$defs/identifier" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "fieldCode": { "$ref": "#/$defs/identifier" },
+        "operator": { "enum": ["EQUALS", "NOT_EQUALS", "IN_LIST", "CONTAINS", "STARTS_WITH", "ENDS_WITH", "MATCHES_PATTERN", "EXISTS", "MISSING", "GT", "GTE", "LT", "LTE", "BETWEEN"] },
+        "value1": {},
+        "value2": {},
+        "caseSensitive": { "type": "boolean" },
+        "negate": { "type": "boolean" }
+      }
+    },
+    "ruleOutput": {
+      "type": "object",
+      "required": ["ruleOutputId", "ruleId", "phase", "outputType", "outputCode", "sequence"],
+      "properties": {
+        "ruleOutputId": { "$ref": "#/$defs/identifier" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "phase": { "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"] },
+        "outputType": { "enum": ["ClassificationCandidate", "Finding", "RAG", "ConfidenceImpact", "EffortImpact", "DecisionImpact", "ClarificationTrigger"] },
+        "outputCode": { "$ref": "#/$defs/identifier" },
+        "outputValue": {},
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["findingCode", "title", "defaultRag", "defaultSeverity", "exceptionEligible"],
+      "properties": {
+        "findingCode": { "$ref": "#/$defs/identifier" },
+        "title": { "type": "string" },
+        "defaultRag": { "enum": ["Green", "Amber", "Red", "Unknown"] },
+        "defaultSeverity": { "type": "string" },
+        "exceptionEligible": { "type": "boolean" }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "required": ["recommendationCode", "customerText", "consultantText"],
+      "properties": {
+        "recommendationCode": { "$ref": "#/$defs/identifier" },
+        "customerText": { "type": "string" },
+        "consultantText": { "type": "string" }
+      }
+    },
+    "findingRecommendationLink": {
+      "type": "object",
+      "required": ["linkId", "findingCode", "recommendationCode", "phase", "sequence"],
+      "properties": {
+        "linkId": { "$ref": "#/$defs/identifier" },
+        "findingCode": { "$ref": "#/$defs/identifier" },
+        "recommendationCode": { "$ref": "#/$defs/identifier" },
+        "phase": { "enum": ["PRE_SALES", "PRE_MIGRATION", "POST_MIGRATION"] },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "exceptionPolicy": {
+      "type": "object",
+      "required": ["exceptionPolicyId", "findingCode", "allowedEffects", "carryForwardToPostMigration"],
+      "properties": {
+        "exceptionPolicyId": { "$ref": "#/$defs/identifier" },
+        "findingCode": { "$ref": "#/$defs/identifier" },
+        "allowedEffects": { "type": "array", "items": { "enum": ["AcknowledgeOnly", "RemoveBlock", "ExcludeFromScope", "AcceptDifference", "DowngradeDecisionImpact"] }, "minItems": 1, "uniqueItems": true },
+        "requiredRole": { "type": "string" },
+        "evidenceRequirement": { "type": "string" },
+        "expiryRequired": { "type": "boolean" },
+        "carryForwardToPostMigration": { "type": "boolean", "default": false }
+      }
+    },
+    "alias": {
+      "type": "object",
+      "required": ["aliasId", "aliasValue", "canonicalCode", "scope"],
+      "properties": {
+        "aliasId": { "$ref": "#/$defs/identifier" },
+        "aliasValue": { "type": "string" },
+        "canonicalCode": { "$ref": "#/$defs/identifier" },
+        "scope": { "type": "string" }
+      }
+    }
+  }
+}
