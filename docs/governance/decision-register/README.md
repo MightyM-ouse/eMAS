@@ -1,42 +1,20 @@
 # eMAS Decision Register
 
-This folder records the governance status of unresolved eMAS architecture, configuration, regulatory, implementation, documentation, testing and release topics.
+The evidence-based register contains 171 items across authority, JSON, rule model, skills, engine, documentation, XLSM/regulatory and test/release areas.
 
-## Current review baseline
+## Approval status
 
-A repository and evidence review completed on 12 July 2026 covered 155 existing decision items and identified 16 additional items, resulting in 171 tracked items.
+All 171 items were approved by the product owner on 13 July 2026. The approved decision is the AI proposal in the reviewed workbook; where that field was empty, the row's recommendation is adopted.
 
-The reviewed workbook remains an internal working artifact. It contains AI proposals and evidence, but the editable user-decision fields remain the approval authority. An AI recommendation must not be interpreted as an approved eMAS requirement.
+Repository records:
 
-See:
-
+- [Approved Decision Log](../eMAS_Decision_Log.md)
+- [Decision sets](../decisions/README.md)
+- [Traceability matrix](../eMAS_Traceability_Matrix.csv)
 - [Review summary](eMAS_Decision_Register_Review_Summary_2026-07-12.md)
-- [Open-question workflow](open-question-workflow.md)
-- [Historical Version 2 documentation notice](../../archive/v2-documentation-pack/README.md)
 
-## Decision boundary
+The internal XLSX remains controlled approval evidence and is not published in the public repository.
 
-Until an item is approved through the decision workflow:
+## Implementation status
 
-- do not treat a proposal as a requirement;
-- do not alter mapping content solely because an AI recommendation exists;
-- do not hardcode an unresolved regulatory or business interpretation in PowerShell;
-- do not change the runtime JSON contract based on an unresolved item;
-- identify the applicable decision-register Item ID in proposed changes;
-- stop and request a decision when the unresolved item affects runtime behavior, report meaning, regulatory interpretation, schema compatibility or release acceptance.
-
-## Repository handling
-
-This repository is public. Internal Word packs, reviewed decision workbooks, internal branding assets and other controlled files are therefore not committed here. Their existence and status are documented without publishing the binary artifacts.
-
-When an approved internal storage location or private repository is available, the controlled workbook may be stored there together with its checksum, review record and version history.
-
-## Next stage
-
-Open questions will be discussed and approved one by one. Approved decisions will then be applied in dependency order to:
-
-1. the enterprise and configuration requirements;
-2. the architecture and runtime JSON contract;
-3. the mapping workbook design and content catalogue;
-4. LLM development context and operational skills;
-5. PowerShell, VBA, templates and tests.
+Approval establishes design direction. Implementation-pending items remain open until affected documents, schemas, code, workbooks, templates and tests are completed and evidenced.
