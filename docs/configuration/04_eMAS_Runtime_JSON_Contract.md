@@ -46,6 +46,8 @@ Schema-version rules:
 
 Schema 1.0.0 was completed before the first controlled software release. The synchronization work therefore finalizes the 1.0.0 baseline rather than introducing a post-release breaking change.
 
+The approved `Warning` EvaluationStatus is an in-place Schema 1.0.0 compatibility amendment because the schema has not yet been used in a controlled release. It changes the accepted controlled-code set before release, requires synchronized fixtures and validators, and must not be treated as a silent runtime divergence.
+
 Mapping versions evolve independently. Relationship-matrix or data-dictionary changes require schema compatibility analysis even when top-level sections do not change.
 
 ## 4. Canonical top-level model
@@ -166,6 +168,8 @@ The exporter, release validator and engine loader must reject:
 
 Missing optional customer evidence is not a configuration error. It produces the configured evaluation status, such as `NotAssessed` or `InsufficientEvidence`.
 
+`Warning` is a valid configured evaluation status for a completed usable evaluation with a recoverable condition requiring attention. It does not independently determine RAG, severity, blocker status, effort band, readiness result or reconciliation result.
+
 ## 10. Phase use
 
 The same JSON is used by all three phases. It defines shared interpretation, controlled values and policy data; it does not define the complete workflow of each phase.
@@ -226,3 +230,4 @@ This completes schema-contract synchronization. It does not mean the XLSM/VBA ex
 | 1.0 | 2026-07-13 | Initial approved runtime JSON contract |
 | 1.1 | 2026-07-13 | Bound runtime serialization and semantic validation to the frozen relationship matrix and data dictionary |
 | 1.2 | 2026-07-13 | Finalized Schema 1.0.0 top-level serialization, fixture classes, independent semantic validation and verification boundaries |
+| 1.2a | 2026-07-13 | Applied approved in-place Schema 1.0.0 compatibility amendment for `Warning` EvaluationStatus before controlled release |

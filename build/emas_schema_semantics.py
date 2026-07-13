@@ -32,6 +32,9 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
         missing_codes = sorted(expected - _codes(value_lists, name))
         for code in missing_codes:
             add('SEM_REQUIRED_CODE', f'$.valueLists.{name}', f'mandatory code {code} is missing')
+        unknown_codes = sorted(_codes(value_lists, name) - expected)
+        for code in unknown_codes:
+            add('SEM_UNKNOWN_CODE', f'$.valueLists.{name}', f'unknown controlled code {code} is not approved')
     for collection, key in COLLECTION_KEYS.items():
         seen: set[str] = set()
         for i, row in enumerate(instance[collection]):
@@ -285,4 +288,3 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
             add('SEM_DUPLICATE_COMPOSITE', f'$.reportTerminology.definitions[{i}]', f'duplicate report definition {key}')
         report_seen.add(key)
     return issues
-

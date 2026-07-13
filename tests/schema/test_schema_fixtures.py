@@ -40,6 +40,36 @@ class SchemaFixtureTests(unittest.TestCase):
         )
         self.assertEqual(valid_fixture["configuration"]["schemaVersion"], "1.0.0")
 
+    def test_warning_evaluation_status_is_accepted(self):
+        item = next(
+            fixture
+            for fixture in self.manifest["fixtures"]
+            if fixture.get("patch") == "valid/warning-evaluation-status-valid.patch.json"
+        )
+        _, instance = MODULE.load_fixture_item(self.manifest_path.parent, item)
+        issues = MODULE.validate_instance(self.schema, instance, self.registry)
+        self.assertEqual([], [issue.render() for issue in issues])
+
+    def test_unknown_evaluation_status_value_is_rejected(self):
+        item = next(
+            fixture
+            for fixture in self.manifest["fixtures"]
+            if fixture.get("patch") == "invalid/structural-unknown-evaluation-status.patch.json"
+        )
+        _, instance = MODULE.load_fixture_item(self.manifest_path.parent, item)
+        issues = MODULE.validate_instance(self.schema, instance, self.registry)
+        self.assertIn("SCHEMA_ERROR", {issue.code for issue in issues})
+
+    def test_unknown_evaluation_status_code_is_rejected(self):
+        item = next(
+            fixture
+            for fixture in self.manifest["fixtures"]
+            if fixture.get("patch") == "invalid/semantic-unknown-evaluation-status-code.patch.json"
+        )
+        _, instance = MODULE.load_fixture_item(self.manifest_path.parent, item)
+        issues = MODULE.validate_instance(self.schema, instance, self.registry)
+        self.assertIn("SEM_UNKNOWN_CODE", {issue.code for issue in issues})
+
     def test_fixture_files_are_utf8_without_bom(self):
         paths = set()
         for item in self.manifest["fixtures"]:

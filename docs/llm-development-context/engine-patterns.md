@@ -51,9 +51,12 @@ Evaluation status is recorded separately from provenance and RAG:
 - NotAssessed;
 - NotApplicable;
 - Skipped;
+- Warning;
 - Error;
 - InsufficientEvidence;
 - Conflict.
+
+`Warning` means evaluation completed with a usable result, but a recoverable condition requires attention. Keep it separate from RAG, severity, blocker state and phase result logic.
 
 RAG is limited to Green, Amber, Red and Unknown.
 

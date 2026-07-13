@@ -934,9 +934,12 @@ The following ListName values are mandatory in `Value_Lists`:
 - NotAssessed;
 - NotApplicable;
 - Skipped;
+- Warning;
 - Error;
 - InsufficientEvidence;
 - Conflict.
+
+`Warning` indicates a completed usable evaluation with a recoverable condition requiring attention. It is not a RAG value and does not independently determine severity, blocker status, effort band or phase result.
 
 ### 55.3 RAG
 

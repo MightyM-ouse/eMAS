@@ -234,6 +234,7 @@ Approved evaluation statuses are:
 - `NotAssessed`;
 - `NotApplicable`;
 - `Skipped`;
+- `Warning`;
 - `Error`;
 - `InsufficientEvidence`;
 - `Conflict`.
@@ -261,6 +262,7 @@ Approved value-source provenance values are:
 | FR-EVAL-004 | MUST | RAG shall be assigned only where business/risk interpretation is meaningful. |
 | FR-EVAL-005 | MUST | `Calculated` shall be treated as a legacy synonym of `Derived`, not a separate controlled value. |
 | FR-EVAL-006 | MUST | Consultant-entered values shall use an explicitly governed provenance code. |
+| FR-EVAL-007 | MUST | `Warning` shall mean a completed usable evaluation with a recoverable condition requiring attention; it shall not independently determine RAG, severity, blocker state, effort band or phase result. |
 
 ## 14. Priority and conflict requirements
 

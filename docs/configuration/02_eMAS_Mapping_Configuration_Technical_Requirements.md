@@ -206,7 +206,7 @@ The controlled classification dimensions are:
 
 | Concept | Controlled values |
 |---|---|
-| EvaluationStatus | Evaluated, NotAssessed, NotApplicable, Skipped, Error, InsufficientEvidence, Conflict |
+| EvaluationStatus | Evaluated, NotAssessed, NotApplicable, Skipped, Warning, Error, InsufficientEvidence, Conflict |
 | RAG | Green, Amber, Red, Unknown |
 | ValueSource | Observed, CustomerProvided, Imported, Derived, Assumed |
 
@@ -216,6 +216,7 @@ The controlled classification dimensions are:
 | TR-EVAL-002 | MUST | `NotAssessed` and `NotApplicable` shall never be serialized as RAG. |
 | TR-EVAL-003 | MUST | `Calculated` shall normalize to `Derived` where legacy source data is imported. |
 | TR-EVAL-004 | MUST | Missing evidence shall not be treated as Green. |
+| TR-EVAL-005 | MUST | `Warning` shall serialize only as EvaluationStatus and shall not by itself set RAG, severity, blocker state, effort band or phase result. |
 
 ## 11. Priority and conflict model
 

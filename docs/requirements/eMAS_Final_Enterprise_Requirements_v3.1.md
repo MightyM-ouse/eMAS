@@ -300,9 +300,12 @@ These concepts are separate.
 - NotAssessed
 - NotApplicable
 - Skipped
+- Warning
 - Error
 - InsufficientEvidence
 - Conflict
+
+`Warning` means evaluation completed with a usable result, but a recoverable condition requires attention. It does not independently determine RAG, severity, blocker status, effort band, readiness result or reconciliation result.
 
 **RAG**
 
