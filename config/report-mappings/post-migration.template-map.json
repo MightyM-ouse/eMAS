@@ -1,0 +1,493 @@
+{
+  "mappingId": "EMAS-MAP-POSTMIGRATION",
+  "mappingVersion": "1.0.0",
+  "phaseCode": "POST_MIGRATION",
+  "phaseName": "Post-Migration Verification",
+  "description": "Technical report-binding contract for the Post-Migration Verification controlled template. Defines exactly where the shared PowerShell reporting engine writes normalized result-object fields, and how the two raw evidence sheets are protected. Contains no business rules, RAG logic, reconciliation logic or discrepancy-classification logic; those remain governed exclusively by the Runtime JSON Contract, Normalized Rule Model and Runtime JSON Schema.",
+  "template": {
+    "templateId": "EMAS-TPL-POSTMIGRATION",
+    "templateName": "eMAS_PostMigration_Template.xlsx",
+    "templateVersion": "1.1.1",
+    "templateFilePath": "templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx",
+    "templateControlTable": "tblPostMigrationTemplateControl"
+  },
+  "requiredSheetOrder": [
+    "01_Executive_Summary",
+    "02_Verification_Scope",
+    "03_Baseline_vs_Migrated",
+    "04_Dossier_Reconciliation",
+    "05_Sequence_Reconciliation",
+    "06_File_Size_Reconciliation",
+    "07_Import_Evidence_Review",
+    "08_Discrepancies_&_Actions",
+    "09_Accepted_Exceptions",
+    "10_Assumptions_&_Limits",
+    "11_Review_&_Execution",
+    "Import Report Detail",
+    "Post Import Verification"
+  ],
+  "protectedTables": [
+    {
+      "sheetName": "11_Review_&_Execution",
+      "tableName": "tblPostMigrationTemplateControl",
+      "protection": "readOnly",
+      "preserveHeadersExactly": false,
+      "reason": "Release-managed template identity/version/status metadata. Set only at controlled template release, never written by the reporting engine at execution time. The engine may read TemplateVersion/RequiredTableNames from this table for compatibility verification only."
+    },
+    {
+      "sheetName": "Import Report Detail",
+      "tableName": "tblRawImportReportDetail",
+      "protection": "appendOnly",
+      "preserveHeadersExactly": true,
+      "reason": "Raw MigrationSummary.xlsx import-report detail. Rows are copied/appended verbatim from the external supplied MigrationSummary.xlsx; the engine must never edit, reorder, delete or reinterpret existing rows, and must never rename, reorder or correct the column headers (including the literal 'Source.Name' header)."
+    },
+    {
+      "sheetName": "Post Import Verification",
+      "tableName": "tblRawPostImportVerification",
+      "protection": "appendOnly",
+      "preserveHeadersExactly": true,
+      "reason": "Raw post-import verification evidence. Rows are copied/appended verbatim from the supplied post-import verification source; the engine must never edit, reorder, delete or reinterpret existing rows. The column header 'DossierDirecotry' is preserved exactly as approved and must never be corrected to 'DossierDirectory' by tooling, formatters or spell-checking."
+    }
+  ],
+  "tableMappings": [
+    {
+      "sheetName": "01_Executive_Summary",
+      "tableName": "tblPostMigrationSummary",
+      "sourceCollection": "summaryMetrics",
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Area", "Metric"],
+      "allowAppendAdditionalRows": false,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 30,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "30 pre-authored metric rows (Report Context, Dossier/Sequence Reconciliation, Import Evidence, Review, Decision). The engine locates each row by its existing Area+Metric text and fills only the Value/EvaluationStatus/RAG/Confidence/ValueSource/ReviewRequired columns; it must not add, remove or reorder metric rows.",
+      "columns": [
+        { "targetColumn": "Area", "sourceField": "area", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Metric", "sourceField": "metric", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Value", "sourceField": "value", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Description", "sourceField": null, "required": false, "dataType": "LongText", "controlledValueList": null, "format": null, "notes": "Pre-authored template guidance text; never written by the engine." }
+      ]
+    },
+    {
+      "sheetName": "02_Verification_Scope",
+      "tableName": "tblPostMigrationScope",
+      "sourceCollection": "verificationScope",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "ScopeItemId", "sourceField": "scopeItemId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ScopeArea", "sourceField": "scopeArea", "required": true, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselineSource", "sourceField": "baselineSource", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "MigratedEvidenceSource", "sourceField": "migratedEvidenceSource", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ComparisonKey", "sourceField": "comparisonKey", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Included", "sourceField": "included", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ExclusionId", "sourceField": "exclusionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ExceptionId", "sourceField": "exceptionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Limitation", "sourceField": "limitation", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "03_Baseline_vs_Migrated",
+      "tableName": "tblPostMigrationMetrics",
+      "sourceCollection": "baselineComparison",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "ReconciliationMetricId", "sourceField": "reconciliationMetricId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "MetricCode", "sourceField": "metricCode", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "MetricName", "sourceField": "metricName", "required": true, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EntityScope", "sourceField": "entityScope", "required": false, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "BaselineValue", "sourceField": "baselineValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ImportValue", "sourceField": "importValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "PostImportValue", "sourceField": "postImportValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Difference", "sourceField": "difference", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Unit", "sourceField": "unit", "required": false, "dataType": "Code", "controlledValueList": "Unit", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ComparisonRuleId", "sourceField": "comparisonRuleId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Tolerance", "sourceField": "tolerance", "required": false, "dataType": "Decimal", "controlledValueList": null, "format": "#,##0.00" },
+        { "targetColumn": "ReconciliationStatus", "sourceField": "reconciliationStatus", "required": true, "dataType": "Code", "controlledValueList": "ReconciliationRecordStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "DiscrepancyId", "sourceField": "discrepancyId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "04_Dossier_Reconciliation",
+      "tableName": "tblPostMigrationDossiers",
+      "sourceCollection": "dossierReconciliation",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "DossierComparisonId", "sourceField": "dossierComparisonId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "StableComparisonId", "sourceField": "stableComparisonId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselineDossierId", "sourceField": "baselineDossierId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselinePresent", "sourceField": "baselinePresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ImportReportPresent", "sourceField": "importReportPresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "PostImportPresent", "sourceField": "postImportPresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "BaselineDossierName", "sourceField": "baselineDossierName", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "MigratedDossierName", "sourceField": "migratedDossierName", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ExpectedSequenceCount", "sourceField": "expectedSequenceCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "ObservedSequenceCount", "sourceField": "observedSequenceCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "ImportStatusSummary", "sourceField": "importStatusSummary", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "AcceptedException", "sourceField": "acceptedException", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ExceptionId", "sourceField": "exceptionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "OriginalRAG", "sourceField": "originalRAG", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null, "notes": "Preserves the pre-exception RAG; never overwritten when an accepted exception changes the presented RAG." },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "ReconciliationStatus", "sourceField": "reconciliationStatus", "required": true, "dataType": "Code", "controlledValueList": "ReconciliationRecordStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "DiscrepancyIds", "sourceField": "discrepancyIds", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendedAction", "sourceField": "recommendedAction", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "05_Sequence_Reconciliation",
+      "tableName": "tblPostMigrationSequences",
+      "sourceCollection": "sequenceReconciliation",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "SequenceComparisonId", "sourceField": "sequenceComparisonId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "StableComparisonId", "sourceField": "stableComparisonId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselineSequenceId", "sourceField": "baselineSequenceId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselineDossierId", "sourceField": "baselineDossierId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceDisplayName", "sourceField": "sequenceDisplayName", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "BaselinePresent", "sourceField": "baselinePresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ImportReportPresent", "sourceField": "importReportPresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "PostImportPresent", "sourceField": "postImportPresent", "required": true, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ExpectedValue", "sourceField": "expectedValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ObservedValue", "sourceField": "observedValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ImportStatus", "sourceField": "importStatus", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ImportStatusCode", "sourceField": "importStatusCode", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "PostImportRegion", "sourceField": "postImportRegion", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "AcceptedException", "sourceField": "acceptedException", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ExceptionId", "sourceField": "exceptionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "OriginalRAG", "sourceField": "originalRAG", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null, "notes": "Preserves the pre-exception RAG." },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "ReconciliationStatus", "sourceField": "reconciliationStatus", "required": true, "dataType": "Code", "controlledValueList": "ReconciliationRecordStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "DiscrepancyIds", "sourceField": "discrepancyIds", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "06_File_Size_Reconciliation",
+      "tableName": "tblPostMigrationFileSize",
+      "sourceCollection": "fileSizeReconciliation",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "FileSizeComparisonId", "sourceField": "fileSizeComparisonId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "EntityType", "sourceField": "entityType", "required": true, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "EntityId", "sourceField": "entityId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "MetricCode", "sourceField": "metricCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ExpectedValue", "sourceField": "expectedValue", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "ObservedValue", "sourceField": "observedValue", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "Difference", "sourceField": "difference", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "Unit", "sourceField": "unit", "required": false, "dataType": "Code", "controlledValueList": "Unit", "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "ComparisonRuleId", "sourceField": "comparisonRuleId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Tolerance", "sourceField": "tolerance", "required": false, "dataType": "Decimal", "controlledValueList": null, "format": "#,##0.00" },
+        { "targetColumn": "AcceptedException", "sourceField": "acceptedException", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "ExceptionId", "sourceField": "exceptionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "ReconciliationStatus", "sourceField": "reconciliationStatus", "required": true, "dataType": "Code", "controlledValueList": "ReconciliationRecordStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "DiscrepancyId", "sourceField": "discrepancyId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "07_Import_Evidence_Review",
+      "tableName": "tblPostMigrationImportEvidence",
+      "sourceCollection": "importEvidence",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "notes": "Normalized review of tblRawImportReportDetail. The raw sheet remains unchanged; this table records the engine's own normalized category/finding per raw row without altering the raw evidence.",
+      "columns": [
+        { "targetColumn": "ImportEvidenceId", "sourceField": "importEvidenceId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SourceRowReference", "sourceField": "sourceRowReference", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "notes": "Reference to the originating row in tblRawImportReportDetail (e.g. its row number), preserving traceability to the raw evidence." },
+        { "targetColumn": "SourceName", "sourceField": "sourceName", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "DossierTitle", "sourceField": "dossierTitle", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Submission", "sourceField": "submission", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "RawStatus", "sourceField": "rawStatus", "required": false, "dataType": "String", "controlledValueList": null, "format": null, "notes": "Copy of the raw import status text, preserved separately from any normalized category." },
+        { "targetColumn": "RawStatusCode", "sourceField": "rawStatusCode", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RawDescription", "sourceField": "rawDescription", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RawComments", "sourceField": "rawComments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "RawDate", "sourceField": "rawDate", "required": false, "dataType": "Date", "controlledValueList": null, "format": "yyyy-mm-dd" },
+        { "targetColumn": "NormalizedEvidenceCategory", "sourceField": "normalizedEvidenceCategory", "required": true, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "FindingCode", "sourceField": "findingCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RelatedDossierComparisonId", "sourceField": "relatedDossierComparisonId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RelatedSequenceComparisonId", "sourceField": "relatedSequenceComparisonId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "08_Discrepancies_&_Actions",
+      "tableName": "tblPostMigrationDiscrepancies",
+      "sourceCollection": "discrepancies",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 5,
+        "rowInsertionBehavior": "insertAndShiftFollowingTable",
+        "followingTable": "tblPostMigrationActions"
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "Shares its sheet with tblPostMigrationActions, whose header sits 5 rows below this table's first data row. A discrepancy set larger than 5 rows requires the engine to insert rows here and shift tblPostMigrationActions down by the same count.",
+      "columns": [
+        { "targetColumn": "DiscrepancyId", "sourceField": "discrepancyId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Priority", "sourceField": "priority", "required": false, "dataType": "Code", "controlledValueList": "Priority", "format": null },
+        { "targetColumn": "DiscrepancyType", "sourceField": "discrepancyType", "required": true, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "EntityType", "sourceField": "entityType", "required": true, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "EntityId", "sourceField": "entityId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "DossierId", "sourceField": "dossierId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceId", "sourceField": "sequenceId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "ExpectedValue", "sourceField": "expectedValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ObservedValue", "sourceField": "observedValue", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvidenceSource", "sourceField": "evidenceSource", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "EvidenceReference", "sourceField": "evidenceReference", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": true, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "OriginalRAG", "sourceField": "originalRAG", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null, "notes": "Preserves the pre-exception RAG." },
+        { "targetColumn": "RAG", "sourceField": "rag", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null },
+        { "targetColumn": "Confidence", "sourceField": "confidence", "required": false, "dataType": "Code", "controlledValueList": "Confidence", "format": null },
+        { "targetColumn": "Severity", "sourceField": "severity", "required": false, "dataType": "Code", "controlledValueList": "Severity", "format": null },
+        { "targetColumn": "Impact", "sourceField": "impact", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendationCode", "sourceField": "recommendationCode", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "RecommendedAction", "sourceField": "recommendedAction", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "08_Discrepancies_&_Actions",
+      "tableName": "tblPostMigrationActions",
+      "sourceCollection": "actions",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 12,
+      "firstDataRow": 13,
+      "notes": "Additional source collection beyond the phase's required baseline list; needed because tblPostMigrationActions exists in the finalized template and requires a source. Last table on its sheet; no shift required.",
+      "columns": [
+        { "targetColumn": "ActionId", "sourceField": "actionId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "DiscrepancyId", "sourceField": "discrepancyId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "Priority", "sourceField": "priority", "required": false, "dataType": "Code", "controlledValueList": "Priority", "format": null },
+        { "targetColumn": "ActionCategory", "sourceField": "actionCategory", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "RequiredAction", "sourceField": "requiredAction", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ResponsibleParty", "sourceField": "responsibleParty", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "TargetDate", "sourceField": "targetDate", "required": false, "dataType": "Date", "controlledValueList": null, "format": "yyyy-mm-dd" },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "CompletionEvidence", "sourceField": "completionEvidence", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "AcceptanceCriteria", "sourceField": "acceptanceCriteria", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "09_Accepted_Exceptions",
+      "tableName": "tblPostMigrationExceptions",
+      "sourceCollection": "acceptedExceptions",
+      "writeMode": "appendRows",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1000,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 5,
+      "firstDataRow": 6,
+      "columns": [
+        { "targetColumn": "ExceptionId", "sourceField": "exceptionId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "SourceExceptionId", "sourceField": "sourceExceptionId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null, "notes": "Reference to the originating Pre-Migration exception, where carried forward." },
+        { "targetColumn": "ExceptionPolicyId", "sourceField": "exceptionPolicyId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "FindingOrDiscrepancyId", "sourceField": "findingOrDiscrepancyId", "required": true, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "EntityType", "sourceField": "entityType", "required": false, "dataType": "Code", "controlledValueList": "EntityType", "format": null },
+        { "targetColumn": "EntityId", "sourceField": "entityId", "required": false, "dataType": "Identifier", "controlledValueList": null, "format": null },
+        { "targetColumn": "OriginalEvaluationStatus", "sourceField": "originalEvaluationStatus", "required": true, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null, "notes": "Preserves the original discrepancy's EvaluationStatus; the accepted exception must never overwrite the original discrepancy record." },
+        { "targetColumn": "OriginalRAG", "sourceField": "originalRAG", "required": false, "dataType": "Code", "controlledValueList": "RAG", "format": null, "notes": "Preserves the original discrepancy's RAG." },
+        { "targetColumn": "OriginalReconciliationImpact", "sourceField": "originalReconciliationImpact", "required": false, "dataType": "Code", "controlledValueList": null, "format": null, "notes": "Preserves the original reconciliation impact before the exception's accepted effect." },
+        { "targetColumn": "OriginalEvidenceReference", "sourceField": "originalEvidenceReference", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "AcceptedEffect", "sourceField": "acceptedEffect", "required": true, "dataType": "Code", "controlledValueList": "ExceptionEffect", "format": null },
+        { "targetColumn": "Justification", "sourceField": "justification", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ApprovedBy", "sourceField": "approvedBy", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ApprovalDate", "sourceField": "approvalDate", "required": false, "dataType": "Date", "controlledValueList": null, "format": "yyyy-mm-dd" },
+        { "targetColumn": "EvidenceReference", "sourceField": "evidenceReference", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "ExceptionStatus", "sourceField": "exceptionStatus", "required": true, "dataType": "Code", "controlledValueList": "ExceptionStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "10_Assumptions_&_Limits",
+      "tableName": "tblPostMigrationAssumptions",
+      "sourceCollection": "assumptions",
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Section", "Item"],
+      "allowAppendAdditionalRows": true,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 500,
+        "rowInsertionBehavior": "appendWithinPreProvisionedRange",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "8 pre-authored standard boundary/method rows must be located by Section+Item and filled in, never removed. Project-specific assumptions may be appended as additional rows per the template's own instruction text.",
+      "columns": [
+        { "targetColumn": "Section", "sourceField": "section", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Item", "sourceField": "item", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true },
+        { "targetColumn": "Detail", "sourceField": "detail", "required": true, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "ValueSource", "sourceField": "valueSource", "required": false, "dataType": "Code", "controlledValueList": "ValueSource", "format": null },
+        { "targetColumn": "EvaluationStatus", "sourceField": "evaluationStatus", "required": false, "dataType": "Code", "controlledValueList": "EvaluationStatus", "format": null },
+        { "targetColumn": "ReviewRequired", "sourceField": "reviewRequired", "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null },
+        { "targetColumn": "Owner", "sourceField": "owner", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "Code", "controlledValueList": "WorkflowStatus", "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null }
+      ]
+    },
+    {
+      "sheetName": "11_Review_&_Execution",
+      "tableName": "tblPostMigrationExecution",
+      "sourceCollection": "executionMetadata",
+      "additionalSourceCollections": ["reviewMetadata"],
+      "writeMode": "matchRowByLabelColumns",
+      "labelColumns": ["Section", "Field"],
+      "allowAppendAdditionalRows": false,
+      "rowCapacity": {
+        "maxPreProvisionedRows": 29,
+        "rowInsertionBehavior": "notApplicable",
+        "followingTable": null
+      },
+      "headerRow": 6,
+      "firstDataRow": 7,
+      "notes": "Fixed set of 29 pre-authored field rows. executionMetadata supplies the Execution/Version/Configuration/Scope/Output rows; reviewMetadata supplies the 4 Review rows (ReportStatus, ReviewedBy, ReviewDate, ReviewComments). Only the Value column is written by the engine.",
+      "columns": [
+        { "targetColumn": "Section", "sourceField": null, "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "Field", "sourceField": null, "required": true, "dataType": "String", "controlledValueList": null, "format": null, "isLabelColumn": true, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "Value", "sourceField": "value", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "notes": "GeneratedAtUTC uses format yyyy-mm-dd hh:mm:ss; ReviewDate uses format yyyy-mm-dd; both already applied in the template." },
+        { "targetColumn": "Required", "sourceField": null, "required": false, "dataType": "Code", "controlledValueList": "YesNo", "format": null, "notes": "Pre-authored; read, not written." },
+        { "targetColumn": "ValueSource", "sourceField": null, "required": false, "dataType": "Code", "controlledValueList": "ValueSource", "format": null, "notes": "Pre-authored per field; read, not written." },
+        { "targetColumn": "Description", "sourceField": null, "required": false, "dataType": "LongText", "controlledValueList": null, "format": null, "notes": "Pre-authored; read, not written." }
+      ]
+    },
+    {
+      "sheetName": "Import Report Detail",
+      "tableName": "tblRawImportReportDetail",
+      "sourceCollection": "rawImportReportDetail",
+      "writeMode": "copyFromExternalSourceAppendOnly",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1,
+        "rowInsertionBehavior": "notApplicable",
+        "followingTable": null
+      },
+      "headerRow": 1,
+      "firstDataRow": 2,
+      "notes": "Verbatim copy of the supplied MigrationSummary.xlsx import-report detail rows. No field transformation, normalization or business interpretation occurs here; that happens only in tblPostMigrationImportEvidence. Column headers, including the literal 'Source.Name', must never be renamed or corrected.",
+      "columns": [
+        { "targetColumn": "Source.Name", "sourceField": "sourceName", "required": true, "dataType": "String", "controlledValueList": null, "format": null, "notes": "Header preserved exactly as approved, including the embedded period." },
+        { "targetColumn": "DossierTitle", "sourceField": "dossierTitle", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Submission", "sourceField": "submission", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "Status", "sourceField": "status", "required": false, "dataType": "String", "controlledValueList": null, "format": null, "notes": "Raw import status text, copied verbatim." },
+        { "targetColumn": "StatusCode", "sourceField": "statusCode", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "Description", "sourceField": "description", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Comments", "sourceField": "comments", "required": false, "dataType": "LongText", "controlledValueList": null, "format": null },
+        { "targetColumn": "Date", "sourceField": "date", "required": false, "dataType": "Date", "controlledValueList": null, "format": "yyyy-mm-dd" }
+      ]
+    },
+    {
+      "sheetName": "Post Import Verification",
+      "tableName": "tblRawPostImportVerification",
+      "sourceCollection": "rawPostImportVerification",
+      "writeMode": "copyFromExternalSourceAppendOnly",
+      "rowCapacity": {
+        "maxPreProvisionedRows": 1,
+        "rowInsertionBehavior": "notApplicable",
+        "followingTable": null
+      },
+      "headerRow": 1,
+      "firstDataRow": 2,
+      "notes": "Verbatim copy of the supplied post-import verification evidence rows. No field transformation, normalization or business interpretation occurs here.",
+      "columns": [
+        { "targetColumn": "DossierTitle", "sourceField": "dossierTitle", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "SequenceCount", "sourceField": "sequenceCount", "required": false, "dataType": "Integer", "controlledValueList": null, "format": "#,##0" },
+        { "targetColumn": "DossierDirecotry", "sourceField": "dossierDirectory", "required": false, "dataType": "Path", "controlledValueList": null, "format": null, "notes": "Header spelling 'DossierDirecotry' is the approved preserved spelling and must never be corrected to 'DossierDirectory' by tooling. sourceField uses the correct spelling on the source/evidence side; only the target column header preserves the historical misspelling." },
+        { "targetColumn": "SubmissionTitle", "sourceField": "submissionTitle", "required": false, "dataType": "String", "controlledValueList": null, "format": null },
+        { "targetColumn": "SubmissionDirectory", "sourceField": "submissionDirectory", "required": false, "dataType": "Path", "controlledValueList": null, "format": null },
+        { "targetColumn": "Region", "sourceField": "region", "required": false, "dataType": "Code", "controlledValueList": null, "format": null },
+        { "targetColumn": "CreatedDate", "sourceField": "createdDate", "required": false, "dataType": "Date", "controlledValueList": null, "format": "yyyy-mm-dd" }
+      ]
+    }
+  ],
+  "directCellMappings": []
+}
