@@ -21,12 +21,14 @@ Approval establishes the design decision. It does not mean every implementation,
 
 ## Consolidation status
 
-The approved decisions are now consolidated into:
+The approved decisions are consolidated into:
 
 - `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`;
 - `docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md` version 3.0;
 - `docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md` version 3.0;
-- `docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md` version 3.0.
+- `docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md` version 3.0;
+- `docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md` version 1.0;
+- `docs/configuration/07_eMAS_Data_Dictionary.md` version 1.0.
 
 Enterprise Requirements v3.1 is the active authority-rank-1 product baseline. Enterprise Requirements v3.0 is superseded for implementation use.
 
@@ -36,6 +38,7 @@ Enterprise Requirements v3.1 is the active authority-rank-1 product baseline. En
 - Authoring, runtime and execution source terminology is effective.
 - The normalized JSON contract and schema path are approved.
 - The normalized rule, lifecycle, phase, condition, output, finding, recommendation, conflict and exception models are approved.
+- The normalized relationship matrix and logical data dictionary are frozen at Version 1.0.
 - Evaluation status and RAG remain separate.
 - Value-source provenance is separate from evaluation status and RAG.
 - The classification taxonomy separates technical standard, regional implementation and procedure context.
@@ -51,6 +54,8 @@ Items previously classified as `Implementation Pending`, `Documentation Sync Pen
 
 Detailed regulatory values, relationships, folder/file content, effort weights, confidence weights and exception-role content still require the approved owner or SME evidence before Effective configuration status.
 
+Freezing the logical relationship and field contracts does not mean the XLSM, JSON Schema, semantic validators, PowerShell loader or tests have implemented those contracts. Those remain separately tracked delivery work.
+
 ## Public-repository handling
 
 The detailed internal workbook is not committed to the public repository because it contains internal review context and controlled metadata. This sanitized baseline is the repository traceability record. Detailed evidence remains in approved internal storage.
@@ -58,8 +63,8 @@ The detailed internal workbook is not committed to the public repository because
 ## Primary implementation sequence
 
 1. Apply authority, precedence, statuses and terminology. **Completed in PR #5.**
-2. Synchronize Enterprise Requirements and configuration requirements. **Completed in the requirements-synchronization change.**
-3. Freeze the normalized logical model and relationship matrix.
+2. Synchronize Enterprise Requirements and configuration requirements. **Completed in PR #6.**
+3. Freeze the normalized logical model, relationship matrix and data dictionary. **Completed in PR #7.**
 4. Complete and validate JSON Schema 1.0.0 and fixtures.
 5. Update architecture and phase contracts.
 6. Implement operational skills.
@@ -79,5 +84,7 @@ The detailed internal workbook is not committed to the public repository because
 - `docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md`
 - `docs/configuration/04_eMAS_Runtime_JSON_Contract.md`
 - `docs/configuration/05_eMAS_Normalized_Rule_Model.md`
+- `docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md`
+- `docs/configuration/07_eMAS_Data_Dictionary.md`
 - `config/schema/eMAS-runtime-config.schema.json`
 - `docs/llm-development-context/skills/README.md`

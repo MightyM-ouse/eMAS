@@ -1,10 +1,10 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Effective  
 **Effective date:** 2026-07-13  
 **Owner:** Documentation Owner  
-**Decision reference:** DEC-2026-008 / AP-008; approved requirements synchronization
+**Decision reference:** DEC-2026-008 / AP-008; approved requirements and logical-model synchronization
 
 ## Purpose
 
@@ -34,8 +34,10 @@ The authority rank below follows the approved precedence policy. A lower rank nu
 | CFG-CAT | 4 | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 / Effective logical-model baseline | Product Owner / SMEs | Controlled entities, fields, values and relationships; content activation still follows owner/SME workflow |
 | CFG-JSON | 3-5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.0 / Approved design baseline | Technical Architect | Human-readable runtime contract and compatibility policy |
 | CFG-RULE | 2-5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.0 / Approved design baseline | Product Owner / Technical Architect | Normalized rule, lifecycle, condition, output, finding and exception model |
-| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 / Initial approved schema baseline | Technical Architect | Machine-readable JSON structure; fixtures and independent validation remain pending |
-| ARCH-FLOW | 6 | [Project Flow](architecture/eMAS_Project_Flow.md) | v1.0 / Synchronization pending | Technical Architect | Phase and evidence flow; next dependency stage |
+| CFG-REL | 4 | [Normalized Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 / Effective logical-model contract | Product Owner / Technical Architect | Frozen entities, relationships, cardinalities, referential integrity and runtime ownership |
+| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 / Effective logical-model contract | Product Owner / Technical Architect | Frozen fields, keys, types, requiredness and serialization conventions |
+| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 / Initial approved schema baseline | Technical Architect | Machine-readable JSON structure; fixture and semantic-validation synchronization is the next stage |
+| ARCH-FLOW | 6 | [Project Flow](architecture/eMAS_Project_Flow.md) | v1.0 / Synchronization pending | Technical Architect | Phase and evidence flow; later dependency stage |
 | ARCH-REPO | 6 | [Repository Architecture](architecture/eMAS_Repository_Architecture.md) | Approved structure baseline | Technical Architect | Repository, package and evidence boundaries |
 | REPO-STRUCT | 6 | [Repository Structure](repository/eMAS_Repository_Structure.md) | Approved structure baseline | Technical Architect | Folder and asset ownership |
 
@@ -78,9 +80,9 @@ These sources are subordinate to effective requirements, governance and architec
 1. GOV-AUTH and GOV-TERM
 2. REQ-ENT
 3. CFG-FUNC, CFG-TECH and CFG-CAT
-4. CFG-RULE
+4. CFG-RULE, CFG-REL and CFG-DICT
 5. CFG-JSON and SCHEMA-JSON where export is affected
-6. Regulatory SME evidence where required
+6. Regulatory or Migration SME evidence where required
 
 ### Runtime JSON or schema
 
@@ -88,14 +90,14 @@ These sources are subordinate to effective requirements, governance and architec
 2. REQ-ENT
 3. CFG-TECH
 4. CFG-JSON
-5. CFG-RULE
+5. CFG-RULE, CFG-REL and CFG-DICT
 6. SCHEMA-JSON
 
 ### PowerShell engine or phase implementation
 
 1. GOV-AUTH, GOV-TERM and CTX-RULES
 2. REQ-ENT
-3. CFG-JSON, CFG-RULE and SCHEMA-JSON
+3. CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT and SCHEMA-JSON
 4. affected architecture and phase contract
 5. applicable operational skill and tests
 
@@ -103,9 +105,10 @@ These sources are subordinate to effective requirements, governance and architec
 
 1. GOV-DOC and change-authority matrix
 2. governing requirement and DecisionIds
-3. schema, configuration and implementation artifacts under test
-4. approved fixtures and expected results
-5. release evidence and rollback controls
+3. CFG-REL and CFG-DICT for logical-model validation
+4. schema, configuration and implementation artifacts under test
+5. approved fixtures and expected results
+6. release evidence and rollback controls
 
 ## Prohibited authority assumptions
 
