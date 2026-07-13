@@ -1,0 +1,180 @@
+# eMAS PowerShell Runtime Profile
+
+**Version:** 1.0  
+**Status:** Effective Architecture Amendment  
+**Effective date:** 2026-07-13  
+**Owner:** Technical Architect  
+**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
+**Canonical references:** Enterprise Requirements v3.1; Solution Architecture v1.0; three Effective phase contracts
+
+## 1. Runtime matrix
+
+| Scope | Required runtime | Required platform | Authority |
+|---|---|---|---|
+| Development and pure unit/fixture tests | PowerShell 7.6 LTS | macOS permitted | Development evidence only |
+| Shared business-engine core | Windows PowerShell 5.1-compatible language and APIs | Cross-edition source | Common implementation baseline |
+| Pre-Sales Assessment | Windows PowerShell 5.1 | Windows | Mandatory customer runtime and release gate |
+| Pre-Migration Readiness | PowerShell 7.6 LTS | Windows | Mandatory consultant runtime and release gate |
+| Post-Migration Verification | PowerShell 7.6 LTS | Windows | Mandatory consultant runtime and release gate |
+| WPF | PowerShell 7.6 LTS with Windows-supported UI implementation | Windows | Optional Pre-/Post-Migration only |
+| Microsoft Excel compatibility | n/a | Windows with supported desktop Excel | Mandatory report qualification gate |
+
+## 2. Design principle
+
+Use one shared business engine with runtime-specific technical adapters.
+
+```text
+scripts/
+├── eMAS-PreSalesAssessment.ps1
+├── eMAS-PreMigrationReadiness.ps1
+└── eMAS-PostMigrationVerification.ps1
+
+engine/
+├── core/
+│   ├── eMAS.Configuration.psm1
+│   ├── eMAS.Evidence.psm1
+│   ├── eMAS.Rules.psm1
+│   ├── eMAS.Classification.psm1
+│   ├── eMAS.Findings.psm1
+│   ├── eMAS.Effort.psm1
+│   ├── eMAS.Readiness.psm1
+│   ├── eMAS.Reconciliation.psm1
+│   ├── eMAS.Reporting.Contract.psm1
+│   ├── eMAS.Logging.psm1
+│   └── eMAS.Common.psm1
+├── powershell51/
+│   ├── eMAS.Discovery.PS51.psm1
+│   ├── eMAS.Reporting.PS51.psm1
+│   └── eMAS.Compatibility.PS51.psm1
+└── powershell7/
+    ├── eMAS.Discovery.PS7.psm1
+    ├── eMAS.Reporting.PS7.psm1
+    ├── eMAS.ParallelProcessing.PS7.psm1
+    └── eMAS.Compatibility.PS7.psm1
+```
+
+The adapter folders may contain technical differences only. Configuration meaning, rules, classification, findings, recommendations, RAG, effort, readiness and reconciliation logic remain in the common core and controlled runtime JSON.
+
+## 3. Source compatibility rules
+
+### 3.1 Common core
+
+The common core shall:
+
+- parse under Windows PowerShell 5.1;
+- avoid PowerShell 7-only operators and syntax;
+- avoid .NET APIs unavailable in the supported Windows PowerShell 5.1 environment;
+- use explicit encoding and culture behavior;
+- use stable object schemas;
+- treat missing/null properties defensively;
+- remain testable under both PowerShell editions.
+
+Examples prohibited in the common core:
+
+```powershell
+$value ?? 'default'
+$condition ? 'yes' : 'no'
+command1 && command2
+ForEach-Object -Parallel
+```
+
+### 3.2 PowerShell 7 adapter
+
+The PowerShell 7 adapter may use PowerShell 7.6 LTS functionality for:
+
+- safe controlled parallel processing;
+- modern .NET filesystem APIs;
+- improved UTF-8 behavior;
+- migration-phase performance improvements;
+- PowerShell 7-specific diagnostics.
+
+Such use must not alter business results compared with the common engine contract.
+
+## 4. Entry-point requirements
+
+### 4.1 Pre-Sales
+
+The entry script shall contain:
+
+```powershell
+#requires -Version 5.1
+```
+
+It is executed with `powershell.exe` and must not require PowerShell 7, Excel, WPF or unapproved external modules.
+
+### 4.2 Pre-Migration and Post-Migration
+
+The entry scripts shall contain:
+
+```powershell
+#requires -Version 7.6
+```
+
+They are executed with `pwsh.exe`. Launchers must detect a missing or unsupported runtime and return a clear corrective message before configuration or source processing begins.
+
+## 5. Runtime evidence
+
+Every execution records:
+
+- `PSEdition`;
+- complete PowerShell version;
+- .NET runtime description where available;
+- process architecture;
+- operating system and version;
+- executing identity and machine;
+- phase code;
+- engine and adapter versions;
+- runtime-compatibility result.
+
+## 6. Testing matrix
+
+| Test area | macOS PS 7.6 | Windows PS 5.1 | Windows PS 7.6 |
+|---|---:|---:|---:|
+| JSON/schema fixtures | Required during development | Compatibility where applicable | Required |
+| Semantic validator | Required during development | Required for common loader behavior | Required |
+| Shared rule engine | Required | Required | Required |
+| Classification and effort | Required | Required | Required |
+| Pre-Sales end-to-end | Development support only | **Mandatory** | Optional compatibility |
+| Pre-Migration end-to-end | Development support only | Not a release target | **Mandatory** |
+| Post-Migration end-to-end | Development support only | Not a release target | **Mandatory** |
+| NTFS/UNC/Windows identity | Not applicable | Mandatory for Pre-Sales | Mandatory for Pre-/Post-Migration |
+| WPF | Not applicable | Not applicable | Mandatory when included |
+| Excel report opening | Not applicable | Windows desktop Excel | Windows desktop Excel |
+
+## 7. CI and pull-request gates
+
+Every material PowerShell pull request should run:
+
+1. cross-platform static and unit tests under PowerShell 7.6 LTS;
+2. Windows PowerShell 5.1 common-core and Pre-Sales tests;
+3. Windows PowerShell 7.6 Pre-Migration/Post-Migration tests;
+4. schema, fixture and semantic-validation tests;
+5. report-package structural validation;
+6. Windows-specific integration tests when the changed code touches discovery, paths, permissions, WPF or report generation.
+
+A macOS-only pass cannot authorize release.
+
+## 8. Packaging
+
+### Customer Pre-Sales package
+
+Contains only the Pre-Sales entry script/launcher, common core, PowerShell 5.1 adapters, controlled JSON, checksum evidence, controlled Pre-Sales template and concise instructions.
+
+### Internal Pre-/Post-Migration package
+
+Contains the relevant entry script, common core, PowerShell 7 adapters, controlled JSON, controlled template, optional WPF and operating instructions.
+
+Do not include unused runtime adapters in the customer package.
+
+## 9. Acceptance criteria
+
+The runtime profile conforms when:
+
+- the common core parses and tests successfully in Windows PowerShell 5.1 and PowerShell 7.6;
+- Pre-Sales runs end-to-end in Windows PowerShell 5.1;
+- Pre-Migration and Post-Migration run end-to-end in PowerShell 7.6 LTS on Windows;
+- runtime-specific adapters contain no independent business interpretation;
+- all phases consume the same controlled JSON;
+- logs identify the exact runtime and adapter;
+- Windows-specific behavior is qualified on Windows;
+- templates open without repair in supported Microsoft Excel versions.
