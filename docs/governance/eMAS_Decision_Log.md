@@ -1,7 +1,7 @@
 # eMAS Decision Log
 
-**Version:** 1.0  
-**Status:** Approved  
+**Version:** 1.1  
+**Status:** Effective  
 **Effective date:** 2026-07-13  
 **Owner:** Documentation Owner
 
@@ -11,7 +11,7 @@ This is the permanent repository-native record of approved eMAS decisions. It re
 
 - Decision IDs are stable and must not be reused.
 - Changes to canonical requirements and design documents must cite the applicable DecisionId.
-- Approval of a decision does not by itself mean the associated implementation or document synchronization is complete.
+- Approval of a decision does not by itself mean the associated implementation, verification or release is complete.
 - The detailed reviewed workbook remains controlled supporting evidence outside the public repository.
 
 ## Decision records
@@ -31,15 +31,26 @@ This is the permanent repository-native record of approved eMAS decisions. It re
 | DEC-2026-011 | AP-011 | 2026-07-13 | Effective | Classify the AI-assistant overview as a generated, non-authoritative profile derived from canonical sources, source-stamped and regenerated when those sources change. | Documentation Owner | AI-assistant overview and canonical index |
 | DEC-2026-012 | AP-012 | 2026-07-13 | Effective | Use protected-main and pull-request governance, CODEOWNERS routing, required review by change class and DecisionId traceability. Repository settings and source-controlled governance files together implement the control. | Technical Architect | Repository settings, CONTRIBUTING, CODEOWNERS and PR template |
 
+## Consolidation evidence
+
+The approved decisions represented by this log and the reviewed 171-item register have been consolidated into the following effective requirements:
+
+- Enterprise Requirements v3.1;
+- Mapping Configuration Functional Requirements v3.0;
+- Mapping Configuration Technical Requirements v3.0;
+- Mapping Configuration Content Catalogue v3.0.
+
+This synchronization closes the requirements-document update stage. It does not complete schema fixtures, architecture synchronization, XLSM/VBA, PowerShell, templates, tests or release controls.
+
 ## Implementation-state rule
 
 The decisions above are effective. Related work remains in its tracked state until completed and verified. Common states include:
 
-- Documentation Sync Pending;
 - Implementation Pending;
 - SME Review Pending;
 - Test Pending;
 - Release-Control Pending;
+- Architecture or guidance synchronization pending;
 - Supersession Pending.
 
 A pull request must not describe an item as complete merely because its design decision is approved.

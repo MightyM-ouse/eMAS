@@ -1,10 +1,10 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.0  
-**Status:** Approved  
+**Version:** 1.1  
+**Status:** Effective  
 **Effective date:** 2026-07-13  
 **Owner:** Documentation Owner  
-**Decision reference:** DEC-2026-008 / AP-008
+**Decision reference:** DEC-2026-008 / AP-008; approved requirements synchronization
 
 ## Purpose
 
@@ -19,29 +19,29 @@ Use it together with:
 
 The authority rank below follows the approved precedence policy. A lower rank number is more authoritative.
 
-## Active and approved sources
+## Active and effective sources
 
 | ID | Authority rank | Artifact | Version / status | Owner | Role |
 |---|---:|---|---|---|---|
-| GOV-DEC | Amendment record | [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | v1.0 / Approved | Product Owner | Records approved amendments pending consolidation into the next v3.x baseline |
-| REQ-ENT | 1 | [Final Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) | v3.0 / Final baseline, amended by GOV-DEC | Product Owner | Product scope, phases, outcomes, boundaries and enterprise requirements |
+| REQ-ENT | 1 | [Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.1.md) | v3.1 / Effective | Product Owner | Product scope, phases, outcomes, boundaries and enterprise requirements |
+| GOV-DEC | Amendment and traceability record | [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | v1.0 / Approved, consolidated | Product Owner | Records the 171 approved decisions and remaining delivery states |
 | GOV-AUTH | Governance control | [Authority and Precedence Policy](governance/00_authority_and_precedence.md) | v1.0 / Effective | Product Owner | Determines authority, source-of-truth terminology and conflict handling |
 | GOV-DOC | Governance control | [Document Governance and Change Control](governance/eMAS_Document_Governance.md) | v1.0 / Effective | Documentation Owner | Controls statuses, changes, approvals, examples, supersession and repository workflow |
 | GOV-TERM | Governance control | [Controlled Terminology](governance/eMAS_Terminology.md) | v1.0 / Effective | Documentation Owner | Controls phase, result, evaluation, RAG, provenance and classification terms |
 | GOV-LOG | Governance evidence | [Decision Log](governance/eMAS_Decision_Log.md) | v1.0 / Effective | Documentation Owner | Permanent repository record of approved decisions |
-| CFG-FUNC | 2 | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v2.0 / Draft requiring approved-decision synchronization | Product Owner | Functional behavior of the internal authoring workbook |
-| CFG-TECH | 3 | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v2.0 / Draft requiring approved-decision synchronization | Technical Architect | Technical constraints for XLSM, VBA, JSON export and validation |
-| CFG-CAT | 4 | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v2.0 / Draft requiring approved-decision synchronization | Product Owner / SMEs | Controlled entities, fields, values and relationship catalogues |
+| CFG-FUNC | 2 | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 / Effective | Product Owner | Functional behavior of the internal authoring workbook |
+| CFG-TECH | 3 | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 / Effective | Technical Architect | Technical constraints for XLSM, VBA, JSON export and validation |
+| CFG-CAT | 4 | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 / Effective logical-model baseline | Product Owner / SMEs | Controlled entities, fields, values and relationships; content activation still follows owner/SME workflow |
 | CFG-JSON | 3-5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.0 / Approved design baseline | Technical Architect | Human-readable runtime contract and compatibility policy |
 | CFG-RULE | 2-5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.0 / Approved design baseline | Product Owner / Technical Architect | Normalized rule, lifecycle, condition, output, finding and exception model |
 | SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 / Initial approved schema baseline | Technical Architect | Machine-readable JSON structure; fixtures and independent validation remain pending |
-| ARCH-FLOW | 6 | [Project Flow](architecture/eMAS_Project_Flow.md) | v1.0 / Final design baseline; synchronization pending | Technical Architect | Phase and evidence flow |
+| ARCH-FLOW | 6 | [Project Flow](architecture/eMAS_Project_Flow.md) | v1.0 / Synchronization pending | Technical Architect | Phase and evidence flow; next dependency stage |
 | ARCH-REPO | 6 | [Repository Architecture](architecture/eMAS_Repository_Architecture.md) | Approved structure baseline | Technical Architect | Repository, package and evidence boundaries |
 | REPO-STRUCT | 6 | [Repository Structure](repository/eMAS_Repository_Structure.md) | Approved structure baseline | Technical Architect | Folder and asset ownership |
 
 ## Implementation guidance
 
-These sources are subordinate to approved requirements, governance and architecture.
+These sources are subordinate to effective requirements, governance and architecture.
 
 | ID | Authority rank | Artifact | Status | Use |
 |---|---:|---|---|---|
@@ -56,6 +56,7 @@ These sources are subordinate to approved requirements, governance and architect
 | ID | Classification | Artifact | Authority |
 |---|---|---|---|
 | GEN-AI-001 | Generated / Non-authoritative | [AI-assistant eMAS overview](ai-assistant/emas-gxp-migration-assessment/overview.md) | Derived summary only; canonical sources prevail |
+| HIST-REQ30 | Superseded | [Enterprise Requirements v3.0](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) | Historical comparison only; v3.1 is effective |
 | HIST-V2 | Superseded / Archived externally | [Version 2 documentation pack notice](archive/v2-documentation-pack/README.md) | Historical comparison only |
 | HIST-REGISTER | Governance record | [Superseded Document Register](archive/SUPERSEDED_DOCUMENT_REGISTER.md) | Identifies successors and restrictions |
 | EXAMPLES | Illustrative by default | Examples in requirements, content catalogue and documentation | Never override canonical prose or schema |
@@ -110,7 +111,7 @@ These sources are subordinate to approved requirements, governance and architect
 
 Do not use the following as authority unless explicitly promoted and indexed:
 
-- archived Version 2 Word documents or Confluence exports;
+- Enterprise Requirements v3.0 or archived Version 2 documents as current requirements;
 - generated assistant profiles;
 - AI recommendations not recorded as approved decisions;
 - sample workbooks or reports;
@@ -122,9 +123,8 @@ Do not use the following as authority unless explicitly promoted and indexed:
 
 Update this index whenever an artifact is:
 
-- approved or made effective;
+- approved, made effective or superseded;
 - renamed or moved;
-- superseded or archived;
 - assigned a new owner;
 - given a new version or authority role;
 - added to or removed from an LLM skill's required context.

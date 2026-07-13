@@ -17,26 +17,39 @@ The Product Owner reviewed the evidence-based recommendation register and approv
 7. XLSM, VBA and regulatory content
 8. Testing, compatibility and release
 
-Approval establishes the design decision. It does not mean every implementation, document revision, schema fixture, PowerShell module, workbook component, template or test is complete.
+Approval establishes the design decision. It does not mean every implementation, schema fixture, PowerShell module, workbook component, template, test or release control is complete.
+
+## Consolidation status
+
+The approved decisions are now consolidated into:
+
+- `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`;
+- `docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md` version 3.0;
+- `docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md` version 3.0;
+- `docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md` version 3.0.
+
+Enterprise Requirements v3.1 is the active authority-rank-1 product baseline. Enterprise Requirements v3.0 is superseded for implementation use.
 
 ## Immediate canonical decisions
 
-- Enterprise Requirements v3.0 remains the primary solution baseline, amended by this approved decision baseline until the next consolidated v3.x revision.
 - The authority and precedence policy is effective.
 - Authoring, runtime and execution source terminology is effective.
 - The normalized JSON contract and schema path are approved.
 - The normalized rule, lifecycle, phase, condition, output, finding, recommendation, conflict and exception models are approved.
 - Evaluation status and RAG remain separate.
+- Value-source provenance is separate from evaluation status and RAG.
 - The classification taxonomy separates technical standard, regional implementation and procedure context.
 - ASMF is a procedure context, not a technical submission format.
 - The operational LLM skill structure and mandatory stop conditions are approved.
-- Windows PowerShell 5.1 remains the runtime baseline unless later changed through controlled change.
+- Windows PowerShell 5.1 remains the runtime baseline unless changed through controlled change.
 - Source XLSX generation must run without Microsoft Excel installed and without unapproved external PowerShell modules; the OpenXML implementation spike remains required.
-- Documentation, schema, workbook/VBA, engine, templates, tests and release controls must now be synchronized to these decisions.
+- Documentation, schema, workbook/VBA, engine, templates, tests and release controls must remain synchronized to these decisions.
 
 ## Implementation-state rule
 
-Items previously classified as `Implementation Pending`, `Documentation Sync Pending`, `SME Decision Required`, `Deferred`, `Duplicate`, `Obsolete` or `Blocked` retain that delivery classification unless the approved recommendation explicitly changes it. The decision is approved; the work item is not automatically complete.
+Items previously classified as `Implementation Pending`, `Documentation Sync Pending`, `SME Decision Required`, `Deferred`, `Duplicate`, `Obsolete` or `Blocked` retain that delivery classification unless the approved recommendation explicitly changes it. The design decision is approved; the work item is not automatically implemented, verified or released.
+
+Detailed regulatory values, relationships, folder/file content, effort weights, confidence weights and exception-role content still require the approved owner or SME evidence before Effective configuration status.
 
 ## Public-repository handling
 
@@ -44,8 +57,8 @@ The detailed internal workbook is not committed to the public repository because
 
 ## Primary implementation sequence
 
-1. Apply authority, precedence, statuses and terminology.
-2. Synchronize Enterprise Requirements and configuration requirements.
+1. Apply authority, precedence, statuses and terminology. **Completed in PR #5.**
+2. Synchronize Enterprise Requirements and configuration requirements. **Completed in the requirements-synchronization change.**
 3. Freeze the normalized logical model and relationship matrix.
 4. Complete and validate JSON Schema 1.0.0 and fixtures.
 5. Update architecture and phase contracts.
@@ -58,8 +71,12 @@ The detailed internal workbook is not committed to the public repository because
 
 ## Related canonical documents
 
+- `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md`
 - `docs/governance/00_authority_and_precedence.md`
 - `docs/governance/eMAS_Terminology.md`
+- `docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md`
+- `docs/configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md`
+- `docs/configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md`
 - `docs/configuration/04_eMAS_Runtime_JSON_Contract.md`
 - `docs/configuration/05_eMAS_Normalized_Rule_Model.md`
 - `config/schema/eMAS-runtime-config.schema.json`

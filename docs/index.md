@@ -6,7 +6,7 @@ This page is the repository navigation entry point. Use the [Canonical Document 
 
 | Area | Primary document | Status |
 |---|---|---|
-| Approved decisions | [Approved Decision Baseline v1.0](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | Approved |
+| Approved decisions | [Approved Decision Baseline v1.0](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | Approved; consolidated into effective requirements |
 | Permanent decisions | [eMAS Decision Log](governance/eMAS_Decision_Log.md) | Effective |
 | Authority and precedence | [Authority and Precedence Policy](governance/00_authority_and_precedence.md) | Effective |
 | Document governance | [Document Governance and Change Control](governance/eMAS_Document_Governance.md) | Effective |
@@ -15,17 +15,17 @@ This page is the repository navigation entry point. Use the [Canonical Document 
 | Machine-readable LLM index | [LLM Context Index](llm-development-context/context-index.yaml) | Effective |
 | Superseded documents | [Superseded Document Register](archive/SUPERSEDED_DOCUMENT_REGISTER.md) | Effective governance record |
 
-## Current product and design baseline
+## Current effective baseline
 
 | Area | Primary document | Status |
 |---|---|---|
-| Enterprise requirements | [eMAS Final Enterprise Requirements v3.0](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) | Final baseline, amended by approved decisions pending consolidated v3.x revision |
-| Project flow | [eMAS Project Flow](architecture/eMAS_Project_Flow.md) | Final design baseline; approved-decision synchronization pending |
+| Enterprise requirements | [eMAS Enterprise Requirements v3.1](requirements/eMAS_Final_Enterprise_Requirements_v3.1.md) | Effective |
+| Project flow | [eMAS Project Flow](architecture/eMAS_Project_Flow.md) | Approved-decision synchronization pending in the next dependency stage |
 | Repository architecture | [eMAS Repository Architecture](architecture/eMAS_Repository_Architecture.md) | Approved structure baseline |
 | Repository structure | [eMAS Repository Structure](repository/eMAS_Repository_Structure.md) | Approved structure baseline |
-| Mapping functional requirements | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | Draft requiring approved-decision synchronization |
-| Mapping technical requirements | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | Draft requiring approved-decision synchronization |
-| Mapping content catalogue | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | Draft requiring approved-decision synchronization and SME evidence |
+| Mapping functional requirements | [Mapping Configuration Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 / Effective |
+| Mapping technical requirements | [Mapping Configuration Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 / Effective |
+| Mapping content catalogue | [Mapping Configuration Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 / Effective logical-model baseline; detailed content still requires owner/SME evidence |
 | Runtime JSON contract | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | Approved design baseline |
 | Normalized rule model | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | Approved design baseline |
 | Runtime schema | [eMAS Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | Initial approved schema baseline; fixtures and independent validation pending |
@@ -37,11 +37,12 @@ This page is the repository navigation entry point. Use the [Canonical Document 
 1. Read the [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md) and [Decision Log](governance/eMAS_Decision_Log.md).
 2. Apply the [Authority and Precedence Policy](governance/00_authority_and_precedence.md).
 3. Use [Document Governance](governance/eMAS_Document_Governance.md) for statuses, approvals, examples, supersession and repository workflow.
-4. Use the [Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.0.md) for product scope, subject to approved amendments.
+4. Use [Enterprise Requirements v3.1](requirements/eMAS_Final_Enterprise_Requirements_v3.1.md) for product scope, boundaries and phase outcomes.
 5. Use [Controlled Terminology](governance/eMAS_Terminology.md) for phase, status, RAG, provenance and classification terms.
-6. Use the [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md), [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) and [JSON Schema](../config/schema/eMAS-runtime-config.schema.json) for configuration and runtime work.
-7. Review architecture and repository structure for component placement and package boundaries.
-8. Use LLM context and operational skills only as implementation guidance; they remain subordinate to canonical requirements.
+6. Use the three effective configuration requirements for mapping-workbook behavior, technical implementation and logical content.
+7. Use the [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md), [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) and [JSON Schema](../config/schema/eMAS-runtime-config.schema.json) for configuration and runtime work.
+8. Review architecture and repository structure for component placement and package boundaries.
+9. Use LLM context and operational skills only as implementation guidance; they remain subordinate to canonical requirements.
 
 ## Source-of-truth rules
 
@@ -67,16 +68,20 @@ This page is the repository navigation entry point. Use the [Canonical Document 
 
 ## Decision and delivery state
 
-The 171 reviewed recommendations are approved decisions. Associated work may still be:
+The 171 reviewed recommendations are approved and their requirements are now consolidated. Associated work may still be:
 
-- Documentation Sync Pending;
 - Implementation Pending;
 - SME Review Pending;
 - Test Pending;
 - Release-Control Pending;
+- Architecture or guidance synchronization pending;
 - Supersession Pending.
 
 Do not describe a design decision as implemented, verified or released without evidence.
+
+## Superseded requirements
+
+Enterprise Requirements v3.0, configuration v2.0 revisions and the Version 2 Word documentation pack are historical only. Use the [Superseded Document Register](archive/SUPERSEDED_DOCUMENT_REGISTER.md) for successors and restrictions.
 
 ## Repository safety
 
