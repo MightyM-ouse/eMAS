@@ -61,7 +61,7 @@ The runtime JSON is normalized and explicitly represents workbook relationships.
 }
 ```
 
-The flat indicative structure in Enterprise Requirements v3.0 section 10.2 is superseded for schema purposes by this normalized model.
+Enterprise Requirements v3.1 and the effective configuration requirements use this normalized model. The earlier flat indicative structure in Enterprise Requirements v3.0 is superseded.
 
 ## 5. Required configuration metadata
 
@@ -123,10 +123,10 @@ The engine may warn and continue for:
 
 JSON export must be:
 
-- UTF-8;
+- UTF-8 without BOM;
 - complete and never truncated;
 - culture-invariant for decimal, Boolean, date and date-time values;
-- deterministic in property and collection ordering where practical;
+- deterministic in property and collection ordering where required by the release contract;
 - free of locale-specific separators;
 - validated before release.
 
