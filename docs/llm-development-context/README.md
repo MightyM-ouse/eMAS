@@ -1,39 +1,40 @@
 # LLM Development Context for eMAS
 
-This folder contains focused, high-signal context for LLMs when developing or extending eMAS.
+**Version:** 1.0  
+**Status:** Approved guidance
 
-## Purpose
+This folder contains focused context and operational skills for developing eMAS consistently with the approved v3.1 baseline.
 
-Help LLMs act as disciplined senior engineers who produce consistent, production-ready output aligned with eMAS architecture, GxP-oriented traceability expectations and eCTD regulatory realities.
+## Authority
 
-## Authority and limitations
+Before acting, load:
 
-These files are implementation context, not an independent requirements baseline.
+1. [`00-authority-and-precedence.md`](00-authority-and-precedence.md);
+2. [`context-index.yaml`](context-index.yaml);
+3. the canonical sources required by the applicable operational skill.
 
-- Approved repository requirements and architecture control implementation.
-- The internal mapping workbook is the controlled business and regulatory rule-authoring application.
-- The reviewed JSON exported from the workbook controls runtime interpretation.
-- AI recommendations and decision-register review columns are proposals until approved by the user or required SME.
-- When context conflicts with an approved requirement, stop and report the conflict rather than silently resolving it.
-- Use [decision-boundary.md](decision-boundary.md) whenever a task may depend on an unresolved decision.
+LLM context and skills never override approved requirements, configuration specifications or the JSON Schema.
 
-The current review status and open-question process are documented under [docs/governance/decision-register](../governance/decision-register/README.md).
+## Core context
 
-## How to use
+- `00-authority-and-precedence.md`
+- `core-design.md`
+- `phases.md`
+- `configuration-rules.md`
+- `runtime-json-contract.md`
+- `normalized-rule-model.md`
+- `engine-patterns.md`
+- `ectd-regulatory-expert.md`
+- `llm-development-rules.md`
+- `decision-boundary.md`
 
-- Include only the relevant files or sections in system prompts or retrieval context.
-- Use `llm-development-rules.md` as hard constraints.
-- Use `decision-boundary.md` to identify when work must stop for a decision.
-- Use `ectd-regulatory-expert.md` when working on mapping, classification rules or regional configuration, but do not treat unapproved regulatory values as final mapping content.
+## Operational skills
 
-## Files
+See [`skills/README.md`](skills/README.md).
 
-- `core-design.md` — fundamental architecture and design decisions
-- `phases.md` — the three assessment phases with clear rules
-- `configuration-rules.md` — Excel mapping workbook and JSON export
-- `engine-patterns.md` — shared PowerShell engine and evidence standards
-- `ectd-regulatory-expert.md` — eCTD regulatory context for regions, authorities, formats and relationships
-- `llm-development-rules.md` — mandatory development constraints
-- `decision-boundary.md` — stop conditions and handling of unresolved decisions
+## Mandatory boundary
 
-Keep outputs concise, rule-based, traceable and consistent with approved repository patterns.
+- AI proposals are not approvals.
+- LLM-generated regulatory content remains Draft until normal SME approval.
+- Do not hardcode business or regulatory interpretation in PowerShell.
+- Stop for unresolved canonical conflicts or unsupported regulatory interpretation.
