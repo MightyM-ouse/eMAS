@@ -1,0 +1,64 @@
+{
+  "catalogVersion": "1.0.0",
+  "status": "Effective",
+  "effectiveDate": "2026-07-13",
+  "owner": "Technical Architect",
+  "skills": [
+    {
+      "skillId": "SKILL-001",
+      "title": "Modify the eMAS Configuration Model",
+      "file": "modify-configuration-model.md",
+      "status": "Effective",
+      "owner": "Product Owner and Technical Architect",
+      "primaryUse": "Normalized entity, field, relationship, lifecycle and configuration-model changes"
+    },
+    {
+      "skillId": "SKILL-002",
+      "title": "Update the eMAS Runtime JSON Schema",
+      "file": "update-json-schema.md",
+      "status": "Effective",
+      "owner": "Technical Architect and QA Lead",
+      "primaryUse": "Runtime serialization, semantic validation, fixtures and compatibility"
+    },
+    {
+      "skillId": "SKILL-003",
+      "title": "Implement or Modify an eMAS PowerShell Module",
+      "file": "implement-powershell-module.md",
+      "status": "Effective",
+      "owner": "PowerShell Lead and Technical Architect",
+      "primaryUse": "Shared engine modules and phase entry scripts"
+    },
+    {
+      "skillId": "SKILL-004",
+      "title": "Add or Modify Regulatory Classification Content",
+      "file": "add-regulatory-classification.md",
+      "status": "Effective",
+      "owner": "Regulatory SME and Product Owner",
+      "primaryUse": "Evidence-backed regulatory values, aliases, relationships and rules"
+    },
+    {
+      "skillId": "SKILL-005",
+      "title": "Modify an eMAS Report Contract or Controlled Template",
+      "file": "modify-report-contract.md",
+      "status": "Effective",
+      "owner": "Product Owner and Reporting Lead",
+      "primaryUse": "Controlled report structure, baseline and MigrationSummary interfaces"
+    },
+    {
+      "skillId": "SKILL-006",
+      "title": "Review an eMAS Repository Change",
+      "file": "review-change.md",
+      "status": "Effective",
+      "owner": "Technical Architect and QA Lead",
+      "primaryUse": "Independent repository, architecture, traceability and safety review"
+    },
+    {
+      "skillId": "SKILL-007",
+      "title": "Investigate an eMAS Defect",
+      "file": "investigate-defect.md",
+      "status": "Effective",
+      "owner": "Technical Lead and QA Lead",
+      "primaryUse": "Reproduction, root cause, impact and regression evidence"
+    }
+  ]
+}
