@@ -2,9 +2,9 @@
 
 This folder is reserved for portable WPF interfaces for:
 
-- pre-migration readiness;
-- post-migration verification.
+- Pre-Migration Readiness;
+- Post-Migration Verification.
 
-No pre-sales WPF interface is planned.
+No Pre-Sales WPF interface is permitted by the Effective phase contract.
 
-The UI may collect and validate parameters, show progress and open results. It must invoke the same PowerShell entry scripts used in command-line mode and must not contain separate assessment logic, runtime rules or report calculations.
+The UI may collect and validate parameters, show progress and open generated results. It must invoke the same PowerShell entry scripts used in CLI mode and must not contain independent assessment rules, calculations, configuration interpretation, baseline logic or report calculations.

@@ -30,7 +30,11 @@ The approved decisions are consolidated into:
 - Normalized Relationship Matrix Version 1.0;
 - Logical Data Dictionary Version 1.0;
 - Schema Validation and Fixture Contract Version 1.0;
-- Runtime JSON Schema Version 1.0.0 and its fixture suite.
+- Runtime JSON Schema Version 1.0.0 and its fixture suite;
+- Solution Architecture Version 1.0;
+- Project Flow Version 2.0;
+- Repository Architecture Version 1.1;
+- Pre-Sales, Pre-Migration and Post-Migration Phase Contracts Version 1.0.
 
 Enterprise Requirements v3.1 remains the active authority-rank-1 product baseline.
 
@@ -42,12 +46,17 @@ Enterprise Requirements v3.1 remains the active authority-rank-1 product baselin
 - The normalized rule, lifecycle, phase, condition, output, finding, recommendation, conflict and exception models are approved.
 - The normalized relationship matrix and logical data dictionary are frozen at Version 1.0.
 - The independent schema/semantic fixture contract is Effective.
+- Solution Architecture Version 1.0 and all three phase contracts are Effective.
 - Evaluation status, RAG and value-source provenance remain separate.
 - Technical standard, regional implementation and procedure context remain separate.
 - ASMF is ProcedureContext, not TechnicalStandard.
 - Windows PowerShell 5.1 remains the runtime baseline unless changed through controlled change.
 - Source XLSX generation must run without Microsoft Excel installed and without unapproved external PowerShell modules; the OpenXML implementation spike remains required.
 - Python and `jsonschema` are build/CI validation dependencies only, not customer or runtime dependencies.
+- Pre-Sales remains CLI/simple-launcher based, lightweight and free of readiness terminology.
+- Pre-Migration creates the approved reusable comparison baseline.
+- Post-Migration consumes the approved baseline and agreed `MigrationSummary.xlsx` detail.
+- Accepted exceptions never erase original findings, RAG, discrepancies or evidence.
 
 ## Implementation-state rule
 
@@ -55,7 +64,7 @@ Items classified as `Implementation Pending`, `SME Review Pending`, `Test Pendin
 
 Detailed regulatory values, authority relationships, folder/file content, effort weights, confidence weights, thresholds and exception-role content still require the approved owner or SME evidence before Effective configuration status.
 
-Completing the independent schema validator does not mean the XLSM/VBA exporter or PowerShell loader implements the same checks. Conformance of those layers remains separately tracked.
+Completing architecture and phase contracts does not mean the XLSM/VBA exporter, PowerShell loader/engine, WPF, report templates or release packages implement those contracts. Conformance remains separately tracked.
 
 ## Public-repository handling
 
@@ -67,10 +76,10 @@ The detailed internal decision workbook is not committed to the public repositor
 2. Synchronize Enterprise Requirements and configuration requirements. **Completed in PR #6.**
 3. Freeze the normalized logical model, relationship matrix and data dictionary. **Completed in PR #7.**
 4. Complete and validate JSON Schema 1.0.0 and fixtures. **Completed in PR #8.**
-5. Update architecture and phase contracts.
+5. Update architecture and phase contracts. **Completed in PR #9.**
 6. Implement operational skills.
 7. Complete the XLSM/VBA proof of concept and validator conformance.
-8. Complete the PowerShell OpenXML/reporting spike, engine contracts and loader conformance.
+8. Complete the PowerShell OpenXML/reporting spike, engine contracts and loader/phase conformance.
 9. Populate regulatory and migration content under the approved SME workflow.
 10. Complete report templates, broader tests, release manifest, rollback and recall controls.
 11. Supersede or archive all conflicting Version 2 documentation.
@@ -86,3 +95,7 @@ The detailed internal decision workbook is not committed to the public repositor
 - `docs/configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md`
 - `config/schema/eMAS-runtime-config.schema.json`
 - `config/schema/examples/fixture-manifest.json`
+- `docs/architecture/eMAS_Solution_Architecture.md`
+- `docs/architecture/eMAS_Project_Flow.md`
+- `docs/architecture/eMAS_Repository_Architecture.md`
+- `docs/architecture/phase-contracts/README.md`

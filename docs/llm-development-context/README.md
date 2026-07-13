@@ -1,78 +1,67 @@
 # LLM Development Context for eMAS
 
+**Version:** 2.0  
 **Status:** Effective implementation guidance  
-**Authority rank:** 7 — subordinate to approved requirements, governance, schemas and architecture
+**Authority rank:** 7 — subordinate to approved requirements, governance, configuration contracts, schemas and architecture
 
-This folder contains focused, high-signal context for LLM-assisted eMAS development.
+This folder contains focused, high-signal context for disciplined LLM-assisted eMAS development.
 
-## Purpose
+## Mandatory authority path
 
-Help LLMs act as disciplined senior engineers who produce consistent, testable and traceable output aligned with the approved eMAS architecture, controlled terminology and regulated-environment evidence expectations.
+Before implementation:
 
-## Mandatory authority rules
-
-These files are implementation context, not an independent requirements baseline.
-
-Before using this folder:
-
-1. read the [machine-readable context index](context-index.yaml);
-2. apply the [Authority and Precedence Policy](../governance/00_authority_and_precedence.md);
+1. load task-specific sources from [context-index.yaml](context-index.yaml);
+2. apply [Authority and Precedence](../governance/00_authority_and_precedence.md);
 3. use the [Canonical Document Index](../CANONICAL_DOCUMENT_INDEX.md);
 4. apply [Controlled Terminology](../governance/eMAS_Terminology.md);
-5. identify applicable DecisionIds in the [Decision Log](../governance/eMAS_Decision_Log.md).
+5. read [Enterprise Requirements v3.1](../requirements/eMAS_Final_Enterprise_Requirements_v3.1.md);
+6. apply the Effective configuration and Schema 1.0.0 contracts;
+7. apply [Solution Architecture](../architecture/eMAS_Solution_Architecture.md) and the applicable [phase contract](../architecture/phase-contracts/README.md);
+8. identify applicable DecisionIds.
 
-The approved source model is:
+## Source boundaries
 
-- reviewed internal XLSM = authoring source of truth;
-- validated immutable exported JSON = runtime source of truth;
+- reviewed internal XLSM = authoring source;
+- validated immutable exported JSON = runtime source;
 - exact JSON version and checksum loaded for a run = execution source.
 
-PowerShell never reads the XLSM and never creates, repairs or reinterprets the runtime JSON.
+PowerShell never reads the XLSM and never creates, repairs or reinterprets runtime JSON.
 
 ## Decision and delivery boundary
 
-The Product Owner approved the recommended decision for all 171 reviewed items on 13 July 2026.
-
-An LLM must distinguish:
+The Product Owner approved all 171 reviewed decisions on 13 July 2026. An LLM must distinguish:
 
 - approved decision;
-- documentation synchronization;
-- implementation completion;
-- verification completion;
-- release completion.
+- synchronized requirements/documentation;
+- implemented behavior;
+- verified behavior;
+- released behavior.
 
-Approved design decisions may be implemented even when downstream work remains pending. New issues not covered by the decision baseline remain unresolved and require the stop process in [decision-boundary.md](decision-boundary.md).
+Architecture and phase contracts are now Effective. Entry scripts, engine modules, WPF, XLSM/VBA, templates and complete release controls remain separate implementation work until evidence exists.
 
 ## How to use
 
-- Use `context-index.yaml` to select required and optional sources for the task.
-- Include only relevant context instead of loading the entire repository.
-- Use `llm-development-rules.md` as mandatory constraints.
-- Use `decision-boundary.md` to distinguish approved decisions from pending delivery and new unresolved questions.
-- Use `ectd-regulatory-expert.md` for classification and regulatory context, but do not promote new regulatory content without required SME evidence.
-- Use an operational skill when one exists; every skill must define inputs, ordered procedure, outputs, stop conditions and Definition of Done.
+- load only the context required for the selected task;
+- use [llm-development-rules.md](llm-development-rules.md) as mandatory constraints;
+- use [decision-boundary.md](decision-boundary.md) for unresolved conflicts and stop conditions;
+- use [phases.md](phases.md) only as a summary; the Effective phase contract prevails;
+- use [ectd-regulatory-expert.md](ectd-regulatory-expert.md) for controlled context, but do not promote new regulatory content without SME evidence;
+- use an operational skill when available; each skill must define inputs, procedure, outputs, stop conditions and Definition of Done.
 
 ## Files
 
-- `context-index.yaml` — machine-readable authority and task-routing index
-- `core-design.md` — fundamental architecture and source-of-truth design
-- `phases.md` — approved phase names, scope and outcome terminology
-- `configuration-rules.md` — internal XLSM authoring and JSON export rules
-- `engine-patterns.md` — shared PowerShell engine and evidence patterns
-- `ectd-regulatory-expert.md` — controlled regulatory classification context
-- `llm-development-rules.md` — mandatory development constraints
-- `decision-boundary.md` — decision, conflict and implementation-state stop rules
-- `skills/` — operational skill framework and task procedures
+- `context-index.yaml` — authority and task routing;
+- `core-design.md` — concise source-of-truth design context;
+- `phases.md` — phase summary routed to Effective contracts;
+- `configuration-rules.md` — XLSM and JSON rules;
+- `engine-patterns.md` — shared engine and evidence patterns;
+- `ectd-regulatory-expert.md` — controlled regulatory classification context;
+- `llm-development-rules.md` — mandatory development constraints;
+- `decision-boundary.md` — decision and stop rules;
+- `skills/` — operational task procedures.
 
 ## Prohibited authority assumptions
 
-Do not treat any of the following as authority:
+Do not treat generated summaries, archived Version 2 documents, illustrative examples, uncontrolled fixtures, unapproved regulatory interpretations, customer-specific evidence or conflicting code comments as authority.
 
-- generated AI-assistant summaries;
-- archived Version 2 documentation;
-- illustrative examples;
-- unapproved new regulatory interpretations;
-- customer-specific project evidence;
-- code comments that conflict with approved requirements.
-
-Keep outputs explicit, traceable, minimally scoped and consistent with approved repository patterns.
+Keep outputs explicit, traceable, minimally scoped and consistent with the Effective Solution Architecture and applicable phase contract.
