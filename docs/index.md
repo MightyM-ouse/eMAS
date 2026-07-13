@@ -20,34 +20,24 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - [Normalized Relationship Matrix v1.0](configuration/06_eMAS_Normalized_Relationship_Matrix.md)
 - [Logical Data Dictionary v1.0](configuration/07_eMAS_Data_Dictionary.md)
 - [Schema Validation and Fixture Contract v1.0](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
+- [XLSM/VBA POC and Conformance Contract v1.0](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
 - [Runtime JSON Schema 1.0.0](../config/schema/eMAS-runtime-config.schema.json)
 
-## Effective architecture
+## Effective architecture and skills
 
 - [Architecture Index](architecture/README.md)
 - [Solution Architecture v1.0](architecture/eMAS_Solution_Architecture.md)
 - [Project Flow v2.0](architecture/eMAS_Project_Flow.md)
 - [Repository Architecture v1.1](architecture/eMAS_Repository_Architecture.md)
 - [Phase Contracts](architecture/phase-contracts/README.md)
-  - [Pre-Sales Assessment](architecture/phase-contracts/01_eMAS_PreSales_Assessment_Phase_Contract.md)
-  - [Pre-Migration Readiness](architecture/phase-contracts/02_eMAS_PreMigration_Readiness_Phase_Contract.md)
-  - [Post-Migration Verification](architecture/phase-contracts/03_eMAS_PostMigration_Verification_Phase_Contract.md)
-
-## Effective operational skills
-
 - [Operational Skill Catalogue](llm-development-context/skills/README.md)
 - [Machine-readable Skill Catalogue](llm-development-context/skills/skill-catalog.json)
-- [Modify Configuration Model](llm-development-context/skills/modify-configuration-model.md)
-- [Update Runtime JSON Schema](llm-development-context/skills/update-json-schema.md)
-- [Implement PowerShell Module](llm-development-context/skills/implement-powershell-module.md)
-- [Add Regulatory Classification](llm-development-context/skills/add-regulatory-classification.md)
-- [Modify Report Contract](llm-development-context/skills/modify-report-contract.md)
-- [Review Repository Change](llm-development-context/skills/review-change.md)
-- [Investigate Defect](llm-development-context/skills/investigate-defect.md)
+- [XLSM/VBA POC task route](llm-development-context/xlsm-vba-poc-route.yaml)
 
 ## Implementation and verification
 
-- [Repository Structure](repository/eMAS_Repository_Structure.md)
+- [Synthetic XLSM/VBA POC source](../config/authoring/poc/README.md)
+- [Reviewable VBA source](../config/vba/README.md)
 - [Schema Package](../config/schema/README.md)
 - [Build and Validation](../build/README.md)
 - [Tests](../tests/README.md)
@@ -59,21 +49,22 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - Validated immutable exported JSON = runtime source.
 - Exact JSON version/checksum loaded for a run = execution source.
 - Shared PowerShell engine performs generic technical processing.
-- Phase contracts control phase-specific orchestration and result language.
+- Phase contracts control phase orchestration/result language.
 - Controlled templates control workbook presentation.
-- Effective operational skills control repeatable task procedure and evidence expectations.
+- Operational skills control repeatable task procedure/evidence.
 
-## Completed dependency stages
+## Dependency-stage status
 
-1. Governance baseline.
-2. Requirements synchronization.
-3. Logical-model freeze.
-4. Schema 1.0.0 and independent fixture validation.
-5. Solution architecture and phase contracts.
-6. Operational LLM skills and automated catalogue validation.
+1. Governance baseline — completed.
+2. Requirements synchronization — completed.
+3. Logical-model freeze — completed.
+4. Schema 1.0.0 and independent fixture validation — completed.
+5. Solution architecture and phase contracts — completed.
+6. Operational skills and catalogue validation — completed.
+7. XLSM/VBA POC source and automated conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
 
-Pending stages include XLSM/VBA implementation and fixture conformance, PowerShell/OpenXML implementation and loader conformance, controlled templates, detailed SME content and full release/rollback controls.
+Next implementation work covers the PowerShell OpenXML/reporting spike, engine contracts and configuration-loader/phase conformance. Controlled production workbook signing, complete Excel/locale qualification, detailed SME content and full release/rollback controls remain pending.
 
 ## Repository safety
 
-Customer data, project evidence, credentials, production logs/reports, confidential controlled binaries and project-specific accepted exceptions must not be committed. Test fixtures must remain synthetic.
+Customer data, project evidence, credentials, production logs/reports, confidential controlled binaries and project-specific accepted exceptions must not be committed. POC and test data must remain synthetic.

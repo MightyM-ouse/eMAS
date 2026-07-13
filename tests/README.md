@@ -1,11 +1,12 @@
 # Tests
 
-This folder contains controlled automated and scenario testing for schemas, operational skills, scripts, engine modules, runtime configuration and report templates.
+This folder contains controlled automated and scenario testing for schemas, operational skills, workbook/VBA source, scripts, engine modules, runtime configuration and report templates.
 
 ## Available tests
 
-- `schema/` — Runtime JSON Schema 1.0.0, fixture-manifest, semantic-validation and UTF-8 encoding tests.
-- `skills/` — operational skill catalogue, front-matter, required-section and UTF-8 JSON tests.
+- `schema/` — Runtime JSON Schema 1.0.0, manifest, semantic and encoding tests.
+- `skills/` — operational skill catalogue and contract tests.
+- `vba/` — synthetic workbook generation, table/fixture semantics, deterministic golden hash and VBA source-contract tests.
 
 Run:
 
@@ -15,7 +16,11 @@ python build/validate_emas_schema.py
 python -m unittest discover -s tests/schema -p "test_*.py" -v
 python build/validate_operational_skills.py
 python -m unittest discover -s tests/skills -p "test_*.py" -v
+python build/validate_xlsm_vba_poc.py
+python -m unittest discover -s tests/vba -p "test_*.py" -v
 ```
+
+Native Excel/VBA execution is separately performed with `build/Test-eMASMappingPoc.ps1`; GitHub-hosted Linux CI does not provide supported desktop Excel.
 
 ## Planned areas
 

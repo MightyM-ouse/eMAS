@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblMasterDataRelationships","action":"set","keyField":"RelationshipId","keyValue":"REL-001","field":"TargetEntityType","value":"TECHNICAL_STANDARD"}]}

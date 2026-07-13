@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblRuleConditions","action":"set","keyField":"ConditionId","keyValue":"COND-001","field":"FieldCode","value":"FIELD-MISSING"}]}

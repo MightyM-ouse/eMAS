@@ -1,0 +1,49 @@
+schemaVersion: "1.0"
+status: EffectiveRoute
+effectiveDate: "2026-07-13"
+owner: Technical Architect
+purpose: >-
+  Focused context route for XLSM/VBA proof-of-concept, workbook-export,
+  fixture-conformance and native Excel qualification work.
+
+requiredCanonicalSources:
+  - ../governance/00_authority_and_precedence.md
+  - ../requirements/eMAS_Final_Enterprise_Requirements_v3.1.md
+  - ../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md
+  - ../configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md
+  - ../configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md
+  - ../configuration/04_eMAS_Runtime_JSON_Contract.md
+  - ../configuration/05_eMAS_Normalized_Rule_Model.md
+  - ../configuration/06_eMAS_Normalized_Relationship_Matrix.md
+  - ../configuration/07_eMAS_Data_Dictionary.md
+  - ../configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md
+  - ../configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md
+  - ../../config/schema/eMAS-runtime-config.schema.json
+
+requiredSkills:
+  - skills/modify-configuration-model.md
+  - skills/update-json-schema.md
+  - skills/review-change.md
+
+implementationAssets:
+  - ../../config/authoring/poc/workbook-source.json
+  - ../../config/authoring/poc/poc-manifest.json
+  - ../../config/authoring/poc/fixtures/manifest.json
+  - ../../config/vba/modules/
+  - ../../build/generate_emas_mapping_poc_workbook.py
+  - ../../build/validate_xlsm_vba_poc.py
+  - ../../build/Build-eMASMappingPoc.ps1
+  - ../../build/Test-eMASMappingPoc.ps1
+  - ../../tests/vba/test_xlsm_vba_poc.py
+
+requiredValidation:
+  - python build/validate_xlsm_vba_poc.py
+  - python -m unittest discover -s tests/vba -p "test_*.py" -v
+  - native Windows/Excel execution using build/Test-eMASMappingPoc.ps1 before controlled workbook release
+
+boundaries:
+  - public repository contains synthetic source and reviewable VBA only
+  - controlled production XLSM is not committed
+  - Python is build/CI-only and does not replace the VBA exporter
+  - PowerShell may build and test the internal workbook but does not generate or repair runtime JSON
+  - native Excel qualification must not be claimed without reviewed evidence

@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblFindings","action":"set","keyField":"FindingCode","keyValue":"FND-001","field":"ExceptionEligible","value":false}]}

@@ -10,7 +10,7 @@ eMAS is a read-only, mapping-driven migration assessment framework supporting:
 
 ```mermaid
 flowchart LR
-    A[Reviewed internal mapping workbook XLSM] -->|Validate and export| B[eMAS_Runtime_Config.json]
+    A[Reviewed internal XLSM] -->|Validate and export directly through VBA| B[eMAS_Runtime_Config.json]
     S[Runtime JSON Schema 1.0.0 and independent validation] --> B
     B --> C[Pre-Sales CLI]
     B --> D[Pre-Migration CLI or WPF]
@@ -22,63 +22,60 @@ flowchart LR
     F --> H[Timestamped execution log]
 ```
 
-- **Authoring source of truth:** reviewed internal XLSM.
-- **Runtime source of truth:** validated immutable JSON exported from the approved XLSM.
+- **Authoring source:** reviewed internal XLSM.
+- **Runtime source:** validated immutable JSON exported by the XLSM.
 - **Execution source:** exact JSON version and checksum loaded for a run.
 - PowerShell never reads the XLSM and never creates, repairs or reinterprets runtime JSON.
-- The same runtime JSON is used by all phases.
-- Phase scripts own orchestration; shared technical processing belongs in `engine/`.
-- Source evidence remains read-only.
-- Normal runtime execution is offline and requires no central database.
+- All phases use the same runtime JSON and shared engine.
+- Source evidence remains read-only and normal runtime execution is offline.
 
-## Effective baseline
+## Effective and implemented baseline
 
-The Product Owner approved the 171-item decision baseline on 13 July 2026. The following dependency stages are complete:
+The approved dependency sequence currently includes:
 
-1. authority, precedence, terminology and document governance;
-2. Enterprise and configuration requirement synchronization;
-3. normalized relationship matrix and data-dictionary freeze;
-4. Runtime JSON Schema 1.0.0, fixtures and independent semantic validation;
-5. Solution Architecture and three Effective phase contracts;
-6. seven Effective operational LLM skills with automated catalogue validation.
+1. governance, authority and terminology — complete;
+2. Enterprise/configuration requirements synchronization — complete;
+3. normalized relationship matrix and data dictionary — frozen;
+4. Runtime JSON Schema 1.0.0 and independent fixtures — complete;
+5. Solution Architecture and phase contracts — Effective;
+6. seven operational LLM skills — Effective and automatically validated;
+7. source-controlled XLSM/VBA proof of concept and automated conformance harness — implemented.
 
-Primary references:
+Stage 7 repository evidence includes a synthetic 43-table workbook definition, deterministic XLSX generation, nine reviewable VBA modules, valid/boundary/negative workbook fixtures, deterministic golden JSON hash, Schema 1.0.0 checks, unit tests and CI.
+
+**Native desktop Excel/VBA execution is still a required manual qualification gate.** The repository does not claim that supported Excel versions, 32/64-bit Office, German/English locales, production signing or controlled workbook release are qualified.
+
+## Primary references
 
 - [Enterprise Requirements v3.1](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
 - [Configuration Documentation](docs/configuration/README.md)
 - [Runtime JSON Contract v1.2](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
-- [Normalized Rule Model v1.1](docs/configuration/05_eMAS_Normalized_Rule_Model.md)
-- [Normalized Relationship Matrix v1.0](docs/configuration/06_eMAS_Normalized_Relationship_Matrix.md)
-- [Logical Data Dictionary v1.0](docs/configuration/07_eMAS_Data_Dictionary.md)
-- [Schema Validation and Fixture Contract v1.0](docs/configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
 - [Runtime JSON Schema 1.0.0](config/schema/eMAS-runtime-config.schema.json)
 - [Solution Architecture v1.0](docs/architecture/eMAS_Solution_Architecture.md)
-- [Project Flow v2.0](docs/architecture/eMAS_Project_Flow.md)
 - [Phase Contracts](docs/architecture/phase-contracts/README.md)
-- [Operational LLM Skills v1.0.0](docs/llm-development-context/skills/README.md)
+- [Operational LLM Skills](docs/llm-development-context/skills/README.md)
+- [XLSM/VBA POC and Conformance Contract](docs/configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
+- [Synthetic POC Source](config/authoring/poc/README.md)
 - [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
-- [Approved Decision Baseline](docs/governance/eMAS_Approved_Decision_Baseline_v1.0.md)
 
-## Operational skills
+## POC validation
 
-The Effective skill catalogue provides repeatable procedures for:
-
-- modifying the configuration model;
-- updating Runtime JSON Schema;
-- implementing PowerShell modules;
-- adding regulatory classification content;
-- modifying report contracts/templates;
-- reviewing repository changes;
-- investigating defects.
-
-Each skill defines invocation boundaries, required inputs, preconditions, ordered procedure, outputs, stop conditions, validation evidence and Definition of Done. Use [skill-catalog.json](docs/llm-development-context/skills/skill-catalog.json) for machine-readable routing.
-
-Validate the skills with:
+Automated source and conformance validation:
 
 ```bash
-python build/validate_operational_skills.py
-python -m unittest discover -s tests/skills -p "test_*.py" -v
+python -m pip install -r build/requirements-schema-validation.txt
+python build/validate_xlsm_vba_poc.py
+python -m unittest discover -s tests/vba -p "test_*.py" -v
 ```
+
+Native internal build/test on supported Windows and desktop Excel:
+
+```powershell
+.\build\Build-eMASMappingPoc.ps1
+.\build\Test-eMASMappingPoc.ps1
+```
+
+The native test runs VBA validation, exports deterministic JSON twice, compares both exports with the approved golden SHA-256 and validates the result independently against Schema 1.0.0.
 
 ## Phase outcomes
 
@@ -88,46 +85,20 @@ python -m unittest discover -s tests/skills -p "test_*.py" -v
 | Pre-Migration Readiness | CLI or optional WPF | Ready, Ready with Accepted Exceptions, Blocked |
 | Post-Migration Verification | CLI or optional WPF | Reconciled, Reconciled with Accepted Exceptions, Review Required, Not Reconciled |
 
-Pre-Sales remains lightweight and customer-friendly. Pre-Migration creates the approved baseline. Post-Migration consumes that baseline and agreed `MigrationSummary.xlsx` detail.
-
-## Reporting rules
-
-Each phase uses a separate controlled XLSX template. Reports keep `EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` distinct, preserve findings and accepted-exception traceability, include execution/configuration metadata and state intended use and limitations. Raw scoring remains internal by default.
-
-## Repository structure
-
-```text
-eMAS/
-├── .github/      Pull-request, ownership and CI controls
-├── scripts/      Phase entry scripts and launchers
-├── engine/       Shared PowerShell modules
-├── config/       XLSM authoring, VBA, schema, fixtures and runtime configuration
-├── templates/    Controlled phase-specific report templates
-├── ui/           Optional Pre-/Post-Migration WPF
-├── docs/         Requirements, architecture, governance, skills and guidance
-├── tests/        Schema, skill, unit, integration, scenario and performance tests
-├── build/        Independent validation and packaging scripts
-├── releases/     Release notes and manifests
-├── output/       Local generated reports; not source-controlled
-├── logs/         Local generated logs; not source-controlled
-└── dist/         Local generated packages; not source-controlled
-```
-
 ## Development controls
 
 1. Start from current `main` on a dedicated branch.
 2. Apply the canonical index, authority policy and approved decision baseline.
-3. Use the frozen logical model, Schema 1.0.0, Solution Architecture and applicable phase contract.
-4. Select and follow the narrowest applicable Effective operational skill.
+3. Use the frozen logical model, Schema 1.0.0, architecture and applicable phase contract.
+4. Select the narrowest Effective operational skill.
 5. Keep business/regulatory interpretation in approved configuration.
-6. Update affected contracts, tests, templates and guidance together.
-7. Stop when a conflict affects regulatory meaning, schema compatibility, phase results, report meaning or evidence traceability.
-8. Use the review skill before merging material changes.
-9. Merge through a reviewed pull request.
+6. Update affected contracts, fixtures, tests and indexes together.
+7. Stop for regulatory, schema, baseline, report-meaning or evidence conflicts.
+8. Use the review skill before merge.
 
 ## Repository safety
 
-Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific exceptions, temporary JSON exports, confidential internal workbooks or uncontrolled generated packages. Committed fixtures must be synthetic.
+Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific exceptions, controlled production workbooks or uncontrolled generated packages. Committed fixtures and POC content must remain synthetic.
 
 ## Positioning
 
