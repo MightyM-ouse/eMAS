@@ -72,8 +72,8 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 | TEST-POC | `tests/vba/test_xlsm_vba_poc.py` | Automated POC regression evidence |
 | CI-POC | `.github/workflows/xlsm-vba-poc-validation.yml` | Automated Linux source/schema conformance |
 | BUILD-SCHEMA | `build/validate_emas_schema.py` | Independent Runtime JSON validation |
-| ENGINE-RUNTIME | `engine/core`, `engine/powershell51`, `engine/powershell7` | Initial runtime boundary and loader-contract source |
-| CI-RUNTIME | `.github/workflows/powershell-runtime-contracts.yml` | Initial Windows PowerShell 5.1 / PowerShell 7.6 contract workflow |
+| ENGINE-RUNTIME | [Runtime engine contract boundary](../engine/README.md) (`engine/core`, `engine/powershell51`, `engine/powershell7`) | Initial runtime boundary and configuration-loader/runtime-adapter contract source; functional loader pending |
+| CI-RUNTIME | `.github/workflows/powershell-runtime-contracts.yml` | Initial Windows PowerShell 5.1, Windows PowerShell 7.6 and macOS PowerShell 7.6 development contract workflow |
 | BUILD-SKILLS | `build/validate_operational_skills.py` | Operational-skill validation |
 
 ## Required reading by task
@@ -97,7 +97,7 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 
 ## Delivery-state boundary
 
-The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation and the initial loader-contract boundary are synchronized for the schema/runtime scope. Template dropdown/report validation, full PowerShell loader implementation and broader regression evidence must still be synchronized before controlled release. The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
+The runtime profile and `Warning` terminology are approved. Schema, fixtures, semantic validation and the initial configuration-loader/runtime-adapter contract boundary are synchronized for the schema/runtime scope. Template dropdown/report validation, functional PowerShell loader implementation and broader regression evidence must still be synchronized before controlled release. The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending.
 
 ## Historical and prohibited authority
 

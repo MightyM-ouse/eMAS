@@ -1,5 +1,7 @@
 Set-StrictMode -Version 2.0
 
+# Contract metadata only. Functional Runtime JSON loading is not implemented here.
+
 function Get-eMASConfigurationLoaderContract {
     [CmdletBinding()]
     param()

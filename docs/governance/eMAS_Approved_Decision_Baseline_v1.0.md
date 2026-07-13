@@ -57,6 +57,28 @@ The `Warning` EvaluationStatus decision is approved, but controlled release rema
 
 No implementation may treat the template-only addition as complete synchronization.
 
+### Current amendment implementation state
+
+The following Issue #12 schema/runtime-contract portions are synchronized in the repository:
+
+- approved `Warning` controlled terminology across the authoritative requirements and configuration contracts;
+- the documented in-place Runtime JSON Schema 1.0.0 compatibility amendment;
+- schema examples plus valid, boundary and invalid fixtures;
+- independent semantic validation for required and unknown controlled codes;
+- synthetic POC seed and generated-source synchronization;
+- the initial PowerShell configuration-loader contract boundary and runtime adapter contracts.
+
+The following remain explicitly pending:
+
+- controlled XLSX template corrections;
+- functional configuration-loader implementation;
+- phase entry-script runtime enforcement;
+- Windows PowerShell 5.1 qualification;
+- PowerShell 7.6 qualification on Windows;
+- Microsoft Excel qualification.
+
+This implementation-state record does not complete `DEC-2026-07-13_Runtime_Profile_and_Warning` or Issue #12.
+
 ## XLSM/VBA POC state
 
 Implemented in the repository:

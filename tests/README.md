@@ -5,7 +5,7 @@ This folder contains controlled automated and scenario testing for schemas, oper
 ## Available tests
 
 - `schema/` — Runtime JSON Schema 1.0.0, manifest, semantic and encoding tests.
-- `runtime/` — PowerShell runtime profile and initial loader contract boundary tests.
+- `runtime/` — PowerShell runtime profile and initial configuration-loader/runtime-adapter contract tests.
 - `skills/` — operational skill catalogue and contract tests.
 - `vba/` — synthetic workbook generation, table/fixture semantics, deterministic golden hash and VBA source-contract tests.
 

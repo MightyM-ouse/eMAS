@@ -2,6 +2,8 @@
 
 This folder is the shared engine core. Files here must parse under Windows PowerShell 5.1 and PowerShell 7.6.
 
+The current implementation contains configuration-contract metadata and a controlled EvaluationStatus helper only. The functional Runtime JSON loader and engine behavior listed below remain pending.
+
 Allowed content:
 
 - immutable runtime JSON loading and defensive validation;

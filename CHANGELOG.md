@@ -21,8 +21,8 @@ All material changes to eMAS source, configuration contracts, architecture, skil
 - POC unit tests and focused GitHub Actions workflow;
 - XLSM/VBA POC and Conformance Contract v1.0 and focused LLM route.
 - `Warning` EvaluationStatus synchronized across schema/runtime requirements, Runtime JSON Schema 1.0.0 definitions, seed data, valid/boundary/invalid fixtures and semantic validator constants;
-- initial PowerShell runtime boundary under `engine/core`, `engine/powershell51` and `engine/powershell7`;
-- initial runtime contract tests and Windows PowerShell 5.1 / PowerShell 7.6 CI workflow plan.
+- initial PowerShell configuration-loader/runtime-adapter contract boundary under `engine/core`, `engine/powershell51` and `engine/powershell7`; functional loader implementation remains pending;
+- initial runtime contract tests and Windows PowerShell 5.1, Windows PowerShell 7.6 and macOS PowerShell 7.6 development CI workflow plan.
 
 ### Changed
 
