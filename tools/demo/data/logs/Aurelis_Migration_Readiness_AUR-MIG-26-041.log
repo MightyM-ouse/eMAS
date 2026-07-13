@@ -1,0 +1,38 @@
+2026-07-13T20:45:27Z [Initializing] Report generation started result="tools/demo/data/aurelis-pre-migration-result.json" mapping="config/report-mappings/pre-migration.template-map.json" template="templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_Migration_Readiness_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:27Z [Loading normalized result] Normalized phase result loaded phase="PRE_MIGRATION" executionId="AUR-MIG-26-041-PREMIG-001"
+2026-07-13T20:45:27Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-PREMIGRATION" mappingVersion="1.0.0" phase="PRE_MIGRATION"
+2026-07-13T20:45:27Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-PREMIGRATION" templateVersion="1.1.1" phase="PRE_MIGRATION" sourceTemplateSha256="7C7B8A909E1A7B5834525070B0EFBCD82FFC624C41215AB29A64F10B6B2FCAC6"
+2026-07-13T20:45:27Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_Migration_Readiness_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:27Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="10_Execution_Details" table="tblPreMigrationTemplateControl"
+2026-07-13T20:45:27Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPreMigrationSummary" writeMode="matchRowByLabelColumns" rowCount=24
+2026-07-13T20:45:27Z [Populating mapped targets] Mapping target processed worksheet="02_Readiness_Decision" table="tblPreMigrationDecision" writeMode="singleRowUpdate" rowCount=1
+2026-07-13T20:45:27Z [Populating mapped targets] Mapping target processed worksheet="03_Inputs_Access_&_Transfer" table="tblPreMigrationChecks" writeMode="appendRows" rowCount=8
+2026-07-13T20:45:27Z [Populating mapped targets] Mapping target processed worksheet="04_Dossier_Baseline" table="tblPreMigrationDossierBaseline" writeMode="appendRows" rowCount=18
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="05_Sequence_Baseline" table="tblPreMigrationSequenceBaseline" writeMode="appendRows" rowCount=243
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="06_File_XML_Path_Checks" table="tblPreMigrationTechnicalChecks" writeMode="appendRows" rowCount=6
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="07_Findings_&_Actions" table="tblPreMigrationFindings" writeMode="appendRows" rowCount=3
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="07_Findings_&_Actions" table="tblPreMigrationActions" writeMode="appendRows" rowCount=7
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="08_Exceptions_&_Exclusions" table="tblPreMigrationExceptions" writeMode="appendRows" rowCount=2
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="08_Exceptions_&_Exclusions" table="tblPreMigrationExclusions" writeMode="appendRows" rowCount=0
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="09_Assumptions_&_Limits" table="tblPreMigrationAssumptions" writeMode="matchRowByLabelColumns" rowCount=7
+2026-07-13T20:45:28Z [Populating mapped targets] Mapping target processed worksheet="10_Execution_Details" table="tblPreMigrationExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:45:28Z [Completing report] Report generation completed durationSeconds=0.752 outputSha256="BA585F70F7E325AFDEF583242217B87F95BA2AEE9D4A473D708C2C4113329F89" sourceTemplateSha256="7C7B8A909E1A7B5834525070B0EFBCD82FFC624C41215AB29A64F10B6B2FCAC6" resultFinal="Ready with Accepted Exceptions"
+2026-07-13T20:47:42Z [Initializing] Report generation started result="tools/demo/data/aurelis-pre-migration-result.json" mapping="config/report-mappings/pre-migration.template-map.json" template="templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_Migration_Readiness_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:42Z [Loading normalized result] Normalized phase result loaded phase="PRE_MIGRATION" executionId="AUR-MIG-26-041-PREMIG-001"
+2026-07-13T20:47:42Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-PREMIGRATION" mappingVersion="1.0.0" phase="PRE_MIGRATION"
+2026-07-13T20:47:42Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-PREMIGRATION" templateVersion="1.1.1" phase="PRE_MIGRATION" sourceTemplateSha256="7C7B8A909E1A7B5834525070B0EFBCD82FFC624C41215AB29A64F10B6B2FCAC6"
+2026-07-13T20:47:42Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_Migration_Readiness_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:42Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="10_Execution_Details" table="tblPreMigrationTemplateControl"
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPreMigrationSummary" writeMode="matchRowByLabelColumns" rowCount=24
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="02_Readiness_Decision" table="tblPreMigrationDecision" writeMode="singleRowUpdate" rowCount=1
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="03_Inputs_Access_&_Transfer" table="tblPreMigrationChecks" writeMode="appendRows" rowCount=8
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="04_Dossier_Baseline" table="tblPreMigrationDossierBaseline" writeMode="appendRows" rowCount=18
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="05_Sequence_Baseline" table="tblPreMigrationSequenceBaseline" writeMode="appendRows" rowCount=243
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="06_File_XML_Path_Checks" table="tblPreMigrationTechnicalChecks" writeMode="appendRows" rowCount=6
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="07_Findings_&_Actions" table="tblPreMigrationFindings" writeMode="appendRows" rowCount=3
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="07_Findings_&_Actions" table="tblPreMigrationActions" writeMode="appendRows" rowCount=7
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="08_Exceptions_&_Exclusions" table="tblPreMigrationExceptions" writeMode="appendRows" rowCount=2
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="08_Exceptions_&_Exclusions" table="tblPreMigrationExclusions" writeMode="appendRows" rowCount=0
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="09_Assumptions_&_Limits" table="tblPreMigrationAssumptions" writeMode="matchRowByLabelColumns" rowCount=7
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="10_Execution_Details" table="tblPreMigrationExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:47:43Z [Completing report] Report generation completed durationSeconds=0.728 outputSha256="BB96474380E123FA9045F8630BD1007F6FF99B772C082EBAAAB5B9B697625A2F" sourceTemplateSha256="7C7B8A909E1A7B5834525070B0EFBCD82FFC624C41215AB29A64F10B6B2FCAC6" resultFinal="Ready with Accepted Exceptions"

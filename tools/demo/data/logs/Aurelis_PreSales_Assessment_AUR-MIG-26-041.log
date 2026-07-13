@@ -1,0 +1,41 @@
+2026-07-13T20:43:38Z [Initializing] Report generation started result="tools/demo/data/aurelis-pre-sales-result.json" mapping="config/report-mappings/pre-sales.template-map.json" template="templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:43:38Z [Loading normalized result] Normalized phase result loaded phase="PRE_SALES" executionId="AUR-MIG-26-041-PRESALES-001"
+2026-07-13T20:43:38Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-PRESALES" mappingVersion="1.0.0" phase="PRE_SALES"
+2026-07-13T20:43:38Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-PRESALES" templateVersion="1.1.1" phase="PRE_SALES" sourceTemplateSha256="896000D303BAB73396160109EA37CF8BD496EAB68ABA4CA55AEAE091BACB0A76"
+2026-07-13T20:43:38Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:43:38Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="08_Execution_Details" table="tblPreSalesTemplateControl"
+2026-07-13T20:43:38Z [Failed] A required normalized result field is missing or blank. code="RPT-RESULT-006" evidence={"recordIndex":8,"sourceField":"value"}
+2026-07-13T20:45:16Z [Initializing] Report generation started result="tools/demo/data/aurelis-pre-sales-result.json" mapping="config/report-mappings/pre-sales.template-map.json" template="templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:16Z [Loading normalized result] Normalized phase result loaded phase="PRE_SALES" executionId="AUR-MIG-26-041-PRESALES-001"
+2026-07-13T20:45:16Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-PRESALES" mappingVersion="1.0.0" phase="PRE_SALES"
+2026-07-13T20:45:16Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-PRESALES" templateVersion="1.1.1" phase="PRE_SALES" sourceTemplateSha256="896000D303BAB73396160109EA37CF8BD496EAB68ABA4CA55AEAE091BACB0A76"
+2026-07-13T20:45:16Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:16Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="08_Execution_Details" table="tblPreSalesTemplateControl"
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPreSalesSummary" writeMode="matchRowByLabelColumns" rowCount=30
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="02_Scope_&_Effort" table="tblPreSalesEffortDrivers" writeMode="appendRows" rowCount=5
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="02_Scope_&_Effort" table="tblPreSalesRecommendations" writeMode="appendRows" rowCount=5
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="03_Dossier_Inventory" table="tblPreSalesDossiers" writeMode="appendRows" rowCount=18
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="04_Sequence_Inventory" table="tblPreSalesSequences" writeMode="appendRows" rowCount=243
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="05_Findings_&_Clarifications" table="tblPreSalesFindings" writeMode="appendRows" rowCount=5
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="05_Findings_&_Clarifications" table="tblPreSalesClarifications" writeMode="appendRows" rowCount=8
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="06_Path_&_Volume" table="tblPreSalesPaths" writeMode="appendRows" rowCount=3
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="07_Assumptions_&_Method" table="tblPreSalesAssumptions" writeMode="matchRowByLabelColumns" rowCount=7
+2026-07-13T20:45:16Z [Populating mapped targets] Mapping target processed worksheet="08_Execution_Details" table="tblPreSalesExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:45:17Z [Completing report] Report generation completed durationSeconds=0.634 outputSha256="E56AD83542D601FC3582EBB91E5DF781DD329310B89397557648550A7246B92F" sourceTemplateSha256="896000D303BAB73396160109EA37CF8BD496EAB68ABA4CA55AEAE091BACB0A76" resultFinal="High"
+2026-07-13T20:47:41Z [Initializing] Report generation started result="tools/demo/data/aurelis-pre-sales-result.json" mapping="config/report-mappings/pre-sales.template-map.json" template="templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:41Z [Loading normalized result] Normalized phase result loaded phase="PRE_SALES" executionId="AUR-MIG-26-041-PRESALES-001"
+2026-07-13T20:47:41Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-PRESALES" mappingVersion="1.0.0" phase="PRE_SALES"
+2026-07-13T20:47:41Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-PRESALES" templateVersion="1.1.1" phase="PRE_SALES" sourceTemplateSha256="896000D303BAB73396160109EA37CF8BD496EAB68ABA4CA55AEAE091BACB0A76"
+2026-07-13T20:47:41Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_PreSales_Assessment_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:41Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="08_Execution_Details" table="tblPreSalesTemplateControl"
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPreSalesSummary" writeMode="matchRowByLabelColumns" rowCount=30
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="02_Scope_&_Effort" table="tblPreSalesEffortDrivers" writeMode="appendRows" rowCount=5
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="02_Scope_&_Effort" table="tblPreSalesRecommendations" writeMode="appendRows" rowCount=5
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="03_Dossier_Inventory" table="tblPreSalesDossiers" writeMode="appendRows" rowCount=18
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="04_Sequence_Inventory" table="tblPreSalesSequences" writeMode="appendRows" rowCount=243
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="05_Findings_&_Clarifications" table="tblPreSalesFindings" writeMode="appendRows" rowCount=5
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="05_Findings_&_Clarifications" table="tblPreSalesClarifications" writeMode="appendRows" rowCount=8
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="06_Path_&_Volume" table="tblPreSalesPaths" writeMode="appendRows" rowCount=3
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="07_Assumptions_&_Method" table="tblPreSalesAssumptions" writeMode="matchRowByLabelColumns" rowCount=7
+2026-07-13T20:47:42Z [Populating mapped targets] Mapping target processed worksheet="08_Execution_Details" table="tblPreSalesExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:47:42Z [Completing report] Report generation completed durationSeconds=0.622 outputSha256="E56AD83542D601FC3582EBB91E5DF781DD329310B89397557648550A7246B92F" sourceTemplateSha256="896000D303BAB73396160109EA37CF8BD496EAB68ABA4CA55AEAE091BACB0A76" resultFinal="High"

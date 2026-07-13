@@ -1,0 +1,42 @@
+2026-07-13T20:45:38Z [Initializing] Report generation started result="tools/demo/data/aurelis-post-migration-result.json" mapping="config/report-mappings/post-migration.template-map.json" template="templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_Post_Migration_Verification_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:38Z [Loading normalized result] Normalized phase result loaded phase="POST_MIGRATION" executionId="AUR-MIG-26-041-POSTMIG-001"
+2026-07-13T20:45:38Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-POSTMIGRATION" mappingVersion="1.0.0" phase="POST_MIGRATION"
+2026-07-13T20:45:38Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-POSTMIGRATION" templateVersion="1.1.1" phase="POST_MIGRATION" sourceTemplateSha256="BBDBD638D5FE80E0AD821FC66D6CE2F602A84C381B3CB89D5BC27D6AA090CF0D"
+2026-07-13T20:45:38Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_Post_Migration_Verification_AUR-MIG-26-041.xlsx"
+2026-07-13T20:45:38Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="11_Review_&_Execution" table="tblPostMigrationTemplateControl"
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPostMigrationSummary" writeMode="matchRowByLabelColumns" rowCount=30
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="02_Verification_Scope" table="tblPostMigrationScope" writeMode="appendRows" rowCount=3
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="03_Baseline_vs_Migrated" table="tblPostMigrationMetrics" writeMode="appendRows" rowCount=5
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="04_Dossier_Reconciliation" table="tblPostMigrationDossiers" writeMode="appendRows" rowCount=18
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="05_Sequence_Reconciliation" table="tblPostMigrationSequences" writeMode="appendRows" rowCount=243
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="06_File_Size_Reconciliation" table="tblPostMigrationFileSize" writeMode="appendRows" rowCount=3
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="07_Import_Evidence_Review" table="tblPostMigrationImportEvidence" writeMode="appendRows" rowCount=4
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="08_Discrepancies_&_Actions" table="tblPostMigrationDiscrepancies" writeMode="appendRows" rowCount=2
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="08_Discrepancies_&_Actions" table="tblPostMigrationActions" writeMode="appendRows" rowCount=1
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="09_Accepted_Exceptions" table="tblPostMigrationExceptions" writeMode="appendRows" rowCount=2
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="10_Assumptions_&_Limits" table="tblPostMigrationAssumptions" writeMode="matchRowByLabelColumns" rowCount=8
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="11_Review_&_Execution" table="tblPostMigrationExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="Import Report Detail" table="tblRawImportReportDetail" writeMode="copyFromExternalSourceAppendOnly" rowCount=1
+2026-07-13T20:45:38Z [Populating mapped targets] Mapping target processed worksheet="Post Import Verification" table="tblRawPostImportVerification" writeMode="copyFromExternalSourceAppendOnly" rowCount=1
+2026-07-13T20:45:39Z [Completing report] Report generation completed durationSeconds=0.365 outputSha256="597576D8024FDDF8A6796C5970EA927CEE1B3CA738E47CBC2934B066089148BB" sourceTemplateSha256="BBDBD638D5FE80E0AD821FC66D6CE2F602A84C381B3CB89D5BC27D6AA090CF0D" resultFinal="Reconciled with Accepted Exceptions"
+2026-07-13T20:47:43Z [Initializing] Report generation started result="tools/demo/data/aurelis-post-migration-result.json" mapping="config/report-mappings/post-migration.template-map.json" template="templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx" output="artifacts/demo/aurelis-therapeutics/Aurelis_Post_Migration_Verification_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:43Z [Loading normalized result] Normalized phase result loaded phase="POST_MIGRATION" executionId="AUR-MIG-26-041-POSTMIG-001"
+2026-07-13T20:47:43Z [Validating report mapping] Mapping validated mappingId="EMAS-MAP-POSTMIGRATION" mappingVersion="1.0.0" phase="POST_MIGRATION"
+2026-07-13T20:47:43Z [Validating controlled template] Template structure and identity validated templateId="EMAS-TPL-POSTMIGRATION" templateVersion="1.1.1" phase="POST_MIGRATION" sourceTemplateSha256="BBDBD638D5FE80E0AD821FC66D6CE2F602A84C381B3CB89D5BC27D6AA090CF0D"
+2026-07-13T20:47:43Z [Copying controlled template] Source template copied output="artifacts/demo/aurelis-therapeutics/Aurelis_Post_Migration_Verification_AUR-MIG-26-041.xlsx"
+2026-07-13T20:47:43Z [Populating mapped targets] staticReleaseManaged target validated and left unchanged worksheet="11_Review_&_Execution" table="tblPostMigrationTemplateControl"
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="01_Executive_Summary" table="tblPostMigrationSummary" writeMode="matchRowByLabelColumns" rowCount=30
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="02_Verification_Scope" table="tblPostMigrationScope" writeMode="appendRows" rowCount=3
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="03_Baseline_vs_Migrated" table="tblPostMigrationMetrics" writeMode="appendRows" rowCount=5
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="04_Dossier_Reconciliation" table="tblPostMigrationDossiers" writeMode="appendRows" rowCount=18
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="05_Sequence_Reconciliation" table="tblPostMigrationSequences" writeMode="appendRows" rowCount=243
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="06_File_Size_Reconciliation" table="tblPostMigrationFileSize" writeMode="appendRows" rowCount=3
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="07_Import_Evidence_Review" table="tblPostMigrationImportEvidence" writeMode="appendRows" rowCount=4
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="08_Discrepancies_&_Actions" table="tblPostMigrationDiscrepancies" writeMode="appendRows" rowCount=2
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="08_Discrepancies_&_Actions" table="tblPostMigrationActions" writeMode="appendRows" rowCount=1
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="09_Accepted_Exceptions" table="tblPostMigrationExceptions" writeMode="appendRows" rowCount=2
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="10_Assumptions_&_Limits" table="tblPostMigrationAssumptions" writeMode="matchRowByLabelColumns" rowCount=8
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="11_Review_&_Execution" table="tblPostMigrationExecution" writeMode="matchRowByLabelColumns" rowCount=27
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="Import Report Detail" table="tblRawImportReportDetail" writeMode="copyFromExternalSourceAppendOnly" rowCount=1
+2026-07-13T20:47:43Z [Populating mapped targets] Mapping target processed worksheet="Post Import Verification" table="tblRawPostImportVerification" writeMode="copyFromExternalSourceAppendOnly" rowCount=1
+2026-07-13T20:47:43Z [Completing report] Report generation completed durationSeconds=0.363 outputSha256="72E79627F70F9E6A8CAE1D47E4F4F7DDECF817C6DA482EED3B0B26EACD02A487" sourceTemplateSha256="BBDBD638D5FE80E0AD821FC66D6CE2F602A84C381B3CB89D5BC27D6AA090CF0D" resultFinal="Reconciled with Accepted Exceptions"
