@@ -1,161 +1,145 @@
 # eMAS Pre-Migration Readiness Phase Contract
 
-**Version:** 1.1  
-**Status:** Effective Phase Contract  
-**Effective date:** 2026-07-13  
+**Version:** 1.2  
+**Status:** Approved Working Contract on `requirements/report-redesign-v3.2`  
 **Phase code:** `PRE_MIGRATION`  
-**Owner:** Product Owner, Migration SME and Technical Architect  
-**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
-**Canonical references:** Enterprise Requirements v3.1 §14.2; Solution Architecture v1.0; PowerShell Runtime Profile v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0 plus approved amendments
+**Runtime:** PowerShell 7.6 LTS on Windows  
+**Canonical requirement:** `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.2.md`  
+**Detailed report requirement:** `docs/requirements/report-redesign/02_eMAS_PreMigration_Report_Requirements_v1.1.md`
 
 ## 1. Purpose
 
-Perform detailed source-data readiness assessment, identify blockers/warnings/preparation actions and create the approved reusable baseline consumed by Post-Migration Verification.
+Pre-Migration determines whether the approved migration scope is technically and operationally ready and creates the immutable attributable baseline consumed by Post-Migration Verification.
 
-The phase supports migration planning and evidence; it does not migrate data or constitute formal customer validation or acceptance.
+It does not execute migration, provide regulatory validation, constitute formal customer validation, approve migration electronically or record customer acceptance.
 
-## 2. Actors and execution
+## 2. Entry and interface
 
-Execution methods:
-
-- PowerShell 7.6 LTS CLI on Windows using `pwsh.exe`;
-- optional portable WPF that invokes the same PowerShell 7.6 entry script and contains no independent business logic.
-
-Development and pure unit/fixture testing may use PowerShell 7.6 LTS on macOS. Windows PowerShell 7.6 execution remains the authoritative phase-qualification gate.
-
-Primary actors are the consultant/migration team, customer IT/data owners and required exception approvers.
+The phase is invoked through the PowerShell entry script or an optional portable WPF interface that invokes the same script and shared engine. CLI and WPF shall produce equivalent normalized results for equivalent inputs.
 
 ## 3. Inputs
 
-### 3.1 Required
+At minimum, as applicable to the approved scope:
 
-- source dossier/export roots in scope;
-- output root;
-- migration scenario and application context;
-- runtime configuration package;
-- controlled Pre-Migration template;
-- scope/exclusion information required to identify the assessed population.
+- customer/project/migration reference;
+- approved source and target system/version context;
+- controlled runtime JSON, schema, template and technical map;
+- approved source roots and evidence sources;
+- transfer, access, backup, storage and staging prerequisites;
+- exclusions and candidate exception evidence;
+- prior Pre-Sales result where useful but not treated as a readiness baseline;
+- output and baseline locations.
 
-### 3.2 Conditional
+Only applicable inputs are required. Missing optional evidence is explicit and does not become Green.
 
-- archive and index roots;
-- database/storage/backup evidence;
-- transfer/staging locations;
-- customer-provided inventory or application extracts;
-- project-specific accepted-exception evidence;
-- prior Pre-Sales report as non-authoritative planning context.
+## 4. Startup validation
 
-Project-specific accepted exceptions are external evidence. They are not written into the master runtime configuration.
+Before source scanning, the phase validates:
 
-## 4. Preconditions
+- package and runtime compatibility;
+- runtime JSON schema/version/checksum;
+- duplicate IDs and required references according to the loader contract;
+- phase applicability;
+- template version 1.2.0 and map version 2.0.0 compatibility;
+- output permissions;
+- mandatory input availability.
 
-- PowerShell 7.6 LTS runtime check passes;
-- configuration, checksum, schema and semantic validation pass;
-- source evidence is accessible read-only;
-- output/template initialization succeeds;
-- scope and exclusions are attributable;
-- accepted exceptions include required approval/evidence under the configured policy.
+Failure of these checks stops execution before scanning and produces a clear error/log entry.
 
-## 5. Required processing
+## 5. Processing contract
 
-The phase must:
+The phase shall:
 
-1. initialize run metadata and detailed logging, including exact PowerShell/.NET/runtime-adapter information;
-2. perform detailed discovery of dossiers, sequences, folders and files;
-3. evaluate normalized region/authority/technical-standard/regional-implementation/product dimensions where evidence permits;
-4. check configured folder and mandatory-file expectations;
-5. perform applicable XML readability/structure checks;
-6. detect inaccessible, missing, zero-byte, long-path and other configured technical issues;
-7. assess database, archive/index, backup, storage, staging and transfer readiness where in scope;
-8. preserve original findings, EvaluationStatus, RAG, ValueSource, evidence and confidence;
-9. generate cleanup/preparation actions through finding-to-recommendation links;
-10. validate and apply accepted-exception effects without erasing original evidence;
-11. determine the phase result using configured decision policies and blocker override;
-12. create the reusable comparison baseline;
-13. populate the controlled Pre-Migration report and timestamped log.
+1. create execution identity and detailed timestamped UTF-8 logging;
+2. validate and record current scope/evidence identity;
+3. perform read-only access, transfer, backup, storage and staging checks where applicable;
+4. discover dossiers and sequences and generate stable comparison IDs;
+5. evaluate configured folder/file/XML/reference/path/content checks;
+6. create normalized file-type/count/size records;
+7. preserve EvaluationStatus, RAG, Severity, Blocker, Confidence, ValueSource and ReviewRequired separately;
+8. create findings and separate actions/recommendations;
+9. evaluate accepted exceptions without erasing original findings/evidence;
+10. determine only `Ready`, `Ready with Accepted Exceptions` or `Blocked`;
+11. assign approved MigrationMethod and MigrationWave to each in-scope dossier/sequence or explicit Not Applicable treatment;
+12. build the normalized result and attributable Post-Migration baseline;
+13. populate the controlled eleven-sheet workbook;
+14. write integrity evidence and output locations to the log/result.
 
-PowerShell 7-specific performance features may be used only through approved runtime adapters and must not change business interpretation or deterministic outcomes.
+Unresolved blockers force `Blocked`.
 
 ## 6. Accepted-exception contract
 
-An accepted exception may only have an effect allowed by its configured exception policy.
+An accepted exception requires stable ExceptionId, affected finding/entity, original EvaluationStatus/RAG/evidence, configured eligibility/policy/effect, approval role/reference/date, supporting evidence, validity/expiry and carry-forward treatment.
 
-The execution/report must retain:
+An accepted exception may affect the phase decision only as permitted by policy. It never changes or removes the observed finding/evidence and is carried to Post-Migration where required.
 
-- original finding and evidence;
-- original EvaluationStatus and RAG;
-- exception identifier and effect;
-- approver role/reference;
-- supporting evidence reference;
-- validity/expiry information where required;
-- carry-forward decision for Post-Migration.
+## 7. Controlled report
 
-Default carry-forward is False. An exception must never delete or replace the original finding.
+Template version: `1.2.0`  
+Template-map version: `2.0.0`
 
-## 7. Readiness result contract
+Exact sheet order:
 
-Permitted results:
-
-- `Ready`;
-- `Ready with Accepted Exceptions`;
-- `Blocked`.
-
-Decision evaluation uses ordered configured policies with mandatory blocker override. Missing required evidence, unresolved conflicts or failed critical checks must not be converted to Ready.
-
-`Warning` is an approved EvaluationStatus for a completed usable evaluation with a recoverable condition requiring attention. It does not independently determine RAG, blocker state or readiness result.
+1. `01_Executive_Summary`
+2. `02_Readiness_Decision`
+3. `03_Inputs_Access_&_Transfer`
+4. `04_Dossier_Baseline`
+5. `05_Sequence_Baseline`
+6. `06_File_Type_Breakdown`
+7. `07_File_XML_Path_Checks`
+8. `08_Findings_&_Actions`
+9. `09_Exceptions_&_Exclusions`
+10. `10_Assumptions_&_Limits`
+11. `11_Execution_Details`
 
 ## 8. Baseline contract
 
-The Pre-Migration report/evidence package must create an immutable, attributable baseline containing:
+The baseline includes:
 
-- baseline/run identifier;
-- source scope and root references;
-- stable dossier and sequence comparison identifiers;
-- expected counts and agreed comparison measures;
-- available file/size measures required by the later comparison;
-- explicit exclusions;
-- accepted exceptions and carry-forward status;
-- unresolved limitations;
-- configuration, schema, mapping, engine and template versions;
-- integrity evidence sufficient for Post-Migration compatibility verification.
+- BaselineId and source ExecutionId;
+- approval/status and integrity evidence;
+- source scope/root identities;
+- stable dossier/sequence comparison IDs;
+- normalized classification dimensions;
+- expected dossier/sequence/file/folder/size measures;
+- normalized file-type/count/size measures;
+- MigrationMethod and MigrationWave;
+- findings, exclusions and accepted-exception carry-forward;
+- assumptions and limitations;
+- configuration/schema/mapping/engine/template identities.
 
-The exact physical storage of baseline data is controlled by the reporting/implementation specification. Any format change requires synchronized Post-Migration reader and compatibility testing.
+The baseline shall be immutable for a completed approved run. Changes create a new baseline/version and preserve supersession traceability.
 
-## 9. Report contract
+## 9. Result and failure behavior
 
-The controlled Pre-Migration report must include, at minimum:
+Permitted results:
 
-- readiness summary and permitted result;
-- execution/configuration metadata;
-- scope, exclusions and limitations;
-- normalized classification and inventory summary;
-- detailed findings with EvaluationStatus, RAG, ValueSource, confidence and ReviewRequired separated;
-- blockers, warnings and preparation actions;
-- accepted-exception register preserving original findings;
-- baseline/comparison dataset and integrity metadata;
-- assumptions, intended use and non-validation statement;
-- optional raw inventory where controlled by the template/package.
+- `Ready`
+- `Ready with Accepted Exceptions`
+- `Blocked`
 
-## 10. Logging and progress
+Technical execution failure is not reported as a completed readiness decision. Partial evidence is retained and labelled incomplete where safe, but no Ready result is issued.
 
-Console and log output must clearly identify major discovery/validation steps, progress and completion. The log records exact PowerShell 7.6/.NET/adapter information, inaccessible paths, skipped checks, rule/evidence references, exception treatment, baseline creation and generated file paths.
+## 10. Outputs
 
-## 11. Failure behavior
+- controlled Pre-Migration XLSX report;
+- normalized phase result JSON;
+- immutable attributable comparison baseline and integrity evidence;
+- separate timestamped UTF-8 execution log;
+- optional manifest/checksum evidence according to package configuration.
 
-Stop before assessment for missing/unsupported PowerShell 7.6, invalid configuration/package/template, inaccessible mandatory source roots or output initialization failure.
-
-Return `Blocked` or an explicit failed-execution state, according to the failure point, when critical evidence cannot be evaluated. A technical execution failure must not be presented as a completed readiness decision.
-
-## 12. Acceptance criteria
+## 11. Acceptance criteria
 
 The phase conforms when:
 
-- CLI and optional WPF invoke the same PowerShell 7.6 orchestration;
-- the common business core remains compatible with the shared engine contract and runtime adapters contain no independent interpretation;
-- detailed checks are performed without modifying source evidence;
-- accepted exceptions preserve original findings/evidence;
-- only approved readiness terminology is used;
-- a stable compatible baseline is generated;
-- one controlled XLSX report and one detailed log are produced;
-- all result-driving evidence and policies are traceable;
-- Windows PowerShell 7.6 qualification evidence is recorded.
+- startup validation stops incompatible runs before scanning;
+- source evidence remains read-only;
+- only the three approved readiness outcomes are used;
+- unresolved blockers force Blocked;
+- exceptions preserve original findings/evidence;
+- all in-scope dossiers/sequences have stable IDs and approved method/wave or explicit Not Applicable treatment;
+- file-type totals reconcile with baseline totals;
+- the baseline is attributable, integrity-protected and reusable by Post-Migration;
+- the exact eleven-sheet workbook opens without repair;
+- normalized results validate against the v3.2 result schema;
+- a separate log is produced.
