@@ -5,10 +5,7 @@ param(
     [ValidateNotNullOrEmpty()]
     [string] $RuntimeConfigurationPath,
 
-    [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty()]
     [string] $NormalizedResultPath,
-
     [string] $ExecutionLogPath,
     [string] $TemplatePath,
     [string] $TemplateMappingPath,
@@ -21,6 +18,16 @@ param(
 Set-StrictMode -Version 2.0
 . (Join-Path $PSScriptRoot 'private/Initialize-eMASPhaseRuntime.ps1')
 . (Join-Path $PSScriptRoot 'private/Invoke-eMASPhaseReport.ps1')
+
+if ([string]::IsNullOrWhiteSpace($NormalizedResultPath)) {
+    Initialize-eMASPhaseRuntime `
+        -Phase 'PRE_MIGRATION' `
+        -RuntimeConfigurationPath $RuntimeConfigurationPath `
+        -ActiveScript $MyInvocation.MyCommand.Name `
+        -ExecutionLogPath $ExecutionLogPath `
+        -TemplatePath $TemplatePath
+    return
+}
 
 Invoke-eMASPhaseReport `
     -Phase 'PRE_MIGRATION' `
