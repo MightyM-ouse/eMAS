@@ -8,6 +8,7 @@ on:
       - '.github/workflows/materialize-report-redesign-v3.2.yml'
       - 'tools/report-redesign-v3.2/**'
       - 'engine/reporting/**'
+      - 'scripts/**'
       - 'tests/reporting/**'
       - 'config/report-mappings/**'
       - 'config/result-schemas/report-redesign-v3.2/**'
@@ -20,6 +21,7 @@ on:
       - '.github/workflows/materialize-report-redesign-v3.2.yml'
       - 'tools/report-redesign-v3.2/**'
       - 'engine/reporting/**'
+      - 'scripts/**'
       - 'tests/reporting/**'
       - 'config/report-mappings/**'
       - 'config/result-schemas/report-redesign-v3.2/**'
@@ -59,6 +61,7 @@ jobs:
           python -m py_compile engine/reporting/emas_report_openxml_v32.py
           python -m py_compile tests/reporting/fixture_factory_v32.py
           python -m py_compile tests/reporting/test_report_generation.py
+          python -m py_compile tests/reporting/test_phase_entrypoints_v32.py
 
       - name: Regenerate controlled report artifacts
         run: python tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py
@@ -122,7 +125,7 @@ jobs:
           PY
 
       - name: Run report-generation contract tests
-        run: python -m unittest discover -s tests/reporting -p 'test_report_generation.py' -v
+        run: python -m unittest discover -s tests/reporting -p 'test_*.py' -v
 
       - name: Validate PowerShell command surface
         shell: pwsh
@@ -131,4 +134,20 @@ jobs:
           $command = Get-Command Export-eMASResultToTemplate -ErrorAction Stop
           if ($command.Name -ne 'Export-eMASResultToTemplate') {
               throw 'Report population command was not exported.'
+          }
+          foreach ($script in @(
+              './scripts/eMAS-PreSalesAssessment.ps1',
+              './scripts/eMAS-PreMigrationReadiness.ps1',
+              './scripts/eMAS-PostMigrationVerification.ps1'
+          )) {
+              $tokens = $null
+              $errors = $null
+              [void] [System.Management.Automation.Language.Parser]::ParseFile(
+                  (Resolve-Path $script),
+                  [ref] $tokens,
+                  [ref] $errors
+              )
+              if ($errors.Count -gt 0) {
+                  throw "PowerShell parse failure in $script: $($errors[0].Message)"
+              }
           }
