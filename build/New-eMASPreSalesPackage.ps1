@@ -71,6 +71,8 @@ Copy-eMASPackagePath -RelativePath 'config/report-mappings/pre-sales.template-ma
 Copy-eMASPackagePath -RelativePath 'config/report-mappings/report-template-map.schema.json'
 Copy-eMASPackagePath -RelativePath 'config/result-schemas/report-redesign-v3.2/pre-sales.result.schema.json'
 Copy-eMASPackagePath -RelativePath 'build/requirements-reporting.txt'
+Copy-eMASPackagePath -RelativePath 'build/New-eMASChecksumManifest.ps1'
+Copy-eMASPackagePath -RelativePath 'build/Test-eMASReleasePackage.ps1'
 
 $runtimeTarget = Join-Path $destination 'config/runtime/eMAS_Runtime_Config.json'
 New-Item -ItemType Directory -Path (Split-Path -Parent $runtimeTarget) -Force | Out-Null
@@ -79,7 +81,7 @@ Copy-Item -LiteralPath $runtimePath -Destination $runtimeTarget -Force
 $readme = @"
 # eMAS Pre-Sales Assessment Customer Package
 
-Package version: `$PackageVersion`
+Package version: $PackageVersion
 
 This controlled package performs Pre-Sales report generation from:
 
@@ -100,12 +102,16 @@ Install the reporting dependency once:
 python -m pip install -r .\build\requirements-reporting.txt
 ```
 
+Validate package integrity:
+
+```powershell
+.\build\Test-eMASReleasePackage.ps1 -RootPath . -ExpectedPackageType CustomerPreSales
+```
+
 Run report generation:
 
 ```powershell
-.\scripts\eMAS-PreSalesAssessment.ps1 `
-    -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json `
-    -NormalizedResultPath C:\Path\To\PreSalesResult.json
+.\scripts\eMAS-PreSalesAssessment.ps1 -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json -NormalizedResultPath C:\Path\To\PreSalesResult.json
 ```
 
 The generated workbook is written under `output/` unless `-OutputWorkbookPath` is supplied. A separate timestamped UTF-8 log is written under `logs/`.
