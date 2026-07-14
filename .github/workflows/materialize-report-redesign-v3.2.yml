@@ -16,6 +16,10 @@ on:
 permissions:
   contents: write
 
+env:
+  EMAS_STAGE_SOURCE: tools/repository-materialization/report-redesign-v3.2
+  EMAS_PACKAGE_ROOT: ${{ runner.temp }}/emas-report-v3.2
+
 jobs:
   materialize:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.ref == 'requirements/report-redesign-v3.2'
@@ -27,60 +31,94 @@ jobs:
         with:
           ref: requirements/report-redesign-v3.2
           fetch-depth: 0
+          show-progress: false
 
       - name: Confirm staged package exists
         shell: bash
         run: |
           set -euo pipefail
-          compgen -G 'tools/repository-materialization/report-redesign-v3.2/package.part*.b64' >/dev/null
+          compgen -G "$EMAS_STAGE_SOURCE/package.part*.b64" >/dev/null
 
-      - name: Reconstruct, validate and place artifacts
+      - name: Reconstruct package and verify checksums
         shell: bash
         run: |
           set -euo pipefail
-
-          SRC='tools/repository-materialization/report-redesign-v3.2'
-          TMP="$(mktemp -d)"
-          trap 'rm -rf "$TMP"' EXIT
-
-          cat "$SRC"/package.part*.b64 | base64 --decode > "$TMP/package.tar.xz"
-          mkdir -p "$TMP/package"
-          tar -xJf "$TMP/package.tar.xz" -C "$TMP/package"
-
-          cat > "$TMP/checksums.sha256" <<'EOF'
+          rm -rf "$EMAS_PACKAGE_ROOT"
+          mkdir -p "$EMAS_PACKAGE_ROOT/package"
+          cat "$EMAS_STAGE_SOURCE"/package.part*.b64 | base64 --decode > "$EMAS_PACKAGE_ROOT/package.tar.xz"
+          tar -xJf "$EMAS_PACKAGE_ROOT/package.tar.xz" -C "$EMAS_PACKAGE_ROOT/package"
+          cat > "$EMAS_PACKAGE_ROOT/checksums.sha256" <<'EOF'
           c11e507e46fc2fc3c7a0b1d8e380a314ae5757226a9cff926a50179c4cf43f01  eMAS_PreSales_Report_Template.xlsx
           a42c54cb94ac9b73c8fa97005080292d7600a86bf009c3f4b843e998eb92c30c  eMAS_PreMigration_Report_Template.xlsx
           7c9a64f83c33b372ee6d3ce4345e09c53d8774a9d45cf0881b0e3f1ee2ce6b97  eMAS_PostMigration_Report_Template.xlsx
           EOF
-          (cd "$TMP/package" && sha256sum -c "$TMP/checksums.sha256")
+          (cd "$EMAS_PACKAGE_ROOT/package" && sha256sum -c "$EMAS_PACKAGE_ROOT/checksums.sha256")
+          find "$EMAS_PACKAGE_ROOT/package" -maxdepth 1 -type f -printf '%f\n' | sort
 
-          mkdir -p templates/report-redesign-v3.2/pre-sales
-          mkdir -p templates/report-redesign-v3.2/pre-migration
-          mkdir -p templates/report-redesign-v3.2/post-migration
-          mkdir -p templates/controlled/pre-sales
-          mkdir -p templates/controlled/pre-migration
-          mkdir -p templates/controlled/post-migration
-          mkdir -p config/report-mappings/report-redesign-v3.2
+      - name: Install versioned and canonical artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          PKG="$EMAS_PACKAGE_ROOT/package"
+          mkdir -p \
+            templates/report-redesign-v3.2/pre-sales \
+            templates/report-redesign-v3.2/pre-migration \
+            templates/report-redesign-v3.2/post-migration \
+            templates/controlled/pre-sales \
+            templates/controlled/pre-migration \
+            templates/controlled/post-migration \
+            config/report-mappings/report-redesign-v3.2
 
-          install -m 0644 "$TMP/package/eMAS_PreSales_Report_Template.xlsx" templates/report-redesign-v3.2/pre-sales/eMAS_PreSales_Report_Template.xlsx
-          install -m 0644 "$TMP/package/eMAS_PreMigration_Report_Template.xlsx" templates/report-redesign-v3.2/pre-migration/eMAS_PreMigration_Report_Template.xlsx
-          install -m 0644 "$TMP/package/eMAS_PostMigration_Report_Template.xlsx" templates/report-redesign-v3.2/post-migration/eMAS_PostMigration_Report_Template.xlsx
-          install -m 0644 "$TMP/package/pre-sales.report-template-map.json" config/report-mappings/report-redesign-v3.2/pre-sales.report-template-map.json
-          install -m 0644 "$TMP/package/pre-migration.report-template-map.json" config/report-mappings/report-redesign-v3.2/pre-migration.report-template-map.json
-          install -m 0644 "$TMP/package/post-migration.report-template-map.json" config/report-mappings/report-redesign-v3.2/post-migration.report-template-map.json
-          install -m 0644 "$TMP/package/report-template-map.schema.json" config/report-mappings/report-redesign-v3.2/report-template-map.schema.json
-          install -m 0644 "$TMP/package/README_eMAS_Report_Templates_v3.2.md" templates/report-redesign-v3.2/README.md
+          install -m 0644 "$PKG/eMAS_PreSales_Report_Template.xlsx" templates/report-redesign-v3.2/pre-sales/eMAS_PreSales_Report_Template.xlsx
+          install -m 0644 "$PKG/eMAS_PreMigration_Report_Template.xlsx" templates/report-redesign-v3.2/pre-migration/eMAS_PreMigration_Report_Template.xlsx
+          install -m 0644 "$PKG/eMAS_PostMigration_Report_Template.xlsx" templates/report-redesign-v3.2/post-migration/eMAS_PostMigration_Report_Template.xlsx
+          install -m 0644 "$PKG/pre-sales.report-template-map.json" config/report-mappings/report-redesign-v3.2/pre-sales.report-template-map.json
+          install -m 0644 "$PKG/pre-migration.report-template-map.json" config/report-mappings/report-redesign-v3.2/pre-migration.report-template-map.json
+          install -m 0644 "$PKG/post-migration.report-template-map.json" config/report-mappings/report-redesign-v3.2/post-migration.report-template-map.json
+          install -m 0644 "$PKG/report-template-map.schema.json" config/report-mappings/report-redesign-v3.2/report-template-map.schema.json
+          install -m 0644 "$PKG/README_eMAS_Report_Templates_v3.2.md" templates/report-redesign-v3.2/README.md
 
-          install -m 0644 "$TMP/package/eMAS_PreSales_Report_Template.xlsx" templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx
-          install -m 0644 "$TMP/package/eMAS_PreMigration_Report_Template.xlsx" templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx
-          install -m 0644 "$TMP/package/eMAS_PostMigration_Report_Template.xlsx" templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx
-          install -m 0644 "$TMP/package/pre-sales.report-template-map.json" config/report-mappings/pre-sales.template-map.json
-          install -m 0644 "$TMP/package/pre-migration.report-template-map.json" config/report-mappings/pre-migration.template-map.json
-          install -m 0644 "$TMP/package/post-migration.report-template-map.json" config/report-mappings/post-migration.template-map.json
-          install -m 0644 "$TMP/package/report-template-map.schema.json" config/report-mappings/report-template-map.schema.json
+          install -m 0644 "$PKG/eMAS_PreSales_Report_Template.xlsx" templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx
+          install -m 0644 "$PKG/eMAS_PreMigration_Report_Template.xlsx" templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx
+          install -m 0644 "$PKG/eMAS_PostMigration_Report_Template.xlsx" templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx
+          install -m 0644 "$PKG/pre-sales.report-template-map.json" config/report-mappings/pre-sales.template-map.json
+          install -m 0644 "$PKG/pre-migration.report-template-map.json" config/report-mappings/pre-migration.template-map.json
+          install -m 0644 "$PKG/post-migration.report-template-map.json" config/report-mappings/post-migration.template-map.json
+          install -m 0644 "$PKG/report-template-map.schema.json" config/report-mappings/report-template-map.schema.json
 
+      - name: Validate report mapping JSON
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
           import json
+          from pathlib import Path
+
+          expected = {
+              'pre-sales': ['01_Executive_Estimate','02_Dossier_Inventory','03_Sequence_Inventory','04_Path_&_Volume_Inventory'],
+              'pre-migration': ['01_Executive_Summary','02_Readiness_Decision','03_Inputs_Access_&_Transfer','04_Dossier_Baseline','05_Sequence_Baseline','06_File_Type_Breakdown','07_File_XML_Path_Checks','08_Findings_&_Actions','09_Exceptions_&_Exclusions','10_Assumptions_&_Limits','11_Execution_Details'],
+              'post-migration': ['01_Executive_Summary','02_Verification_Scope','03_Overall_Reconciliation','04_Dossier_Before_&_After','05_Sequence_Before_&_After','06_File_Type_&_Size_Comparison','07_Database_Dossier_Inventory','08_Import_Evidence_Review','09_Discrepancies_&_Actions','10_Accepted_Exceptions','11_Assumptions_&_Limits','12_Review_&_Execution','Import Report Detail','Post Import Verification','Database Dossier Extract'],
+          }
+          paths = {
+              'pre-sales': Path('config/report-mappings/pre-sales.template-map.json'),
+              'pre-migration': Path('config/report-mappings/pre-migration.template-map.json'),
+              'post-migration': Path('config/report-mappings/post-migration.template-map.json'),
+          }
+          for phase, path in paths.items():
+              doc = json.loads(path.read_text(encoding='utf-8'))
+              actual = doc.get('requiredSheetOrder')
+              print(f'{phase} map version={doc.get("mappingVersion")} templateVersion={doc.get("template", {}).get("templateVersion")} sheets={actual}')
+              if actual != expected[phase]:
+                  print(f'::error file={path}::Expected sheet order {expected[phase]!r}; actual {actual!r}')
+                  raise SystemExit(1)
+          json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
+          PY
+
+      - name: Validate controlled workbook packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
           import zipfile
           import xml.etree.ElementTree as ET
           from pathlib import Path
@@ -90,38 +128,46 @@ jobs:
               'pre-migration': ['01_Executive_Summary','02_Readiness_Decision','03_Inputs_Access_&_Transfer','04_Dossier_Baseline','05_Sequence_Baseline','06_File_Type_Breakdown','07_File_XML_Path_Checks','08_Findings_&_Actions','09_Exceptions_&_Exclusions','10_Assumptions_&_Limits','11_Execution_Details'],
               'post-migration': ['01_Executive_Summary','02_Verification_Scope','03_Overall_Reconciliation','04_Dossier_Before_&_After','05_Sequence_Before_&_After','06_File_Type_&_Size_Comparison','07_Database_Dossier_Inventory','08_Import_Evidence_Review','09_Discrepancies_&_Actions','10_Accepted_Exceptions','11_Assumptions_&_Limits','12_Review_&_Execution','Import Report Detail','Post Import Verification','Database Dossier Extract'],
           }
-          map_paths = {
-              'pre-sales': Path('config/report-mappings/pre-sales.template-map.json'),
-              'pre-migration': Path('config/report-mappings/pre-migration.template-map.json'),
-              'post-migration': Path('config/report-mappings/post-migration.template-map.json'),
-          }
-          template_paths = {
+          paths = {
               'pre-sales': Path('templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx'),
               'pre-migration': Path('templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx'),
               'post-migration': Path('templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx'),
           }
-          for phase, path in map_paths.items():
-              document = json.loads(path.read_text(encoding='utf-8'))
-              if document.get('requiredSheetOrder') != expected[phase]:
-                  raise SystemExit(f'{path}: requiredSheetOrder mismatch')
-              print(f'Valid v3.2 map: {path}')
-          json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
           ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
-          for phase, path in template_paths.items():
+          for phase, path in paths.items():
               with zipfile.ZipFile(path) as archive:
-                  if archive.testzip() is not None:
-                      raise SystemExit(f'Invalid XLSX ZIP package: {path}')
+                  bad = archive.testzip()
+                  if bad is not None:
+                      print(f'::error file={path}::Invalid XLSX ZIP member: {bad}')
+                      raise SystemExit(1)
                   root = ET.fromstring(archive.read('xl/workbook.xml'))
-                  order = [node.attrib['name'] for node in root.find('x:sheets', ns)]
-              if order != expected[phase]:
-                  raise SystemExit(f'{path}: workbook sheet order mismatch: {order!r}')
-              print(f'Valid v3.2 workbook: {path}')
-          for path in sorted(Path('config/result-schemas/report-redesign-v3.2').glob('*.json')):
+                  actual = [node.attrib['name'] for node in root.find('x:sheets', ns)]
+              print(f'{phase} workbook sheets={actual}')
+              if actual != expected[phase]:
+                  print(f'::error file={path}::Expected sheet order {expected[phase]!r}; actual {actual!r}')
+                  raise SystemExit(1)
+          PY
+
+      - name: Validate normalized result schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          paths = sorted(Path('config/result-schemas/report-redesign-v3.2').glob('*.json'))
+          required = {'pre-sales.result.schema.json','pre-migration.result.schema.json','post-migration.result.schema.json'}
+          actual = {p.name for p in paths}
+          if not required.issubset(actual):
+              raise SystemExit(f'Missing result schemas: {required - actual}')
+          for path in paths:
               json.loads(path.read_text(encoding='utf-8'))
               print(f'Valid result schema: {path}')
           PY
 
-          rm -rf "$SRC"
+      - name: Remove temporary staging files
+        shell: bash
+        run: rm -rf "$EMAS_STAGE_SOURCE"
 
       - name: Commit materialized artifacts
         shell: bash
