@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/MightyM-ouse/eMAS/blob/requirements/report-redesign-v3.2/config/result-schemas/pre-migration.result.schema.json",
-  "title": "eMAS Pre-Migration Result Contract v3.2",
+  "title": "eMAS Pre-Migration Readiness Result v3.2",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "phaseCode",
     "resultContractVersion",
     "summaryMetrics",
+    "criticalActions",
     "readinessDecision",
     "inputChecks",
     "dossierBaseline",
@@ -20,7 +20,6 @@
     "exclusions",
     "assumptions",
     "limitations",
-    "baselineIntegrity",
     "executionDetails"
   ],
   "properties": {
@@ -33,154 +32,107 @@
     "summaryMetrics": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/metricRow"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "criticalActions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "readinessDecision": {
-      "$ref": "#/$defs/record"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
     },
     "inputChecks": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "dossierBaseline": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "sequenceBaseline": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "fileTypeBreakdown": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "fileXmlPathChecks": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "findings": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "actions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "acceptedExceptions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "exclusions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "assumptions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "limitations": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/record"
+        "type": "object",
+        "additionalProperties": true
       }
-    },
-    "baselineIntegrity": {
-      "$ref": "#/$defs/record"
     },
     "executionDetails": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/metricRow"
+        "type": "object",
+        "additionalProperties": true
       }
-    }
-  },
-  "$defs": {
-    "stringOrNull": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "metricRow": {
-      "type": "object",
-      "required": [
-        "section",
-        "metric",
-        "value",
-        "evaluationStatus",
-        "valueSource"
-      ],
-      "properties": {
-        "section": {
-          "type": "string"
-        },
-        "metric": {
-          "type": "string"
-        },
-        "value": {},
-        "evaluationStatus": {
-          "type": "string"
-        },
-        "rag": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "confidence": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "valueSource": {
-          "type": "string"
-        },
-        "reviewRequired": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "description": {
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": true
-    },
-    "record": {
-      "type": "object",
-      "additionalProperties": true
     }
   }
 }
