@@ -19,14 +19,39 @@
 | Phase | Requirement status | Template status | JSON status |
 |---|---|---|---|
 | Pre-Sales Assessment | Finalized in this working baseline | Pending | Pending |
-| Pre-Migration Readiness | Pending discussion | Pending | Pending |
+| Pre-Migration Readiness | Finalized in this working baseline | Pending | Pending |
 | Post-Migration Verification | Pending discussion | Pending | Pending |
 
 ## Working documents
 
 - `01_eMAS_PreSales_Report_Requirements_v1.0.md` — finalized Pre-Sales workbook purpose, sheets, columns, configuration requirements and acceptance criteria.
-- `02_eMAS_PreMigration_Report_Requirements_v1.0.md` — to be added after detailed review.
+- `02_eMAS_PreMigration_Report_Requirements_v1.0.md` — finalized Pre-Migration Executive Summary redesign, retained detailed evidence model, dossier/sequence baseline additions, normalized file-type breakdown, configuration requirements and acceptance criteria.
 - `03_eMAS_PostMigration_Report_Requirements_v1.0.md` — to be added after detailed review.
+
+## Current frozen workbook direction
+
+### Pre-Sales
+
+1. `01_Executive_Estimate`
+2. `02_Dossier_Inventory`
+3. `03_Sequence_Inventory`
+4. `04_Path_&_Volume_Inventory`
+
+### Pre-Migration
+
+1. `01_Executive_Summary`
+2. `02_Readiness_Decision`
+3. `03_Inputs_Access_&_Transfer`
+4. `04_Dossier_Baseline`
+5. `05_Sequence_Baseline`
+6. `06_File_Type_Breakdown`
+7. `07_File_XML_Path_Checks`
+8. `08_Findings_&_Actions`
+9. `09_Exceptions_&_Exclusions`
+10. `10_Assumptions_&_Limits`
+11. `11_Execution_Details`
+
+Each phase also produces a separate timestamped UTF-8 execution log.
 
 ## Governance rule
 
