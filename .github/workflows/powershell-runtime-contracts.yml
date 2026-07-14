@@ -67,6 +67,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          show-progress: false
       - name: Import shared core and Windows PowerShell 5.1 adapter contracts
         shell: powershell
         run: |
@@ -89,8 +91,26 @@ jobs:
             throw 'PowerShell 5.1 adapter contract must be limited to Pre-Sales.'
           }
       - name: Run dependency-free Runtime JSON configuration tests
+        id: ps51-tests
         shell: powershell
-        run: .\tests\runtime\Test-eMASRuntimeConfiguration.ps1
+        continue-on-error: true
+        run: |
+          $outputPath = Join-Path $env:RUNNER_TEMP 'ps51-runtime-tests.txt'
+          & .\tests\runtime\Test-eMASRuntimeConfiguration.ps1 *>&1 | Tee-Object -FilePath $outputPath
+          $exitCode = $LASTEXITCODE
+          "exitCode=$exitCode" | Out-File -FilePath $outputPath -Append -Encoding utf8
+          exit $exitCode
+      - name: Upload Windows PowerShell 5.1 diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-powershell-51-runtime-diagnostics
+          path: ${{ runner.temp }}\ps51-runtime-tests.txt
+          if-no-files-found: error
+      - name: Enforce Windows PowerShell 5.1 test result
+        if: steps.ps51-tests.outcome != 'success'
+        shell: powershell
+        run: throw 'Windows PowerShell 5.1 runtime contract tests failed. See the uploaded diagnostics artifact.'
 
   windows-powershell-76-contracts:
     runs-on: windows-latest
