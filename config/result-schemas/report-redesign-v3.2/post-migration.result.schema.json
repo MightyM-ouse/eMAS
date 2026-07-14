@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/requirements/report-redesign-v3.2/config/result-schemas/post-migration.result.schema.json",
+  "title": "eMAS Post-Migration Result Contract v3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "verificationContext",
+    "verificationDecision",
+    "summaryMetrics",
+    "verificationScope",
+    "overallReconciliation",
+    "dossierBeforeAfter",
+    "sequenceBeforeAfter",
+    "fileTypeSizeComparison",
+    "databaseDossierInventory",
+    "importEvidenceReview",
+    "discrepanciesAndActions",
+    "acceptedExceptions",
+    "assumptionsAndLimitations",
+    "reviewAndExecution",
+    "rawImportReportDetail",
+    "rawPostImportVerification",
+    "rawDatabaseDossierExtract"
+  ],
+  "properties": {
+    "phaseCode": {
+      "const": "POST_MIGRATION"
+    },
+    "resultContractVersion": {
+      "type": "string"
+    },
+    "verificationContext": {
+      "$ref": "#/$defs/record"
+    },
+    "verificationDecision": {
+      "$ref": "#/$defs/record"
+    },
+    "summaryMetrics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metricRow"
+      }
+    },
+    "criticalDiscrepancies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "verificationScope": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "overallReconciliation": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "dossierBeforeAfter": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "sequenceBeforeAfter": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "fileTypeSizeComparison": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "databaseDossierInventory": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "importEvidenceReview": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "discrepanciesAndActions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "acceptedExceptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "assumptionsAndLimitations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "reviewAndExecution": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metricRow"
+      }
+    },
+    "rawImportReportDetail": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "rawPostImportVerification": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "rawDatabaseDossierExtract": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "stringOrNull": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metricRow": {
+      "type": "object",
+      "required": [
+        "section",
+        "metric",
+        "value",
+        "evaluationStatus",
+        "valueSource"
+      ],
+      "properties": {
+        "section": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        },
+        "value": {},
+        "evaluationStatus": {
+          "type": "string"
+        },
+        "rag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valueSource": {
+          "type": "string"
+        },
+        "reviewRequired": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
