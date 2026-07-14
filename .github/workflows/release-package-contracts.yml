@@ -1,0 +1,128 @@
+name: Release package contracts
+
+on:
+  pull_request:
+    branches:
+      - demo/end-to-end-mvp
+    paths:
+      - '.github/workflows/release-package-contracts.yml'
+      - 'build/New-eMASChecksumManifest.ps1'
+      - 'build/Test-eMASReleasePackage.ps1'
+      - 'build/New-eMASPreSalesPackage.ps1'
+      - 'build/New-eMASInternalRelease.ps1'
+      - 'build/requirements-reporting.txt'
+      - 'scripts/**'
+      - 'engine/**'
+      - 'templates/controlled/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'config/schema/**'
+      - 'tests/fixtures/runtime-config/valid-minimal.json'
+  push:
+    branches:
+      - requirements/report-redesign-v3.2
+    paths:
+      - '.github/workflows/release-package-contracts.yml'
+      - 'build/New-eMASChecksumManifest.ps1'
+      - 'build/Test-eMASReleasePackage.ps1'
+      - 'build/New-eMASPreSalesPackage.ps1'
+      - 'build/New-eMASInternalRelease.ps1'
+      - 'build/requirements-reporting.txt'
+      - 'scripts/**'
+      - 'engine/**'
+      - 'templates/controlled/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'config/schema/**'
+      - 'tests/fixtures/runtime-config/valid-minimal.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  customer-pre-sales-package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+      - name: Build package with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($PSVersionTable.PSEdition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5) {
+              throw "Expected Windows PowerShell 5.1; received $($PSVersionTable.PSEdition) $($PSVersionTable.PSVersion)."
+          }
+          $destination = Join-Path $env:RUNNER_TEMP 'eMAS-PreSales-Customer'
+          $result = .\build\New-eMASPreSalesPackage.ps1 `
+              -RuntimeConfigurationPath .\tests\fixtures\runtime-config\valid-minimal.json `
+              -DestinationRoot $destination `
+              -PackageVersion '3.2.0-ci' `
+              -SourceCommit $env:GITHUB_SHA `
+              -CreateArchive `
+              -Force
+          if ($result.Status -ne 'Passed' -or $result.ValidationStatus -ne 'Passed') {
+              throw 'Customer Pre-Sales package did not pass validation.'
+          }
+          if (-not (Test-Path -LiteralPath $result.ArchivePath -PathType Leaf)) {
+              throw 'Customer Pre-Sales archive was not created.'
+          }
+          $validation = .\build\Test-eMASReleasePackage.ps1 `
+              -RootPath $destination `
+              -ExpectedPackageType CustomerPreSales
+          if ($validation.status -ne 'Passed') {
+              throw 'Independent customer-package validation failed.'
+          }
+      - name: Upload customer package contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-pre-sales-package-contract
+          path: |
+            ${{ runner.temp }}\eMAS-PreSales-Customer\package-manifest.json
+            ${{ runner.temp }}\eMAS-PreSales-Customer\package-manifest.sha256
+            ${{ runner.temp }}\eMAS-PreSales-Customer\package-validation.json
+          if-no-files-found: error
+
+  internal-release-package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+      - name: Build package with PowerShell 7.6
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($PSVersionTable.PSEdition -ne 'Core' -or $PSVersionTable.PSVersion.Major -ne 7 -or $PSVersionTable.PSVersion.Minor -ne 6) {
+              throw "Expected PowerShell 7.6; received $($PSVersionTable.PSEdition) $($PSVersionTable.PSVersion)."
+          }
+          $destination = Join-Path $env:RUNNER_TEMP 'eMAS-Internal-Release'
+          $result = .\build\New-eMASInternalRelease.ps1 `
+              -RuntimeConfigurationPath .\tests\fixtures\runtime-config\valid-minimal.json `
+              -DestinationRoot $destination `
+              -PackageVersion '3.2.0-ci' `
+              -SourceCommit $env:GITHUB_SHA `
+              -CreateArchive `
+              -Force
+          if ($result.Status -ne 'Passed' -or $result.ValidationStatus -ne 'Passed') {
+              throw 'Internal release package did not pass validation.'
+          }
+          if (-not (Test-Path -LiteralPath $result.ArchivePath -PathType Leaf)) {
+              throw 'Internal release archive was not created.'
+          }
+          $validation = .\build\Test-eMASReleasePackage.ps1 `
+              -RootPath $destination `
+              -ExpectedPackageType InternalRelease
+          if ($validation.status -ne 'Passed') {
+              throw 'Independent internal-package validation failed.'
+          }
+      - name: Upload internal package contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-release-package-contract
+          path: |
+            ${{ runner.temp }}\eMAS-Internal-Release\package-manifest.json
+            ${{ runner.temp }}\eMAS-Internal-Release\package-manifest.sha256
+            ${{ runner.temp }}\eMAS-Internal-Release\package-validation.json
+          if-no-files-found: error
