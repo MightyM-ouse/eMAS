@@ -8,6 +8,7 @@ This folder contains deterministic repository initialization, build, validation 
 - `validate_operational_skills.py` — Effective operational-skill contract validation.
 - `generate_emas_mapping_poc_workbook.py` — standard-library deterministic XLSX generation from the synthetic workbook definition.
 - `validate_xlsm_vba_poc.py` — workbook source, VBA contract, fixture, checksum and Schema 1.0.0 conformance validation.
+- `generate_report_result_fixtures_v32.py` — deterministic synthetic normalized-result generation for end-to-end report testing.
 - `Build-eMASMappingPoc.ps1` — internal Windows/Excel build that imports reviewed VBA and saves the POC XLSM.
 - `Test-eMASMappingPoc.ps1` — native Excel/VBA deterministic-export and schema-conformance evidence.
 
@@ -22,6 +23,7 @@ python -m unittest discover -s tests/skills -p "test_*.py" -v
 python build/validate_xlsm_vba_poc.py
 python -m unittest discover -s tests/vba -p "test_*.py" -v
 python -m unittest discover -s tests/reporting -p "test_*.py" -v
+python build/generate_report_result_fixtures_v32.py --output-directory ./output/synthetic-result-fixtures
 ```
 
 On a controlled Windows workstation with supported desktop Excel:
@@ -94,7 +96,14 @@ This creates an internal package containing all three phase entry points, shared
 
 The manifest contains sorted relative paths, file sizes and SHA-256 values. The validator rejects missing, altered, duplicate, unmanifested, unsafe or prohibited files and enforces package-type-specific minimum contents.
 
-Package-contract CI is maintained in `.github/workflows/release-package-contracts.yml` and builds both packages using synthetic repository fixtures.
+Automated workflows:
+
+```text
+.github/workflows/end-to-end-report-slice-v3.2.yml
+.github/workflows/release-package-contracts.yml
+```
+
+The end-to-end workflow executes Pre-Sales under Windows PowerShell 5.1 and Pre-/Post-Migration under PowerShell 7.6 using deterministic synthetic normalized results. The package workflow builds and independently verifies both package types.
 
 ## Remaining release gates
 
@@ -104,7 +113,7 @@ The package builders do not establish:
 
 - supported Windows/Office qualification;
 - native Excel execution qualification;
-- code signing or certificate trust;
+- code or package signing;
 - approved production Runtime JSON content;
 - customer acceptance;
 - formal release authorization.
