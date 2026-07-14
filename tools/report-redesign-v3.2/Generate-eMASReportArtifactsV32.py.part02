@@ -1,0 +1,10 @@
+\n\n"
+        "The workbooks contain controlled blank tables and no customer/sample data. "
+        "Business interpretation remains in the shared controlled runtime JSON. "
+        "Template maps contain technical binding facts only.\n",
+        encoding="utf-8",
+    )
+
+
+if __name__ == "__main__":
+    main()
