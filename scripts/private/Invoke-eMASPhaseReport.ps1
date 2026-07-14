@@ -42,7 +42,7 @@ function Invoke-eMASPhaseReport {
     Set-StrictMode -Version 2.0
 
     $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-    $phaseConfiguration = @{
+    $phaseConfigurations = @{
         PRE_SALES = @{
             Template = 'templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx'
             Mapping = 'config/report-mappings/pre-sales.template-map.json'
@@ -58,13 +58,14 @@ function Invoke-eMASPhaseReport {
             Mapping = 'config/report-mappings/post-migration.template-map.json'
             OutputPrefix = 'eMAS_PostMigrationVerification'
         }
-    }[$Phase]
+    }
+    $phaseConfiguration = $phaseConfigurations[$Phase]
 
     if ([string]::IsNullOrWhiteSpace($TemplatePath)) {
-        $TemplatePath = Join-Path $repositoryRoot $phaseConfiguration.Template
+        $TemplatePath = Join-Path $repositoryRoot $phaseConfiguration['Template']
     }
     if ([string]::IsNullOrWhiteSpace($TemplateMappingPath)) {
-        $TemplateMappingPath = Join-Path $repositoryRoot $phaseConfiguration.Mapping
+        $TemplateMappingPath = Join-Path $repositoryRoot $phaseConfiguration['Mapping']
     }
     if ([string]::IsNullOrWhiteSpace($MappingSchemaPath)) {
         $MappingSchemaPath = Join-Path $repositoryRoot 'config/report-mappings/report-template-map.schema.json'
@@ -80,7 +81,7 @@ function Invoke-eMASPhaseReport {
         if (-not (Test-Path -LiteralPath $outputDirectory -PathType Container)) {
             New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
         }
-        $outputName = '{0}_{1}.xlsx' -f $phaseConfiguration.OutputPrefix, [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
+        $outputName = '{0}_{1}.xlsx' -f $phaseConfiguration['OutputPrefix'], [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
         $OutputWorkbookPath = Join-Path $outputDirectory $outputName
     }
     else {
@@ -119,10 +120,10 @@ function Invoke-eMASPhaseReport {
             MappingSchemaPath = $resolvedMappingSchemaPath
         }
         if (-not [string]::IsNullOrWhiteSpace($ResultSchemaPath)) {
-            $arguments.ResultSchemaPath = $ResultSchemaPath
+            $arguments['ResultSchemaPath'] = $ResultSchemaPath
         }
         if (-not [string]::IsNullOrWhiteSpace($PythonExecutablePath)) {
-            $arguments.PythonExecutablePath = $PythonExecutablePath
+            $arguments['PythonExecutablePath'] = $PythonExecutablePath
         }
 
         $report = Export-eMASResultToTemplate @arguments
