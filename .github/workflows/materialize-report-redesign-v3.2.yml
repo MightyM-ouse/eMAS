@@ -1,0 +1,138 @@
+name: Validate report redesign v3.2 artifacts
+
+on:
+  push:
+    branches:
+      - requirements/report-redesign-v3.2
+    paths:
+      - '.github/workflows/materialize-report-redesign-v3.2.yml'
+      - 'tools/report-redesign-v3.2/**'
+      - 'engine/reporting/**'
+      - 'scripts/**'
+      - 'tests/reporting/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'templates/controlled/**'
+      - 'templates/report-redesign-v3.2/**'
+  pull_request:
+    branches:
+      - demo/end-to-end-mvp
+    paths:
+      - '.github/workflows/materialize-report-redesign-v3.2.yml'
+      - 'tools/report-redesign-v3.2/**'
+      - 'engine/reporting/**'
+      - 'scripts/**'
+      - 'tests/reporting/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'templates/controlled/**'
+      - 'templates/report-redesign-v3.2/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-report-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install report-validation dependencies
+        run: >-
+          python -m pip install --disable-pip-version-check
+          openpyxl==3.1.5
+          'jsonschema>=4.22,<5'
+
+      - name: Compile report tooling
+        run: |
+          python -m py_compile tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py
+          python -m py_compile engine/reporting/emas_report_openxml.py
+          python -m py_compile engine/reporting/emas_report_openxml_v32.py
+          python -m py_compile tests/reporting/fixture_factory_v32.py
+          python -m py_compile tests/reporting/test_report_generation.py
+          python -m py_compile tests/reporting/test_phase_entrypoints_v32.py
+
+      - name: Regenerate controlled report artifacts
+        run: python tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py
+
+      - name: Validate versions and exact workbook structures
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import zipfile
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          expected = {
+              'pre-sales': ['01_Executive_Estimate','02_Dossier_Inventory','03_Sequence_Inventory','04_Path_&_Volume_Inventory'],
+              'pre-migration': ['01_Executive_Summary','02_Readiness_Decision','03_Inputs_Access_&_Transfer','04_Dossier_Baseline','05_Sequence_Baseline','06_File_Type_Breakdown','07_File_XML_Path_Checks','08_Findings_&_Actions','09_Exceptions_&_Exclusions','10_Assumptions_&_Limits','11_Execution_Details'],
+              'post-migration': ['01_Executive_Summary','02_Verification_Scope','03_Overall_Reconciliation','04_Dossier_Before_&_After','05_Sequence_Before_&_After','06_File_Type_&_Size_Comparison','07_Database_Dossier_Inventory','08_Import_Evidence_Review','09_Discrepancies_&_Actions','10_Accepted_Exceptions','11_Assumptions_&_Limits','12_Review_&_Execution','Import Report Detail','Post Import Verification','Database Dossier Extract'],
+          }
+          maps = {
+              'pre-sales': Path('config/report-mappings/pre-sales.template-map.json'),
+              'pre-migration': Path('config/report-mappings/pre-migration.template-map.json'),
+              'post-migration': Path('config/report-mappings/post-migration.template-map.json'),
+          }
+          books = {
+              'pre-sales': Path('templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx'),
+              'pre-migration': Path('templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx'),
+              'post-migration': Path('templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx'),
+          }
+
+          for phase, path in maps.items():
+              document = json.loads(path.read_text(encoding='utf-8'))
+              assert document['mappingVersion'] == '2.0.0', (path, document.get('mappingVersion'))
+              assert document['template']['templateVersion'] == '1.2.0', (path, document['template'].get('templateVersion'))
+              assert document['requiredSheetOrder'] == expected[phase], (path, document['requiredSheetOrder'])
+              schema_path = Path(document['resultSchemaPath'])
+              assert schema_path.is_file(), schema_path
+              print(f'Validated map: {path}')
+
+          json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
+          namespace = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+          for phase, path in books.items():
+              with zipfile.ZipFile(path) as archive:
+                  assert archive.testzip() is None, path
+                  workbook = ET.fromstring(archive.read('xl/workbook.xml'))
+                  sheets = [node.attrib['name'] for node in workbook.find('x:sheets', namespace)]
+              assert sheets == expected[phase], (path, sheets)
+              print(f'Validated workbook: {path}')
+
+          required_schemas = {
+              'pre-sales.result.schema.json',
+              'pre-migration.result.schema.json',
+              'post-migration.result.schema.json',
+          }
+          schema_root = Path('config/result-schemas/report-redesign-v3.2')
+          actual = {path.name for path in schema_root.glob('*.json')}
+          assert required_schemas.issubset(actual), required_schemas - actual
+          for path in schema_root.glob('*.json'):
+              json.loads(path.read_text(encoding='utf-8'))
+              print(f'Validated result schema: {path}')
+          PY
+
+      - name: Run report-generation contract tests
+        run: python -m unittest discover -s tests/reporting -p 'test_*.py' -v
+
+      - name: Validate PowerShell report module import
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module ./engine/reporting/eMAS.ReportPopulation.psm1 -Force
+          $command = Get-Command Export-eMASResultToTemplate -ErrorAction Stop
+          if ($command.Name -ne 'Export-eMASResultToTemplate') {
+              throw 'Report population command was not exported.'
+          }

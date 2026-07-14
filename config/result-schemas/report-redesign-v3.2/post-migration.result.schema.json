@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "eMAS Post-Migration Verification Result v3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "summaryMetrics",
+    "criticalDiscrepancies",
+    "verificationScope",
+    "overallReconciliation",
+    "dossierBeforeAfter",
+    "sequenceBeforeAfter",
+    "fileTypeSizeComparison",
+    "databaseDossierInventory",
+    "importEvidenceReview",
+    "discrepanciesAndActions",
+    "acceptedExceptions",
+    "assumptionsAndLimitations",
+    "reviewAndExecution",
+    "rawImportReportDetail",
+    "rawPostImportVerification",
+    "rawDatabaseDossierExtract"
+  ],
+  "properties": {
+    "phaseCode": {
+      "const": "POST_MIGRATION"
+    },
+    "resultContractVersion": {
+      "type": "string"
+    },
+    "summaryMetrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "criticalDiscrepancies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "verificationScope": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "overallReconciliation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "dossierBeforeAfter": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "sequenceBeforeAfter": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "fileTypeSizeComparison": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "databaseDossierInventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "importEvidenceReview": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "discrepanciesAndActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "acceptedExceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "assumptionsAndLimitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "reviewAndExecution": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "rawImportReportDetail": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "rawPostImportVerification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "rawDatabaseDossierExtract": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  }
+}

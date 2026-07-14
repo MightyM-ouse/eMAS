@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "eMAS Pre-Sales Assessment Result v3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "executiveMetrics",
+    "decisionClarifications",
+    "dossierInventory",
+    "sequenceInventory",
+    "exportEvidence",
+    "directCopyEvidence",
+    "executionProfile",
+    "assessmentMode",
+    "assessmentContext",
+    "currentSystem",
+    "targetPlanning",
+    "effortEstimate"
+  ],
+  "properties": {
+    "phaseCode": {
+      "const": "PRE_SALES"
+    },
+    "resultContractVersion": {
+      "type": "string"
+    },
+    "executiveMetrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "decisionClarifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "dossierInventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "sequenceInventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "exportEvidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "directCopyEvidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "fileCount"
+              ]
+            },
+            {
+              "required": [
+                "folderCount"
+              ]
+            },
+            {
+              "required": [
+                "longPathCount"
+              ]
+            },
+            {
+              "required": [
+                "largestFile"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "executionProfile": {
+      "enum": [
+        "CustomerCollection",
+        "CustomerAssessment",
+        "InternalEstimation"
+      ]
+    },
+    "assessmentMode": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "assessmentContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "currentSystem": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "targetPlanning": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "migrationScenarioDecision": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "effortEstimate": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "eMAS Pre-Migration Readiness Result v3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "summaryMetrics",
+    "criticalActions",
+    "readinessDecision",
+    "inputChecks",
+    "dossierBaseline",
+    "sequenceBaseline",
+    "fileTypeBreakdown",
+    "fileXmlPathChecks",
+    "findings",
+    "actions",
+    "acceptedExceptions",
+    "exclusions",
+    "assumptions",
+    "limitations",
+    "executionDetails"
+  ],
+  "properties": {
+    "phaseCode": {
+      "const": "PRE_MIGRATION"
+    },
+    "resultContractVersion": {
+      "type": "string"
+    },
+    "summaryMetrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "criticalActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "readinessDecision": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "inputChecks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "dossierBaseline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "sequenceBaseline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "fileTypeBreakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "fileXmlPathChecks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "acceptedExceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "executionDetails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  }
+}

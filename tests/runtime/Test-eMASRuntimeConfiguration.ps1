@@ -217,7 +217,10 @@ Invoke-eMASTest -Name 'path containing spaces is resolved and loaded' -Action {
 
 Invoke-eMASTest -Name 'UTF-8 metadata is preserved' -Action {
     $configuration = Import-eMASRuntimeConfiguration -Path $validPath
-    Assert-eMASEqual -Expected 'Synthetic UTF-8 – Prüfung' -Actual $configuration.ConfigurationName -Message 'UTF-8 metadata differs.'
+    # Keep the test script ASCII-only so Windows PowerShell 5.1 does not interpret
+    # a UTF-8-without-BOM source file through the active ANSI code page.
+    $expectedName = 'Synthetic UTF-8 {0} Pr{1}fung' -f [char]0x2013, [char]0x00FC
+    Assert-eMASEqual -Expected $expectedName -Actual $configuration.ConfigurationName -Message 'UTF-8 metadata differs.'
 }
 
 Invoke-eMASTest -Name 'SHA-256 identity is stable' -Action {

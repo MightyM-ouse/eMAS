@@ -1,8 +1,14 @@
 # eMAS Requirements
 
-## Effective baseline
+## Branch-approved v3.2 baseline
 
-Use [eMAS Enterprise Requirements v3.1](eMAS_Final_Enterprise_Requirements_v3.1.md) as the authority-rank-1 product requirements baseline.
+On `requirements/report-redesign-v3.2`, use [eMAS Enterprise Requirements v3.2](eMAS_Final_Enterprise_Requirements_v3.2.md) as the approved working implementation baseline. It consolidates the finalized Pre-Sales, Pre-Migration and Post-Migration report redesign, customer-collection modes, evidence-depth rules, baseline/reconciliation changes, template version 1.2.0 and report-template map version 2.0.0.
+
+The detailed phase report requirements are maintained under [report-redesign](report-redesign/README.md).
+
+## Effective main baseline
+
+Until v3.2 is approved and merged through repository governance, [eMAS Enterprise Requirements v3.1](eMAS_Final_Enterprise_Requirements_v3.1.md) remains the authority-rank-1 effective product requirements baseline on `main`.
 
 The effective configuration requirements are maintained under `docs/configuration/`:
 
@@ -12,12 +18,12 @@ The effective configuration requirements are maintained under `docs/configuratio
 
 Use the [Authority and Precedence Policy](../governance/00_authority_and_precedence.md), [Controlled Terminology](../governance/eMAS_Terminology.md) and [Canonical Document Index](../CANONICAL_DOCUMENT_INDEX.md) when resolving scope, status or terminology.
 
-## Historical baseline
+## Historical baselines
 
-`eMAS_Final_Enterprise_Requirements_v3.0.md` is retained for traceability and historical comparison. It is superseded for implementation use by Version 3.1 and must not override the effective requirements.
-
-The Version 2 Word documentation pack is also historical and governed through the [Superseded Document Register](../archive/SUPERSEDED_DOCUMENT_REGISTER.md).
+- `eMAS_Final_Enterprise_Requirements_v3.0.md` is historical and superseded for implementation use.
+- Enterprise Requirements v3.1 is superseded for implementation on the report-redesign branch, but remains effective on `main` until v3.2 promotion.
+- The Version 2 Word documentation pack is historical and governed through the [Superseded Document Register](../archive/SUPERSEDED_DOCUMENT_REGISTER.md).
 
 ## Delivery-state boundary
 
-Effective requirements do not imply that implementation, SME content approval, testing or release controls are complete. Those states are tracked separately.
+Approved or effective requirements do not imply that implementation, SME content approval, testing, qualification or release controls are complete. Those states are tracked separately.

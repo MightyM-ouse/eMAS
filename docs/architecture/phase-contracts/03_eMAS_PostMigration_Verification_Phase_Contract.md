@@ -1,157 +1,149 @@
 # eMAS Post-Migration Verification Phase Contract
 
-**Version:** 1.1  
-**Status:** Effective Phase Contract  
-**Effective date:** 2026-07-13  
+**Version:** 1.2  
+**Status:** Approved Working Contract on `requirements/report-redesign-v3.2`  
 **Phase code:** `POST_MIGRATION`  
-**Owner:** Product Owner, Migration SME and Technical Architect  
-**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
-**Canonical references:** Enterprise Requirements v3.1 §14.3; Solution Architecture v1.0; PowerShell Runtime Profile v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0 plus approved amendments
+**Runtime:** PowerShell 7.6 LTS on Windows  
+**Canonical requirement:** `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.2.md`  
+**Detailed report requirement:** `docs/requirements/report-redesign/03_eMAS_PostMigration_Report_Requirements_v1.1.md`
 
 ## 1. Purpose
 
-Compare migrated/import evidence against the approved Pre-Migration baseline, reconcile agreed dossier/sequence/file measures, classify discrepancies and preserve accepted-difference evidence.
+Post-Migration compares the approved compatible Pre-Migration baseline with independent import-report, target-database and post-import evidence and determines technical reconciliation.
 
-Post-Migration Verification is not migration execution, formal regulatory validation, customer acceptance or electronic approval.
+The phase does not execute migration, provide regulatory validation, constitute formal customer validation, electronically approve the migration or record customer acceptance.
 
-## 2. Actors and execution
+## 2. Evidence sequence
 
-Execution methods:
+The phase uses four distinct evidence positions:
 
-- PowerShell 7.6 LTS CLI on Windows using `pwsh.exe`;
-- optional portable WPF that invokes the same PowerShell 7.6 Post-Migration entry script.
+`Pre-Migration Baseline -> Import Report -> Target Database -> Post-Import Verification`
 
-Development and pure unit/fixture testing may use PowerShell 7.6 LTS on macOS. Windows PowerShell 7.6 execution remains the authoritative phase-qualification gate.
+The Pre-Migration baseline is the authoritative expected state. The other three are independent observed evidence. One source shall not be silently substituted for another.
 
-Primary actors are the consultant/migration team, customer reviewers and approved exception owners.
+## 3. Inputs
 
-## 3. Required inputs
+At minimum:
 
-- approved compatible Pre-Migration baseline;
-- `MigrationSummary.xlsx` with the agreed import-report details;
-- available post-import verification evidence;
-- runtime configuration package;
-- controlled Post-Migration report template;
-- output root;
-- applicable accepted-exception/accepted-difference evidence.
+- approved compatible Pre-Migration baseline and integrity evidence;
+- controlled runtime JSON, schema, template and map;
+- MigrationSummary/import-report detail where in scope;
+- target database dossier extract where required;
+- post-import verification evidence;
+- approved exclusions and carried-forward exceptions;
+- reviewer/closeout context and output locations.
 
-Optional additional evidence may include migration logs or technical extracts explicitly approved for the project. The phase must not depend on uncontrolled interpretation of such evidence.
+Initial database support accepts a controlled read-only CSV/XLSX extract. Direct production database connectivity requires a separately approved adapter and qualification.
 
-## 4. Preconditions
+## 4. Startup validation
 
-- PowerShell 7.6 LTS runtime check passes;
-- runtime configuration package passes integrity, schema and semantic validation;
-- baseline identity, version and integrity are verifiable;
-- `MigrationSummary.xlsx` is readable and contains the required detail structure for the supported import version;
-- output/template initialization succeeds;
-- selected evidence belongs to the intended project/run scope.
+Before comparison, the phase validates:
 
-An incompatible or ambiguous baseline must stop reconciliation or produce `Review Required`; it must not be silently converted.
+- package/runtime/schema/configuration compatibility;
+- template version 1.2.0 and map version 2.0.0;
+- baseline ID, approval status, schema/version and checksum;
+- baseline scope and comparison-key compatibility;
+- mandatory evidence availability and interpretable structure;
+- output permissions.
 
-## 5. Required processing
+Missing or incompatible mandatory evidence produces `Verification Incomplete`; it shall not produce a reconciliation conclusion.
 
-The phase must:
+## 5. Processing contract
 
-1. initialize run metadata and detailed logging, including exact PowerShell/.NET/runtime-adapter information;
-2. load and validate the approved Pre-Migration baseline;
-3. read agreed detail from `MigrationSummary.xlsx`;
-4. read available post-import verification evidence;
-5. normalize comparison identifiers using approved aliases/configuration;
-6. compare expected and migrated dossiers;
-7. compare expected and migrated sequences;
-8. compare file/count/size or other agreed measures where available and reliable;
-9. identify matched, missing, extra, warning, error and ambiguous records;
-10. preserve raw comparison evidence and ValueSource;
-11. classify discrepancies using configured findings, RAG and decision policies;
-12. apply accepted-exception/accepted-difference effects without erasing the original discrepancy;
-13. determine the permitted reconciliation result;
-14. populate the controlled Post-Migration report and timestamped log.
+The phase shall:
 
-PowerShell 7-specific performance features may be used only through approved runtime adapters and must not change business interpretation or deterministic outcomes.
+1. create execution identity and detailed timestamped UTF-8 logging;
+2. load the approved baseline read-only;
+3. preserve raw import-report, post-import and database-extract rows/header text exactly;
+4. normalize import statuses/messages through controlled mappings;
+5. normalize database dossier records through version-aware mappings;
+6. compare dossier presence and agreed metadata across baseline/import/database/post evidence;
+7. compare sequence presence and agreed technical measures;
+8. compare file-type counts/sizes and other approved baseline measures;
+9. preserve expected, import, database and observed values and provenance;
+10. classify discrepancies without erasing evidence;
+11. apply accepted-exception policies while preserving the underlying discrepancy;
+12. keep system comparison notes separate from reviewer notes/dispositions;
+13. determine only `Reconciled`, `Reconciled with Accepted Exceptions`, `Not Reconciled` or `Verification Incomplete`;
+14. populate the controlled fifteen-sheet workbook and normalized result;
+15. write integrity/output evidence to the log/result.
 
-## 6. MigrationSummary interface
+## 6. Controlled result terminology
 
-The reader for `MigrationSummary.xlsx` must:
+Final results:
 
-- use controlled sheet/column mappings for supported versions;
-- preserve source row identifiers where available;
-- distinguish import status, warning and error information;
-- report missing mandatory columns or unsupported structure clearly;
-- avoid modifying the workbook;
-- record the input file name, size, modification timestamp and integrity evidence available to the run.
+- `Reconciled`
+- `Reconciled with Accepted Exceptions`
+- `Not Reconciled`
+- `Verification Incomplete`
 
-Template/version-specific reader logic is technical processing. Meaning assigned to statuses and findings remains configuration-driven where applicable.
+Row-level ReconciliationStatus remains separate and supports Matched, Matched Within Tolerance, Accepted Difference, Review Required, Mismatched, Missing After Migration, Unexpected After Migration, Not Compared and Evidence Missing.
 
-## 7. Reconciliation result contract
+RAG remains separate from ReconciliationStatus and reviewer disposition.
 
-Permitted results:
+## 7. Controlled report
 
-- `Reconciled`;
-- `Reconciled with Accepted Exceptions`;
-- `Review Required`;
-- `Not Reconciled`.
+Template version: `1.2.0`  
+Template-map version: `2.0.0`
 
-Result logic must consider unresolved missing/extra/error records, evidence confidence, accepted exceptions, baseline compatibility and mandatory discrepancy policies.
+Exact sheet order:
 
-`Review Required` is used when evidence is ambiguous, incomplete or conflicting and a conclusive reconciliation result is not justified.
+1. `01_Executive_Summary`
+2. `02_Verification_Scope`
+3. `03_Overall_Reconciliation`
+4. `04_Dossier_Before_&_After`
+5. `05_Sequence_Before_&_After`
+6. `06_File_Type_&_Size_Comparison`
+7. `07_Database_Dossier_Inventory`
+8. `08_Import_Evidence_Review`
+9. `09_Discrepancies_&_Actions`
+10. `10_Accepted_Exceptions`
+11. `11_Assumptions_&_Limits`
+12. `12_Review_&_Execution`
+13. `Import Report Detail`
+14. `Post Import Verification`
+15. `Database Dossier Extract`
 
-`Warning` is an approved EvaluationStatus for a completed usable evaluation with a recoverable condition requiring attention. It does not independently determine RAG or reconciliation result.
+## 8. Raw evidence contract
 
-## 8. Discrepancy and exception contract
+The three raw evidence tables are append-only. The engine shall not edit, reorder, delete, normalize or reinterpret rows in place and shall preserve literal source headers exactly, including `Source.Name` and `DossierDirecotry`.
 
-For every material comparison item, preserve:
+Normalized interpretations belong only in interpreted sheets/result collections.
 
-- baseline identifier/value;
-- migrated/import identifier/value;
-- comparison outcome;
-- EvaluationStatus;
-- RAG;
-- ValueSource;
-- confidence and ReviewRequired;
-- related finding/recommendation;
-- accepted exception/difference and its approved effect;
-- evidence references.
+## 9. Reviewer contract
 
-Accepted exceptions or differences never remove the underlying discrepancy record.
+SystemComparisonNote records engine-derived comparison evidence. ReviewerNote and ReviewerDisposition are controlled reviewer inputs. Reviewer input shall not silently overwrite source evidence, normalized discrepancy classification or accepted-exception traceability.
 
-## 9. Report contract
+## 10. Failure behavior
 
-The controlled Post-Migration report must include, at minimum:
+- incompatible baseline: stop or produce Verification Incomplete according to controlled policy;
+- missing mandatory evidence: Verification Incomplete;
+- failed import or missing expected entity: preserve discrepancy and apply configured blocker/RAG rules;
+- parse/reader failure: preserve available raw evidence/logs and do not issue a reconciliation conclusion;
+- workbook population failure: retain normalized result/log and mark report generation failed.
 
-- reconciliation summary and permitted result;
-- execution/configuration/baseline metadata;
-- MigrationSummary and post-import input metadata;
-- dossier reconciliation;
-- sequence reconciliation;
-- available file/count/size reconciliation;
-- missing, extra, warning, error and ambiguous records;
-- discrepancy findings and recommendations;
-- accepted-exception/accepted-difference register preserving original evidence;
-- assumptions, limitations, intended use and non-validation statement;
-- review actions and unresolved items;
-- optional raw source/detail sheets where controlled by the template.
+## 11. Outputs
 
-## 10. Logging and progress
-
-Console output must show baseline loading, MigrationSummary reading, comparison stages, report generation and completion. The log records exact PowerShell 7.6/.NET/adapter information, comparison counts, skipped/unsupported evidence, reader/version decisions, discrepancy totals, exception treatment and generated file paths.
-
-## 11. Failure behavior
-
-Stop before comparison when PowerShell 7.6, configuration, template or required baseline integrity fails.
-
-Use failed-execution or `Review Required` behavior according to the failure point when MigrationSummary or post-import evidence cannot be interpreted reliably. Do not issue `Reconciled` when mandatory evidence was not assessed.
+- controlled Post-Migration XLSX report;
+- normalized phase result JSON;
+- preserved raw import/post/database evidence in controlled report tables;
+- discrepancy/action and review records;
+- separate timestamped UTF-8 execution log;
+- optional manifest/checksum evidence according to package configuration.
 
 ## 12. Acceptance criteria
 
 The phase conforms when:
 
-- CLI and optional WPF use the same PowerShell 7.6 entry script and engine;
-- the common business core remains single-sourced and runtime adapters contain no independent interpretation;
-- the approved Pre-Migration baseline is always used;
-- `MigrationSummary.xlsx` details are read without modification;
-- dossier and sequence reconciliation is attributable;
-- accepted exceptions preserve original discrepancies and evidence;
-- only approved result terminology is used;
-- one controlled XLSX report and one timestamped log are generated;
-- missing/extra/warning/error/ambiguous records remain reviewable and traceable;
-- Windows PowerShell 7.6 qualification evidence is recorded.
+- the approved baseline is validated before comparison;
+- all four evidence positions remain distinct;
+- missing mandatory evidence produces Verification Incomplete;
+- expected and observed values/provenance remain traceable;
+- discrepancies and exceptions preserve original evidence;
+- system and reviewer notes remain separate;
+- all three raw evidence tables are append-only and preserve literal headers;
+- source evidence remains read-only;
+- only the four approved final results are used;
+- the exact fifteen-sheet workbook opens without repair;
+- normalized results validate against the v3.2 result schema;
+- a separate log is produced.

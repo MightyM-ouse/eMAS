@@ -1,172 +1,137 @@
 # eMAS Pre-Sales Assessment Phase Contract
 
-**Version:** 1.1  
-**Status:** Effective Phase Contract  
-**Effective date:** 2026-07-13  
+**Version:** 1.2  
+**Status:** Approved Working Contract on `requirements/report-redesign-v3.2`  
 **Phase code:** `PRE_SALES`  
-**Owner:** Product Owner and Technical Architect  
-**Decision reference:** `DEC-2026-07-13-PS-RUNTIME`  
-**Canonical references:** Enterprise Requirements v3.1 §14.1; Solution Architecture v1.0; PowerShell Runtime Profile v1.0; Runtime JSON Contract v1.2; Runtime JSON Schema 1.0.0 plus approved amendments
+**Runtime:** Windows PowerShell 5.1 on Windows  
+**Canonical requirement:** `docs/requirements/eMAS_Final_Enterprise_Requirements_v3.2.md`  
+**Detailed report requirement:** `docs/requirements/report-redesign/01_eMAS_PreSales_Report_Requirements_v1.1.md`
 
 ## 1. Purpose
 
-Provide a lightweight, customer-friendly assessment of migration scope, volume, complexity, confidence, key effort drivers and clarification needs before project initiation.
+Pre-Sales collects proportionate current-system evidence and produces a normalized result for EXTEDO review and final migration estimation. It shall not claim readiness, migration success, regulatory validation, formal customer validation or customer acceptance.
 
-Pre-Sales is not a readiness assessment, migration validation, regulatory validation or acceptance activity.
+## 2. Entry and user experience
 
-## 2. Actors and execution
+The phase is invoked through a PowerShell entry script or simple Windows launcher. No WPF interface is required.
 
-| Actor | Responsibility |
-|---|---|
-| Customer IT | Supplies permitted inputs, executes the package and shares the generated report/log requested by the instructions |
-| Consultant / Pre-Sales team | Reviews the report, assumptions, confidence and clarification register |
-| Product/technical owners | Maintain approved package, runtime configuration and controlled template |
+The customer selects one assessment mode:
 
-Execution methods:
+- `ExternalExport`
+- `ECTDManagerExport`
+- `ECTDManagerDatabaseArchive`
+- `ECTDManagerHybrid`
+- `ArchiveOnly`
 
-- Windows PowerShell 5.1 CLI on Windows using `powershell.exe`;
-- optional simple command launcher;
-- no PowerShell 7 prerequisite for the customer package;
-- no WPF requirement and no Pre-Migration/Post-Migration interface in the customer package.
+The script then requests only evidence required by that mode and displays clear progress throughout execution.
 
-Development may use PowerShell 7.6 LTS on macOS, but Windows PowerShell 5.1 execution is the authoritative phase-qualification gate.
+## 3. Customer input boundary
 
-## 3. Package contract
+Required common information is limited to current-system context:
 
-The package contains only:
+- customer/project/reference;
+- current application/source system;
+- current version/hotfix where known;
+- current database type/version only when database evidence is in scope;
+- relevant evidence paths or customer-provided aggregate sizes;
+- output location.
 
-- `eMAS-PreSalesAssessment.ps1` and optional launcher;
-- required Windows PowerShell 5.1-compatible common-core and adapter modules;
-- controlled `eMAS_Runtime_Config.json` and checksum/integrity evidence;
-- controlled Pre-Sales XLSX template;
-- concise customer execution instructions;
-- designated output location.
+The customer is not required to provide target application/version/hotfix, upgrade path, migration scenario, waves or final effort. Target fields remain blank with status `Pending EXTEDO Review`.
 
-It excludes the internal XLSM, VBA source, WPF, PowerShell 7-only adapters, other phase scripts, internal tests, governance material and confidential assets.
+## 4. Mode-specific evidence
 
-## 4. Inputs
+| Mode | Export | Archive | Index | Database |
+|---|---:|---:|---:|---:|
+| ExternalExport | Detailed | No | No | No |
+| ECTDManagerExport | Detailed | No | No | No |
+| ECTDManagerDatabaseArchive | No | Aggregate | Aggregate | Aggregate |
+| ECTDManagerHybrid | Detailed | Aggregate | Aggregate | Aggregate |
+| ArchiveOnly | No | Aggregate | Aggregate | No |
 
-### 4.1 Required
+Detailed export discovery may produce dossier/sequence inventories, counts, sizes and high-level classification/structure evidence.
 
-- customer/application identifier suitable for the report;
-- migration scenario or `NotSpecified` where permitted;
-- one or more accessible evidence roots appropriate to the selected scenario;
-- output root;
-- runtime configuration package and controlled template supplied with the release.
+Archive, index and database/direct-copy evidence retains only source type/reference, accessibility, aggregate size, provenance, scope/review status and comments. It shall not retain file/folder inventories, extension breakdown, long-path counts, largest-file or zero-byte details.
 
-### 4.2 Optional or scenario-dependent
+Missing evidence remains NotAssessed/Unknown and is never silently converted to zero or Green.
 
-- database file/location information or customer-provided database size;
-- archive and index roots;
-- export or transfer folder roots;
-- storage capacity/free-space information;
-- application/version details;
-- customer-provided counts or sizes when direct access is not available;
-- approved exclusions.
+## 5. Processing contract
 
-Exact parameter names are defined by the script-interface implementation and must map unambiguously to this contract.
+The phase shall:
 
-## 5. Preconditions
+1. validate package, runtime configuration, schema, template and map compatibility before scanning;
+2. create execution identity and a separate timestamped UTF-8 log;
+3. validate current-system and mode-specific inputs;
+4. scan source evidence read-only;
+5. perform detailed export discovery only where applicable;
+6. calculate aggregate direct-copy size without retaining detailed inventory;
+7. apply approved runtime rules for classification and evidence-quality conclusions;
+8. preserve EvaluationStatus, RAG, Confidence, ValueSource and ReviewRequired separately;
+9. build a normalized customer-collection result;
+10. leave target-dependent scenario/method/effort fields pending EXTEDO review;
+11. populate the controlled four-sheet template when reporting integration is enabled;
+12. clearly identify files to share with EXTEDO.
 
-- Windows PowerShell 5.1 runtime check passes;
-- package integrity and runtime JSON compatibility pass;
-- required evidence roots are accessible read-only;
-- output path is writable;
-- customer instructions identify which generated files must be shared;
-- no credential is embedded in parameters, files or logs.
+PowerShell shall not read the mapping workbook or generate/repair/reinterpret runtime JSON.
 
-## 6. Required processing
+## 6. EXTEDO review stage
 
-The phase must:
+The customer result may be consumed internally to complete:
 
-1. initialize run metadata and timestamped logging, including exact PowerShell edition/version and adapter version;
-2. show clear console progress for long-running steps;
-3. perform proportionate folder/file discovery and volume calculation;
-4. collect or derive permitted storage/database/archive/export measures;
-5. evaluate configured classification candidates and preserve supporting evidence;
-6. apply high-level folder/structure RAG only at Pre-Sales depth;
-7. calculate configured effort drivers, final complexity band and effort confidence;
-8. generate assumptions, limitations, missing-information items and customer clarifications;
-9. populate the controlled Pre-Sales template through the reporting engine;
-10. state the exact report and log files to share at completion.
+- target application/version/hotfix;
+- approved upgrade path;
+- scenario/workstreams;
+- migration methods and waves;
+- internal effort calculation;
+- estimate confidence and quotation clarifications.
 
-## 7. Prohibited or non-mandatory processing
+A customer rerun is not required solely to add target planning.
 
-Pre-Sales must not:
+## 7. Controlled report
 
-- determine `Ready`, `Blocked`, `Reconciled` or any equivalent readiness/acceptance result;
-- require deep XML validation, referenced-file validation, checksum validation, backup validation or reconciliation;
-- perform migration or modify source evidence;
-- expose raw internal scoring by default;
-- treat missing evidence as Green or Pass;
-- include customer-specific or internal Confluence identifiers in output filenames;
-- include PowerShell 7-only adapters, Pre-Migration/Post-Migration UI or internal configuration assets.
+Template version: `1.2.0`  
+Template-map version: `2.0.0`
 
-Deeper technical checks may be introduced only as explicitly optional and proportionate checks that do not change the phase into a readiness assessment.
+Exact sheet order:
 
-## 8. Evaluation and result contract
+1. `01_Executive_Estimate`
+2. `02_Dossier_Inventory`
+3. `03_Sequence_Inventory`
+4. `04_Path_&_Volume_Inventory`
 
-Required customer-facing results:
+The fourth sheet contains separate detailed-export and aggregate-direct-copy tables. Dossier and sequence sheets use a controlled Not Applicable state when export discovery is not in scope.
 
-- complexity: `Very Low`, `Low`, `Medium`, `High` or `Very High`;
-- confidence: `High`, `Medium`, `Low` or `Unknown`;
-- scope and volume summary;
-- key effort drivers;
-- assumptions and limitations;
-- customer clarification register;
-- review-required indicators.
+## 8. Outputs
 
-`EvaluationStatus`, `RAG`, `ValueSource`, `Confidence` and `ReviewRequired` remain separate fields/concepts. `Warning` is an approved EvaluationStatus for a completed usable evaluation with a recoverable condition requiring attention; it does not itself set RAG or complexity.
+A successful customer collection produces:
 
-Unknown or conflicting classification evidence must remain visible and must not be silently forced to a known value.
+- controlled Pre-Sales XLSX report when report generation is enabled;
+- normalized customer-collection result JSON;
+- detailed timestamped UTF-8 execution log;
+- optional manifest/checksum evidence according to release configuration.
 
-## 9. Report contract
+The result includes current-system context, assessment mode, target-planning status, export evidence, direct-copy evidence, dossier/sequence inventories where applicable, collection summary and configuration/template identity.
 
-The controlled Pre-Sales report must include, at minimum:
+## 9. Failure behavior
 
-- executive summary;
-- execution and configuration metadata;
-- source/evidence scope;
-- normalized classification dimensions and evidence;
-- inventory/volume summary;
-- complexity and effort-confidence summary;
-- high-level findings with EvaluationStatus, RAG, ValueSource and confidence separated;
-- customer-clarification register;
-- assumptions, limitations, intended use and non-validation statement;
-- optional raw inventory, controlled by package/report settings.
+The phase stops before scanning for incompatible/invalid package, runtime JSON, schema, template or map. It stops with a clear error when mandatory mode-specific evidence is inaccessible or invalid. Partial output is labelled incomplete and never presented as a final estimate.
 
-The report must not use `Readiness`, `Ready`, `Validation Passed` or equivalent wording for the phase result.
+## 10. Customer-package boundary
 
-## 10. Logging and evidence
+The customer package includes only the Pre-Sales launcher/script, required PowerShell 5.1-compatible engine modules, customer-safe controlled runtime JSON/checksum, Pre-Sales template/map, instructions, manifest and output folder.
 
-The log records:
+It excludes mapping XLSM/VBA, confidential rates, Pre-Migration/Post-Migration tools, internal tests and confidential assets.
 
-- run and version metadata;
-- exact PowerShell edition/version, Windows version, process architecture and adapter version;
-- sanitized parameters;
-- each major processing step and duration;
-- inaccessible locations, skipped checks, warnings and limitations;
-- runtime JSON checksum and template version;
-- output paths and final completion state.
-
-The script must clearly tell the customer which generated files should be shared with the project team.
-
-## 11. Failure behavior
-
-Stop before assessment when runtime, package/configuration/template integrity fails, mandatory inputs are missing or the output location cannot be initialized.
-
-During assessment, inaccessible optional evidence becomes an explicit evaluation status, assumption, limitation or clarification item according to configuration. It must not be reported as Green.
-
-## 12. Acceptance criteria
+## 11. Acceptance criteria
 
 The phase conforms when:
 
-- it runs from CLI under Windows PowerShell 5.1 without PowerShell 7 or WPF dependency;
-- it remains read-only and offline;
-- it uses the shared 5.1-compatible core, applicable adapter and one controlled runtime JSON;
-- it completes the required lightweight processing without mandatory deep readiness checks;
-- it generates one controlled XLSX report and one timestamped log;
-- report terminology contains no readiness/acceptance claim;
-- complexity, confidence and clarification outputs are traceable to evidence and configuration;
-- completion output identifies files to share;
-- Windows PowerShell 5.1 qualification evidence is recorded.
+- only current-system information is required from the customer;
+- target fields remain Pending EXTEDO Review;
+- only mode-relevant questions are asked;
+- export evidence is detailed and direct-copy evidence is aggregate-only;
+- source evidence remains read-only;
+- semantic dimensions remain separate;
+- the exact four-sheet workbook is generated without repair;
+- customer-facing filenames contain no internal IDs or component versions;
+- the normalized result validates against the v3.2 result schema;
+- a separate log is generated and completion identifies shareable outputs.
