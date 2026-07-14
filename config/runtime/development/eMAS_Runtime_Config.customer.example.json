@@ -1,0 +1,101 @@
+{
+  "mappingId": "EMAS-MAP-CUSTOMER-COLLECTION-EXAMPLE",
+  "mappingVersion": "0.1.0-example",
+  "runtimeJsonSchemaVersion": "0.1.0-draft",
+  "status": "ExampleOnly",
+  "config": {
+    "SequenceFolderRegex": "^\\d{4}$",
+    "MaxPathLength": 240
+  },
+  "rules": {
+    "regions": [
+      {
+        "RuleId": "REG-EU-TOKEN",
+        "Active": "Yes",
+        "Priority": 100,
+        "matchTokens": ["\\EU\\", "/EU/", "EMA"],
+        "ResultRegion": "EU",
+        "Authority": "EMA / EU National Authority",
+        "RegionalImplementation": "EU eCTD Module 1",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "REG-US-TOKEN",
+        "Active": "Yes",
+        "Priority": 110,
+        "matchTokens": ["\\US\\", "/US/", "FDA"],
+        "ResultRegion": "US",
+        "Authority": "FDA",
+        "RegionalImplementation": "US FDA Module 1",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "REG-UK-TOKEN",
+        "Active": "Yes",
+        "Priority": 120,
+        "matchTokens": ["\\UK\\", "/UK/", "MHRA"],
+        "ResultRegion": "UK",
+        "Authority": "MHRA",
+        "RegionalImplementation": "UK Module 1",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "REG-CA-TOKEN",
+        "Active": "Yes",
+        "Priority": 130,
+        "matchTokens": ["\\CA\\", "/CA/", "HealthCanada"],
+        "ResultRegion": "Canada",
+        "Authority": "Health Canada",
+        "RegionalImplementation": "Canada Module 1",
+        "Confidence": "Medium"
+      }
+    ],
+    "dossierTypes": [
+      {
+        "RuleId": "TYP-ASMF",
+        "Active": "Yes",
+        "Priority": 100,
+        "matchTokens": ["ASMF"],
+        "PrimaryDossierType": "ASMF",
+        "ProductDomain": "Substance",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "TYP-DMF",
+        "Active": "Yes",
+        "Priority": 110,
+        "matchTokens": ["DMF"],
+        "PrimaryDossierType": "DMF",
+        "ProductDomain": "Substance",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "TYP-CEP",
+        "Active": "Yes",
+        "Priority": 120,
+        "matchTokens": ["CEP"],
+        "PrimaryDossierType": "CEP",
+        "ProductDomain": "Substance",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "TYP-CTA",
+        "Active": "Yes",
+        "Priority": 130,
+        "matchTokens": ["CTA", "ClinicalTrial"],
+        "PrimaryDossierType": "Clinical Trial",
+        "ProductDomain": "Clinical",
+        "Confidence": "Medium"
+      },
+      {
+        "RuleId": "TYP-VET",
+        "Active": "Yes",
+        "Priority": 140,
+        "matchTokens": ["VET", "Veterinary"],
+        "PrimaryDossierType": "Veterinary Medicinal Product",
+        "ProductDomain": "Veterinary",
+        "Confidence": "Medium"
+      }
+    ]
+  }
+}
