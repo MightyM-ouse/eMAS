@@ -14,7 +14,49 @@ function Resolve-eMASPythonExecutable {
         if ($null -ne $command) { return $command.Source }
     }
 
-    throw 'RPT-VALIDATE-010: Python 3 is required by the MVP OpenXML helper but was not found.'
+    throw 'RPT-VALIDATE-010: Python 3 is required by the OpenXML report helper but was not found.'
+}
+
+function Resolve-eMASResultSchemaPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $RepositoryRoot,
+
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateMappingPath,
+
+        [string] $ResultSchemaPath
+    )
+
+    if ($ResultSchemaPath) {
+        return (Resolve-Path -LiteralPath $ResultSchemaPath -ErrorAction Stop).ProviderPath
+    }
+
+    try {
+        $mapping = Get-Content -LiteralPath $TemplateMappingPath -Raw -Encoding UTF8 -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw "RPT-MAP-004: Template mapping JSON could not be loaded. $($_.Exception.Message)"
+    }
+
+    $configuredPath = [string] $mapping.resultSchemaPath
+    if ([string]::IsNullOrWhiteSpace($configuredPath)) {
+        throw 'RPT-RESULT-SCHEMA-002: The selected report mapping does not declare resultSchemaPath.'
+    }
+
+    if ([System.IO.Path]::IsPathRooted($configuredPath)) {
+        $candidate = $configuredPath
+    }
+    else {
+        $candidate = Join-Path $RepositoryRoot $configuredPath
+    }
+
+    if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+        throw "RPT-RESULT-SCHEMA-003: The normalized result schema file was not found: $candidate"
+    }
+
+    return (Resolve-Path -LiteralPath $candidate -ErrorAction Stop).ProviderPath
 }
 
 function Export-eMASResultToTemplate {
@@ -45,12 +87,13 @@ function Export-eMASResultToTemplate {
         [string] $ExecutionLogPath,
 
         [string] $PythonExecutablePath,
-        [string] $MappingSchemaPath
+        [string] $MappingSchemaPath,
+        [string] $ResultSchemaPath
     )
 
     $moduleRoot = Split-Path -Parent $PSCommandPath
     $repositoryRoot = Split-Path -Parent (Split-Path -Parent $moduleRoot)
-    $helperPath = Join-Path $moduleRoot 'emas_report_openxml.py'
+    $helperPath = Join-Path $moduleRoot 'emas_report_openxml_v32.py'
     if (-not $MappingSchemaPath) {
         $MappingSchemaPath = Join-Path $repositoryRoot 'config/report-mappings/report-template-map.schema.json'
     }
@@ -60,6 +103,11 @@ function Export-eMASResultToTemplate {
             throw "RPT-VALIDATE-011: Required report-generation file was not found: $requiredPath"
         }
     }
+
+    $effectiveResultSchemaPath = Resolve-eMASResultSchemaPath `
+        -RepositoryRoot $repositoryRoot `
+        -TemplateMappingPath $TemplateMappingPath `
+        -ResultSchemaPath $ResultSchemaPath
 
     $temporaryResultPath = $null
     try {
@@ -77,6 +125,7 @@ function Export-eMASResultToTemplate {
         $arguments = @(
             $helperPath,
             '--result', $effectiveResultPath,
+            '--result-schema', $effectiveResultSchemaPath,
             '--mapping', $TemplateMappingPath,
             '--mapping-schema', $MappingSchemaPath,
             '--template', $TemplatePath,
