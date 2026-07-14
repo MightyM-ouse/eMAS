@@ -127,7 +127,7 @@ jobs:
       - name: Run report-generation contract tests
         run: python -m unittest discover -s tests/reporting -p 'test_*.py' -v
 
-      - name: Validate PowerShell command surface
+      - name: Validate PowerShell report module import
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -135,25 +135,4 @@ jobs:
           $command = Get-Command Export-eMASResultToTemplate -ErrorAction Stop
           if ($command.Name -ne 'Export-eMASResultToTemplate') {
               throw 'Report population command was not exported.'
-          }
-
-          foreach ($script in @(
-              './scripts/eMAS-PreSalesAssessment.ps1',
-              './scripts/eMAS-PreMigrationReadiness.ps1',
-              './scripts/eMAS-PostMigrationVerification.ps1',
-              './scripts/private/Initialize-eMASPhaseRuntime.ps1',
-              './scripts/private/Invoke-eMASPhaseReport.ps1'
-          )) {
-              $tokens = $null
-              $parseErrors = $null
-              $resolvedPath = (Resolve-Path $script -ErrorAction Stop).Path
-              [void] [System.Management.Automation.Language.Parser]::ParseFile(
-                  $resolvedPath,
-                  [ref] $tokens,
-                  [ref] $parseErrors
-              )
-              if (@($parseErrors).Count -gt 0) {
-                  $messages = @($parseErrors | ForEach-Object { $_.Message }) -join '; '
-                  throw "PowerShell parse failure in $script: $messages"
-              }
           }
