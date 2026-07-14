@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+env:
+  STAGE_ROOT: tools/repository-materialization/report-redesign-v3.2
+  WORK_ROOT: ${{ runner.temp }}/emas-v32
+
 jobs:
   materialize:
     runs-on: ubuntu-latest
@@ -19,30 +23,57 @@ jobs:
           fetch-depth: 0
           show-progress: false
 
-      - name: Reconstruct package
+      - name: Locate package parts
         shell: bash
         run: |
           set -euo pipefail
-          SRC='tools/repository-materialization/report-redesign-v3.2'
-          PKG="$RUNNER_TEMP/emas-v32/package"
-          rm -rf "$RUNNER_TEMP/emas-v32"
-          mkdir -p "$PKG"
-          cat "$SRC"/package.part*.b64 | base64 --decode > "$RUNNER_TEMP/emas-v32/package.tar.xz"
-          tar -xJf "$RUNNER_TEMP/emas-v32/package.tar.xz" -C "$PKG"
-          cat > "$RUNNER_TEMP/emas-v32/checksums.sha256" <<'EOF'
+          find "$STAGE_ROOT" -maxdepth 1 -type f -name 'package.part*.b64' -printf '%f %s bytes\n' | sort
+          count=$(find "$STAGE_ROOT" -maxdepth 1 -type f -name 'package.part*.b64' | wc -l)
+          test "$count" -gt 0
+          echo "Package part count: $count"
+
+      - name: Concatenate encoded package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$WORK_ROOT"
+          mkdir -p "$WORK_ROOT/package"
+          cat "$STAGE_ROOT"/package.part*.b64 > "$WORK_ROOT/package.b64"
+          wc -c "$WORK_ROOT/package.b64"
+
+      - name: Decode package
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode "$WORK_ROOT/package.b64" > "$WORK_ROOT/package.tar.xz"
+          wc -c "$WORK_ROOT/package.tar.xz"
+          xz -t "$WORK_ROOT/package.tar.xz"
+
+      - name: Extract package
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -tJf "$WORK_ROOT/package.tar.xz"
+          tar -xJf "$WORK_ROOT/package.tar.xz" -C "$WORK_ROOT/package"
+          echo 'Extracted package files:'
+          find "$WORK_ROOT/package" -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
+
+      - name: Verify package checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$WORK_ROOT/checksums.sha256" <<'EOF'
           c11e507e46fc2fc3c7a0b1d8e380a314ae5757226a9cff926a50179c4cf43f01  eMAS_PreSales_Report_Template.xlsx
           a42c54cb94ac9b73c8fa97005080292d7600a86bf009c3f4b843e998eb92c30c  eMAS_PreMigration_Report_Template.xlsx
           7c9a64f83c33b372ee6d3ce4345e09c53d8774a9d45cf0881b0e3f1ee2ce6b97  eMAS_PostMigration_Report_Template.xlsx
           EOF
-          (cd "$PKG" && sha256sum -c "$RUNNER_TEMP/emas-v32/checksums.sha256")
-          echo "Package files:"
-          find "$PKG" -maxdepth 1 -type f -printf '%f\n' | sort
+          (cd "$WORK_ROOT/package" && sha256sum -c "$WORK_ROOT/checksums.sha256")
 
       - name: Install artifacts
         shell: bash
         run: |
           set -euo pipefail
-          PKG="$RUNNER_TEMP/emas-v32/package"
+          PKG="$WORK_ROOT/package"
           mkdir -p templates/controlled/{pre-sales,pre-migration,post-migration}
           mkdir -p templates/report-redesign-v3.2/{pre-sales,pre-migration,post-migration}
           mkdir -p config/report-mappings/report-redesign-v3.2
@@ -64,55 +95,81 @@ jobs:
           install -m 0644 "$PKG/report-template-map.schema.json" config/report-mappings/report-redesign-v3.2/report-template-map.schema.json
           install -m 0644 "$PKG/README_eMAS_Report_Templates_v3.2.md" templates/report-redesign-v3.2/README.md
 
-      - name: Validate maps and workbooks
+      - name: Validate maps
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import json, zipfile
-          import xml.etree.ElementTree as ET
+          import json
           from pathlib import Path
-
           expected = {
             'pre-sales': ['01_Executive_Estimate','02_Dossier_Inventory','03_Sequence_Inventory','04_Path_&_Volume_Inventory'],
             'pre-migration': ['01_Executive_Summary','02_Readiness_Decision','03_Inputs_Access_&_Transfer','04_Dossier_Baseline','05_Sequence_Baseline','06_File_Type_Breakdown','07_File_XML_Path_Checks','08_Findings_&_Actions','09_Exceptions_&_Exclusions','10_Assumptions_&_Limits','11_Execution_Details'],
             'post-migration': ['01_Executive_Summary','02_Verification_Scope','03_Overall_Reconciliation','04_Dossier_Before_&_After','05_Sequence_Before_&_After','06_File_Type_&_Size_Comparison','07_Database_Dossier_Inventory','08_Import_Evidence_Review','09_Discrepancies_&_Actions','10_Accepted_Exceptions','11_Assumptions_&_Limits','12_Review_&_Execution','Import Report Detail','Post Import Verification','Database Dossier Extract'],
           }
-          maps = {
+          paths = {
             'pre-sales': Path('config/report-mappings/pre-sales.template-map.json'),
             'pre-migration': Path('config/report-mappings/pre-migration.template-map.json'),
             'post-migration': Path('config/report-mappings/post-migration.template-map.json'),
           }
-          books = {
+          for phase, path in paths.items():
+            doc=json.loads(path.read_text(encoding='utf-8'))
+            actual=doc.get('requiredSheetOrder')
+            print(f'{phase}: mapVersion={doc.get("mappingVersion")}; templateVersion={doc.get("template",{}).get("templateVersion")}; sheets={actual}')
+            if actual != expected[phase]: raise SystemExit(f'{path}: map order mismatch')
+          json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
+          PY
+
+      - name: Validate workbooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import zipfile
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          expected = {
+            'pre-sales': ['01_Executive_Estimate','02_Dossier_Inventory','03_Sequence_Inventory','04_Path_&_Volume_Inventory'],
+            'pre-migration': ['01_Executive_Summary','02_Readiness_Decision','03_Inputs_Access_&_Transfer','04_Dossier_Baseline','05_Sequence_Baseline','06_File_Type_Breakdown','07_File_XML_Path_Checks','08_Findings_&_Actions','09_Exceptions_&_Exclusions','10_Assumptions_&_Limits','11_Execution_Details'],
+            'post-migration': ['01_Executive_Summary','02_Verification_Scope','03_Overall_Reconciliation','04_Dossier_Before_&_After','05_Sequence_Before_&_After','06_File_Type_&_Size_Comparison','07_Database_Dossier_Inventory','08_Import_Evidence_Review','09_Discrepancies_&_Actions','10_Accepted_Exceptions','11_Assumptions_&_Limits','12_Review_&_Execution','Import Report Detail','Post Import Verification','Database Dossier Extract'],
+          }
+          paths = {
             'pre-sales': Path('templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx'),
             'pre-migration': Path('templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx'),
             'post-migration': Path('templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx'),
           }
-          for phase, path in maps.items():
-            doc = json.loads(path.read_text(encoding='utf-8'))
-            actual = doc.get('requiredSheetOrder')
-            print(f'MAP {phase}: version={doc.get("mappingVersion")} template={doc.get("template",{}).get("templateVersion")} sheets={actual}')
-            if actual != expected[phase]:
-              raise SystemExit(f'{path}: map order mismatch')
-          json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
           ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
-          for phase, path in books.items():
+          for phase,path in paths.items():
             with zipfile.ZipFile(path) as z:
-              if z.testzip() is not None: raise SystemExit(f'{path}: corrupt ZIP')
+              bad=z.testzip()
+              if bad is not None: raise SystemExit(f'{path}: corrupt member {bad}')
               root=ET.fromstring(z.read('xl/workbook.xml'))
               actual=[n.attrib['name'] for n in root.find('x:sheets',ns)]
-            print(f'XLSX {phase}: sheets={actual}')
+            print(f'{phase}: sheets={actual}')
             if actual != expected[phase]: raise SystemExit(f'{path}: workbook order mismatch')
-          for path in Path('config/result-schemas/report-redesign-v3.2').glob('*.json'):
+          PY
+
+      - name: Validate result schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          required={'pre-sales.result.schema.json','pre-migration.result.schema.json','post-migration.result.schema.json'}
+          paths=list(Path('config/result-schemas/report-redesign-v3.2').glob('*.json'))
+          actual={p.name for p in paths}
+          if not required.issubset(actual): raise SystemExit(f'Missing schemas: {required-actual}')
+          for path in paths:
             json.loads(path.read_text(encoding='utf-8'))
-            print(f'RESULT SCHEMA: {path}')
+            print(path)
           PY
 
       - name: Commit to report-redesign branch
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf tools/repository-materialization/report-redesign-v3.2
+          rm -rf "$STAGE_ROOT"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A -- templates/controlled templates/report-redesign-v3.2 config/report-mappings config/result-schemas/report-redesign-v3.2 tools/repository-materialization/report-redesign-v3.2
