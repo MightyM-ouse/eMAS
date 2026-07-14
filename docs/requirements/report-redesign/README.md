@@ -1,32 +1,34 @@
 # eMAS Report Redesign Working Baseline
 
 **Branch:** `requirements/report-redesign-v3.2`  
-**Status:** All three phase-report requirements finalized  
-**Purpose:** Capture the finalized report requirements for Pre-Sales, Pre-Migration and Post-Migration before template, JSON and implementation changes are made.
+**Status:** Phase-report requirements finalized; simple mapping-workbook design created  
+**Purpose:** Capture the finalized report requirements and the simplified use-case mapping model before controlled template, schema and implementation changes are made.
 
 ## Delivery sequence
 
 1. Finalize Pre-Sales report requirements. — Completed
 2. Finalize Pre-Migration report requirements. — Completed
 3. Finalize Post-Migration report requirements. — Completed
-4. Consolidate the approved changes into the Enterprise Requirements v3.2 baseline and phase contracts.
-5. Update the normalized result-object contracts and report-template mapping JSON.
-6. Create the controlled Excel templates.
-7. Update demo data, report-generation logic, tests and validation evidence.
+4. Define the simple use-case mapping workbook and draft shared runtime JSON. — Design completed; validation and controlled repository placement pending
+5. Consolidate the approved changes into the Enterprise Requirements v3.2 baseline and phase contracts.
+6. Update the normalized result-object contracts, Runtime JSON Schema and report-template mapping JSON.
+7. Create the controlled Excel report templates.
+8. Update demo data, report-generation logic, tests and validation evidence.
 
 ## Phase status
 
 | Phase | Requirement status | Template status | JSON status |
 |---|---|---|---|
-| Pre-Sales Assessment | Finalized in this working baseline | Pending | Pending |
-| Pre-Migration Readiness | Finalized in this working baseline | Pending | Pending |
-| Post-Migration Verification | Finalized in this working baseline | Pending | Pending |
+| Pre-Sales Assessment | Finalized in this working baseline | Pending | Draft mapping rules created |
+| Pre-Migration Readiness | Finalized in this working baseline | Pending | Draft mapping rules created |
+| Post-Migration Verification | Finalized in this working baseline | Pending | Draft mapping rules created |
 
 ## Working documents
 
 - `01_eMAS_PreSales_Report_Requirements_v1.0.md` — finalized Pre-Sales workbook purpose, Executive Estimate, dossier/sequence/path inventories, scenario and effort configuration, result-object additions and acceptance criteria.
 - `02_eMAS_PreMigration_Report_Requirements_v1.0.md` — finalized Pre-Migration Executive Summary redesign, retained detailed evidence model, dossier/sequence baseline additions, normalized file-type breakdown, configuration requirements and acceptance criteria.
 - `03_eMAS_PostMigration_Report_Requirements_v1.0.md` — finalized Post-Migration Executive Summary, Before–Import–Database–After reconciliation, dossier/sequence/file-type comparison, database dossier inventory, import evidence review, discrepancy disposition, raw-evidence preservation and acceptance criteria.
+- `04_eMAS_Mapping_Workbook_Requirements_v1.0.md` — simple use-case workbook model, initial rule families, JSON export map, validation requirements and draft limitations.
 
 ## Current frozen workbook direction
 
@@ -71,6 +73,29 @@
 
 Each phase also produces a separate timestamped UTF-8 execution log.
 
+## Simple mapping workbook direction
+
+The internal mapping workbook uses one focused sheet per use case:
+
+1. `00_Control`
+2. `01_Config`
+3. `02_Folder_Structure`
+4. `03_Regions`
+5. `04_Formats`
+6. `05_Dossier_Types`
+7. `06_Migration_Scenarios`
+8. `07_Migration_Methods`
+9. `08_Version_Upgrades`
+10. `09_Effort_Rules`
+11. `10_Readiness_Rules`
+12. `11_Reconciliation_Rules`
+13. `12_Findings_Actions`
+14. `13_Report_Config`
+15. `14_Value_Lists`
+16. `15_JSON_Export_Map`
+
+The workbook exports one shared runtime JSON for all phases. Draft productivity values and product-version upgrade paths require formal SME and Product Owner approval before release.
+
 ## Cross-phase consistency rules
 
 - Pre-Sales determines the proposed scenario, workstreams, workload and estimate.
@@ -80,9 +105,8 @@ Each phase also produces a separate timestamped UTF-8 execution log.
 - Migration Method, Migration Wave, original RAG, Primary RAG Reason, exclusions and accepted exceptions shall be carried forward where applicable.
 - RAG, Evaluation Status, Reconciliation Status, Severity, Blocker and Review Required remain separate concepts.
 - Raw external evidence remains append-only and shall not be corrected or reinterpreted in place.
+- PowerShell performs generic technical operations; business interpretation is controlled by the reviewed runtime JSON.
 
 ## Governance rule
 
-This folder is the finalized working report-design baseline on the report-redesign branch. It does not supersede the current Effective Enterprise Requirements v3.1 until the Product Owner approves the consolidated Enterprise Requirements v3.2 baseline and synchronized phase contracts.
-
-The next controlled work package shall consolidate the three finalized requirements, resolve any cross-phase schema conflicts, update the runtime/result-object and report-mapping JSON contracts, and then create the controlled Excel templates. No existing controlled template or mapping JSON is superseded merely by the presence of these working requirement documents.
+This folder is the finalized working report-design and mapping-design baseline on the report-redesign branch. It does not supersede the current Effective Enterprise Requirements v3.1 or the effective runtime configuration until the Product Owner approves the consolidated Enterprise Requirements v3.2 baseline, synchronized phase contracts, validated mapping workbook, Runtime JSON Schema and controlled runtime JSON.
