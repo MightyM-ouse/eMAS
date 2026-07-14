@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/blob/requirements/report-redesign-v3.2/config/result-schemas/pre-sales.result.schema.json",
+  "title": "eMAS Pre-Sales Result Contract v3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "executionProfile",
+    "assessmentMode",
+    "assessmentContext",
+    "currentSystem",
+    "targetPlanning",
+    "executiveMetrics",
+    "decisionClarifications",
+    "dossierInventory",
+    "sequenceInventory",
+    "exportEvidence",
+    "directCopyEvidence",
+    "effortEstimate"
+  ],
+  "properties": {
+    "phaseCode": {
+      "const": "PRE_SALES"
+    },
+    "resultContractVersion": {
+      "type": "string"
+    },
+    "executionProfile": {
+      "enum": [
+        "CustomerCollection",
+        "CustomerAssessment",
+        "InternalEstimation"
+      ]
+    },
+    "assessmentMode": {
+      "type": "object",
+      "required": [
+        "code",
+        "displayName"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "ExternalExport",
+            "ECTDManagerExport",
+            "ECTDManagerDatabaseArchive",
+            "ECTDManagerHybrid",
+            "ArchiveOnly"
+          ]
+        },
+        "displayName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "assessmentContext": {
+      "$ref": "#/$defs/record"
+    },
+    "currentSystem": {
+      "$ref": "#/$defs/record"
+    },
+    "targetPlanning": {
+      "type": "object",
+      "required": [
+        "planningStatus"
+      ],
+      "properties": {
+        "application": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "version": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "hotfix": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "planningStatus": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "migrationScenarioDecision": {
+      "$ref": "#/$defs/record"
+    },
+    "migrationWorkstreams": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "executiveMetrics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metricRow"
+      }
+    },
+    "effortEstimate": {
+      "$ref": "#/$defs/record"
+    },
+    "effortComponents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "decisionClarifications": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "dossierInventory": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "sequenceInventory": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "exportEvidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "directCopyEvidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "fileCount"
+              ]
+            },
+            {
+              "required": [
+                "folderCount"
+              ]
+            },
+            {
+              "required": [
+                "longPathCount"
+              ]
+            },
+            {
+              "required": [
+                "largestFile"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "executionDetails": {
+      "$ref": "#/$defs/record"
+    },
+    "reportGeneration": {
+      "$ref": "#/$defs/record"
+    }
+  },
+  "$defs": {
+    "stringOrNull": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metricRow": {
+      "type": "object",
+      "required": [
+        "section",
+        "metric",
+        "value",
+        "evaluationStatus",
+        "valueSource"
+      ],
+      "properties": {
+        "section": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        },
+        "value": {},
+        "evaluationStatus": {
+          "type": "string"
+        },
+        "rag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valueSource": {
+          "type": "string"
+        },
+        "reviewRequired": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
