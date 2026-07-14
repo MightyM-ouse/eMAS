@@ -1,4 +1,4 @@
-name: Materialize report redesign v3.2 artifacts
+name: Validate report redesign v3.2 artifacts
 
 on:
   push:
@@ -7,27 +7,37 @@ on:
     paths:
       - '.github/workflows/materialize-report-redesign-v3.2.yml'
       - 'tools/report-redesign-v3.2/**'
+      - 'engine/reporting/**'
+      - 'tests/reporting/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'templates/controlled/**'
+      - 'templates/report-redesign-v3.2/**'
   pull_request:
     branches:
       - demo/end-to-end-mvp
     paths:
       - '.github/workflows/materialize-report-redesign-v3.2.yml'
       - 'tools/report-redesign-v3.2/**'
+      - 'engine/reporting/**'
+      - 'tests/reporting/**'
+      - 'config/report-mappings/**'
+      - 'config/result-schemas/report-redesign-v3.2/**'
+      - 'templates/controlled/**'
+      - 'templates/report-redesign-v3.2/**'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref == 'requirements/report-redesign-v3.2'
+  validate-report-contracts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out report-redesign branch
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
-          ref: requirements/report-redesign-v3.2
           fetch-depth: 0
           show-progress: false
 
@@ -36,21 +46,24 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install workbook dependency
-        run: python -m pip install --disable-pip-version-check openpyxl==3.1.5
+      - name: Install report-validation dependencies
+        run: >-
+          python -m pip install --disable-pip-version-check
+          openpyxl==3.1.5
+          'jsonschema>=4.22,<5'
 
-      - name: Reconstruct reviewed generator source
-        shell: bash
+      - name: Compile report tooling
         run: |
-          set -euo pipefail
-          SOURCE_DIR='tools/report-redesign-v3.2'
-          cat "$SOURCE_DIR"/Generate-eMASReportArtifactsV32.py.part* > "$SOURCE_DIR/Generate-eMASReportArtifactsV32.py"
-          python -m py_compile "$SOURCE_DIR/Generate-eMASReportArtifactsV32.py"
+          python -m py_compile tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py
+          python -m py_compile engine/reporting/emas_report_openxml.py
+          python -m py_compile engine/reporting/emas_report_openxml_v32.py
+          python -m py_compile tests/reporting/fixture_factory_v32.py
+          python -m py_compile tests/reporting/test_report_generation.py
 
-      - name: Generate templates and JSON contracts
+      - name: Regenerate controlled report artifacts
         run: python tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py
 
-      - name: Validate aligned artifacts
+      - name: Validate versions and exact workbook structures
         shell: bash
         run: |
           set -euo pipefail
@@ -77,19 +90,21 @@ jobs:
           }
 
           for phase, path in maps.items():
-              doc = json.loads(path.read_text(encoding='utf-8'))
-              assert doc['mappingVersion'] == '2.0.0', (path, doc.get('mappingVersion'))
-              assert doc['template']['templateVersion'] == '1.2.0', (path, doc['template'].get('templateVersion'))
-              assert doc['requiredSheetOrder'] == expected[phase], (path, doc['requiredSheetOrder'])
+              document = json.loads(path.read_text(encoding='utf-8'))
+              assert document['mappingVersion'] == '2.0.0', (path, document.get('mappingVersion'))
+              assert document['template']['templateVersion'] == '1.2.0', (path, document['template'].get('templateVersion'))
+              assert document['requiredSheetOrder'] == expected[phase], (path, document['requiredSheetOrder'])
+              schema_path = Path(document['resultSchemaPath'])
+              assert schema_path.is_file(), schema_path
               print(f'Validated map: {path}')
 
           json.loads(Path('config/report-mappings/report-template-map.schema.json').read_text(encoding='utf-8'))
-          ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+          namespace = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
           for phase, path in books.items():
               with zipfile.ZipFile(path) as archive:
                   assert archive.testzip() is None, path
-                  root = ET.fromstring(archive.read('xl/workbook.xml'))
-                  sheets = [node.attrib['name'] for node in root.find('x:sheets', ns)]
+                  workbook = ET.fromstring(archive.read('xl/workbook.xml'))
+                  sheets = [node.attrib['name'] for node in workbook.find('x:sheets', namespace)]
               assert sheets == expected[phase], (path, sheets)
               print(f'Validated workbook: {path}')
 
@@ -106,28 +121,14 @@ jobs:
               print(f'Validated result schema: {path}')
           PY
 
-      - name: Remove obsolete staging and source fragments
-        shell: bash
-        run: |
-          rm -rf tools/repository-materialization/report-redesign-v3.2
-          rm -f tools/report-redesign-v3.2/Generate-eMASReportArtifactsV32.py.part*
+      - name: Run report-generation contract tests
+        run: python -m unittest discover -s tests/reporting -p 'test_report_generation.py' -v
 
-      - name: Commit materialized artifacts
-        shell: bash
+      - name: Validate PowerShell command surface
+        shell: pwsh
         run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- \
-            templates/controlled \
-            templates/report-redesign-v3.2 \
-            config/report-mappings \
-            config/result-schemas/report-redesign-v3.2 \
-            tools/report-redesign-v3.2 \
-            tools/repository-materialization/report-redesign-v3.2
-          if git diff --cached --quiet; then
-            echo 'No materialization changes to commit.'
-            exit 0
-          fi
-          git commit -m 'chore: generate and align controlled report artifacts to v3.2 [skip ci]'
-          git push origin 'HEAD:requirements/report-redesign-v3.2'
+          Import-Module ./engine/reporting/eMAS.ReportPopulation.psm1 -Force
+          $command = Get-Command Export-eMASResultToTemplate -ErrorAction Stop
+          if ($command.Name -ne 'Export-eMASResultToTemplate') {
+              throw 'Report population command was not exported.'
+          }
