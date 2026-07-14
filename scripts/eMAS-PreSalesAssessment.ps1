@@ -5,17 +5,32 @@ param(
     [ValidateNotNullOrEmpty()]
     [string] $RuntimeConfigurationPath,
 
-    [string] $ExecutionLogPath,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string] $NormalizedResultPath,
 
-    [string] $TemplatePath
+    [string] $ExecutionLogPath,
+    [string] $TemplatePath,
+    [string] $TemplateMappingPath,
+    [string] $OutputWorkbookPath,
+    [string] $MappingSchemaPath,
+    [string] $ResultSchemaPath,
+    [string] $PythonExecutablePath
 )
 
 Set-StrictMode -Version 2.0
 . (Join-Path $PSScriptRoot 'private/Initialize-eMASPhaseRuntime.ps1')
+. (Join-Path $PSScriptRoot 'private/Invoke-eMASPhaseReport.ps1')
 
-Initialize-eMASPhaseRuntime `
+Invoke-eMASPhaseReport `
     -Phase 'PRE_SALES' `
     -RuntimeConfigurationPath $RuntimeConfigurationPath `
+    -NormalizedResultPath $NormalizedResultPath `
     -ActiveScript $MyInvocation.MyCommand.Name `
     -ExecutionLogPath $ExecutionLogPath `
-    -TemplatePath $TemplatePath
+    -TemplatePath $TemplatePath `
+    -TemplateMappingPath $TemplateMappingPath `
+    -OutputWorkbookPath $OutputWorkbookPath `
+    -MappingSchemaPath $MappingSchemaPath `
+    -ResultSchemaPath $ResultSchemaPath `
+    -PythonExecutablePath $PythonExecutablePath
