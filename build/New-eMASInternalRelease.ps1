@@ -89,7 +89,7 @@ Get-ChildItem -LiteralPath $destination -Recurse -File -Force |
 $readme = @"
 # eMAS Internal Migration Assessment Package
 
-Package version: `$PackageVersion`
+Package version: $PackageVersion
 
 This package contains the controlled report-generation and runtime-validation assets for:
 
@@ -111,25 +111,22 @@ Install the report dependency:
 python -m pip install -r .\build\requirements-reporting.txt
 ```
 
+Validate package integrity:
+
+```powershell
+.\build\Test-eMASReleasePackage.ps1 -RootPath . -ExpectedPackageType InternalRelease
+```
+
 ## Phase commands
 
 ```powershell
-.\scripts\eMAS-PreSalesAssessment.ps1 `
-    -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json `
-    -NormalizedResultPath C:\Evidence\PreSalesResult.json
-
-.\scripts\eMAS-PreMigrationReadiness.ps1 `
-    -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json `
-    -NormalizedResultPath C:\Evidence\PreMigrationResult.json
-
-.\scripts\eMAS-PostMigrationVerification.ps1 `
-    -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json `
-    -NormalizedResultPath C:\Evidence\PostMigrationResult.json
+.\scripts\eMAS-PreSalesAssessment.ps1 -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json -NormalizedResultPath C:\Evidence\PreSalesResult.json
+.\scripts\eMAS-PreMigrationReadiness.ps1 -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json -NormalizedResultPath C:\Evidence\PreMigrationResult.json
+.\scripts\eMAS-PostMigrationVerification.ps1 -RuntimeConfigurationPath .\config\runtime\eMAS_Runtime_Config.json -NormalizedResultPath C:\Evidence\PostMigrationResult.json
 ```
 
 ## Integrity and handling
 
-- Validate the package with `build/Test-eMASReleasePackage.ps1` before controlled use.
 - Keep source evidence read-only.
 - Do not place customer evidence, generated reports, logs, credentials or accepted-exception approvals inside this controlled package.
 - Store execution outputs outside the package or in local `output/` and `logs/` folders that are not redistributed.
