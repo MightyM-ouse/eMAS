@@ -1,0 +1,53 @@
+name: Diagnose report v3.2 package run 5
+
+on:
+  pull_request:
+    branches:
+      - demo/end-to-end-mvp
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: requirements/report-redesign-v3.2
+          show-progress: false
+
+      - name: List package parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          find tools/repository-materialization/report-redesign-v3.2 -maxdepth 1 -type f -printf '%f %s\n' | sort
+
+      - name: Concatenate package parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v32"
+          cat tools/repository-materialization/report-redesign-v3.2/package.part*.b64 > "$RUNNER_TEMP/v32/package.b64"
+          wc -c "$RUNNER_TEMP/v32/package.b64"
+
+      - name: Decode package
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode "$RUNNER_TEMP/v32/package.b64" > "$RUNNER_TEMP/v32/package.tar.xz"
+          wc -c "$RUNNER_TEMP/v32/package.tar.xz"
+
+      - name: Test XZ archive
+        shell: bash
+        run: xz -t "$RUNNER_TEMP/v32/package.tar.xz"
+
+      - name: List TAR contents
+        shell: bash
+        run: tar -tJf "$RUNNER_TEMP/v32/package.tar.xz"
+
+      - name: Extract and calculate hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v32/package"
+          tar -xJf "$RUNNER_TEMP/v32/package.tar.xz" -C "$RUNNER_TEMP/v32/package"
+          find "$RUNNER_TEMP/v32/package" -maxdepth 1 -type f -printf '%f %s\n' | sort
+          (cd "$RUNNER_TEMP/v32/package" && sha256sum *)
