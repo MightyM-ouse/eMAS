@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/emas/pre-sales-customer-collection.result.schema.json",
+  "title": "eMAS Pre-Sales Customer Collection Result",
+  "type": "object",
+  "required": [
+    "phaseCode",
+    "resultContractVersion",
+    "executionProfile",
+    "execution",
+    "assessmentMode",
+    "assessmentContext",
+    "currentSystem",
+    "targetPlanning",
+    "exportEvidence",
+    "directCopyEvidence",
+    "dossierInventory",
+    "sequenceInventory",
+    "collectionSummary",
+    "extedoReviewRequired",
+    "reportGeneration"
+  ],
+  "properties": {
+    "phaseCode": { "const": "PRE_SALES" },
+    "resultContractVersion": { "type": "string" },
+    "executionProfile": { "const": "CustomerCollection" },
+    "execution": { "type": "object" },
+    "assessmentMode": {
+      "type": "object",
+      "required": ["code", "displayName"],
+      "properties": {
+        "code": {
+          "enum": [
+            "ExternalExport",
+            "ECTDManagerExport",
+            "ECTDManagerDatabaseArchive",
+            "ECTDManagerHybrid",
+            "ArchiveOnly"
+          ]
+        },
+        "displayName": { "type": "string" }
+      }
+    },
+    "assessmentContext": { "type": "object" },
+    "currentSystem": { "type": "object" },
+    "targetPlanning": {
+      "type": "object",
+      "required": ["application", "version", "hotfix", "planningStatus"],
+      "properties": {
+        "application": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] },
+        "hotfix": { "type": ["string", "null"] },
+        "planningStatus": { "const": "Pending EXTEDO Review" }
+      }
+    },
+    "exportEvidence": { "type": "array", "items": { "type": "object" } },
+    "directCopyEvidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["evidenceId", "sourceType", "sourceReference", "accessible", "valueSource"],
+        "not": {
+          "anyOf": [
+            { "required": ["fileCount"] },
+            { "required": ["folderCount"] },
+            { "required": ["longPathCount"] },
+            { "required": ["largestFile"] }
+          ]
+        }
+      }
+    },
+    "dossierInventory": { "type": "array", "items": { "type": "object" } },
+    "sequenceInventory": { "type": "array", "items": { "type": "object" } },
+    "collectionSummary": { "type": "object" },
+    "extedoReviewRequired": { "const": true },
+    "reportGeneration": {
+      "type": "object",
+      "required": ["status", "message"]
+    }
+  }
+}
