@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Generate the controlled eMAS report-redesign v3.2 XLSX templates and JSON contracts.
+
+Standard-library JSON/zlib payload plus openpyxl are used so the repository can
+reproduce and review the binary templates. No customer or sample data is added.
+"""
+from __future__ import annotations
+
+import base64
+import json
+import re
+import zlib
+from collections import defaultdict
+from pathlib import Path
+
+from openpyxl import Workbook, load_workbook
+from openpyxl.formatting.rule import FormulaRule
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.worksheet.table import Table, TableStyleInfo
+
+ROOT = Path(__file__).resolve().parents[2]
+PAYLOAD_DIR = Path(__file__).resolve().parent
+CONTROLLED_TEMPLATE_PATHS = {
+    "pre-sales": ROOT / "templates/controlled/pre-sales/eMAS_PreSales_Template.xlsx",
+    "pre-migration": ROOT / "templates/controlled/pre-migration/eMAS_PreMigration_Template.xlsx",
+    "post-migration": ROOT / "templates/controlled/post-migration/eMAS_PostMigration_Template.xlsx",
+}
+VERSIONED_TEMPLATE_PATHS = {
+    "pre-sales": ROOT / "templates/report-redesign-v3.2/pre-sales/eMAS_PreSales_Template.xlsx",
+    "pre-migration": ROOT / "templates/report-redesign-v3.2/pre-migration/eMAS_PreMigration_Template.xlsx",
+    "post-migration": ROOT / "templates/report-redesign-v3.2/post-migration/eMAS_PostMigration_Template.xlsx",
+}
+CANONICAL_MAP_PATHS = {
+    "pre-sales": ROOT / "config/report-mappings/pre-sales.template-map.json",
+    "pre-migration": ROOT / "config/report-mappings/pre-migration.template-map.json",
+    "post-migration": ROOT / "config/report-mappings/post-migration.template-map.json",
+}
+VERSIONED_MAP_PATHS = {
+    "pre-sales": ROOT / "config/report-mappings/report-redesign-v3.2/pre-sales.template-map.json",
+    "pre-migration": ROOT / "config/report-mappings/report-redesign-v3.2/pre-migration.template-map.json",
+    "post-migration": ROOT / "config/report-mappings/report-redesign-v3.2/post-migration.template-map.json",
+}
+MAP_SCHEMA_PATHS = [
+    ROOT / "config/report-mappings/report-template-map.schema.json",
+    ROOT / "config/report-mappings/report-redesign-v3.2/report-template-map.schema.json",
+]
+RESULT_SCHEMA_DIR = ROOT / "config/result-schemas/report-redesign-v3.2"
+README_PATH = ROOT / "templates/report-redesign-v3.2/README.md"
+
+NAVY = "17365D"
+BLUE = "2F75B5"
+LIGHT_BLUE = "D9EAF7"
+PALE = "F3F6F9"
+EDITABLE = "FFF2CC"
+WHITE = "FFFFFF"
+GREY = "D9E1F2"
+GREEN = "C6EFCE"
+AMBER = "FFEB9C"
+RED = "FFC7CE"
+UNKNOWN = "E7E6E6"
+THIN = Side(style="thin", color="B7C9D6")
+BORDER = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
+
+LISTS = {
+    "YesNo": ["Yes", "No"],
+    "RAG": ["Green", "Amber", "Red", "Unknown", "Not Assessed", "Information"],
+    "Confidence": ["High", "Medium", "Low", "Unknown"],
+    "EvaluationStatus": ["Evaluated", "Warning", "Failed", "Not Assessed", "Not Applicable"],
+    "ValueSource": ["Observed", "CustomerProvided", "Imported", "Derived", "Assumed", "NotAssessed"],
+    "Priority": ["Critical", "High", "Medium", "Low", "Information"],
+    "Severity": ["Critical", "High", "Medium", "Low", "Information"],
+    "WorkflowStatus": ["Open", "In Progress", "Pending Review", "Closed", "Not Applicable"],
+    "ReadinessResult": ["Ready", "Ready with Accepted Exceptions", "Blocked"],
+    "VerificationResult": ["Reconciled", "Reconciled with Accepted Exceptions", "Not Reconciled", "Verification Incomplete"],
+    "ReconciliationStatus": ["Matched", "Matched Within Tolerance", "Accepted Difference", "Review Required", "Mismatched", "Missing After Migration", "Unexpected After Migration", "Not Compared", "Evidence Missing"],
+    "ReviewerDisposition": ["Confirmed Match", "Accepted Difference", "Remediation Required", "Further Investigation Required", "Not Applicable", "Duplicate Discrepancy", "Deferred with Approval", "Rejected", "Closed"],
+}
+
+PHASE_GUIDANCE = {
+    "pre-sales": "Customer collection uses current-system information only. Target planning and final effort remain Pending EXTEDO Review until the internal review stage.",
+    "pre-migration": "Detailed readiness evidence and the attributable comparison baseline. Source evidence is read-only; accepted exceptions never erase findings.",
+    "post-migration": "Independent comparison of baseline, import report, target database and post-import evidence. Raw evidence tables are append-only.",
+}
+
+
+def load_payload() -> dict:
+    chunks = sorted(PAYLOAD_DIR.glob("report_v32_payload.part*.txt"))
+    if not chunks:
+        raise RuntimeError(f"No payload parts found in {PAYLOAD_DIR}")
+    encoded = "".join(path.read_text(encoding="ascii").strip() for path in chunks)
+    return json.loads(zlib.decompress(base64.b64decode(encoded)).decode("utf-8"))
+
+
+def safe_title(sheet_name: str) -> str:
+    return sheet_name.replace("_", " ").replace("&", "&").strip()
+
+
+def width_for(header: str) -> float:
+    h = header.lower()
+    if any(token in h for token in ("description", "reason", "rationale", "comment", "note", "action", "evidence", "limitation", "assumption")):
+        return 34
+    if any(token in h for token in ("path", "reference", "source", "checksum", "rule", "finding", "exception", "discrepancy")):
+        return 26
+    if any(token in h for token in ("date", "time", "status", "method", "implementation", "standard", "application")):
+        return 20
+    if any(token in h for token in ("count", "size", "value", "unit", "rag", "confidence", "priority", "severity")):
+        return 16
+    return min(max(len(header) + 3, 14), 24)
+
+
+def write_sheet_heading(ws, phase_name: str, sheet_name: str, guidance: str) -> None:
+    ws.sheet_view.showGridLines = False
+    ws.freeze_panes = "A5"
+    ws.merge_cells("A1:H1")
+    ws["A1"] = f"eMAS — {phase_name}"
+    ws["A1"].fill = PatternFill("solid", fgColor=NAVY)
+    ws["A1"].font = Font(color=WHITE, bold=True, size=16)
+    ws["A1"].alignment = Alignment(vertical="center")
+    ws.row_dimensions[1].height = 28
+
+    ws.merge_cells("A2:H2")
+    ws["A2"] = safe_title(sheet_name)
+    ws["A2"].fill = PatternFill("solid", fgColor=LIGHT_BLUE)
+    ws["A2"].font = Font(color=NAVY, bold=True, size=12)
+    ws["A2"].alignment = Alignment(vertical="center")
+    ws.row_dimensions[2].height = 23
+
+    ws.merge_cells("A3:H3")
+    ws["A3"] = guidance
+    ws["A3"].fill = PatternFill("solid", fgColor=PALE)
+    ws["A3"].font = Font(color="404040", italic=True, size=9)
+    ws["A3"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.row_dimensions[3].height = 32
+
+
+def metric_rows(metrics, headers):
+    rows = []
+    for section, metric, description in metrics:
+        row = []
+        for header in headers:
+            key = header.lower()
+            if key in ("section", "area"):
+                value = section
+            elif key == "metric":
+                value = metric
+            elif key == "description":
+                value = description
+            elif key == "evaluationstatus":
+                value = "Not Assessed"
+            elif key == "valuesource":
+                value = "Derived"
+            elif key == "reviewrequired":
+                value = "No"
+            else:
+                value = ""
+            row.append(value)
+        rows.append(row)
+    return rows
+
+
+def control_rows(mapping, headers):
+    values = [
+        ("TemplateId", mapping["template"]["templateId"]),
+        ("TemplateVersion", mapping["template"]["templateVersion"]),
+        ("PhaseCode", mapping["phaseCode"]),
+        ("Status", "Controlled Working"),
+        ("RequiredSheetNames", "; ".join(mapping["requiredSheetOrder"])),
+        ("RequiredTableNames", "; ".join(t["tableName"] for t in mapping["tableMappings"])),
+    ]
+    rows = []
+    for key, value in values:
+        rows.append([key if i == 0 else value if i == 1 else "" for i, _ in enumerate(headers)])
+    return rows
+
+
+def predefined_rows(phase: str, 
