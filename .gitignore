@@ -18,6 +18,11 @@ tests/temp/
 coverage/
 demo/output/
 
+# Python generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Customer and project evidence must never be committed
 customer-data/
 customer-reports/
