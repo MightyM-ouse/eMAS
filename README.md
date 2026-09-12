@@ -1,105 +1,133 @@
-# eMAS — eCTD Migration Assessment Script
+# eMAS — Migration Assessment Framework
 
-eMAS is a read-only, mapping-driven migration assessment framework supporting:
+eMAS is a configurable, read-only migration assessment framework for regulatory-content migrations across different source systems and migration scenarios.
 
-- Pre-Sales Assessment;
-- Pre-Migration Readiness;
-- Post-Migration Verification.
+It supports three phases:
 
-## Core architecture
+- **Pre-Sales Assessment** — establish scope, complexity, confidence, effort drivers and missing information with minimal customer burden;
+- **Pre-Migration Readiness** — perform detailed scenario-appropriate assessment and establish a controlled migration baseline;
+- **Post-Migration Verification** — reconcile the approved baseline against migration/import and target evidence.
+
+> eMAS is not only an eCTD-folder scanner. It can assess migration evidence from source databases, physical archives, DMS exports, regulatory dossier/export folders, ZIP/container repositories, source-system metadata and migration/import evidence, depending on the migration scenario.
+
+## Current v5.0 requirements direction
+
+```text
+Migration Project
+      ↓
+Identify Migration Scenario
+      ↓
+Determine Available Evidence
+      ↓
+Select Applicable Assessment Modules
+      ↓
+Assess Source-System + Regulatory + Technical Migration Risks
+      ↓
+Pre-Migration Baseline
+      ↓
+Migration occurs outside eMAS
+      ↓
+Post-Migration Reconciliation
+```
+
+The current target architecture is deliberately simple:
 
 ```mermaid
 flowchart LR
-    A[Reviewed internal XLSM] -->|Validate and export directly through VBA| B[eMAS_Runtime_Config.json]
-    S[Runtime JSON Schema 1.0.0 and independent validation] --> B
-    B --> C[Pre-Sales CLI]
-    B --> D[Pre-Migration CLI or WPF]
-    B --> E[Post-Migration CLI or WPF]
-    C --> F[Shared PowerShell engine]
-    D --> F
-    E --> F
-    F --> G[Phase-specific XLSX report]
-    F --> H[Timestamped execution log]
+    A[Internal Mapping Workbook .xlsx] --> B[SharePoint controlled authoring]
+    B --> C[Office Script / TypeScript validation and transformation]
+    C --> D[Released Runtime JSON]
+    D --> E[Pre-Sales PowerShell]
+    D --> F[Pre-Migration PowerShell]
+    D --> G[Post-Migration PowerShell]
+    E --> H[Pre-Sales Excel report]
+    F --> I[Pre-Migration Excel assessment workbook]
+    G --> J[Post-Migration Excel reconciliation workbook]
+    E --> K[Execution log]
+    F --> K
+    G --> K
 ```
 
-- **Authoring source:** reviewed internal XLSM.
-- **Runtime source:** validated immutable JSON exported by the XLSM.
-- **Execution source:** exact JSON version and checksum loaded for a run.
-- PowerShell never reads the XLSM and never creates, repairs or reinterprets runtime JSON.
-- All phases use the same runtime JSON and shared engine.
-- Source evidence remains read-only and normal runtime execution is offline.
+### Architecture principles
 
-## Effective and implemented baseline
+- The internal Mapping Workbook uses macro-free `.xlsx` format.
+- SharePoint provides internal collaboration, permissions and version history.
+- Office Scripts / TypeScript validate and deterministically transform reviewed configuration into Runtime JSON.
+- Runtime PowerShell consumes released JSON, not the Mapping Workbook.
+- Normal runtime does not require Excel desktop, SharePoint, Office Scripts, Power Automate or internet access.
+- Excel is the primary human-facing review/reporting experience.
+- No dedicated WPF or custom web application is required by the current baseline.
+- Source evidence remains read-only.
+- eMAS does not execute migration.
 
-The approved dependency sequence currently includes:
+## Scenario-driven assessment
 
-1. governance, authority and terminology — complete;
-2. Enterprise/configuration requirements synchronization — complete;
-3. normalized relationship matrix and data dictionary — frozen;
-4. Runtime JSON Schema 1.0.0 and independent fixtures — complete;
-5. Solution Architecture and phase contracts — Effective;
-6. seven operational LLM skills — Effective and automatically validated;
-7. source-controlled XLSM/VBA proof of concept and automated conformance harness — implemented.
+The applicable checks depend on the migration scenario and available evidence. Examples include:
 
-Stage 7 repository evidence includes a synthetic 43-table workbook definition, deterministic XLSX generation, nine reviewable VBA modules, valid/boundary/negative workbook fixtures, deterministic golden JSON hash, Schema 1.0.0 checks, unit tests and CI.
+| Scenario | Typical evidence | Example assessment focus |
+|---|---|---|
+| Existing EXTEDO on-prem → cloud | DB, archive, application environment, exports | source-system inventory, DB/archive integrity, dependencies, readiness |
+| Existing EXTEDO on-prem → on-prem | DB, archive, application environment | compatibility, source integrity, scope and migration risks |
+| Database + archive migration | DB records + physical archive | record/object correlation, missing/multiple/inaccessible objects |
+| New/third-party customer with exports | dossier/export folders, ZIPs, metadata | dossier discovery, region/format, sequences, XML/reference/file integrity |
+| Third-party system migration | vendor export, metadata, files, optional DB extracts | source model, metadata completeness, mapping and relationships |
+| DMS/content migration | DMS metadata, documents/renditions | document identity, metadata mapping, file availability and relationships |
+| Partial or mixed evidence | only DB, only archive, only export, backups, mixed repositories | coverage, confidence, follow-up questions and manual review |
 
-**Native desktop Excel/VBA execution is still a required manual qualification gate.** The repository does not claim that supported Excel versions, 32/64-bit Office, German/English locales, production signing or controlled workbook release are qualified.
+Not every project executes every assessment module.
 
-## Primary references
+## Assessment capability areas
 
-- [Enterprise Requirements v3.1](docs/requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
-- [Configuration Documentation](docs/configuration/README.md)
-- [Runtime JSON Contract v1.2](docs/configuration/04_eMAS_Runtime_JSON_Contract.md)
-- [Runtime JSON Schema 1.0.0](config/schema/eMAS-runtime-config.schema.json)
-- [Solution Architecture v1.0](docs/architecture/eMAS_Solution_Architecture.md)
-- [Phase Contracts](docs/architecture/phase-contracts/README.md)
-- [Operational LLM Skills](docs/llm-development-context/skills/README.md)
-- [XLSM/VBA POC and Conformance Contract](docs/configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
-- [Synthetic POC Source](config/authoring/poc/README.md)
-- [Canonical Document Index](docs/CANONICAL_DOCUMENT_INDEX.md)
+Depending on applicability, eMAS may assess:
 
-## POC validation
+- migration scenario and source-system context;
+- source DB inventory and relationships;
+- archive/physical-object presence and integrity;
+- DMS/export metadata and document mappings;
+- repository/ZIP/container discovery;
+- product/application/dossier grouping;
+- region, authority, technical format and specification version;
+- application/pathway and dossier/regulatory context;
+- sequence/submission-unit and lifecycle evidence;
+- XML/reference/file integrity;
+- volume, complexity and effort drivers;
+- RAG/severity and evidence confidence;
+- remediation and accepted exceptions;
+- Pre-Migration readiness;
+- Post-Migration reconciliation.
 
-Automated source and conformance validation:
+## Important regulatory modelling principles
 
-```bash
-python -m pip install -r build/requirements-schema-validation.txt
-python build/validate_xlsm_vba_poc.py
-python -m unittest discover -s tests/vba -p "test_*.py" -v
-```
-
-Native internal build/test on supported Windows and desktop Excel:
-
-```powershell
-.\build\Build-eMASMappingPoc.ps1
-.\build\Test-eMASMappingPoc.ps1
-```
-
-The native test runs VBA validation, exports deterministic JSON twice, compares both exports with the approved golden SHA-256 and validates the result independently against Schema 1.0.0.
+- Region, authority, technical format, specification version, application type, dossier/regulatory context, procedure and lifecycle purpose are separate dimensions.
+- ASMF/DMF are not transport formats.
+- IND/NDA/ANDA/BLA/MAA/CTA are not eCTD formats.
+- eCTD v3 and eCTD v4 require version-appropriate parsing semantics.
+- Folder names are supporting evidence, not authoritative identity by themselves.
+- Missing evidence must not silently become Green/Pass.
+- Severity/RAG and confidence are separate concepts.
+- Technical completeness is not the same as formal health-authority validation.
 
 ## Phase outcomes
 
-| Phase | Execution | Controlled outcome |
+| Phase | Interface | Controlled outcome |
 |---|---|---|
-| Pre-Sales Assessment | CLI or simple launcher | Complexity, confidence, scope, drivers and clarifications |
-| Pre-Migration Readiness | CLI or optional WPF | Ready, Ready with Accepted Exceptions, Blocked |
-| Post-Migration Verification | CLI or optional WPF | Reconciled, Reconciled with Accepted Exceptions, Review Required, Not Reconciled |
+| Pre-Sales Assessment | PowerShell/script-based | Scope, complexity, confidence, effort drivers and clarifications |
+| Pre-Migration Readiness | PowerShell + controlled Excel assessment workbook | Ready / Ready with Accepted Exceptions / Blocked |
+| Post-Migration Verification | PowerShell + controlled Excel reconciliation workbook | Reconciled / Reconciled with Accepted Exceptions / Review Required / Not Reconciled |
 
-## Development controls
+## Current requirements references
 
-1. Start from current `main` on a dedicated branch.
-2. Apply the canonical index, authority policy and approved decision baseline.
-3. Use the frozen logical model, Schema 1.0.0, architecture and applicable phase contract.
-4. Select the narrowest Effective operational skill.
-5. Keep business/regulatory interpretation in approved configuration.
-6. Update affected contracts, fixtures, tests and indexes together.
-7. Stop for regulatory, schema, baseline, report-meaning or evidence conflicts.
-8. Use the review skill before merge.
+- [Enterprise Requirements v5.0](docs/requirements/eMAS_Enterprise_Requirements_v5.0.md)
+- [v5.0 Previous Baseline Carry-Forward Register](docs/requirements/eMAS_v5.0_Previous_Baseline_Carry_Forward.md)
+
+Detailed regulatory, parser, SQL, XPath, workbook-layout and test specifications are intentionally kept outside the enterprise requirements baseline and should be maintained in the appropriate lower-level controlled specifications.
 
 ## Repository safety
 
-Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific exceptions, controlled production workbooks or uncontrolled generated packages. Committed fixtures and POC content must remain synthetic.
+Do not commit customer data, customer reports, migration evidence, production logs, credentials, project-specific accepted exceptions or uncontrolled production artifacts to the repository.
 
 ## Positioning
 
-eMAS provides structured, reproducible and traceable migration assessment evidence. It does not perform migration, regulatory validation, formal customer validation, electronic approval or customer acceptance.
+eMAS converts available migration evidence into structured, reproducible and traceable migration assessment results. It helps determine what is known, what is missing, what may block migration, what requires remediation, and whether the migrated target reconciles with the approved baseline.
+
+It does not perform the migration itself, formal regulatory validation, scientific assessment, electronic approval or customer acceptance.
