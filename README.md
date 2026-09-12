@@ -1,6 +1,6 @@
-# eMAS — Migration Assessment Framework
+# eMAS — eCTD Migration Assessment Script
 
-eMAS is a configurable, read-only migration assessment framework for regulatory-content migrations across different source systems and migration scenarios.
+eMAS (**eCTD Migration Assessment Script**) is a configurable, read-only migration assessment framework for regulatory-content migrations across different source systems and migration scenarios.
 
 It supports three phases:
 
@@ -8,7 +8,7 @@ It supports three phases:
 - **Pre-Migration Readiness** — perform detailed scenario-appropriate assessment and establish a controlled migration baseline;
 - **Post-Migration Verification** — reconcile the approved baseline against migration/import and target evidence.
 
-> eMAS is not only an eCTD-folder scanner. It can assess migration evidence from source databases, physical archives, DMS exports, regulatory dossier/export folders, ZIP/container repositories, source-system metadata and migration/import evidence, depending on the migration scenario.
+> eMAS is not only an eCTD-folder scanner. Although the product name remains **eCTD Migration Assessment Script**, its migration assessment scope may use source databases, physical archives, DMS exports, regulatory dossier/export folders, ZIP/container repositories, source-system metadata and migration/import evidence, depending on the migration scenario.
 
 ## Current v5.0 requirements direction
 
