@@ -1,6 +1,6 @@
 # eMAS Enterprise Requirements Specification
 
-**Project:** eMAS — Migration Assessment Framework  
+**Project:** eMAS — eCTD Migration Assessment Script  
 **Document Type:** Enterprise Business, Functional and Technical Requirements Specification  
 **Version:** 5.0  
 **Status:** Draft Requirements Baseline for Review  
@@ -11,7 +11,9 @@
 
 ## 1. Purpose and primary goal
 
-eMAS is a configurable, read-only migration assessment framework for regulatory-content migrations across different source systems and migration scenarios.
+eMAS (**eCTD Migration Assessment Script**) is a configurable, read-only migration assessment framework for regulatory-content migrations across different source systems and migration scenarios.
+
+The product name remains **eCTD Migration Assessment Script**. The broader migration assessment capabilities defined below do not rename or redefine the eMAS acronym.
 
 The primary goal is not merely to analyse an exported eCTD dossier. eMAS shall first determine the migration scenario and available evidence, then select the assessments that are applicable to that scenario. Depending on the source, evidence may include databases, physical archives, DMS exports, application metadata, working/export directories, regulatory dossier packages, ZIP/container repositories, manifests and migration/import evidence.
 
