@@ -1,6 +1,6 @@
 # eMAS Decision Log
 
-**Version:** 1.3
+**Version:** 1.4
 **Status:** Effective with approved MVP design amendments
 **Effective date:** 2026-09-13
 **Owner:** Documentation Owner
@@ -32,6 +32,7 @@ This is the permanent repository-native record of approved eMAS decisions. It re
 | DEC-2026-012 | AP-012 | 2026-07-13 | Effective | Use protected-main and pull-request governance, CODEOWNERS routing, required review by change class and DecisionId traceability. Repository settings and source-controlled governance files together implement the control. | Technical Architect | Repository settings, CONTRIBUTING, CODEOWNERS and PR template |
 | DEC-2026-013 | MVP scenario/questionnaire review | 2026-09-13 | Approved MVP design | Adopt eight base migration scenarios `MS-01` through `MS-08`; model customer relationship, hosting, scope, evidence completeness, repository composition, eSUBmanager/DMS dependencies, other integrations and sequential upgrade as qualifiers rather than scenario identities; use a business-first reusable questionnaire; add explicit scenario-derivation rules; keep actual answers as project evidence; limit Pre-Sales DB/archive questions to availability and approximate scale; perform DB-record-to-archive-object verification only in Pre-Migration/Post-Migration; generate one scenario JSON containing all applicable phases. | Product Owner | Enterprise requirements, Mapping Workbook/JSON MVP requirements, indexes, questionnaire, scenario derivation and JSON examples |
 | DEC-2026-014 | MVP scenario-derivation review | 2026-09-13 | Approved MVP design | Derive the base scenario from normalized primary migration input, intended target platform and required classifier fields; add business questions `Q-SCN-021` and `Q-SCN-022`; distinguish Derived, DerivedWithFollowUp, Pending and NeedsReview; do not treat partial eCTDmanager scope or missing evidence as Hybrid/Pending when the route is known; use Hybrid only for multiple migration inputs; retain hosting, eSUBmanager, DMS dependency and upgrades as qualifiers. `MS-08` supports third-party-system/DMS source migration into eCTDmanager only. DMS-to-DMS and unsupported target routes are outside MVP scope and must return `MS-07 / NeedsReview`, block `MS-08` JSON generation and require consultant discussion. | Product Owner | Enterprise requirements, Mapping Workbook/JSON MVP requirements, questionnaire, scenario derivation, JSON contract, validation and acceptance tests |
+| DEC-2026-015 | MVP assessment-module applicability review | 2026-09-13 | Approved MVP design | Retain fifteen bounded assessment modules; define Migration Scenario Assessment as runtime confirmation rather than re-derivation; expand module metadata and boundaries; require one explicit mapping for every eight-scenario × three-phase × fifteen-module combination (360 rows); define Required, Conditional, Optional and NotApplicable semantics plus assessment depth, missing-evidence, baseline and reconciliation roles; add Hybrid composition question `Q-SCN-023`; serialize module mappings as traceable JSON objects. Require readiness for `MS-07` Pre-Migration to produce Blocked and prohibit formal reconciliation for unresolved `MS-07`. | Product Owner | Enterprise requirements, Mapping Workbook/JSON MVP requirements, module catalogue, questionnaire, scenario-module matrix, JSON contract, validation and acceptance tests |
 
 ## Consolidation evidence
 
@@ -42,7 +43,7 @@ DEC-2026-001 through DEC-2026-012 and the reviewed 171-item register were consol
 - Mapping Configuration Technical Requirements v3.0;
 - Mapping Configuration Content Catalogue v3.0.
 
-For the `requirements/mvp-workbook-json` branch, DEC-2026-013 and DEC-2026-014 are consolidated into Enterprise Requirements v5.0 and Mapping Workbook and Scenario JSON MVP Requirements v4.2. These approvals close the base-scenario, questionnaire and scenario-derivation design reviews only. They do not complete workbook construction, JSON transformation, schema synchronization, PowerShell, templates, tests or release controls.
+For the `requirements/mvp-workbook-json` branch, DEC-2026-013 through DEC-2026-015 are consolidated into Enterprise Requirements v5.0 and Mapping Workbook and Scenario JSON MVP Requirements v4.3. These approvals close the base-scenario, questionnaire, scenario-derivation, assessment-module and scenario-module-map design reviews only. They do not complete workbook construction, JSON transformation, schema synchronization, PowerShell, templates, tests or release controls.
 
 ## Implementation-state rule
 

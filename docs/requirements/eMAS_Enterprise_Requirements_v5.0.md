@@ -6,7 +6,7 @@
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Classification:** Internal
 **Prepared:** 13 September 2026
-**Decision references:** DEC-2026-013 and DEC-2026-014
+**Decision references:** DEC-2026-013, DEC-2026-014 and DEC-2026-015
 
 ---
 
@@ -75,7 +75,7 @@ Customer relationship, source/target hosting, migration scope, evidence complete
 
 Reusable questionnaire definitions and scenario-derivation rules are controlled configuration. Project/customer answers, detected values, actual qualifier values and overrides are execution evidence and shall not become reusable Runtime JSON configuration. The questionnaire shall begin with business/current-source questions, then hosting/destination and dependencies, and only then request technical evidence.
 
-The questionnaire shall explicitly capture the primary migration input and intended target platform. `MS-08` applies only when third-party-system or DMS content is migrating into eCTDmanager. DMS-to-DMS migration is outside the current eMAS MVP scenario catalogue and shall return `MS-07 / NeedsReview`, require consultant discussion and prevent automatic generation of `MS-08` Runtime JSON.
+The questionnaire shall explicitly capture the primary migration input and intended target platform. When multiple primary inputs select `MS-05`, it shall also capture each included source mechanism as controlled multi-select values so module activation is deterministic. `MS-08` applies only when third-party-system or DMS content is migrating into eCTDmanager. DMS-to-DMS migration is outside the current eMAS MVP scenario catalogue and shall return `MS-07 / NeedsReview`, require consultant discussion and prevent automatic generation of `MS-08` Runtime JSON.
 
 Pre-Sales questions about databases and archives shall be limited by default to availability and approximate scale. Detailed `database record -> archive identifier -> physical object` verification belongs to Pre-Migration and Post-Migration. Partial evidence shall not force `MS-07` when the base migration route is otherwise known; it shall reduce evidence completeness, module coverage and confidence.
 
@@ -99,7 +99,11 @@ The architecture shall support reusable assessment capabilities rather than one 
 14. Pre-Migration Readiness;
 15. Post-Migration Reconciliation.
 
-Not every scenario shall execute every module. Applicability shall be determined by scenario, available evidence and released configuration. An unavailable module/evidence source shall not automatically fail the whole assessment unless it is mandatory for that scenario/readiness decision.
+The MVP module catalogue contains these fifteen stable modules. Each module shall define its business purpose, assessment boundary, evidence/capability domain, permitted phases, inputs, outputs and potential baseline/reconciliation role. Migration Scenario Assessment confirms the previously derived scenario at runtime; it shall not independently re-derive it. Pre-Migration Readiness is a Pre-Migration-only outcome module, and Post-Migration Reconciliation is a Post-Migration-only outcome module.
+
+Not every scenario shall execute every module. Applicability shall be explicit for every scenario, phase and module using Required, Conditional, Optional or NotApplicable. The detailed baseline shall contain one record for every `8 scenarios × 3 phases × 15 modules` combination (360 records), including explicit NotApplicable reasons. Required modules remain visible when evidence is missing; Conditional modules use controlled activation and shall not treat Unknown as false; Optional modules do not affect the formal phase outcome when omitted.
+
+`MOD-READINESS` shall be Required for `MS-07` Pre-Migration so an unresolved or unsupported route produces an explicit Blocked outcome. `MOD-RECONCILE` shall be NotApplicable for `MS-07` Post-Migration because there is no approved comparison basis. An unavailable module/evidence source shall not automatically fail the whole assessment unless its mapping makes it mandatory for that scenario/readiness or reconciliation decision.
 
 ## 5. Simplified target architecture and MVP priority
 
@@ -301,7 +305,7 @@ For one selected `ScenarioId`, the MVP transformer shall resolve applicable modu
 
 The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
 
-The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.2](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, module catalogue, scenario/phase applicability, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.3](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
 
 SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 
