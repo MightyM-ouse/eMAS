@@ -1,9 +1,9 @@
 # eMAS Authority, Precedence and Source-of-Truth Policy
 
-**Version:** 1.1  
-**Status:** Effective  
-**Effective date:** 2026-07-13  
-**Owner:** Product Owner  
+**Version:** 1.2 MVP branch alignment
+**Status:** Draft for requirements review
+**Prepared date:** 2026-09-13
+**Owner:** Product Owner
 **Decision references:** DEC-2026-001 through DEC-2026-010; AP-001, AP-002, AP-003, AP-004, AP-005, AP-006, AP-010
 
 ## 1. Purpose
@@ -44,17 +44,17 @@ An approved decision may amend an existing canonical document before the next co
 - The canonical document index must show that the affected document is amended or awaiting synchronization.
 - The amendment must be incorporated into the next controlled revision of the affected canonical document.
 
-Enterprise Requirements v3.0 therefore remains the primary product baseline, amended by the approved 171-item decision baseline until the next consolidated v3.x revision.
+For the `requirements/mvp-workbook-json` branch, Enterprise Requirements v5.0 is the product-scope baseline and Mapping Workbook and Scenario JSON MVP Requirements v4.0 is the detailed workbook/JSON baseline. Versions 3.0 and 3.1 remain historical input and do not override explicit MVP changes.
 
 ## 4. Source-of-truth terminology
 
-- **Authoring source of truth:** the reviewed internal Excel XLSM mapping workbook used to maintain business and regulatory configuration.
-- **Runtime source of truth:** the validated, immutable runtime JSON exported from the approved XLSM.
-- **Execution source:** the exact runtime JSON version and checksum loaded for a specific execution.
+- **Authoring source:** the internal macro-free Excel `.xlsx` master Mapping Workbook used to maintain reusable business, regulatory, and migration configuration.
+- **MVP runtime source:** the validated scenario-specific Runtime JSON generated from the workbook for one selected `ScenarioId`.
+- **Execution source:** the exact scenario JSON loaded for a specific execution.
 
-PowerShell must not read the XLSM and must not create, repair or reinterpret the runtime JSON.
+PowerShell must not read the workbook and must not create, repair or reinterpret the Runtime JSON.
 
-The runtime JSON is authoritative for execution only after successful schema, semantic and compatibility validation.
+During the MVP, successful schema, semantic, referential, scenario-applicability, and determinism validation is required before JSON can be used for an MVP runtime test. Formal approval/release/checksum governance is deferred and shall not be implied.
 
 ## 5. Document statuses
 
@@ -115,7 +115,7 @@ Examples never override canonical requirements, schemas or approved configuratio
 | JSON Schema | Technical Architect, Product Owner and PowerShell Lead |
 | Shared engine code | PowerShell Lead and technical reviewer |
 | Templates and report contracts | Product Owner and QA Lead |
-| XLSM or VBA | Technical Architect; Corporate IT for signing and trust controls |
+| Mapping Workbook or workbook-to-JSON transformation | Product Owner and Technical Architect; applicable SMEs for content |
 | Testing and release evidence | QA Lead and responsible technical owner |
 | Documentation | Documentation Owner and responsible area owner |
 | Repository governance | Technical Architect and repository owner |

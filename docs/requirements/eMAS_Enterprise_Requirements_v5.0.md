@@ -1,10 +1,10 @@
 # eMAS Enterprise Requirements Specification
 
-**Project:** eMAS — eCTD Migration Assessment Script  
-**Document Type:** Enterprise Business, Functional and Technical Requirements Specification  
-**Version:** 5.0  
-**Status:** Draft Requirements Baseline for Review  
-**Classification:** Internal  
+**Project:** eMAS — eCTD Migration Assessment Script
+**Document Type:** Enterprise Business, Functional and Technical Requirements Specification
+**Version:** 5.0
+**Status:** Draft Requirements Baseline for Review
+**Classification:** Internal
 **Prepared:** 12 September 2026
 
 ---
@@ -97,16 +97,18 @@ The architecture shall support reusable assessment capabilities rather than one 
 
 Not every scenario shall execute every module. Applicability shall be determined by scenario, available evidence and released configuration. An unavailable module/evidence source shall not automatically fail the whole assessment unless it is mandatory for that scenario/readiness decision.
 
-## 5. Simplified target architecture
+## 5. Simplified target architecture and MVP priority
+
+The immediate MVP architecture is:
 
 ```text
-Internal Mapping Workbook (.xlsx)
+Master Mapping Workbook (.xlsx)
         ↓
-SharePoint-controlled authoring/version history
+Select one Migration Scenario
         ↓
-Office Script / TypeScript validation and deterministic transformation
+Validate and deterministically transform applicable configuration
         ↓
-Reviewed and released immutable Runtime JSON
+Scenario-specific Runtime JSON covering all applicable phases
         ↓
 Shared PowerShell assessment engine
         ↓
@@ -115,15 +117,19 @@ Pre-Sales | Pre-Migration | Post-Migration
 Phase/scenario-specific Excel report/workbook + execution log
 ```
 
+The MVP shall first prove that the Mapping Workbook contains all configurable migration-script requirements in an understandable and maintainable form and that scenario-specific JSON can be generated without loss of traceability.
+
 Requirements:
 
 - no dedicated WPF or custom web application is required;
 - Excel is the primary human-facing mapping/review/reporting interface;
-- SharePoint is the internal collaboration/version-history layer for authoring artifacts;
 - PowerShell performs technical assessment and orchestration;
-- runtime execution consumes released JSON, not the Mapping Workbook;
+- runtime execution consumes scenario-specific JSON, not the Mapping Workbook;
 - normal runtime shall not require Excel desktop, SharePoint, Office Scripts, Power Automate or internet access;
-- business/regulatory meaning shall not be hardcoded in PowerShell where it belongs in controlled configuration.
+- business/regulatory meaning shall not be hardcoded in PowerShell where it belongs in configuration;
+- SharePoint authoring, Office Script tenant deployment, Power Automate release orchestration and formal GxP-oriented release controls are deferred until the workbook-to-JSON MVP works.
+
+The later target may add SharePoint-controlled authoring/version history and Office Script/TypeScript generation without changing this boundary.
 
 ## 6. Phase requirements
 
@@ -283,11 +289,15 @@ Unless an approved estimation model exists, eMAS shall report validated complexi
 
 ## 15. Mapping Workbook and Runtime JSON
 
-The internal Mapping Workbook shall be macro-free `.xlsx`, suitable for Excel for the web and SharePoint. It shall maintain normalized, filterable configuration for scenarios, fields, master data, relationships, classification/detection rules, structure/reference/integrity rules, source-system applicability, findings, recommendations, RAG, confidence, effort, decisions, questionnaire definitions, source provenance and runtime field mapping.
+The internal Mapping Workbook shall be one macro-free `.xlsx` master workbook. It shall maintain understandable, normalized, and filterable configuration for scenarios, modules, fields/evidence, regulatory profiles, requirements, classification/detection, structure/reference/integrity, source-system/DB/archive/DMS mappings, metrics, findings, recommendations, RAG, confidence, effort, readiness, reconciliation, source provenance, and runtime field mapping.
 
-The workbook is an authoring interface, not a runtime dependency. Office Scripts/TypeScript shall validate and deterministically transform reviewed workbook content into a Runtime JSON candidate. Runtime JSON shall be schema-validated, versioned, immutable for an execution and identifiable by checksum/release metadata.
+For one selected `ScenarioId`, the MVP transformer shall resolve applicable modules, requirements, rules, and referenced dependencies and generate one deterministic scenario-specific Runtime JSON file. That JSON shall contain all configuration applicable to Pre-Sales, Pre-Migration, and Post-Migration for the selected scenario. Every exported object shall be traceable to stable workbook identifiers.
 
-Power Automate may support controlled release orchestration but is not a customer/runtime dependency.
+The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
+
+The exact workbook sheets, columns, relationships, scenario catalogue, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.0](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+
+SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 
 ## 16. Read-only, security and runtime boundaries
 

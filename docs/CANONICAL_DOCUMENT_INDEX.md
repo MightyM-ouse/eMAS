@@ -1,9 +1,9 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.6  
-**Status:** Effective  
-**Effective date:** 2026-07-13  
-**Owner:** Documentation Owner  
+**Version:** 1.7 MVP branch alignment
+**Status:** Draft for requirements review
+**Prepared date:** 2026-09-13
+**Owner:** Documentation Owner
 **Decision reference:** DEC-2026-008 / AP-008; requirements, logical-model, schema, architecture, skills and XLSM/VBA POC synchronization
 
 ## Purpose
@@ -14,7 +14,7 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 | ID | Rank/role | Artifact | Version/status | Owner |
 |---|---|---|---|---|
-| REQ-ENT | 1 | [Enterprise Requirements](requirements/eMAS_Final_Enterprise_Requirements_v3.1.md) | v3.1 Effective | Product Owner |
+| REQ-ENT | 1 | [Enterprise Requirements](requirements/eMAS_Enterprise_Requirements_v5.0.md) | v5.0 Draft branch baseline | Product Owner |
 | GOV-DEC | Amendment/traceability | [Approved Decision Baseline](governance/eMAS_Approved_Decision_Baseline_v1.0.md) | v1.0 Approved | Product Owner |
 | GOV-AUTH | Governance | [Authority and Precedence](governance/00_authority_and_precedence.md) | v1.0 Effective | Product Owner |
 | GOV-DOC | Governance | [Document Governance](governance/eMAS_Document_Governance.md) | v1.0 Effective | Documentation Owner |
@@ -24,15 +24,15 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 | ID | Rank | Artifact | Version/status | Owner |
 |---|---:|---|---|---|
-| CFG-FUNC | 2 | [Mapping Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 Effective | Product Owner |
-| CFG-TECH | 3 | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 Effective | Technical Architect |
-| CFG-CAT | 4 | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 Effective logical model | Product Owner / SMEs |
-| CFG-JSON | 3–5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 Effective | Technical Architect |
+| CFG-MVP | 2 | [Mapping Workbook and Scenario JSON MVP Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v4.0 Draft MVP branch baseline | Product Owner |
+| CFG-TECH | Reference | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 historical reference pending MVP reconciliation | Technical Architect |
+| CFG-CAT | Reference | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 reference pending MVP reconciliation | Product Owner / SMEs |
+| CFG-JSON | Reference | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 reference pending scenario-JSON synchronization | Technical Architect |
 | CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.1 Approved | Product Owner / Technical Architect |
 | CFG-REL | 4 | [Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Product Owner / Technical Architect |
 | CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 Effective | Product Owner / Technical Architect |
 | CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.0 Effective | Technical Architect / QA Lead |
-| CFG-XLSM-POC | 5–8 | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.0 Effective POC verification contract | Technical Architect / QA Lead |
+| CFG-XLSM-POC | Historical | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | Historical POC; not current MVP direction | Technical Architect / QA Lead |
 | SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective | Technical Architect |
 | SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective | Technical Architect / QA Lead |
 
@@ -73,14 +73,13 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 ## Required reading by task
 
-### XLSM/VBA POC or workbook export
+### MVP workbook and scenario JSON
 
-1. GOV-AUTH, GOV-TERM, GOV-DEC and REQ-ENT.
-2. CFG-FUNC, CFG-TECH, CFG-CAT, CFG-JSON, CFG-RULE, CFG-REL, CFG-DICT and CFG-VERIFY.
-3. CFG-XLSM-POC and SCHEMA-JSON.
-4. SKILL-CONFIG and SKILL-SCHEMA.
-5. POC-ROUTE and implementation assets.
-6. SKILL-REVIEW before merge.
+1. REQ-ENT and CFG-MVP.
+2. GOV-AUTH and GOV-TERM where they do not conflict with the explicit MVP deferral.
+3. CFG-RULE, CFG-CAT, CFG-REL and CFG-DICT as design input pending reconciliation.
+4. Define and review the scenario-specific JSON schema before transformer implementation.
+5. Use CFG-VERIFY and the review skill before merge.
 
 ### PowerShell or reporting
 
@@ -91,7 +90,7 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 ## Delivery-state boundary
 
-The repository POC source and automated conformance harness are implemented. Native supported-Excel execution, Office bitness/locale qualification, production signing and controlled workbook release remain pending. Do not describe the POC as qualified or released without that evidence.
+The existing XLSM/VBA POC source and conformance harness remain historical implementation evidence. The workbook/JSON MVP defined in CFG-MVP is requirements work and shall not be described as implemented, verified, approved, or released until its acceptance tests pass.
 
 ## Historical and prohibited authority
 

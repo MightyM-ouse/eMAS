@@ -1,23 +1,22 @@
 # eMAS Requirements
 
-## Effective baseline
+## Current branch baseline
 
-Use [eMAS Enterprise Requirements v3.1](eMAS_Final_Enterprise_Requirements_v3.1.md) as the authority-rank-1 product requirements baseline.
+Use [eMAS Enterprise Requirements v5.0](eMAS_Enterprise_Requirements_v5.0.md) as the product-scope baseline for this branch.
 
-The effective configuration requirements are maintained under `docs/configuration/`:
+For the immediate implementation, use [Mapping Workbook and Scenario JSON MVP Requirements v4.0](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md). The MVP priority is:
 
-- [Mapping Configuration Functional Requirements v3.0](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
-- [Mapping Configuration Technical Requirements v3.0](../configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md)
-- [Mapping Configuration Content Catalogue v3.0](../configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md)
+1. capture all configurable migration-script requirements in one understandable master workbook; and
+2. generate deterministic Runtime JSON for a selected migration scenario.
 
-Use the [Authority and Precedence Policy](../governance/00_authority_and_precedence.md), [Controlled Terminology](../governance/eMAS_Terminology.md) and [Canonical Document Index](../CANONICAL_DOCUMENT_INDEX.md) when resolving scope, status or terminology.
+SharePoint integration, Office Script deployment, Power Automate workflow, formal release governance, and GxP-oriented controls are later stages and do not block the MVP proof.
 
-## Historical baseline
+## Historical and supporting baselines
 
-`eMAS_Final_Enterprise_Requirements_v3.0.md` is retained for traceability and historical comparison. It is superseded for implementation use by Version 3.1 and must not override the effective requirements.
+Enterprise Requirements v3.0 and v3.1 are retained for traceability. Older configuration documents remain useful design references, but XLSM/VBA, WPF, governance, or non-scenario-specific JSON provisions do not override the current MVP baseline where they conflict.
 
-The Version 2 Word documentation pack is also historical and governed through the [Superseded Document Register](../archive/SUPERSEDED_DOCUMENT_REGISTER.md).
+Use the [v5.0 Previous Baseline Carry-Forward Register](eMAS_v5.0_Previous_Baseline_Carry_Forward.md) to decide whether older detailed requirements are retained, adapted, deferred, or superseded.
 
 ## Delivery-state boundary
 
-Effective requirements do not imply that implementation, SME content approval, testing or release controls are complete. Those states are tracked separately.
+A requirement baseline is not evidence that the workbook, JSON transformer, PowerShell consumer, regulatory content, tests, or production controls have been implemented or approved.

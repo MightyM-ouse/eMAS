@@ -30,35 +30,29 @@ Migration occurs outside eMAS
 Post-Migration Reconciliation
 ```
 
-The current target architecture is deliberately simple:
+The current MVP architecture is deliberately simple:
 
 ```mermaid
-flowchart LR
-    A[Internal Mapping Workbook .xlsx] --> B[SharePoint controlled authoring]
-    B --> C[Office Script / TypeScript validation and transformation]
-    C --> D[Released Runtime JSON]
-    D --> E[Pre-Sales PowerShell]
-    D --> F[Pre-Migration PowerShell]
-    D --> G[Post-Migration PowerShell]
-    E --> H[Pre-Sales Excel report]
-    F --> I[Pre-Migration Excel assessment workbook]
-    G --> J[Post-Migration Excel reconciliation workbook]
-    E --> K[Execution log]
-    F --> K
-    G --> K
+flowchart TD
+    A[Internal Master Mapping Workbook] --> B[Select Migration Scenario]
+    B --> C[Validate applicable configuration]
+    C --> D[Scenario-specific Runtime JSON]
+    D --> E[PowerShell assessment phases]
+    E --> F[Excel report and execution log]
 ```
 
 ### Architecture principles
 
-- The internal Mapping Workbook uses macro-free `.xlsx` format.
-- SharePoint provides internal collaboration, permissions and version history.
-- Office Scripts / TypeScript validate and deterministically transform reviewed configuration into Runtime JSON.
-- Runtime PowerShell consumes released JSON, not the Mapping Workbook.
+- The immediate MVP is one complete, human-readable, macro-free `.xlsx` Mapping Workbook.
+- The workbook contains all configurable migration-assessment requirements and their relationships.
+- One selected scenario is deterministically transformed into one scenario-specific Runtime JSON containing all applicable phase configuration.
+- Runtime PowerShell consumes JSON, not the Mapping Workbook.
 - Normal runtime does not require Excel desktop, SharePoint, Office Scripts, Power Automate or internet access.
 - Excel is the primary human-facing review/reporting experience.
 - No dedicated WPF or custom web application is required by the current baseline.
 - Source evidence remains read-only.
 - eMAS does not execute migration.
+- SharePoint, Office Script tenant deployment, Power Automate, formal release governance and GxP-oriented controls are deferred until the workbook-to-JSON MVP works.
 
 ## Scenario-driven assessment
 
@@ -118,6 +112,7 @@ Depending on applicability, eMAS may assess:
 ## Current requirements references
 
 - [Enterprise Requirements v5.0](docs/requirements/eMAS_Enterprise_Requirements_v5.0.md)
+- [Mapping Workbook and Scenario JSON MVP Requirements v4.0](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [v5.0 Previous Baseline Carry-Forward Register](docs/requirements/eMAS_v5.0_Previous_Baseline_Carry_Forward.md)
 
 Detailed regulatory, parser, SQL, XPath, workbook-layout and test specifications are intentionally kept outside the enterprise requirements baseline and should be maintained in the appropriate lower-level controlled specifications.
