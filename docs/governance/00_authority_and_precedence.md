@@ -1,10 +1,10 @@
 # eMAS Authority, Precedence and Source-of-Truth Policy
 
-**Version:** 1.5 MVP module-applicability alignment
+**Version:** 1.6 MVP requirement-catalogue alignment
 **Status:** Approved MVP design baseline; implementation pending
 **Prepared date:** 2026-09-13
 **Owner:** Product Owner
-**Decision references:** DEC-2026-001 through DEC-2026-010, DEC-2026-013, DEC-2026-014 and DEC-2026-015; AP-001, AP-002, AP-003, AP-004, AP-005, AP-006, AP-010
+**Decision references:** DEC-2026-001 through DEC-2026-010 and DEC-2026-013 through DEC-2026-016; AP-001, AP-002, AP-003, AP-004, AP-005, AP-006, AP-010
 
 ## 1. Purpose
 
@@ -44,7 +44,7 @@ An approved decision may amend an existing canonical document before the next co
 - The canonical document index must show that the affected document is amended or awaiting synchronization.
 - The amendment must be incorporated into the next controlled revision of the affected canonical document.
 
-For the `requirements/mvp-workbook-json` branch, Enterprise Requirements v5.0 is the approved product-scope baseline and Mapping Workbook and Scenario JSON MVP Requirements v4.3 is the approved detailed workbook/JSON design baseline. Versions 3.0 and 3.1 remain historical input and do not override explicit MVP changes. Approval establishes design authority; it does not claim that the workbook, transformer, JSON, or runtime has been implemented or verified.
+For the `requirements/mvp-workbook-json` branch, Enterprise Requirements v5.0 is the approved product-scope baseline and Mapping Workbook and Scenario JSON MVP Requirements v4.4 is the approved detailed workbook/JSON design baseline. Versions 3.0 and 3.1 remain historical input and do not override explicit MVP changes. Approval establishes design authority; it does not claim that the workbook, transformer, JSON, or runtime has been implemented or verified.
 
 ## 4. Source-of-truth terminology
 

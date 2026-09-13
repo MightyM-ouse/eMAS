@@ -47,6 +47,7 @@ flowchart TD
 - The workbook contains all configurable migration-assessment requirements and their relationships.
 - One derived and confirmed base scenario is deterministically transformed into one scenario-specific Runtime JSON containing all applicable phase configuration.
 - The approved MVP uses fifteen bounded assessment modules and an explicit 360-record scenario/phase/module applicability matrix; Hybrid source composition is captured as controlled multi-select values.
+- The Requirement Catalogue uses atomic, testable rows across 24 assessment and cross-cutting requirement families, with reverse rule traceability and scenario-specific `requirements[]` JSON projection.
 - Runtime PowerShell consumes JSON, not the Mapping Workbook.
 - Normal runtime does not require Excel desktop, SharePoint, Office Scripts, Power Automate or internet access.
 - Excel is the primary human-facing review/reporting experience.
@@ -118,7 +119,7 @@ Depending on applicability, eMAS may assess:
 ## Current requirements references
 
 - [Enterprise Requirements v5.0](docs/requirements/eMAS_Enterprise_Requirements_v5.0.md)
-- [Mapping Workbook and Scenario JSON MVP Requirements v4.3](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
+- [Mapping Workbook and Scenario JSON MVP Requirements v4.4](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [v5.0 Previous Baseline Carry-Forward Register](docs/requirements/eMAS_v5.0_Previous_Baseline_Carry_Forward.md)
 
 Detailed regulatory, parser, SQL, XPath, workbook-layout and test specifications are intentionally kept outside the enterprise requirements baseline and should be maintained in the appropriate lower-level controlled specifications.

@@ -6,7 +6,7 @@
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Classification:** Internal
 **Prepared:** 13 September 2026
-**Decision references:** DEC-2026-013, DEC-2026-014 and DEC-2026-015
+**Decision references:** DEC-2026-013 through DEC-2026-016
 
 ---
 
@@ -301,11 +301,13 @@ Unless an approved estimation model exists, eMAS shall report validated complexi
 
 The internal Mapping Workbook shall be one macro-free `.xlsx` master workbook. It shall maintain understandable, normalized, and filterable configuration for scenarios, modules, fields/evidence, regulatory profiles, requirements, classification/detection, structure/reference/integrity, source-system/DB/archive/DMS mappings, metrics, findings, recommendations, RAG, confidence, effort, readiness, reconciliation, source provenance, and runtime field mapping.
 
+The Requirement Catalogue shall cover assessment-module and cross-cutting workbook, transformation, runtime, reporting, logging, safety and non-functional obligations. One row shall represent one atomic, testable requirement with stable identity, human purpose, owner, lifecycle/phase/applicability scope, implementation disposition, acceptance criterion, source and separate requirement/implementation/verification status. A requirement may be implemented by multiple rule rows, which shall reference the requirement rather than being stored as a comma-separated list in the requirement row. Completeness shall be demonstrated by disposition of applicable normative source statements and bidirectional traceability, not by an arbitrary row-count target.
+
 For one selected `ScenarioId`, the MVP transformer shall resolve applicable modules, requirements, rules, and referenced dependencies and generate one deterministic scenario-specific Runtime JSON file. That JSON shall contain all configuration applicable to Pre-Sales, Pre-Migration, and Post-Migration for the selected scenario. Every exported object shall be traceable to stable workbook identifiers.
 
 The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
 
-The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, module catalogue, scenario/phase applicability, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.3](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, module catalogue, scenario/phase applicability, Requirement Catalogue, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.4](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
 
 SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 

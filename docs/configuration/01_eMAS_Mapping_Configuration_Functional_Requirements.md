@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.3 MVP
+**Version:** 4.4 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 13 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013, DEC-2026-014 and DEC-2026-015
+**Decision references:** DEC-2026-013 through DEC-2026-016
 
 ## 1. Purpose and MVP decision
 
@@ -677,33 +677,148 @@ Illustrative JSON emitted from two atomic `MS-01 / PreSales` mappings:
 ]
 ```
 
-Every active scenario shall have a row for every active module. This makes omissions visible and prevents accidental execution by default.
-
 ### 9.7 `06_Requirement_Catalogue`
 
-This sheet is the complete, plain-language inventory of what the migration scripts must support.
+This sheet is the complete, plain-language inventory of what the eMAS workbook, transformer, runtime assessment modules, reporting and logging components must support. It is the requirements ledger, not a duplicate rule database.
+
+One row shall contain one atomic, testable obligation with one primary owner, one scope and one acceptance criterion. When independently verifiable behavior, phase outcomes or ownership differ, the requirement shall be split into separate rows. Requirement statements describe **what** eMAS must do; rule sheets define the detailed conditions, parameters and outputs used to implement it.
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
 | `RequirementId` | Identifier | Yes | Primary traceability key -> `requirements[].requirementId` |
 | `RequirementTitle` | Text | Yes | Short filterable name |
-| `RequirementText` | Text | Yes | Testable statement of required behavior |
-| `RequirementArea` | Code | Yes | Scenario, source, DB, archive, DMS, repository, regulatory, sequence, reference, file, volume, interpretation, readiness, reconciliation, report |
-| `RequirementType` | Code | Yes | Functional, Data, Validation, Interface, or Constraint |
-| `Priority` | Code | Yes | Must, Should, May |
-| `ModuleId` | Reference | Yes | Owner module |
-| `Phase` | Code | Yes | Phase applicability |
-| `ScenarioId` | Code | Yes | `ALL` or exact scenario override |
-| `EngineOrConfiguration` | Code | Yes | WorkbookRule, EngineCapability, Hybrid, or ReportOnly |
-| `AcceptanceCriterion` | Text | Yes | Observable proof that the requirement is met |
-| `RuleSheet` | Text | Conditional | Workbook sheet that implements configurable behavior |
-| `RuleId` | Reference | Conditional | Direct implementing rule when one-to-one |
-| `JSONPath` | Text | Conditional | Expected runtime location |
-| `SourceId` | Reference | Yes | Source/decision basis |
-| `SourceSection` | Text | Yes | Precise source location |
+| `RequirementStatement` | Text | Yes | One testable shall/should/may statement |
+| `BusinessPurpose` | Text | Yes | Explains the migration, regulatory, technical or safety reason in plain language |
+| `RequirementDomain` | Code | Yes | Filterable family such as Archive, Classification, JSON, Reporting or Security |
+| `RequirementType` | Code | Yes | Functional, Data, Validation, Interface, Constraint, NonFunctional, or Safety |
+| `ObligationLevel` | Code | Yes | Must, Should, or May; avoids confusing obligation with rule execution priority |
+| `OwningComponent` | Code | Yes | AssessmentModule, Workbook, Transformer, Runtime, Reporting, or Logging |
+| `ModuleId` | Reference | Conditional | Required only when `OwningComponent=AssessmentModule`; cross-cutting requirements do not use a false module owner |
+| `LifecycleStage` | Code | Yes | Authoring, Generation, Runtime, Reporting, or CrossCutting |
+| `PhaseScope` | Code | Yes | AllPhases, PreSales, PreMigration, PostMigration, PreAndPostMigration, or NotApplicable |
+| `ApplicabilityBasis` | Code | Yes | Global, ModuleDriven, or ScenarioSpecific |
+| `ScenarioId` | Reference | Conditional | Required only for ScenarioSpecific behavior; Global and ModuleDriven requirements leave it blank |
+| `MissingEvidenceBehavior` | Code | Yes | NotAssessed, InsufficientEvidence, FollowUp, Blocked, or NotApplicable |
+| `PhaseOutcomeImpact` | Code | Yes | None, ConfidenceDown, FollowUp, ReadinessBlocker, or ReconciliationBlocker |
+| `ImplementationDisposition` | Code | Yes | WorkbookRule, EngineCapability, Hybrid, TransformerOnly, ValidationOnly, ReportOnly, or Deferred |
+| `ImplementationSheet` | Text | Conditional | Primary maintained sheet containing configurable implementation; additional rules link back through `RequirementId` |
+| `EngineCapability` | Code | Conditional | Primary generic PowerShell capability when required; detailed rule rows may reference additional capabilities |
+| `RuntimeExport` | Boolean | Yes | Controls whether the applicable requirement is projected into scenario JSON |
+| `JSONPath` | Text | Conditional | Required when `RuntimeExport=True`; normally `requirements[]` |
+| `AcceptanceCriterion` | Text | Yes | Observable evidence that proves the requirement |
+| `VerificationMethod` | Code | Yes | WorkbookValidation, UnitTest, IntegrationTest, ScenarioTest, ManualReview, or Inspection |
+| `TestReference` | Text | No | Stable test ID or test-specification reference when available |
+| `SourceId` | Reference | Yes | Primary regulatory, product or internal decision source |
+| `SourceSection` | Text | Conditional | Exact section, table, paragraph or decision; may be blank only when `SourceId` identifies one atomic internal decision |
 | `RequirementBasis` | Code | Yes | AuthorityRequirement, ReviewedInterpretation, ProductRequirement, eMASDesign |
-| `Status` | Code | Yes | Draft, Reviewed, Implemented, Verified, Deferred |
-| `Notes` | Text | No | Limits or explanation |
+| `RequirementStatus` | Code | Yes | Draft, Reviewed, Approved, Deferred, or Retired |
+| `ImplementationStatus` | Code | Yes | NotStarted, InProgress, Implemented, or NotApplicable |
+| `VerificationStatus` | Code | Yes | NotTested, Passed, Failed, or NotApplicable |
+| `IsActive` | Boolean | Yes | Current inclusion without deleting historical requirements |
+| `Notes` | Text | No | Limits, assumptions or maintenance explanation |
+
+The first four columns shall remain frozen in the workbook so the requirement identity and human meaning stay visible while technical columns are reviewed.
+
+#### Requirement relationship rules
+
+- `ModuleId` is conditional because workbook, transformer, runtime, report, log and safety requirements may be cross-cutting rather than owned by one of the fifteen assessment modules.
+- A requirement may be implemented by many rules. Every implementing rule row shall reference its `RequirementId`; comma-separated `RuleId` values and duplicated requirement rows are prohibited.
+- `ImplementationSheet` records only the primary maintained location. `24_Final_Config_Master` performs the reverse join from all implementing rule sheets and shows every linked `RuleId`, field, finding, recommendation, source and engine capability.
+- `ApplicabilityBasis=ModuleDriven` uses `05_Scenario_Module_Map`. `ScenarioSpecific` is used only when the required behavior itself differs for one scenario. Requirements shall not be copied across scenarios merely to reproduce module applicability.
+- Requirements that differ in phase outcome shall be separate atomic requirements. For example, a missing mandatory input that reduces Pre-Sales confidence and blocks Pre-Migration shall not be represented as one ambiguous row.
+- Actual customer answers, paths, detected values, findings, accepted exceptions and execution results are project evidence and shall not be entered in this catalogue.
+
+#### Mandatory requirement families
+
+There is no arbitrary required row count. Completeness is established by decomposing every applicable source obligation into atomic requirements and proving its disposition. At minimum, the catalogue shall cover:
+
+| Prefix | Requirement family | Minimum required coverage |
+|---|---|---|
+| `REQ-WBK` | Workbook | One master workbook, 28 stable sheets, named/filterable Tables, understandable text, controlled values, atomic rows, stable identifiers, no executable code and no project data |
+| `REQ-SCN` | Scenario | Eight scenarios, qualifiers, questionnaire/derivation, confirmation, Hybrid composition, partial evidence, pending/unsupported routes and the DMS-to-DMS exclusion |
+| `REQ-MOD` | Module applicability | Fifteen module boundaries, all 360 mappings, applicability meanings, phase depth, activation and missing-evidence behavior |
+| `REQ-SRC` | Source system | Product, version, environment, dependencies, source adapters and unsupported-source semantics |
+| `REQ-DB` | Database | Availability/type, Pre-Sales scale, detailed inventory, identifiers, counts, sizes, relationships, correlation and read-only access |
+| `REQ-ARC` | Archive | Identity, normalization, physical lookup, Found/Missing/Multiple/Invalid/Inaccessible, false-missing safeguards, counts, sizes, relationships and path provenance |
+| `REQ-DMS` | DMS / third-party | Metadata, documents, versions, renditions, identifiers, relationships, ownership/source reference, export completeness and eCTDmanager-target boundary |
+| `REQ-REP` | Repository / container | Folders, ZIPs, nested ZIPs, wrappers, multiple roots, nested/duplicate sequences, mixed content, temporary/system content, unexpected hierarchy and preserved context |
+| `REQ-CLS` | Regulatory classification | Independent region, authority, format, specification, regional implementation, application, dossier, procedure, activity, identity and evidence-precedence requirements |
+| `REQ-SEQ` | Sequence / lifecycle | Inventory, numeric patterns, gap observations, duplicates, nesting, XML/folder mismatch, application conflicts and lifecycle relationships |
+| `REQ-REF` | XML / reference | XML readability, namespaces, elements/attributes/paths, missing targets, orphan candidates, external references, lifecycle targets and XML-derived provenance |
+| `REQ-FIL` | File integrity | Presence, readability, zero-byte, extensions, duplicate candidates, checksums, PDF properties, paths, names and inaccessible files |
+| `REQ-VOL` | Volume / metrics | DB, archive, export, DMS, dossier, sequence, document and file counts/sizes, units, aggregation and diversity |
+| `REQ-MAP` | Migration mapping | Source/target identifiers, DB/archive and metadata mappings, declarative transformations, comparison keys, version-specific mappings and no executable SQL |
+| `REQ-INT` | Interpretation | Evaluation/evidence state, RAG, severity, confidence, effort, findings, recommendations, conflict handling and exception preservation |
+| `REQ-RDY` | Pre-Migration readiness | Detailed required evidence, blockers, remediation, exceptions, baseline population, comparison keys and permitted readiness outcomes |
+| `REQ-REC` | Post-Migration reconciliation | Baseline compatibility and comparison of records, objects, dossiers, sequences, metadata, files/hashes, relationships, counts and accepted differences |
+| `REQ-JSN` | JSON transformation | Selected-scenario filtering, 45 module objects, dependency resolution, deterministic serialization, native types, schema validation and object traceability |
+| `REQ-RUN` | Runtime | JSON-only loading, generic capabilities, defensive validation/error handling, offline execution and no configuration repair/reinterpretation |
+| `REQ-RPT` | Reporting | Phase-specific Excel output, execution/configuration context, scope, findings/actions, confidence, limitations, baseline/reconciliation and safe terminology |
+| `REQ-LOG` | Logging | Execution identity, timestamps, environment, versions, checksum, parameters, processing steps, warnings/errors, outcome and output paths |
+| `REQ-SEC` | Safety / security | Read-only evidence, no credentials, no external transmission, approved outputs, no source/target update and no customer evidence in reusable configuration |
+| `REQ-NFR` | Non-functional | Portability, culture-invariant data, supported runtime, large-repository handling, progress, recoverable errors and deterministic behavior |
+| `REQ-TST` | Testing / traceability | Requirement-to-rule-to-JSON-to-engine-to-test-to-evidence-to-report traceability plus unit, integration, scenario, regression and negative tests |
+
+Every normative statement from the approved enterprise baseline and every applicable retained lower-level requirement shall be assigned `Covered`, `Deferred`, or `Superseded` during population. A source statement with no catalogue disposition is a completeness error; a high row count alone is not evidence of completeness.
+
+#### Illustrative atomic requirement
+
+| Field | Example |
+|---|---|
+| `RequirementId` | `REQ-SEQ-003` |
+| `RequirementTitle` | Treat numeric sequence gaps as observations |
+| `RequirementStatement` | eMAS shall record a numeric sequence gap as an observation and shall not automatically classify the absent number as a required missing sequence. |
+| `BusinessPurpose` | A missing folder number alone does not prove that a regulatory sequence should exist. |
+| `RequirementDomain` | Sequence |
+| `RequirementType` | Constraint |
+| `ObligationLevel` | Must |
+| `OwningComponent` / `ModuleId` | AssessmentModule / `MOD-SEQUENCE` |
+| `LifecycleStage` / `PhaseScope` | Runtime / AllPhases |
+| `ApplicabilityBasis` | ModuleDriven |
+| `MissingEvidenceBehavior` / `PhaseOutcomeImpact` | NotAssessed / None |
+| `ImplementationDisposition` | Hybrid |
+| `ImplementationSheet` | `09_Dossier_Sequence_ID` |
+| `EngineCapability` | `DetectSequenceGap` |
+| `RuntimeExport` / `JSONPath` | True / `requirements[]` |
+| `AcceptanceCriterion` | For `0000`, `0001`, `0003`, record a gap observation without automatically creating a Red missing-sequence finding. |
+| `RequirementBasis` | ReviewedInterpretation |
+
+Illustrative scenario-JSON projection:
+
+```json
+{
+  "requirementId": "REQ-SEQ-003",
+  "title": "Treat numeric sequence gaps as observations",
+  "statement": "Record a numeric sequence gap as an observation without automatically treating the absent number as a required missing sequence.",
+  "domain": "Sequence",
+  "type": "Constraint",
+  "obligationLevel": "Must",
+  "owner": {
+    "component": "AssessmentModule",
+    "moduleId": "MOD-SEQUENCE"
+  },
+  "scope": {
+    "phaseScope": "AllPhases",
+    "applicabilityBasis": "ModuleDriven",
+    "scenarioId": null
+  },
+  "missingEvidenceBehavior": "NotAssessed",
+  "phaseOutcomeImpact": "None",
+  "implementation": {
+    "disposition": "Hybrid",
+    "sheet": "09_Dossier_Sequence_ID",
+    "engineCapability": "DetectSequenceGap"
+  },
+  "source": {
+    "sourceId": "SRC-INT-SEQ-GAP",
+    "basis": "ReviewedInterpretation"
+  }
+}
+```
+
+For one selected scenario, the transformer shall include Global runtime requirements, include ModuleDriven requirements when the module is Required, Optional or Conditional for at least one phase, preserve the Conditional activation through the corresponding module mapping, and include ScenarioSpecific requirements only for the matching `ScenarioId`. Authoring-only, Transformer-only and Report-only requirements are retained in the workbook but are not exported unless `RuntimeExport=True` and the JSON contract explicitly requires them.
+
+An active requirement is incomplete when it lacks an implementing rule, named engine capability, transformer/validation behavior, report behavior or explicit Deferred disposition. Conversely, every active rule, engine capability and controlled report behavior shall resolve to at least one `RequirementId`.
 
 At minimum, this catalogue shall cover every requirement area listed in Sections 5, 6, and 9 of this document. A requirement without an implementing rule, named engine capability, report field, or explicit Deferred status is incomplete.
 
@@ -1023,7 +1138,7 @@ Rules shall support DB record to target object, archive object to migrated docum
 | `Usage` | Code | Yes | AuthoringOnly, Runtime, Both |
 | `IsActive` | Boolean | Yes | Dropdown/runtime eligibility |
 
-At minimum, lists shall include phase, scenario family, primary source mechanism, included source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, assessment depth, phase-outcome impact, baseline contribution, reconciliation role, module, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, operator, data type, scope level, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, and status.
+At minimum, lists shall include phase, scenario family, primary source mechanism, included source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, assessment depth, phase-outcome impact, baseline contribution, reconciliation role, module, requirement domain/type, obligation level, owning component, lifecycle stage, requirement phase scope, requirement applicability basis, missing-evidence behavior, implementation disposition, verification method, requirement/implementation/verification status, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, operator, data type, scope level, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, and status.
 
 ### 9.24 `23_Source_References`
 
@@ -1053,10 +1168,10 @@ This generated sheet is the reviewer’s filterable answer to: “What exactly w
 | `SelectedScenarioId` | Confirms the generation context |
 | `Phase` | Shows which phase consumes the record |
 | `ModuleId` and `ModuleApplicability` | Shows the scenario-module decision |
-| `RequirementId` and `RequirementText` | Shows the human requirement |
+| `RequirementId`, `RequirementTitle` and `RequirementStatement` | Shows the human requirement and its atomic obligation |
 | `SourceSheet` and `SourceRecordId` | Locates the exact workbook row |
 | `RecordType` | Scenario, Module, Requirement, Field, Profile, Rule, Finding, Recommendation, Source, ValueList |
-| `InclusionStatus` | Included, Excluded, Conditional, Error |
+| `InclusionStatus` | Included, Conditional, Optional, Excluded, Deferred, Error |
 | `InclusionReason` | Explains the join/filter decision |
 | `JSONPath` | Shows the destination in JSON |
 | `ReferencedBy` | Shows dependency that caused inclusion |
@@ -1150,7 +1265,7 @@ The following coverage is mandatory before the workbook can claim to contain all
 | `02_Scenario_Questionnaire` | Active reusable question definitions | `questionnaire.questions[]` |
 | `03_Scenario_Derivation_Rules` | Active rules that convert project context to one base scenario | `questionnaire.derivationRules[]` |
 | `04_Assessment_Modules` | Via `05_Scenario_Module_Map` | `modules[]` |
-| `06_Requirement_Catalogue` | Module + phase + scenario | `requirements[]` |
+| `06_Requirement_Catalogue` | RuntimeExport + ownership + lifecycle/phase scope + Global/ModuleDriven/ScenarioSpecific applicability | `requirements[]` |
 | `07_Fields_Evidence` | Referenced by included rules/modules | `catalogues.fields[]` |
 | `08_Regulatory_Profiles` | Referenced by included classification rules | `catalogues.regulatoryProfiles[]` |
 | Rule/mapping sheets `09`-`14` | Requirement + module + scenario + scope | `rules.<family>[]` and `sourceMappings[]` |
@@ -1219,7 +1334,37 @@ The following coverage is mandatory before the workbook can claim to contain all
     "fields": [],
     "regulatoryProfiles": []
   },
-  "requirements": [],
+  "requirements": [
+    {
+      "requirementId": "String",
+      "title": "String",
+      "statement": "String",
+      "domain": "String",
+      "type": "Functional|Data|Validation|Interface|Constraint|NonFunctional|Safety",
+      "obligationLevel": "Must|Should|May",
+      "owner": {
+        "component": "AssessmentModule|Workbook|Transformer|Runtime|Reporting|Logging",
+        "moduleId": "String|null"
+      },
+      "scope": {
+        "phaseScope": "AllPhases|PreSales|PreMigration|PostMigration|PreAndPostMigration|NotApplicable",
+        "applicabilityBasis": "Global|ModuleDriven|ScenarioSpecific",
+        "scenarioId": "String|null"
+      },
+      "missingEvidenceBehavior": "NotAssessed|InsufficientEvidence|FollowUp|Blocked|NotApplicable",
+      "phaseOutcomeImpact": "None|ConfidenceDown|FollowUp|ReadinessBlocker|ReconciliationBlocker",
+      "implementation": {
+        "disposition": "WorkbookRule|EngineCapability|Hybrid|TransformerOnly|ValidationOnly|ReportOnly|Deferred",
+        "sheet": "String|null",
+        "engineCapability": "String|null"
+      },
+      "source": {
+        "sourceId": "String",
+        "sourceSection": "String|null",
+        "basis": "AuthorityRequirement|ReviewedInterpretation|ProductRequirement|eMASDesign"
+      }
+    }
+  ],
   "rules": {
     "repositoryDiscovery": [],
     "regulatoryClassification": [],
@@ -1261,15 +1406,16 @@ For a selected `ScenarioId`, the transformer shall:
 1. validate that the selected `ScenarioId` identifies exactly one active base scenario, whether selected directly or produced by the approved derivation rules;
 2. load exactly 45 scenario-module mappings for the selected scenario: fifteen modules for each of the three phases;
 3. serialize every mapping, including `NotApplicable` records with their reason; the runtime executes Required/Optional mappings and evaluates Conditional activation, but skips `NotApplicable` mappings;
-4. include active requirements for Required, Optional, and potentially active Conditional modules where `ScenarioId` is `ALL` or the selected scenario;
-5. include active rules that implement those requirements and match the scenario/module/phase scope;
-6. include every referenced evidence field, metric, regulatory profile, finding, recommendation, source, and runtime value-list entry;
-7. include scenario-specific Pre-Migration and Post-Migration rules;
-8. reject unresolved or inactive references;
-9. sort objects and condition groups by defined keys rather than worksheet row position;
-10. serialize using UTF-8, invariant numbers, JSON booleans, explicit arrays, and stable property order;
-11. validate section counts against `24_Final_Config_Master`;
-12. write one file named `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`.
+4. include active Global requirements with `RuntimeExport=True`, include active ModuleDriven requirements when the associated module is Required, Optional or Conditional for at least one phase, and include active ScenarioSpecific requirements only when `ScenarioId` matches the selection;
+5. exclude Authoring-only, Transformer-only and Report-only requirements unless their row explicitly sets `RuntimeExport=True` and the JSON contract defines their runtime purpose;
+6. include active rules that implement the included requirements and match the scenario/module/phase scope by reverse lookup of `RequirementId`;
+7. include every referenced evidence field, metric, regulatory profile, finding, recommendation, source, and runtime value-list entry;
+8. include scenario-specific Pre-Migration and Post-Migration rules;
+9. reject unresolved or inactive references;
+10. sort objects and condition groups by defined keys rather than worksheet row position;
+11. serialize using UTF-8, invariant numbers, JSON booleans, explicit arrays, and stable property order;
+12. validate section counts against `24_Final_Config_Master`;
+13. write one file named `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`.
 
 Questionnaire answers and actual qualifier values are project evidence and shall not be embedded in the reusable scenario configuration. The JSON contains the question catalogue, derivation rules, qualifier vocabulary, and output contract so the consuming application can collect context and produce a traceable scenario-selection result. Conditional activation with an unknown or missing context value shall produce the configured missing-evidence behavior; it shall not be treated as a false condition.
 
@@ -1347,7 +1493,7 @@ For an attempted DMS-to-DMS migration, the result shall use `derivedScenarioId=M
 
 ## 13. JSON examples by migration scenario
 
-The examples below show the required scenario-specific shape. Rule arrays contain IDs for brevity. To avoid repeating 45 module objects per scenario, each `modules` array contains one representative complete mapping; the generated JSON shall contain all 45 objects defined by the approved matrix in Section 9.6.
+The examples below show the required scenario-specific shape. Rule arrays contain IDs for brevity, and complete `requirements[]` objects are omitted because the Requirement Catalogue is populated in later content reviews. To avoid repeating 45 module objects per scenario, each `modules` array contains one representative complete mapping. Generated JSON shall contain all 45 module objects, every applicable structured requirement and the complete referenced rule objects.
 
 ### 13.1 `MS-01` - eCTDmanager SQL Server to SQL Server
 
@@ -1463,7 +1609,16 @@ JSON generation shall be blocked when any of the following is true:
 - a mapping uses an unsupported phase/applicability/depth combination, or `MOD-READINESS`/`MOD-RECONCILE` violates its phase boundary;
 - a Conditional mapping lacks a complete activation condition or treats Unknown/missing context as false;
 - `PrimarySourceMechanism=MultipleSources` lacks at least two valid `IncludedSourceMechanisms` values;
-- a requirement has no implementation/deferred disposition;
+- a requirement identifier is duplicated/reused, or its title, atomic statement, business purpose, owner, scope or acceptance criterion is missing;
+- an AssessmentModule-owned requirement lacks a valid active `ModuleId`, or a cross-cutting requirement is assigned a false module owner;
+- a ModuleDriven requirement cannot resolve through `05_Scenario_Module_Map`, or a ScenarioSpecific requirement lacks one valid `ScenarioId`;
+- a requirement combines independently testable phase behavior or incompatible outcome impacts that must be split into atomic rows;
+- a requirement has no implementing rule, named engine capability, transformer/validation behavior, report behavior or explicit Deferred disposition;
+- an active rule, engine capability or controlled report behavior does not resolve to at least one active `RequirementId`;
+- a requirement stores comma-separated `RuleId` values instead of using reverse references from the implementing sheets;
+- `RuntimeExport=True` lacks a compatible `JSONPath`, or an exported requirement has an unresolved owner/source reference;
+- requirement, implementation and verification status are conflated or use an invalid lifecycle transition;
+- an applicable normative source statement has no Covered, Deferred or Superseded disposition;
 - a rule refers to an unsupported field, operator, data type, engine capability, or parser profile;
 - condition grouping is incomplete or inconsistent;
 - numeric thresholds overlap, invert, or use mismatched units;
@@ -1523,6 +1678,13 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-024` | Run `MS-07` Pre-Migration | `MOD-READINESS` is Required and returns Blocked until a supported scenario and sufficient evidence are confirmed |
 | `MVP-AT-025` | Set primary input=MultipleSources, select eCTDmanager DB/archive and DMS in `Q-SCN-023`, and target=eCTDmanager | Derivation selects `MS-05`; project JSON preserves both values as an array and activates DB/archive and DMS conditional modules |
 | `MVP-AT-026` | Evaluate a Conditional module with an Unknown or missing activation field | The configured FollowUp/NotAssessed/Blocked behavior is produced; the module is not silently treated as inactive |
+| `MVP-AT-027` | Validate `06_Requirement_Catalogue` structure | All approved columns and the 24 `REQ-*` requirement families are present with controlled values |
+| `MVP-AT-028` | Add one requirement containing two independently testable behaviors | Validation instructs the maintainer to split it into atomic requirements before export |
+| `MVP-AT-029` | Link several active rules to one requirement | The requirement remains one row; Final Config Master and JSON traceability resolve all implementing rules through their `RequirementId` references |
+| `MVP-AT-030` | Add a global transformer requirement without `ModuleId` | The row validates when `OwningComponent=Transformer`; no artificial assessment-module owner is required |
+| `MVP-AT-031` | Set RequirementStatus=Approved, ImplementationStatus=Implemented and VerificationStatus=NotTested | The three states remain distinct and no Verified claim is inferred |
+| `MVP-AT-032` | Generate scenario JSON containing `REQ-SEQ-003` | `requirements[]` contains the structured owner, scope, missing-evidence, outcome-impact, implementation and source projection and links to every implementing sequence-gap rule |
+| `MVP-AT-033` | Reconcile approved enterprise and retained lower-level requirements | Every applicable normative source statement has a Covered, Deferred or Superseded disposition; missing disposition blocks completeness acceptance |
 
 ## 17. MVP definition of done
 
@@ -1530,15 +1692,16 @@ The MVP is complete when:
 
 1. all 28 required sheets exist with the specified stable names and columns;
 2. `04_Assessment_Modules` contains the fifteen approved active modules and `05_Scenario_Module_Map` contains all 360 active scenario/phase/module mappings;
-3. every migration-script requirement is represented in `06_Requirement_Catalogue` and linked to a rule, engine capability, report-only behavior, or explicit deferral;
-4. every supported scenario has complete phase-by-phase module applicability;
-5. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-6. scenario-specific JSON can be generated for all scenarios in Section 5;
-7. every JSON object is traceable to workbook records;
-8. invalid or incomplete workbook content blocks generation with actionable messages;
-9. unchanged input and scenario selection produce identical canonical JSON;
-10. the PowerShell runtime consumes JSON without reading Excel;
-11. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+3. every workbook, transformer, migration-script, reporting, logging, safety and non-functional requirement is represented atomically in `06_Requirement_Catalogue`, belongs to one of the 24 mandatory families, and has an implementation or explicit deferral;
+4. every applicable normative source statement has a Covered, Deferred or Superseded disposition, and every active rule, engine capability and controlled report behavior resolves to a requirement;
+5. every supported scenario has complete phase-by-phase module applicability;
+6. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+7. scenario-specific JSON can be generated for all scenarios in Section 5;
+8. every JSON object is traceable to workbook records;
+9. invalid or incomplete workbook content blocks generation with actionable messages;
+10. unchanged input and scenario selection produce identical canonical JSON;
+11. the PowerShell runtime consumes JSON without reading Excel;
+12. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -1580,3 +1743,4 @@ Each review step shall answer four questions:
 | 4.1 MVP | 13 September 2026 | Applied the approved eight-scenario `MS-*` catalogue; separated project qualifiers from scenario identity; defined the business-first questionnaire; added `03_Scenario_Derivation_Rules`; replaced scenario JSON examples and expanded derivation acceptance tests |
 | 4.2 MVP | 13 September 2026 | Approved deterministic scenario derivation based on primary migration input and target platform; added `Q-SCN-021` and `Q-SCN-022`; refined rule columns, selection statuses, conflict/fallback behavior, project selection-result JSON and edge cases; explicitly excluded DMS-to-DMS migration and routed it to `MS-07 / NeedsReview` with consultant discussion |
 | 4.3 MVP | 13 September 2026 | Approved the fifteen-module catalogue and boundaries; expanded `04_Assessment_Modules`; required all 360 explicit scenario/phase/module mappings; defined phase applicability, depth, missing-evidence, baseline and reconciliation semantics; added Hybrid composition question `Q-SCN-023`; replaced module-ID buckets with traceable module mapping objects in JSON; made `MOD-READINESS` required for `MS-07` Pre-Migration and excluded formal reconciliation for unresolved `MS-07` |
+| 4.4 MVP | 13 September 2026 | Approved the atomic `06_Requirement_Catalogue` model; added human purpose, cross-cutting ownership, lifecycle/phase/applicability scope, missing-evidence and outcome behavior, implementation disposition, runtime projection, acceptance/source traceability and separate requirement/implementation/verification statuses; defined 24 mandatory `REQ-*` families; removed direct one-to-one RuleId storage in favor of reverse rule references; added structured scenario `requirements[]`, completeness validation and acceptance tests |
