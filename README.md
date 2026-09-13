@@ -67,9 +67,11 @@ The applicable checks depend on the migration scenario and available evidence. E
 | `MS-05` | Hybrid Migration | coordinated assessment across two or more source mechanisms |
 | `MS-06` | Archive or Storage Only | archive discovery, identity limitations, counts, size, and confidence |
 | `MS-07` | Scenario Pending or Incomplete | follow-up questions and safe Not Assessed outcomes |
-| `MS-08` | Third-Party System or DMS Migration | adapter, metadata, document/rendition, relationship, and mapping assessment |
+| `MS-08` | Third-Party System or DMS to eCTDmanager | adapter, metadata, document/rendition, relationship, and mapping assessment into the supported target |
 
 Customer relationship, source/target hosting, migration scope, evidence completeness, repository composition, eSUBmanager/DMS dependencies, other integrations, and sequential upgrade are qualifiers. They change applicable rules and confidence without creating duplicate base scenarios.
+
+DMS-to-DMS migration is outside the current MVP scope. It is routed to `MS-07 / NeedsReview` for consultant discussion rather than being treated as `MS-08`.
 
 Not every project executes every assessment module.
 
@@ -115,7 +117,7 @@ Depending on applicability, eMAS may assess:
 ## Current requirements references
 
 - [Enterprise Requirements v5.0](docs/requirements/eMAS_Enterprise_Requirements_v5.0.md)
-- [Mapping Workbook and Scenario JSON MVP Requirements v4.1](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
+- [Mapping Workbook and Scenario JSON MVP Requirements v4.2](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [v5.0 Previous Baseline Carry-Forward Register](docs/requirements/eMAS_v5.0_Previous_Baseline_Carry_Forward.md)
 
 Detailed regulatory, parser, SQL, XPath, workbook-layout and test specifications are intentionally kept outside the enterprise requirements baseline and should be maintained in the appropriate lower-level controlled specifications.

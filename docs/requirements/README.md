@@ -4,7 +4,7 @@
 
 Use [eMAS Enterprise Requirements v5.0](eMAS_Enterprise_Requirements_v5.0.md) as the product-scope baseline for this branch.
 
-For the immediate implementation, use [Mapping Workbook and Scenario JSON MVP Requirements v4.1](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md). The MVP priority is:
+For the immediate implementation, use [Mapping Workbook and Scenario JSON MVP Requirements v4.2](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md). The MVP priority is:
 
 1. capture all configurable migration-script requirements in one understandable master workbook; and
 2. generate deterministic Runtime JSON for a selected migration scenario.

@@ -6,7 +6,7 @@
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Classification:** Internal
 **Prepared:** 13 September 2026
-**Decision reference:** DEC-2026-013
+**Decision references:** DEC-2026-013 and DEC-2026-014
 
 ---
 
@@ -69,11 +69,13 @@ The approved MVP base catalogue is:
 | `MS-05` | Hybrid Migration | Combined assessment across two or more primary source mechanisms |
 | `MS-06` | Archive or Storage Only | Archive discovery, identity limitations, counts, size and reduced-confidence interpretation |
 | `MS-07` | Scenario Pending or Incomplete | Missing/contradictory information, follow-up and safe Not Assessed outcomes |
-| `MS-08` | Third-Party System or DMS Migration | Source adapter, metadata, documents/renditions, relationships and mapping |
+| `MS-08` | Third-Party System or DMS to eCTDmanager | Source adapter, metadata, documents/renditions, relationships and mapping into the supported target |
 
 Customer relationship, source/target hosting, migration scope, evidence completeness, repository composition, eSUBmanager dependency, DMS dependency, other integrations and sequential upgrade shall be represented as qualifiers rather than separate scenario identities. Qualifiers may change module applicability, rules, follow-up, coverage and confidence.
 
 Reusable questionnaire definitions and scenario-derivation rules are controlled configuration. Project/customer answers, detected values, actual qualifier values and overrides are execution evidence and shall not become reusable Runtime JSON configuration. The questionnaire shall begin with business/current-source questions, then hosting/destination and dependencies, and only then request technical evidence.
+
+The questionnaire shall explicitly capture the primary migration input and intended target platform. `MS-08` applies only when third-party-system or DMS content is migrating into eCTDmanager. DMS-to-DMS migration is outside the current eMAS MVP scenario catalogue and shall return `MS-07 / NeedsReview`, require consultant discussion and prevent automatic generation of `MS-08` Runtime JSON.
 
 Pre-Sales questions about databases and archives shall be limited by default to availability and approximate scale. Detailed `database record -> archive identifier -> physical object` verification belongs to Pre-Migration and Post-Migration. Partial evidence shall not force `MS-07` when the base migration route is otherwise known; it shall reduce evidence completeness, module coverage and confidence.
 
@@ -212,6 +214,8 @@ Where a migration uses DMS or third-party source evidence, eMAS shall support as
 
 The framework shall permit source-specific adapters/mappings without changing the canonical assessment/result model. Unsupported source semantics shall be reported as Unknown/Not Assessed rather than guessed.
 
+This capability covers third-party-system/DMS source assessment for migration into eCTDmanager. It does not authorize or assess DMS-to-DMS migration. A DMS-to-DMS request shall be classified as outside the current scenario catalogue and escalated for consultant review and separate scope definition.
+
 ## 9. Repository and container discovery
 
 When folder/export evidence exists, the engine shall distinguish physical containers from regulatory application/dossier roots and support controlled discovery of ZIPs, nested ZIPs, wrapper folders, duplicate/nested sequence directories, mixed formats, multiple applications/products, backups/temp/system files, unexpected hierarchy and unrecognizable structures.
@@ -297,7 +301,7 @@ For one selected `ScenarioId`, the MVP transformer shall resolve applicable modu
 
 The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
 
-The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.1](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.2](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
 
 SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 

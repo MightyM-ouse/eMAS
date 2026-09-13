@@ -1,10 +1,10 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.8 MVP scenario alignment
+**Version:** 1.9 MVP derivation alignment
 **Status:** Approved MVP design baseline; implementation pending
 **Prepared date:** 2026-09-13
 **Owner:** Documentation Owner
-**Decision reference:** DEC-2026-008 / AP-008 and DEC-2026-013; requirements, scenario model, questionnaire, logical-model, schema, architecture, skills and historical XLSM/VBA POC synchronization
+**Decision reference:** DEC-2026-008 / AP-008, DEC-2026-013 and DEC-2026-014; requirements, scenario model, questionnaire, derivation rules, logical-model, schema, architecture, skills and historical XLSM/VBA POC synchronization
 
 ## Purpose
 
@@ -24,7 +24,7 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 | ID | Rank | Artifact | Version/status | Owner |
 |---|---:|---|---|---|
-| CFG-MVP | 2 | [Mapping Workbook and Scenario JSON MVP Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v4.1 Approved MVP design baseline; implementation pending | Product Owner |
+| CFG-MVP | 2 | [Mapping Workbook and Scenario JSON MVP Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v4.2 Approved MVP design baseline; implementation pending | Product Owner |
 | CFG-TECH | Reference | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 historical reference pending MVP reconciliation | Technical Architect |
 | CFG-CAT | Reference | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 reference pending MVP reconciliation | Product Owner / SMEs |
 | CFG-JSON | Reference | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 reference pending scenario-JSON synchronization | Technical Architect |

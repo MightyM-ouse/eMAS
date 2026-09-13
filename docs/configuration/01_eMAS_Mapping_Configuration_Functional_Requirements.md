@@ -2,12 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.1 MVP
+**Version:** 4.2 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 13 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
+**Decision references:** DEC-2026-013 and DEC-2026-014
 
 ## 1. Purpose and MVP decision
 
@@ -60,6 +61,7 @@ The Mapping Workbook shall not:
 - execute migration, repair source content, or modify evidence;
 - contain PowerShell, VBA, JavaScript, SQL, XPath evaluation code, or other executable expressions in cells;
 - claim formal regulatory validation, customer acceptance, or validated-system status;
+- treat DMS-to-DMS migration as a supported scenario; such a request requires consultant review and separate scope definition;
 - define low-level generic operations such as directory enumeration, ZIP extraction, XML parsing, checksum calculation, logging, or OpenXML report writing.
 
 ## 3. MVP operating model
@@ -108,10 +110,10 @@ The approved MVP catalogue contains eight base migration scenarios. A scenario r
 | `MS-02` | `ECTDMGR_ACCESS_TO_SQL` | eCTDmanager Access to SQL Server | Existing legacy eCTDmanager source with Access database | Legacy extraction, archive correlation, conversion risks, and reconciliation |
 | `MS-03` | `ECTDMGR_ORACLE_TO_SQL` | eCTDmanager Oracle to SQL Server | Existing eCTDmanager source with Oracle database | Oracle source mapping, archive correlation, conversion risks, and reconciliation |
 | `MS-04` | `REGULATORY_EXPORT_TO_ECTDMGR` | Regulatory Submission Export to eCTDmanager | Source consists primarily of regulatory submission exports | Repository, ZIP, dossier, region, format, sequence, XML, and file assessment |
-| `MS-05` | `HYBRID_MIGRATION` | Hybrid Migration | Two or more source mechanisms or a partially existing eCTDmanager population | Combined DB/archive, export, DMS, or mixed-source assessment and reconciliation |
-| `MS-06` | `ARCHIVE_STORAGE_ONLY` | Archive or Storage Only | Physical archive/storage exists without a usable database or complete regulatory export | Archive discovery, identity limitations, counts, size, and reduced confidence |
+| `MS-05` | `HYBRID_MIGRATION` | Hybrid Migration | Two or more primary migration inputs are included in the migration population | Combined DB/archive, export, DMS, or mixed-source assessment and reconciliation |
+| `MS-06` | `ARCHIVE_STORAGE_ONLY` | Archive or Storage Only | Physical archive/storage is itself the intended migration input rather than merely the only evidence currently available | Archive discovery, identity limitations, counts, size, and reduced confidence |
 | `MS-07` | `SCENARIO_PENDING` | Scenario Pending or Incomplete | Available answers cannot reliably identify another scenario | Missing information, follow-up questions, and safe Not Assessed outcomes |
-| `MS-08` | `THIRD_PARTY_DMS` | Third-Party System or DMS Migration | Content and metadata originate from a third-party system or DMS | Source adapter, metadata, documents, renditions, relationships, and mapping |
+| `MS-08` | `THIRD_PARTY_DMS_TO_ECTDMGR` | Third-Party System or DMS to eCTDmanager | Content and metadata originate from a third-party system or DMS and the supported target is eCTDmanager | Source adapter, metadata, documents, renditions, relationships, and mapping |
 
 The following are qualifiers rather than separate scenarios:
 
@@ -129,6 +131,8 @@ The following are qualifiers rather than separate scenarios:
 | `SequentialUpgradeRequired` | Yes, No, ToBeDetermined | Activates upgrade-path requirements |
 
 Partial evidence does not automatically produce `MS-07`. When the migration route is known, the applicable base scenario remains selected and `EvidenceCompleteness` records the limitation. Mixed repository content remains a qualifier unless it establishes a Hybrid migration or prevents reliable scenario identification.
+
+`MS-08` does not include DMS-to-DMS migration. When the source and intended target are both DMS platforms, or the target platform is another unsupported third-party system, derivation shall return `MS-07` with `NeedsReview`, identify the requested route as outside the current scenario catalogue, and require discussion with an EXTEDO consultant before further assessment.
 
 ## 6. Assessment module catalogue
 
@@ -290,13 +294,13 @@ One row defines one stable base migration scenario. Hosting, scope, evidence com
 | `ScenarioFamily` | Code | Yes | Groups variants -> `scenario.family` |
 | `BusinessDescription` | Text | Yes | Plain-language boundary and intended use -> `scenario.description` |
 | `ExistingECTDManager` | Code | Yes | Yes, No, Partial, or Unknown; supports deterministic derivation |
-| `SourceSystemCategory` | Code | Yes | eCTDmanager, RegulatoryExport, ThirdPartySystem, DMS, ArchiveStorage, Hybrid, or Unknown |
+| `SourceSystemCategory` | Code | Yes | eCTDmanager, RegulatoryExport, ThirdPartySystemOrDMS, ArchiveStorage, Hybrid, or Unknown; the exact third-party/DMS input remains in project context |
 | `SourceDatabaseType` | Code | Yes | SQLServer, Access, Oracle, NotApplicable, or Unknown |
 | `PrimaryMigrationMethod` | Code | Yes | DatabaseArchive, ExportImport, ArchiveOnly, Adapter, Hybrid, or Unknown |
 | `TargetPlatform` | Code | Yes | Target product/platform family without embedding hosting |
 | `SupportsMixedScope` | Boolean | Yes | Identifies scenarios that intentionally combine source mechanisms |
 | `FallbackScenario` | Boolean | Yes | True only for the safe pending/incomplete route |
-| `ScenarioPriority` | Integer | Yes | Deterministic tie-breaking after derivation-rule priority |
+| `DisplaySequence` | Integer | Yes | Stable human display and serialization order; never used to hide conflicting derivation matches |
 | `IsActive` | Boolean | Yes | Controls selectable/exportable scenarios |
 | `SourceId` | Reference | Yes | Basis for scenario definition |
 | `Notes` | Text | No | Boundary clarification; never executable logic |
@@ -334,8 +338,8 @@ Questions shall be reviewed in this order:
 
 | Section | Purpose | Minimum questions |
 |---|---|---|
-| A - Current source and customer situation | Establish whether eCTDmanager is the current source and whether scope is complete, selected, or mixed | `Q-SCN-001` Dossiers currently in eCTDmanager?; `Q-SCN-002` All, selected, or mixed scope?; `Q-SCN-003` Content from another system/repository? |
-| B - Hosting and destination | Capture qualifiers without multiplying scenario identities | `Q-SCN-004` Source hosting?; `Q-SCN-005` Intended destination?; `Q-SCN-006` Target technical environment defined? |
+| A - Current source and customer situation | Establish whether eCTDmanager is the current source, what is in scope, and what will actually be supplied for migration | `Q-SCN-001` Dossiers currently in eCTDmanager?; `Q-SCN-002` All, selected, or mixed scope?; `Q-SCN-003` Content from another system/repository?; `Q-SCN-021` Primary migration input? |
+| B - Hosting and destination | Capture the target product and hosting qualifiers without multiplying scenario identities | `Q-SCN-004` Source hosting?; `Q-SCN-005` Intended target hosting?; `Q-SCN-022` Intended target platform?; `Q-SCN-006` Target technical environment defined? |
 | C - Dependencies and migration shape | Reveal related products, repositories, integrations, and upgrade needs | `Q-SCN-007` eSUBmanager used?; `Q-SCN-008` DMS/external repository used?; `Q-SCN-009` Other integrations?; `Q-SCN-010` Sequential upgrade required? |
 | D - Available technical evidence | Determine which assessment modules can run | `Q-SCN-011` Source DB available?; `Q-SCN-012` DB type?; `Q-SCN-013` Archive/storage available?; `Q-SCN-014` Regulatory exports available?; `Q-SCN-015` Third-party metadata available?; `Q-SCN-016` Documents/renditions available? |
 | E - Pre-Sales scale | Capture lightweight planning measures only | `Q-SCN-017` Approximate DB size?; `Q-SCN-018` Approximate archive size?; `Q-SCN-019` Approximate export size?; `Q-SCN-020` Approximate dossier/application count? |
@@ -347,62 +351,145 @@ The initial reusable question rows shall use the following controlled intent. Ex
 | `Q-SCN-001` | Are the dossiers currently managed in eCTDmanager? | Yes, No, Partially, NotSure | Always | `CurrentContentInECTDManager` |
 | `Q-SCN-002` | Is the intended migration scope all content, selected content, or a mixed scope? | AllContent, SelectedContent, Mixed, Unknown | Always | `MigrationScope` |
 | `Q-SCN-003` | Is migration content also coming from another system or repository? | Yes, No, Unknown | Always | `MultipleSourceMechanisms` |
+| `Q-SCN-021` | What will be the main migration input supplied to EXTEDO? | ECTDManagerDatabaseArchive, RegulatorySubmissionExport, ThirdPartySystem, DMS, ArchiveStorageOnly, MultipleSources, Unknown | Always; business answer confirmed by EXTEDO | `PrimarySourceMechanism` |
 | `Q-SCN-004` | How is the current source hosted? | OnPremises, Cloud, Hybrid, Unknown | Always | `SourceHosting` |
 | `Q-SCN-005` | What is the intended target hosting model? | OnPremises, Cloud, Hybrid, ToBeDefined | Always | `TargetHosting` |
+| `Q-SCN-022` | Which target platform should receive the migrated content? | eCTDmanager, OtherEXTEDOProduct, DMS, ThirdPartySystem, ToBeDefined | Always; business answer confirmed by EXTEDO | `TargetPlatform` |
 | `Q-SCN-006` | Is the target technical environment defined? | Yes, Partially, No, Unknown | Always; customer may answer Unknown | `TargetEnvironmentDefined` |
 | `Q-SCN-007` | Is eSUBmanager used or in migration scope? | Yes, No, Unknown | Always | `ESubmanagerDependency` |
 | `Q-SCN-008` | Is a DMS or external content repository used or in migration scope? | Yes, No, Unknown | Always | `DmsDependency` |
 | `Q-SCN-009` | Are other interfaces or integrations relevant to migration? | Yes, No, Unknown | Always | `OtherIntegrationDependency` |
 | `Q-SCN-010` | Is a sequential eCTDmanager upgrade expected before or during migration? | Yes, No, ToBeDetermined | When eCTDmanager is current or partial | `SequentialUpgradeRequired` |
-| `Q-SCN-011` | Is the source database available for assessment? | Yes, No, Unknown | When a database-backed source may exist | `SourceDatabaseAvailable` |
+| `Q-SCN-011` | Is the source database available for assessment? | Yes, No, Unknown | When primary input is eCTDmanager DB/archive or MultipleSources | `SourceDatabaseAvailable` |
 | `Q-SCN-012` | What is the source database type? | SQLServer, Access, Oracle, Other, Unknown, NotApplicable | When database availability is Yes or Unknown | `SourceDatabaseType` |
-| `Q-SCN-013` | Is the archive or physical storage available? | Yes, Partial, No, Unknown | Always | `ArchiveAvailable` |
-| `Q-SCN-014` | Are regulatory submission exports available? | Yes, Partial, No, Unknown | Always | `RegulatoryExportAvailable` |
-| `Q-SCN-015` | Is third-party system metadata available? | Yes, Partial, No, Unknown | When another system/DMS may be in scope | `ThirdPartyMetadataAvailable` |
-| `Q-SCN-016` | Are the source documents and renditions available? | Yes, Partial, No, Unknown | When another system/DMS may be in scope | `SourceDocumentsAvailable` |
+| `Q-SCN-013` | Is the archive or physical storage available? | Yes, Partial, No, Unknown | When primary input is eCTDmanager DB/archive, ArchiveStorageOnly, or MultipleSources | `ArchiveAvailable` |
+| `Q-SCN-014` | Are regulatory submission exports available? | Yes, Partial, No, Unknown | When primary input is RegulatorySubmissionExport or MultipleSources | `RegulatoryExportAvailable` |
+| `Q-SCN-015` | Is third-party system metadata available? | Yes, Partial, No, Unknown | When primary input is ThirdPartySystem, DMS, or MultipleSources | `ThirdPartyMetadataAvailable` |
+| `Q-SCN-016` | Are the source documents and renditions available? | Yes, Partial, No, Unknown | When primary input is ThirdPartySystem, DMS, or MultipleSources | `SourceDocumentsAvailable` |
 | `Q-SCN-017` | What is the approximate source database size? | Size plus unit | When source database is available | `SourceDatabaseApproxBytes` |
 | `Q-SCN-018` | What is the approximate archive/storage size? | Size plus unit | When archive/storage is available or partial | `ArchiveApproxBytes` |
 | `Q-SCN-019` | What is the approximate regulatory-export size? | Size plus unit | When regulatory exports are available or partial | `RegulatoryExportApproxBytes` |
 | `Q-SCN-020` | What is the approximate dossier/application count? | Non-negative integer or Unknown | Always | `ApproxDossierCount` |
 
-Pre-Sales shall ask for availability and approximate sizes, not detailed DB-to-archive object verification. Physical verification of `DB record -> archive key -> physical object` is a Pre-Migration/Post-Migration activity. Target technical fields may remain for EXTEDO to complete. Missing answers shall create follow-up/confidence effects through configuration; they shall not silently invent a scenario.
+Pre-Sales shall ask for availability and approximate sizes, not detailed DB-to-archive object verification. Physical verification of `DB record -> archive key -> physical object` is a Pre-Migration/Post-Migration activity. Target technical fields may remain for EXTEDO to complete. Missing answers shall create follow-up/confidence effects through configuration; they shall not silently invent a scenario. New/non-eCTDmanager customers shall see only questions relevant to their chosen primary migration input; they shall not be asked for eCTDmanager database, archive-path, or infrastructure details unless `MultipleSources` or another database-backed route is explicitly selected.
 
 ### 9.4 `03_Scenario_Derivation_Rules`
 
-This sheet converts questionnaire context into one candidate base scenario. It contains reusable decision logic, never customer answers.
+This sheet converts normalized questionnaire context into one candidate base scenario and an explainable selection status. It contains reusable decision and consistency logic, never customer answers. It evaluates normalized context fields rather than display text so questionnaire wording can change without changing scenario behavior.
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
 | `DerivationRuleId` | Identifier | Yes | Stable rule -> `questionnaire.derivationRules[].derivationRuleId` |
-| `Priority` | Integer | Yes | Defines deterministic evaluation order |
-| `ConditionGroup` | Text | Yes | Groups AND conditions; groups for one candidate use OR |
+| `RulePurpose` | Code | Yes | `SelectScenario`, `ValidateContext`, or `Fallback` |
+| `RuleName` | Text | Yes | Human-readable rule name |
+| `Priority` | Integer | Yes | Defines deterministic evaluation order; it shall not hide contradictory matches |
+| `ConditionGroup` | Text | Yes | Groups AND conditions; different groups for one rule use OR |
 | `ConditionSequence` | Integer | Yes | Stable order for review and serialization |
-| `QuestionId` | Reference | Conditional | Questionnaire answer used by the condition |
-| `ContextField` | Reference | Conditional | Derived project-context field used instead of a direct question |
+| `InputContextField` | Reference | Yes | Normalized project-context field evaluated by the condition |
+| `OriginQuestionId` | Reference | Conditional | Question that produced the context value; blank only for a derived context field |
 | `Operator` | Code | Yes | Controlled comparison operator |
 | `ExpectedValue` | Scalar | Conditional | Value required for the match |
-| `CandidateScenarioId` | Reference | Yes | Candidate `MS-*` scenario when the group matches |
-| `MatchEffect` | Code | Yes | Include, Exclude, Prefer, or Select |
-| `MissingInputOutcome` | Code | Yes | NoMatch, FollowUp, or SelectPending |
-| `ConfidenceImpact` | Code | Yes | NoChange, DownOneLevel, Low, or Unknown |
+| `CandidateScenarioId` | Reference | Conditional | Candidate `MS-*` scenario for selection/fallback rules |
+| `OnMatchStatus` | Code | Yes | `Derived`, `DerivedWithFollowUp`, `Pending`, or `NeedsReview` |
+| `MissingInputAction` | Code | Yes | `Continue`, `FollowUp`, or `UseFallback` |
+| `FollowUpQuestionId` | Reference | Conditional | Question required to complete or resolve the selection |
+| `ReasonCode` | Code | Yes | Stable machine-readable explanation |
 | `ReasonTemplate` | Text | Yes | Human explanation of why the scenario was derived |
+| `BaseConfidence` | Code | Yes | High, Medium, Low, or Unknown scenario-selection confidence; separate from assessment confidence |
 | `IsActive` | Boolean | Yes | Runtime inclusion |
 | `SourceId` | Reference | Yes | Requirement/decision basis |
+| `Notes` | Text | No | Boundary and maintenance explanation |
 
-The minimum approved derivation outcomes are:
+One workbook row represents one atomic condition. Rows sharing `DerivationRuleId` and `ConditionGroup` use AND. Different condition groups for the same rule use OR. A `Fallback` rule is evaluated only after all active validation and selection rules. `MatchEffect` is not required: every complete `SelectScenario` rule proposes its `CandidateScenarioId`.
 
-| Conditions | Derived scenario |
+The approved derivation rules are:
+
+| Priority | Rule ID | Required normalized context | Result |
+|---:|---|---|---|
+| 10 | `SDR-TARGET-UNSUPPORTED` | `TargetPlatform` is DMS, ThirdPartySystem, or OtherEXTEDOProduct | `MS-07 / NeedsReview`; record `OUTSIDE_SUPPORTED_TARGET` and require consultant discussion |
+| 20 | `SDR-MS05-MULTI` | `TargetPlatform=eCTDmanager` and `PrimarySourceMechanism=MultipleSources` | `MS-05 / Derived` |
+| 30 | `SDR-MS01-SQL` | `TargetPlatform=eCTDmanager`, `PrimarySourceMechanism=ECTDManagerDatabaseArchive`, `SourceDatabaseType=SQLServer` | `MS-01 / Derived` |
+| 31 | `SDR-MS02-ACCESS` | `TargetPlatform=eCTDmanager`, `PrimarySourceMechanism=ECTDManagerDatabaseArchive`, `SourceDatabaseType=Access` | `MS-02 / Derived` |
+| 32 | `SDR-MS03-ORACLE` | `TargetPlatform=eCTDmanager`, `PrimarySourceMechanism=ECTDManagerDatabaseArchive`, `SourceDatabaseType=Oracle` | `MS-03 / Derived` |
+| 40 | `SDR-MS04-EXPORT` | `TargetPlatform=eCTDmanager` and `PrimarySourceMechanism=RegulatorySubmissionExport` | `MS-04 / Derived` |
+| 50 | `SDR-MS08-THIRD` | `TargetPlatform=eCTDmanager` and `PrimarySourceMechanism=ThirdPartySystem` | `MS-08 / Derived` |
+| 51 | `SDR-MS08-DMS` | `TargetPlatform=eCTDmanager` and `PrimarySourceMechanism=DMS` | `MS-08 / Derived` |
+| 60 | `SDR-MS06-ARCHIVE` | `TargetPlatform=eCTDmanager` and `PrimarySourceMechanism=ArchiveStorageOnly` | `MS-06 / Derived` |
+| 900 | `SDR-MS07-FALLBACK` | No supported selection rule matches, a required classifier is unknown, an unsupported DB/source route is supplied, or answers conflict | `MS-07 / Pending` or `MS-07 / NeedsReview` |
+
+The selection status has the following meaning:
+
+| Status | Meaning |
 |---|---|
-| Current source is eCTDmanager; DB is SQL Server; no second primary source mechanism | `MS-01` |
-| Current source is eCTDmanager; DB is Access | `MS-02` |
-| Current source is eCTDmanager; DB is Oracle | `MS-03` |
-| Current source is not eCTDmanager; regulatory export is the primary evidence; no primary DMS/system migration | `MS-04` |
-| eCTDmanager is partial or two or more primary source mechanisms are in scope | `MS-05` |
-| No usable source DB/export; archive or storage is the only primary source | `MS-06` |
-| Required answers are missing, contradictory, or insufficient to select another scenario | `MS-07` |
-| A third-party system or DMS is the primary migration source | `MS-08` |
+| `Derived` | Required scenario-identity fields are known and mutually consistent |
+| `DerivedWithFollowUp` | Base scenario is known, but non-identity evidence or supporting information is incomplete |
+| `Pending` | Required scenario-identity information is missing; `MS-07` is selected until clarified |
+| `NeedsReview` | Answers conflict or identify an unsupported route; `MS-07` is selected pending consultant review |
+| `ConfirmedOverride` | Project-level confirmation selects a different scenario with the derived candidate, reason, confirmer, and date retained as execution evidence |
 
-Missing archive evidence does not change a known SQL Server migration from `MS-01` to `MS-07`; it changes the evidence-completeness qualifier and module outcomes. Mixed dossier formats inside one regulatory export remain `MS-04`. Multiple primary source mechanisms use `MS-05`. `MS-07` is the explicit unresolved route, not a catch-all replacement for a known scenario with incomplete evidence.
+The transformer shall normalize answers, execute context-validation rules, evaluate every applicable selection rule, and then apply the fallback. Exactly one valid selection match produces that scenario. More than one different selection match is a configuration or input conflict and shall produce `MS-07 / NeedsReview`; priority shall not silently discard the conflict. No match produces `MS-07 / Pending`. An explicit supported scenario with missing non-identity evidence remains selected with `DerivedWithFollowUp`.
+
+Required edge-case behavior:
+
+| Project context | Required outcome |
+|---|---|
+| eCTDmanager SQL route is known; archive is unavailable | `MS-01 / DerivedWithFollowUp`; evidence completeness is reduced |
+| eCTDmanager content is partial, but only selected eCTDmanager dossiers are in scope | `MS-01`, `MS-02`, or `MS-03` according to DB type; not automatically Hybrid |
+| eCTDmanager and external/DMS content are both migration inputs | `MS-05` |
+| A DMS stores the source, but EXTEDO receives regulatory export packages as the migration input | `MS-04` |
+| DMS metadata/documents/renditions are migrated into eCTDmanager | `MS-08` |
+| DMS content is intended to migrate into another DMS | `MS-07 / NeedsReview`; DMS-to-DMS is outside current scope and requires consultant discussion |
+| DMS is only an eCTDmanager dependency | Keep the applicable `MS-01` to `MS-05` base scenario and set the DMS qualifier/module applicability |
+| The archive is merely the only evidence currently available, but the intended migration route is unknown | `MS-07`, not automatically `MS-06` |
+| Archive/storage itself is the intended migration input | `MS-06` |
+| Sequential upgrade, eSUBmanager, hosting, or mixed formats change | Keep the base scenario; update qualifiers and applicable rules |
+
+Missing archive evidence does not change a known SQL Server migration from `MS-01` to `MS-07`; it changes the evidence-completeness qualifier and module outcomes. Mixed dossier formats inside one regulatory export remain `MS-04`. Multiple primary migration inputs use `MS-05`. `MS-07` is the explicit unresolved or unsupported route, not a catch-all replacement for a known supported scenario with incomplete evidence.
+
+Illustrative grouped JSON produced from the atomic rows for `SDR-MS01-SQL`:
+
+```json
+{
+  "derivationRuleId": "SDR-MS01-SQL",
+  "rulePurpose": "SelectScenario",
+  "priority": 30,
+  "candidateScenarioId": "MS-01",
+  "conditionGroups": [
+    {
+      "groupId": "G1",
+      "all": [
+        {
+          "contextField": "TargetPlatform",
+          "originQuestionId": "Q-SCN-022",
+          "operator": "Equals",
+          "value": "eCTDmanager"
+        },
+        {
+          "contextField": "PrimarySourceMechanism",
+          "originQuestionId": "Q-SCN-021",
+          "operator": "Equals",
+          "value": "ECTDManagerDatabaseArchive"
+        },
+        {
+          "contextField": "SourceDatabaseType",
+          "originQuestionId": "Q-SCN-012",
+          "operator": "Equals",
+          "value": "SQLServer"
+        }
+      ]
+    }
+  ],
+  "onMatch": {
+    "status": "Derived",
+    "reasonCode": "ECTDMGR_SQL_PRIMARY",
+    "baseConfidence": "High"
+  },
+  "onMissing": {
+    "action": "FollowUp",
+    "questionIds": ["Q-SCN-012", "Q-SCN-021", "Q-SCN-022"]
+  }
+}
+```
 
 ### 9.5 `04_Assessment_Modules`
 
@@ -630,7 +717,7 @@ This sheet holds source-specific mapping configuration without storing executabl
 
 False-missing safeguards shall verify identifier mapping, conversion, root selection, recursion, extension assumptions, case behavior, duplicate candidates, and access before declaring an object missing. Business/display filename shall not automatically be treated as archive identity. Archive verification shall remain distinct from regulatory dossier validation.
 
-For DMS sources, the same structure shall support document ID, version/rendition ID, metadata fields, relationships, ownership/source reference, export completeness, and unsupported semantics returning Unknown or Not Assessed.
+For DMS sources migrating into eCTDmanager, the same structure shall support document ID, version/rendition ID, metadata fields, relationships, ownership/source reference, export completeness, and unsupported semantics returning Unknown or Not Assessed. These mapping rows shall not be interpreted as DMS-to-DMS migration support.
 
 ### 9.16 `15_RAG_Severity`
 
@@ -782,7 +869,7 @@ Rules shall support DB record to target object, archive object to migrated docum
 | `Usage` | Code | Yes | AuthoringOnly, Runtime, Both |
 | `IsActive` | Boolean | Yes | Dropdown/runtime eligibility |
 
-At minimum, lists shall include phase, scenario family, applicability, module, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, operator, data type, scope level, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, and status.
+At minimum, lists shall include phase, scenario family, primary source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, module, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, operator, data type, scope level, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, and status.
 
 ### 9.24 `23_Source_References`
 
@@ -885,7 +972,7 @@ The following coverage is mandatory before the workbook can claim to contain all
 | Source systems | Supported products/versions, adapters, dependencies, unsupported semantics, and evidence availability |
 | Database | Connectivity/readability evidence, inventory entities, logical IDs, counts/size, and comparison keys |
 | Archive | Object identity, normalization, path/key lookup, Found/Missing/Multiple/Invalid/Inaccessible, size/count, and false-missing safeguards |
-| DMS | Document/version/rendition IDs, metadata, relationships, ownership/source reference, file availability, and export completeness |
+| DMS | Document/version/rendition IDs, metadata, relationships, ownership/source reference, file availability, export completeness, supported target=eCTDmanager, and DMS-to-DMS consultant-review boundary |
 | Repository | Folders, ZIPs, nested ZIPs, wrappers, multiple roots, mixed content, backups/temp/system content, and original container context |
 | Regulatory classification | Separate region, authority, format, specification, regional implementation, application, dossier/procedure, lifecycle, and confidence |
 | Sequence/lifecycle | Numeric patterns, gaps, duplicates, nesting, XML/folder mismatch, application conflict, lifecycle references, and manual review |
@@ -948,10 +1035,17 @@ The following coverage is mandatory before the workbook can claim to contain all
     "derivationRules": [],
     "outputContract": {
       "derivedScenarioId": "String",
-      "derivationStatus": "Derived|NeedsReview",
+      "confirmedScenarioId": "String",
+      "derivationStatus": "Derived|DerivedWithFollowUp|Pending|NeedsReview|ConfirmedOverride",
+      "scenarioSelectionConfidence": "High|Medium|Low|Unknown",
+      "matchedDerivationRuleIds": [],
+      "candidateScenarioIds": [],
       "qualifiers": {},
       "missingQuestionIds": [],
-      "followUpQuestionIds": []
+      "followUpQuestionIds": [],
+      "reasonCodes": [],
+      "nextAction": "String",
+      "runtimeJsonEligible": "Boolean"
     }
   },
   "catalogues": {
@@ -1011,6 +1105,57 @@ For a selected `ScenarioId`, the transformer shall:
 12. write one file named `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`.
 
 Questionnaire answers and actual qualifier values are project evidence and shall not be embedded in the reusable scenario configuration. The JSON contains the question catalogue, derivation rules, qualifier vocabulary, and output contract so the consuming application can collect context and produce a traceable scenario-selection result.
+
+### 12.3 Project scenario-selection result
+
+The project scenario-selection result is execution evidence, not reusable configuration. It records the derived and confirmed scenario without copying customer answers into the master Runtime JSON. An illustrative result is:
+
+```json
+{
+  "scenarioSelection": {
+    "derivedScenarioId": "MS-01",
+    "confirmedScenarioId": "MS-01",
+    "status": "DerivedWithFollowUp",
+    "scenarioSelectionConfidence": "Medium",
+    "matchedDerivationRuleIds": ["SDR-MS01-SQL"],
+    "candidateScenarioIds": ["MS-01"],
+    "qualifiers": {
+      "targetHosting": "Cloud",
+      "eSubmanagerDependency": "Yes",
+      "evidenceCompleteness": "Partial"
+    },
+    "missingQuestionIds": ["Q-SCN-018"],
+    "followUpQuestionIds": ["Q-SCN-018"],
+    "reasonCodes": ["ECTDMGR_SQL_PRIMARY", "ARCHIVE_SIZE_NOT_PROVIDED"],
+    "nextAction": "CollectMissingEvidence",
+    "runtimeJsonEligible": true
+  }
+}
+```
+
+For an attempted DMS-to-DMS migration, the result shall use `derivedScenarioId=MS-07`, `status=NeedsReview`, `scenarioSelectionConfidence=Unknown`, and `reasonCodes=["DMS_TO_DMS_OUT_OF_SCOPE"]`. It shall identify consultation as the next action and shall not generate an `MS-08` Runtime JSON until a supported migration route is confirmed.
+
+```json
+{
+  "scenarioSelection": {
+    "derivedScenarioId": "MS-07",
+    "confirmedScenarioId": null,
+    "status": "NeedsReview",
+    "scenarioSelectionConfidence": "Unknown",
+    "matchedDerivationRuleIds": ["SDR-TARGET-UNSUPPORTED"],
+    "candidateScenarioIds": [],
+    "qualifiers": {
+      "primarySourceMechanism": "DMS",
+      "targetPlatform": "DMS"
+    },
+    "missingQuestionIds": [],
+    "followUpQuestionIds": [],
+    "reasonCodes": ["DMS_TO_DMS_OUT_OF_SCOPE"],
+    "nextAction": "ConsultEXTEDO",
+    "runtimeJsonEligible": false
+  }
+}
+```
 
 ## 13. JSON examples by migration scenario
 
@@ -1105,15 +1250,15 @@ The examples below show the required scenario-specific shape. Rule arrays contai
 }
 ```
 
-### 13.8 `MS-08` - Third-Party System or DMS Migration
+### 13.8 `MS-08` - Third-Party System or DMS to eCTDmanager
 
 ```json
 {
   "configuration": {"scenarioId": "MS-08", "mappingVersion": "0.1.0"},
-  "scenario": {"code": "THIRD_PARTY_DMS", "sourceSystemCategory": "ThirdPartySystem", "sourceDatabaseType": "Unknown", "primaryMigrationMethod": "Adapter"},
+  "scenario": {"code": "THIRD_PARTY_DMS_TO_ECTDMGR", "sourceSystemCategory": "ThirdPartySystemOrDMS", "sourceDatabaseType": "Unknown", "primaryMigrationMethod": "Adapter", "targetPlatform": "eCTDmanager"},
   "modules": {"included": ["MOD-SCENARIO", "MOD-SOURCE", "MOD-DMS", "MOD-VOLUME", "MOD-MAPPING", "MOD-INTERPRET", "MOD-READINESS", "MOD-RECONCILE"], "conditional": ["MOD-DB", "MOD-ARCHIVE", "MOD-REPOSITORY", "MOD-CLASSIFY", "MOD-SEQUENCE", "MOD-REFERENCE", "MOD-FILE"]},
   "sourceMappings": ["MAP-VENDOR-APPLICATION-ID", "MAP-DMS-DOCUMENT", "MAP-DMS-VERSION", "MAP-DMS-RENDITION", "MAP-DMS-METADATA", "MAP-DMS-RELATIONSHIP"],
-  "policies": {"unsupportedSemanticsOutcome": "NotAssessed"},
+  "policies": {"unsupportedSemanticsOutcome": "NotAssessed", "unsupportedTargetOutcome": "NeedsReview", "dmsToDmsSupported": false},
   "phaseRules": {"preMigration": ["RULE-RDY-ADAPTER-EVIDENCE"], "postMigration": ["RULE-REC-THIRD-PARTY-OBJECT", "RULE-REC-DMS-METADATA"]}
 }
 ```
@@ -1137,6 +1282,7 @@ JSON generation shall be blocked when any of the following is true:
 - a JSON mapping points to a missing column/property or incompatible type;
 - `24_Final_Config_Master` and generated JSON section counts disagree;
 - generated JSON is not valid JSON or fails the MVP schema;
+- a DMS-to-DMS, third-party-to-third-party, or otherwise unsupported target route is presented as `MS-08` instead of `MS-07 / NeedsReview`;
 - a second generation from unchanged workbook content and the same scenario produces different canonical bytes.
 
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
@@ -1171,10 +1317,14 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-010` | Provide inaccessible evidence | Result is Unavailable/Not Assessed or Blocked by policy; never Green |
 | `MVP-AT-011` | Compare all scenario JSON outputs | Each contains only applicable modules/rules plus required dependencies |
 | `MVP-AT-012` | Run PowerShell with workbook absent | Runtime loads the selected scenario JSON and does not require Excel |
-| `MVP-AT-013` | Answer eCTDmanager=Yes and DB type=Access | Derivation selects `MS-02` with an explainable reason |
-| `MVP-AT-014` | Answer eCTDmanager=Partial and another source=Yes | Derivation selects `MS-05` rather than a single-source scenario |
-| `MVP-AT-015` | Derive SQL Server scenario with archive unavailable | Scenario remains `MS-01`; evidence completeness is reduced and archive-dependent modules follow missing-evidence policy |
-| `MVP-AT-016` | Identify a third-party system or DMS as the primary source | Derivation selects `MS-08` |
+| `MVP-AT-013` | Set target=eCTDmanager, primary input=eCTDmanager DB/archive, and DB type=Access | Derivation selects `MS-02` with an explainable reason |
+| `MVP-AT-014` | Set eCTDmanager=Partially, scope=SelectedContent, primary input=eCTDmanager DB/archive, and DB type=SQLServer | Derivation selects `MS-01`; partial source population alone does not create Hybrid |
+| `MVP-AT-015` | Set primary input=MultipleSources and target=eCTDmanager | Derivation selects `MS-05` |
+| `MVP-AT-016` | Derive SQL Server scenario with archive unavailable | Scenario remains `MS-01 / DerivedWithFollowUp`; evidence completeness is reduced and archive-dependent modules follow missing-evidence policy |
+| `MVP-AT-017` | Set primary input=DMS and target=eCTDmanager | Derivation selects `MS-08` |
+| `MVP-AT-018` | Set primary input=DMS and target=DMS | Derivation returns `MS-07 / NeedsReview`, reason `DMS_TO_DMS_OUT_OF_SCOPE`, and requires consultant discussion; `MS-08` JSON generation is blocked |
+| `MVP-AT-019` | Set eCTDmanager SQL as primary input and DMS dependency=Yes without DMS content in migration scope | Derivation remains `MS-01`; the DMS dependency affects qualifiers/modules only |
+| `MVP-AT-020` | Leave target platform or primary migration input unknown | Derivation returns `MS-07 / Pending` with the exact follow-up question IDs |
 
 ## 17. MVP definition of done
 
@@ -1229,3 +1379,4 @@ Each review step shall answer four questions:
 | 3.0 | 13 July 2026 | Previous XLSM/VBA and governance-oriented functional baseline |
 | 4.0 MVP | 13 September 2026 | Refocused the immediate implementation on a complete human-readable master workbook and deterministic scenario-specific Runtime JSON; added exact sheets, columns, relationships, coverage, JSON shape, scenario examples, validation, and acceptance tests; deferred SharePoint/GxP release controls |
 | 4.1 MVP | 13 September 2026 | Applied the approved eight-scenario `MS-*` catalogue; separated project qualifiers from scenario identity; defined the business-first questionnaire; added `03_Scenario_Derivation_Rules`; replaced scenario JSON examples and expanded derivation acceptance tests |
+| 4.2 MVP | 13 September 2026 | Approved deterministic scenario derivation based on primary migration input and target platform; added `Q-SCN-021` and `Q-SCN-022`; refined rule columns, selection statuses, conflict/fallback behavior, project selection-result JSON and edge cases; explicitly excluded DMS-to-DMS migration and routed it to `MS-07 / NeedsReview` with consultant discussion |
