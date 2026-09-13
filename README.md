@@ -34,8 +34,8 @@ The current MVP architecture is deliberately simple:
 
 ```mermaid
 flowchart TD
-    A[Internal Master Mapping Workbook] --> B[Select Migration Scenario]
-    B --> C[Validate applicable configuration]
+    A[Questionnaire and project context] --> B[Derive and confirm base scenario]
+    B --> C[Resolve and validate applicable configuration]
     C --> D[Scenario-specific Runtime JSON]
     D --> E[PowerShell assessment phases]
     E --> F[Excel report and execution log]
@@ -45,7 +45,7 @@ flowchart TD
 
 - The immediate MVP is one complete, human-readable, macro-free `.xlsx` Mapping Workbook.
 - The workbook contains all configurable migration-assessment requirements and their relationships.
-- One selected scenario is deterministically transformed into one scenario-specific Runtime JSON containing all applicable phase configuration.
+- One derived and confirmed base scenario is deterministically transformed into one scenario-specific Runtime JSON containing all applicable phase configuration.
 - Runtime PowerShell consumes JSON, not the Mapping Workbook.
 - Normal runtime does not require Excel desktop, SharePoint, Office Scripts, Power Automate or internet access.
 - Excel is the primary human-facing review/reporting experience.
@@ -58,15 +58,18 @@ flowchart TD
 
 The applicable checks depend on the migration scenario and available evidence. Examples include:
 
-| Scenario | Typical evidence | Example assessment focus |
+| ScenarioId | Base migration scenario | Example assessment focus |
 |---|---|---|
-| Existing EXTEDO on-prem → cloud | DB, archive, application environment, exports | source-system inventory, DB/archive integrity, dependencies, readiness |
-| Existing EXTEDO on-prem → on-prem | DB, archive, application environment | compatibility, source integrity, scope and migration risks |
-| Database + archive migration | DB records + physical archive | record/object correlation, missing/multiple/inaccessible objects |
-| New/third-party customer with exports | dossier/export folders, ZIPs, metadata | dossier discovery, region/format, sequences, XML/reference/file integrity |
-| Third-party system migration | vendor export, metadata, files, optional DB extracts | source model, metadata completeness, mapping and relationships |
-| DMS/content migration | DMS metadata, documents/renditions | document identity, metadata mapping, file availability and relationships |
-| Partial or mixed evidence | only DB, only archive, only export, backups, mixed repositories | coverage, confidence, follow-up questions and manual review |
+| `MS-01` | eCTDmanager SQL Server to SQL Server | DB/archive population, compatibility, readiness, and reconciliation |
+| `MS-02` | eCTDmanager Access to SQL Server | legacy extraction, archive correlation, conversion risks, and reconciliation |
+| `MS-03` | eCTDmanager Oracle to SQL Server | Oracle mapping, archive correlation, conversion risks, and reconciliation |
+| `MS-04` | Regulatory Submission Export to eCTDmanager | repository, dossier, region/format, sequence, XML/reference, and file integrity |
+| `MS-05` | Hybrid Migration | coordinated assessment across two or more source mechanisms |
+| `MS-06` | Archive or Storage Only | archive discovery, identity limitations, counts, size, and confidence |
+| `MS-07` | Scenario Pending or Incomplete | follow-up questions and safe Not Assessed outcomes |
+| `MS-08` | Third-Party System or DMS Migration | adapter, metadata, document/rendition, relationship, and mapping assessment |
+
+Customer relationship, source/target hosting, migration scope, evidence completeness, repository composition, eSUBmanager/DMS dependencies, other integrations, and sequential upgrade are qualifiers. They change applicable rules and confidence without creating duplicate base scenarios.
 
 Not every project executes every assessment module.
 
@@ -112,7 +115,7 @@ Depending on applicability, eMAS may assess:
 ## Current requirements references
 
 - [Enterprise Requirements v5.0](docs/requirements/eMAS_Enterprise_Requirements_v5.0.md)
-- [Mapping Workbook and Scenario JSON MVP Requirements v4.0](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
+- [Mapping Workbook and Scenario JSON MVP Requirements v4.1](docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md)
 - [v5.0 Previous Baseline Carry-Forward Register](docs/requirements/eMAS_v5.0_Previous_Baseline_Carry_Forward.md)
 
 Detailed regulatory, parser, SQL, XPath, workbook-layout and test specifications are intentionally kept outside the enterprise requirements baseline and should be maintained in the appropriate lower-level controlled specifications.

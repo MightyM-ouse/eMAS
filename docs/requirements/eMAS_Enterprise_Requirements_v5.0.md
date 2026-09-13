@@ -3,9 +3,10 @@
 **Project:** eMAS — eCTD Migration Assessment Script
 **Document Type:** Enterprise Business, Functional and Technical Requirements Specification
 **Version:** 5.0
-**Status:** Draft Requirements Baseline for Review
+**Status:** Approved MVP design baseline; implementation and verification pending
 **Classification:** Internal
-**Prepared:** 12 September 2026
+**Prepared:** 13 September 2026
+**Decision reference:** DEC-2026-013
 
 ---
 
@@ -57,23 +58,24 @@ The engine shall not assume that a dossier/export folder exists. Missing evidenc
 
 Scenario identification is a first-class eMAS function and shall occur before deep regulatory-package assessment.
 
-The model shall support at minimum:
+The approved MVP base catalogue is:
 
-| Scenario family | Typical evidence | Principal assessment focus |
+| ScenarioId | Base migration scenario | Principal assessment focus |
 |---|---|---|
-| Existing EXTEDO customer: on-premises → cloud | DB, archive, application environment, export/working directories, configuration | source-system inventory, DB/archive integrity, volume, dependencies, migration readiness |
-| Existing EXTEDO customer: on-premises → on-premises | DB, archive, application environment | compatibility, source integrity, repository inventory, infrastructure/dependency risks |
-| Database + archive migration | DB records + physical archive | record/object correlation, missing/multiple/inaccessible objects, counts and integrity |
-| New/third-party customer with regulatory exports | dossier/export folders, ZIPs, metadata | repository discovery, regulatory classification, sequences, XML/references/files |
-| Third-party system migration | vendor export, metadata, files and optional DB extracts | source-model discovery, metadata completeness, mapping and regulatory relationships |
-| DMS-integrated/content migration | DMS export, metadata, documents/renditions | document/metadata mapping, file availability, relationships and migration transformations |
-| eCTDmanager + eSUBmanager related scope | DB/archive plus exports/storage information | managed dossier/submission relationships, storage/export dependencies and scope |
-| Partial evidence | only DB, only archive, only export, backup or incomplete repository | assessment coverage, missing evidence, confidence and follow-up requirements |
-| Mixed/unknown repository | multiple products/formats/regions/containers/sources | topology discovery, separation into migration units, classification and applicable rules |
+| `MS-01` | eCTDmanager SQL Server to SQL Server | DB/archive inventory, compatibility, migration population, readiness and reconciliation |
+| `MS-02` | eCTDmanager Access to SQL Server | Legacy extraction, archive correlation, conversion risk and reconciliation |
+| `MS-03` | eCTDmanager Oracle to SQL Server | Oracle source mapping, archive correlation, conversion risk and reconciliation |
+| `MS-04` | Regulatory Submission Export to eCTDmanager | Repository, dossier, region/format, sequence, XML/reference and file assessment |
+| `MS-05` | Hybrid Migration | Combined assessment across two or more primary source mechanisms |
+| `MS-06` | Archive or Storage Only | Archive discovery, identity limitations, counts, size and reduced-confidence interpretation |
+| `MS-07` | Scenario Pending or Incomplete | Missing/contradictory information, follow-up and safe Not Assessed outcomes |
+| `MS-08` | Third-Party System or DMS Migration | Source adapter, metadata, documents/renditions, relationships and mapping |
 
-Scenario dimensions shall include existing/new customer, source product/system, source/target hosting model, DB availability, archive availability, export availability, DMS integration, eSUBmanager/storage dependencies and other source-system dependencies where relevant.
+Customer relationship, source/target hosting, migration scope, evidence completeness, repository composition, eSUBmanager dependency, DMS dependency, other integrations and sequential upgrade shall be represented as qualifiers rather than separate scenario identities. Qualifiers may change module applicability, rules, follow-up, coverage and confidence.
 
-Reusable questionnaire definitions may be controlled configuration. Project/customer answers, detected values and overrides are execution evidence and shall not become reusable Runtime JSON rules.
+Reusable questionnaire definitions and scenario-derivation rules are controlled configuration. Project/customer answers, detected values, actual qualifier values and overrides are execution evidence and shall not become reusable Runtime JSON configuration. The questionnaire shall begin with business/current-source questions, then hosting/destination and dependencies, and only then request technical evidence.
+
+Pre-Sales questions about databases and archives shall be limited by default to availability and approximate scale. Detailed `database record -> archive identifier -> physical object` verification belongs to Pre-Migration and Post-Migration. Partial evidence shall not force `MS-07` when the base migration route is otherwise known; it shall reduce evidence completeness, module coverage and confidence.
 
 ## 4. Scenario-driven assessment modules
 
@@ -295,7 +297,7 @@ For one selected `ScenarioId`, the MVP transformer shall resolve applicable modu
 
 The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
 
-The exact workbook sheets, columns, relationships, scenario catalogue, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.0](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.1](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
 
 SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 

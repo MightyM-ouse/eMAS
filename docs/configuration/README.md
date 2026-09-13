@@ -7,7 +7,7 @@ This branch defines the eMAS MVP:
 1. one complete, human-readable Mapping Workbook containing all configurable migration-assessment requirements; and
 2. deterministic generation of one Runtime JSON file for a selected migration scenario.
 
-Use [Mapping Workbook and Scenario JSON MVP Requirements v4.0](01_eMAS_Mapping_Configuration_Functional_Requirements.md) as the current workbook/JSON requirements baseline for this branch.
+Use [Mapping Workbook and Scenario JSON MVP Requirements v4.1](01_eMAS_Mapping_Configuration_Functional_Requirements.md) as the current workbook/JSON requirements baseline for this branch. It defines the approved `MS-01` through `MS-08` catalogue, project qualifiers, business-first questionnaire, and explicit scenario-derivation rules.
 
 The immediate flow is:
 

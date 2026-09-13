@@ -1,8 +1,8 @@
 # eMAS Decision Log
 
-**Version:** 1.1  
-**Status:** Effective  
-**Effective date:** 2026-07-13  
+**Version:** 1.2
+**Status:** Effective with approved MVP design amendment
+**Effective date:** 2026-09-13
 **Owner:** Documentation Owner
 
 ## Purpose
@@ -30,17 +30,18 @@ This is the permanent repository-native record of approved eMAS decisions. It re
 | DEC-2026-010 | AP-010 | 2026-07-13 | Effective | Maintain a controlled terminology catalogue as the authority for codes and display terms while retaining a business-facing glossary in enterprise requirements. | Documentation Owner | Terminology catalogue, requirements, JSON, reports and skills |
 | DEC-2026-011 | AP-011 | 2026-07-13 | Effective | Classify the AI-assistant overview as a generated, non-authoritative profile derived from canonical sources, source-stamped and regenerated when those sources change. | Documentation Owner | AI-assistant overview and canonical index |
 | DEC-2026-012 | AP-012 | 2026-07-13 | Effective | Use protected-main and pull-request governance, CODEOWNERS routing, required review by change class and DecisionId traceability. Repository settings and source-controlled governance files together implement the control. | Technical Architect | Repository settings, CONTRIBUTING, CODEOWNERS and PR template |
+| DEC-2026-013 | MVP scenario/questionnaire review | 2026-09-13 | Approved MVP design | Adopt eight base migration scenarios `MS-01` through `MS-08`; model customer relationship, hosting, scope, evidence completeness, repository composition, eSUBmanager/DMS dependencies, other integrations and sequential upgrade as qualifiers rather than scenario identities; use a business-first reusable questionnaire; add explicit scenario-derivation rules; keep actual answers as project evidence; limit Pre-Sales DB/archive questions to availability and approximate scale; perform DB-record-to-archive-object verification only in Pre-Migration/Post-Migration; generate one scenario JSON containing all applicable phases. | Product Owner | Enterprise requirements, Mapping Workbook/JSON MVP requirements, indexes, questionnaire, scenario derivation and JSON examples |
 
 ## Consolidation evidence
 
-The approved decisions represented by this log and the reviewed 171-item register have been consolidated into the following effective requirements:
+DEC-2026-001 through DEC-2026-012 and the reviewed 171-item register were consolidated into the following earlier effective requirements:
 
 - Enterprise Requirements v3.1;
 - Mapping Configuration Functional Requirements v3.0;
 - Mapping Configuration Technical Requirements v3.0;
 - Mapping Configuration Content Catalogue v3.0.
 
-This synchronization closes the requirements-document update stage. It does not complete schema fixtures, architecture synchronization, XLSM/VBA, PowerShell, templates, tests or release controls.
+For the `requirements/mvp-workbook-json` branch, DEC-2026-013 is consolidated into Enterprise Requirements v5.0 and Mapping Workbook and Scenario JSON MVP Requirements v4.1. This approval closes the scenario/questionnaire design review only. It does not complete workbook construction, JSON transformation, schema synchronization, PowerShell, templates, tests or release controls.
 
 ## Implementation-state rule
 
