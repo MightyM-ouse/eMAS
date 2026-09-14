@@ -39,6 +39,7 @@ accepted-exceptions/
 ~$*.pptx
 *.tmp
 *.bak
+__pycache__/
 
 # PowerShell and IDE local files
 .vscode/
