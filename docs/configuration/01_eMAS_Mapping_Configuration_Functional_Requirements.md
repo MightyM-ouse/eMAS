@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.4 MVP
+**Version:** 4.5 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 13 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-016
+**Decision references:** DEC-2026-013 through DEC-2026-017
 
 ## 1. Purpose and MVP decision
 
@@ -169,7 +169,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 4 | `04_Assessment_Modules` | Maintained | Reusable assessment capabilities |
 | 5 | `05_Scenario_Module_Map` | Maintained | Required/conditional/optional modules for every scenario |
 | 6 | `06_Requirement_Catalogue` | Maintained | Complete human-readable inventory of migration-script requirements |
-| 7 | `07_Fields_Evidence` | Maintained | Evidence keys, data types, producers, operators, and scope |
+| 7 | `07_Fields_Evidence` | Maintained | Canonical reusable field meaning, type/cardinality, producer, provenance, permitted use, and JSON contract |
 | 8 | `08_Regulatory_Profiles` | Maintained | Region/authority/format/version/dossier dimensions and evidence locations |
 | 9 | `09_Dossier_Sequence_ID` | Maintained | Dossier, application, sequence, and lifecycle identification rules |
 | 10 | `10_Folder_File_Structure` | Maintained | Expected folder/file/container structure rules |
@@ -184,7 +184,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 19 | `19_Recommendations_Actions` | Maintained | Reusable customer and consultant actions linked to findings |
 | 20 | `20_PreMigration_Readiness` | Maintained | Readiness decision rules and baseline requirements |
 | 21 | `21_PostMigration_Reconciliation` | Maintained | Scenario-aware comparison rules, keys, tolerances, and outcomes |
-| 22 | `22_Value_Lists` | Maintained | Controlled dropdown and runtime code values |
+| 22 | `22_Value_Lists` | Maintained | Controlled machine codes, human labels, meanings, sources, and runtime eligibility |
 | 23 | `23_Source_References` | Maintained | Regulatory, vendor, product, and internal sources |
 | 24 | `24_Final_Config_Master` | Generated | Filterable flattened view of everything included/excluded for a selected scenario |
 | 25 | `25_JSON_Field_Map` | Maintained | Explicit workbook-column to JSON-property transformation contract |
@@ -824,20 +824,68 @@ At minimum, this catalogue shall cover every requirement area listed in Sections
 
 ### 9.8 `07_Fields_Evidence`
 
+This sheet is the canonical semantic dictionary of every reusable value that eMAS may receive, observe, import, derive, compare, or report. One row defines one stable `FieldCode`; it does not store an actual customer value or one project observation.
+
+The sheet defines what a field means, its type, how it may be obtained and used, and the minimum provenance required. Exact XML filenames, namespaces, elements, attributes and XPath-like extraction locations belong in `08_Regulatory_Profiles` or the applicable rule sheet. Logical DB/archive/DMS source mappings belong in `14_Source_DB_Archive_DMS`. This separation permits one semantic field to be populated from different formats and source systems without duplicating or redefining it.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `FieldCode` | Identifier | Yes | Stable evidence key -> `fields[].fieldCode` |
+| `FieldCode` | Identifier | Yes | Stable evidence key -> `catalogues.fields[].fieldCode`; recommended form is `DOMAIN.CONCEPT`, for example `ARCHIVE.LOOKUP_STATUS` |
 | `DisplayName` | Text | Yes | Human-readable name |
-| `Description` | Text | Yes | Exact semantic meaning |
-| `DataType` | Code | Yes | String, Integer, Decimal, Boolean, Date, Code, Path, Hash, or Object |
-| `EvidenceSourceType` | Code | Yes | Folder, File, XML, DB, Archive, DMS, Manifest, Customer, Derived, Target |
-| `ProducerCapability` | Code | Yes | Generic engine function that produces it |
-| `ScopeLevel` | Code | Yes | Repository, dossier, sequence, document, or other entity level |
-| `AllowedOperator` | Relationship | Yes | One row per valid operator or controlled child table |
-| `MissingValueMeaning` | Code | Yes | Absent, Unavailable, Invalid, NotApplicable, or Unknown |
-| `Unit` | Code | Conditional | Bytes, Count, Percent, Days, or other unit |
-| `ExampleValue` | Scalar | No | Demonstrates expected type only |
-| `IsActive` | Boolean | Yes | Runtime inclusion |
+| `Definition` | Text | Yes | Exact business and technical meaning without an extraction expression |
+| `OwnerModuleId` | Reference | Yes | Primary accountable producer/owner in `04_Assessment_Modules`; reuse by other modules does not duplicate the field |
+| `FieldRole` | Code | Yes | Context, Input, Observation, Derived, Outcome, or Metadata |
+| `EntityType` | Code | Yes | Entity to which the value belongs, such as Repository, Dossier, Sequence, File, ArchiveObject, or TargetObject |
+| `DataType` | Code | Yes | String, Code, Integer, Decimal, Boolean, Date, DateTime, Path, URI, Hash, or Object |
+| `Cardinality` | Code | Yes | One, ZeroOrOne, ZeroOrMany, or OneOrMany; arrays are cardinality, not a data type |
+| `ValueDomainType` | Code | Conditional | None, ValueList, ScenarioCatalogue, ModuleCatalogue, RequirementCatalogue, FindingCatalogue, RecommendationCatalogue, or SourceCatalogue |
+| `ValueDomainCode` | Reference | Conditional | Required for controlled Code values; identifies the `22_Value_Lists.ListCode` or referenced workbook catalogue |
+| `UnitCode` | Code | Conditional | Canonical unit for a quantity; required for numeric values where a unit is meaningful |
+| `CanonicalFormat` | Text | Conditional | Serialization rule such as ISO 8601 date/time, integer bytes, or normalized hash text |
+| `DefaultValueOrigin` | Code | Yes | CustomerProvided, Observed, Imported, Derived, or TargetObserved; `Assumed` is prohibited |
+| `PrimaryEvidenceSourceType` | Code | Yes | Typical source such as Customer, FileMetadata, XML, Database, Archive, DMS, Manifest, TargetSystem, or Derived |
+| `ProducerCapability` | Code | Conditional | Named generic capability that produces the field; conditional for CustomerProvided or Imported values |
+| `NormalizationCode` | Code | Yes | Named implemented normalization operation; `None` is valid and cells shall not contain executable expressions |
+| `ProvenanceProfileCode` | Code | Yes | Minimum provenance contract for customer, path, file, XML, DB, archive, DMS, import, derived, or target evidence |
+| `NullPolicy` | Code | Yes | DisallowNull, AllowNull, OmitWhenUnavailable, or EmptyCollection; this controls serialization, not evidence meaning |
+| `OperatorListCode` | Reference | Yes | References a datatype-appropriate operator `ListCode` in `22_Value_Lists` |
+| `PhaseListCode` | Reference | Yes | References a controlled list containing the phases in which the field can be available |
+| `BaselineRole` | Code | Yes | None, Identifier, ComparisonKey, ExpectedValue, SupportingEvidence, ExclusionFlag, or ExceptionReference |
+| `ReconciliationRole` | Code | Yes | None, SourceKey, TargetKey, ExpectedValue, ObservedValue, ComparisonEvidence, or Outcome |
+| `ReportUsage` | Code | Yes | Never, Summary, Detail, or EvidenceOnly |
+| `LogUsage` | Code | Yes | Never, IdentifierOnly, Sanitized, or Full |
+| `SensitivityClass` | Code | Yes | NonSensitive, Internal, CustomerMetadata, CustomerContent, PersonalData, or Confidential |
+| `ExportPolicy` | Code | Yes | ReferencedDependency, Always, or AuthoringOnly |
+| `SourceId` | Reference | Yes | Definition source in `23_Source_References` |
+| `SourceSection` | Text | Yes | Precise supporting section or approved internal decision |
+| `DefinitionStatus` | Code | Yes | Draft, Reviewed, Approved, Deferred, or Retired; separate from runtime evidence/evaluation status |
+| `IsActive` | Boolean | Yes | Eligibility for reference and export |
+| `ExampleValue` | Scalar | No | Illustrates the declared type/format only and shall not contain customer data |
+| `Notes` | Text | No | Author guidance and known limitations |
+
+`FieldCode` shall be unique among active rows and shall not be reused for a different meaning. A controlled label or definition may be clarified without changing the code, but a semantic change requires a new code.
+
+Fields and metrics remain separate. `07_Fields_Evidence` defines raw, normalized and derived evidence fields. `13_Size_Volume_Metrics` defines calculations and shall reference its input `SourceFieldCode`; where a calculated metric must be consumed like a field, the metric definition shall identify an approved output `FieldCode` rather than creating a second conflicting definition.
+
+#### Evidence-state separation
+
+The value, evidence state, evaluation status, severity/RAG, and confidence are independent. A blank or null value does not establish why evidence is missing.
+
+| Situation | Value/evidence representation | Evidence state | Evaluation status |
+|---|---|---|---|
+| Evidence is obtained and usable | Typed value is present | `Present` | `Evaluated` |
+| A complete search positively establishes non-existence | No value, or a controlled lookup outcome records the result | `ConfirmedAbsent` | `Evaluated` |
+| Expected evidence was not provided or could not be accessed | No usable value plus reason | `Unavailable` | `NotAssessed` or `InsufficientEvidence` |
+| Evidence exists but cannot be parsed or validated | No usable value plus parse/validation reason | `Invalid` | `InsufficientEvidence` |
+| Credible sources disagree | Conflicting values and both evidence references | `Conflict` | `Conflict` |
+| Applicability cannot be determined | No supported conclusion | `Unknown` | `NotAssessed` or `InsufficientEvidence` |
+| Module/rule does not apply | No observation is created | Not an evidence state | `NotApplicable` |
+
+`MISSING` shall evaluate true only for `ConfirmedAbsent`. `Unavailable`, `Invalid`, `Conflict`, and `Unknown` shall produce the configured indeterminate/missing-evidence behavior and shall not silently satisfy `MISSING`. Similarly, `EXISTS` requires usable `Present` evidence.
+
+For example, `ARCHIVE.LOOKUP_STATUS=Inaccessible` may be a valid `Present` observation because the attempted lookup produced a controlled outcome. A dependent field such as `ARCHIVE.OBJECT_SIZE_BYTES` is `Unavailable` because the object could not be inspected.
+
+DMS fields may support third-party/DMS source assessment into eCTDmanager and DMS dependency checks. Their presence in this catalogue shall not create or imply DMS-to-DMS support; that route remains `MS-07 / NeedsReview` and requires consultant review.
 
 ### 9.9 `08_Regulatory_Profiles`
 
@@ -947,7 +995,8 @@ The sheet shall support malformed XML, unexpected namespaces/schema versions, in
 | `EvidenceSourceType` | Code | Yes | Where it is measured |
 | `Aggregation` | Code | Yes | Count, Sum, DistinctCount, Min, Max, Average, Percent |
 | `SourceFieldCode` | Reference | Yes | Raw evidence used for calculation |
-| `Unit` | Code | Yes | Bytes, GB, Count, Percent |
+| `OutputFieldCode` | Reference | Yes | Active `07_Fields_Evidence` field that receives the typed calculated value for rule/baseline/reconciliation use |
+| `Unit` | Code | Yes | Canonical unit such as Bytes, Count, Percent, or Days; report display conversion is separate |
 | `Phase` | Code | Yes | Phase applicability |
 | `ScenarioId` | Code | Yes | `ALL` or scenario override |
 | `StoreDetail` | Boolean | Yes | Controls whether only aggregate or item-level evidence is retained |
@@ -1128,17 +1177,106 @@ Rules shall support DB record to target object, archive object to migrated docum
 
 ### 9.23 `22_Value_Lists`
 
+This sheet is the authority for reusable machine codes and their human labels. A code controls authoring and, where applicable, runtime serialization; it does not implement an engine capability or create a supported migration scenario.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
 | `ListCode` | Identifier | Yes | Identifies the controlled list -> `valueLists` |
 | `Code` | Code | Yes | Stable machine value |
 | `Label` | Text | Yes | Human display value |
 | `Description` | Text | Yes | Exact meaning |
+| `ParentListCode` | Reference | Conditional | Identifies a parent list for a genuinely dependent value |
+| `ParentCode` | Reference | Conditional | Identifies the active parent value; required with `ParentListCode` |
 | `SortOrder` | Integer | Yes | Stable display/serialization order |
 | `Usage` | Code | Yes | AuthoringOnly, Runtime, Both |
+| `SourceId` | Reference | Yes | Regulatory, product, requirement, or approved internal source in `23_Source_References` |
+| `SourceSection` | Text | Yes | Precise source section or decision supporting the code and meaning |
 | `IsActive` | Boolean | Yes | Dropdown/runtime eligibility |
+| `Notes` | Text | No | Author guidance and limitations |
 
-At minimum, lists shall include phase, scenario family, primary source mechanism, included source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, assessment depth, phase-outcome impact, baseline contribution, reconciliation role, module, requirement domain/type, obligation level, owning component, lifecycle stage, requirement phase scope, requirement applicability basis, missing-evidence behavior, implementation disposition, verification method, requirement/implementation/verification status, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, operator, data type, scope level, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, and status.
+`ListCode + Code` shall be unique among active rows. Labels and descriptions may be clarified, but a code shall not be reused for another meaning. Parent references shall resolve to active values and shall not be used to reproduce relationships that belong in a catalogue or mapping sheet.
+
+At minimum, lists shall include phase, scenario family, primary source mechanism, included source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, assessment depth, phase-outcome impact, baseline contribution, reconciliation role, module, requirement domain/type, obligation level, owning component, lifecycle stage, requirement phase scope, requirement applicability basis, missing-evidence behavior, implementation disposition, verification method, requirement/implementation/verification status, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, datatype-specific operators, data type, cardinality, entity type, field role, value-domain type, value origin, null policy, provenance profile, report/log usage, sensitivity class, export policy, unit, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, normalization code, and status/reason.
+
+#### Field-definition controlled lists
+
+| `ListCode` | Required codes |
+|---|---|
+| `FIELD_ROLE` | Context, Input, Observation, Derived, Outcome, Metadata |
+| `ENTITY_TYPE` | Project, Execution, Repository, Container, SourceSystem, Database, DatabaseRecord, Archive, ArchiveObject, DMSObject, Application, Dossier, Sequence, SubmissionUnit, Document, File, XMLDocument, XMLReference, Relationship, TargetObject |
+| `DATA_TYPE` | String, Code, Integer, Decimal, Boolean, Date, DateTime, Path, URI, Hash, Object |
+| `CARDINALITY` | One, ZeroOrOne, ZeroOrMany, OneOrMany |
+| `VALUE_DOMAIN_TYPE` | None, ValueList, ScenarioCatalogue, ModuleCatalogue, RequirementCatalogue, FindingCatalogue, RecommendationCatalogue, SourceCatalogue |
+| `VALUE_ORIGIN` | CustomerProvided, Observed, Imported, Derived, TargetObserved |
+| `EVIDENCE_SOURCE_TYPE` | Customer, Folder, FileMetadata, FileContent, XML, Database, Archive, DMS, Manifest, MigrationLog, ImportReport, TargetSystem, Derived |
+| `NULL_POLICY` | DisallowNull, AllowNull, OmitWhenUnavailable, EmptyCollection |
+| `BASELINE_ROLE` | None, Identifier, ComparisonKey, ExpectedValue, SupportingEvidence, ExclusionFlag, ExceptionReference |
+| `RECONCILIATION_ROLE` | None, SourceKey, TargetKey, ExpectedValue, ObservedValue, ComparisonEvidence, Outcome |
+| `REPORT_USAGE` | Never, Summary, Detail, EvidenceOnly |
+| `LOG_USAGE` | Never, IdentifierOnly, Sanitized, Full |
+| `SENSITIVITY_CLASS` | NonSensitive, Internal, CustomerMetadata, CustomerContent, PersonalData, Confidential |
+| `EXPORT_POLICY` | ReferencedDependency, Always, AuthoringOnly |
+| `DEFINITION_STATUS` | Draft, Reviewed, Approved, Deferred, Retired |
+| `UNIT` | Count, Bytes, Percent, Days, Seconds; additional units require an approved canonical conversion rule |
+| `NORMALIZATION_CODE` | None, Trim, UpperCase, LowerCase, NormalizePath, NormalizeSequenceIdentifier, NormalizeArchiveIdentifier, NormalizeHash, NormalizeDateTime |
+| `VALUE_LIST_USAGE` | AuthoringOnly, Runtime, Both |
+
+Canonical quantitative evidence shall prefer base units such as Bytes and Count. Human-readable GB/MB display values may be derived for reports and shall not replace canonical values used for comparison.
+
+#### Evidence and evaluation controlled lists
+
+| `ListCode` | Required codes and meaning |
+|---|---|
+| `EVIDENCE_STATE` | Present, ConfirmedAbsent, Unavailable, Invalid, Conflict, Unknown |
+| `EVALUATION_STATUS` | Evaluated, NotAssessed, NotApplicable, InsufficientEvidence, Error, Conflict |
+| `STATUS_REASON` | InputUnavailable, AccessDenied, ParseFailed, NotPerformed, ScenarioNotApplicable, ConflictingEvidence, InsufficientEvidence, UnsupportedSourceSemantics |
+| `ARCHIVE_LOOKUP_STATUS` | Found, Missing, Multiple, Invalid, Inaccessible |
+
+`NotApplicable` is an evaluation status rather than an evidence state. `Skipped` shall not be used as an unexplained terminal status; use `NotAssessed` with an explicit `STATUS_REASON`, normally `NotPerformed`.
+
+#### Provenance profiles
+
+| Code | Minimum evidence reference |
+|---|---|
+| `PROV_CUSTOMER` | Question/answer identifier and supplied value |
+| `PROV_PATH` | Root, container, and physical path |
+| `PROV_FILE` | Physical path and relevant file metadata |
+| `PROV_XML` | XML file, namespace, element/path, attribute, and raw observed value where available |
+| `PROV_DB` | Source adapter, logical entity, record key, field, and raw observed value |
+| `PROV_ARCHIVE` | Archive root, original identifier, normalized identifier, lookup outcome, and resolved path where available |
+| `PROV_DMS` | Source adapter, object/version/rendition identifier, and metadata key |
+| `PROV_IMPORT` | Manifest, migration/import report or log, and source record |
+| `PROV_DERIVED` | Producer capability and input evidence references |
+| `PROV_TARGET` | Target system, entity, object identifier, and target field |
+
+#### Datatype-appropriate operator lists
+
+`07_Fields_Evidence.OperatorListCode` references one of the following `ListCode` values. Each operator is stored as its own row in `22_Value_Lists`; comma-separated operator cells are prohibited.
+
+| `ListCode` | Required operator codes |
+|---|---|
+| `OPS_TEXT` | EQUALS, NOT_EQUALS, IN_LIST, CONTAINS, STARTS_WITH, ENDS_WITH, MATCHES_PATTERN, EXISTS, MISSING |
+| `OPS_CODE` | EQUALS, NOT_EQUALS, IN_LIST, EXISTS, MISSING |
+| `OPS_NUMBER` | EQUALS, NOT_EQUALS, GT, GTE, LT, LTE, BETWEEN, EXISTS, MISSING |
+| `OPS_BOOLEAN` | EQUALS, NOT_EQUALS, EXISTS, MISSING |
+| `OPS_DATE` | EQUALS, BEFORE, ON_OR_BEFORE, AFTER, ON_OR_AFTER, BETWEEN, EXISTS, MISSING |
+| `OPS_PATH` | EQUALS, STARTS_WITH, ENDS_WITH, MATCHES_PATTERN, EXISTS, MISSING |
+| `OPS_HASH` | EQUALS, NOT_EQUALS, EXISTS, MISSING |
+| `OPS_OBJECT` | EXISTS, MISSING |
+
+Phase availability shall use `PhaseListCode` values whose active entries are explicit phase codes:
+
+| `ListCode` | Active phase codes |
+|---|---|
+| `PHASES_ALL` | PreSales, PreMigration, PostMigration |
+| `PHASES_PRE_SALES` | PreSales |
+| `PHASES_PRE_MIGRATION` | PreMigration |
+| `PHASES_POST_MIGRATION` | PostMigration |
+| `PHASES_PRE_AND_POST_MIGRATION` | PreMigration, PostMigration |
+
+Additional combinations may be added as controlled lists without placing comma-separated phases in `07_Fields_Evidence`.
+
+Adding a new operator, normalization code, parser profile, or engine capability to this sheet does not make it executable. Runtime export shall be blocked until the corresponding transformer/runtime capability is implemented or the dependent configuration is explicitly Deferred.
 
 ### 9.24 `23_Source_References`
 
@@ -1266,7 +1404,7 @@ The following coverage is mandatory before the workbook can claim to contain all
 | `03_Scenario_Derivation_Rules` | Active rules that convert project context to one base scenario | `questionnaire.derivationRules[]` |
 | `04_Assessment_Modules` | Via `05_Scenario_Module_Map` | `modules[]` |
 | `06_Requirement_Catalogue` | RuntimeExport + ownership + lifecycle/phase scope + Global/ModuleDriven/ScenarioSpecific applicability | `requirements[]` |
-| `07_Fields_Evidence` | Referenced by included rules/modules | `catalogues.fields[]` |
+| `07_Fields_Evidence` | Active `ReferencedDependency` fields reached from included rules, metrics, mappings, readiness/reconciliation and other exported objects, plus `Always` fields | `catalogues.fields[]` |
 | `08_Regulatory_Profiles` | Referenced by included classification rules | `catalogues.regulatoryProfiles[]` |
 | Rule/mapping sheets `09`-`14` | Requirement + module + scenario + scope | `rules.<family>[]` and `sourceMappings[]` |
 | Interpretation sheets `15`-`17` | Finding/metric/module references | `interpretation.*` |
@@ -1274,7 +1412,7 @@ The following coverage is mandatory before the workbook can claim to contain all
 | `19_Recommendations_Actions` | Referenced by included findings/rules | `recommendations[]` |
 | `20_PreMigration_Readiness` | Selected scenario | `phaseRules.preMigration[]` |
 | `21_PostMigration_Reconciliation` | Selected scenario | `phaseRules.postMigration[]` |
-| `22_Value_Lists` | Runtime lists and referenced codes | `valueLists` |
+| `22_Value_Lists` | Active Runtime/Both entries in every referenced value-domain, operator, phase, provenance, normalization, status/reason or other required list | `valueLists` |
 | `23_Source_References` | Referenced by included objects | `sources[]` |
 | `24_Final_Config_Master` | Generated lineage view | Not exported |
 | `25_JSON_Field_Map` | Transformation contract | Not exported |
@@ -1399,7 +1537,77 @@ The following coverage is mandatory before the workbook can claim to contain all
 
 The MVP JSON shall contain no generation timestamp inside the canonical content because identical workbook content and `ScenarioId` must produce identical bytes. Run time, generator version, and file hash may be logged externally during the MVP.
 
-### 12.2 Inclusion algorithm
+### 12.2 Field definitions, controlled values, and execution evidence
+
+An exported field definition is reusable configuration. It defines the contract for a value but does not contain a customer/project value.
+
+```json
+{
+  "fieldCode": "ARCHIVE.LOOKUP_STATUS",
+  "displayName": "Archive lookup status",
+  "definition": "Outcome of resolving a normalized archive identifier",
+  "ownerModuleId": "MOD-ARCHIVE",
+  "fieldRole": "Observation",
+  "entityType": "ArchiveObject",
+  "dataType": "Code",
+  "cardinality": "One",
+  "valueDomain": {
+    "type": "ValueList",
+    "code": "ARCHIVE_LOOKUP_STATUS"
+  },
+  "defaultValueOrigin": "Observed",
+  "primaryEvidenceSourceType": "Archive",
+  "producerCapability": "LookupPhysicalObject",
+  "normalizationCode": "NormalizeIdentifier",
+  "provenanceProfileCode": "PROV_ARCHIVE",
+  "nullPolicy": "DisallowNull",
+  "operatorListCode": "OPS_CODE",
+  "phaseListCode": "PHASES_ALL",
+  "baselineRole": "SupportingEvidence",
+  "reconciliationRole": "ComparisonEvidence",
+  "reportUsage": "Detail",
+  "logUsage": "IdentifierOnly",
+  "sensitivityClass": "CustomerMetadata"
+}
+```
+
+Referenced controlled values are serialized by stable code and deterministic order:
+
+```json
+{
+  "valueLists": {
+    "ARCHIVE_LOOKUP_STATUS": [
+      {"code": "Found", "label": "Found", "description": "Exactly one physical object resolved."},
+      {"code": "Missing", "label": "Missing", "description": "A complete lookup found no matching physical object."},
+      {"code": "Multiple", "label": "Multiple", "description": "More than one candidate physical object resolved."},
+      {"code": "Invalid", "label": "Invalid", "description": "The supplied archive identifier could not be normalized or evaluated."},
+      {"code": "Inaccessible", "label": "Inaccessible", "description": "The lookup target could not be accessed."}
+    ]
+  }
+}
+```
+
+The actual observation is execution evidence and shall be written to the assessment result/baseline rather than copied back into the Mapping Workbook or reusable scenario JSON:
+
+```json
+{
+  "fieldCode": "ARCHIVE.LOOKUP_STATUS",
+  "value": "Missing",
+  "evidenceState": "Present",
+  "provenance": {
+    "originalIdentifier": "A123",
+    "normalizedIdentifier": "a123",
+    "lookupRoot": "Archive-01",
+    "producerCapability": "LookupPhysicalObject"
+  }
+}
+```
+
+The transformer shall include an active field when it is referenced by an included rule, metric, mapping, readiness rule, reconciliation rule, or other exported object, or when its `ExportPolicy` is `Always`. It shall include the active runtime/Both entries of every referenced `ValueDomainCode`, `OperatorListCode`, `PhaseListCode`, provenance, normalization, status, reason, or other controlled list required to interpret the field. `AuthoringOnly` entries and unreferenced field definitions shall be excluded unless the JSON contract explicitly requires them.
+
+Fields shall be sorted by `FieldCode`. Value lists shall be sorted by `ListCode`; entries shall be sorted by `SortOrder` and then `Code`. A generated value-list code is the workbook `Code`, never a normalized or derived version of `Label`.
+
+### 12.3 Inclusion algorithm
 
 For a selected `ScenarioId`, the transformer shall:
 
@@ -1409,7 +1617,7 @@ For a selected `ScenarioId`, the transformer shall:
 4. include active Global requirements with `RuntimeExport=True`, include active ModuleDriven requirements when the associated module is Required, Optional or Conditional for at least one phase, and include active ScenarioSpecific requirements only when `ScenarioId` matches the selection;
 5. exclude Authoring-only, Transformer-only and Report-only requirements unless their row explicitly sets `RuntimeExport=True` and the JSON contract defines their runtime purpose;
 6. include active rules that implement the included requirements and match the scenario/module/phase scope by reverse lookup of `RequirementId`;
-7. include every referenced evidence field, metric, regulatory profile, finding, recommendation, source, and runtime value-list entry;
+7. include every active referenced evidence field, metric, regulatory profile, finding, recommendation, source, and runtime/Both value-list entry by transitive dependency closure;
 8. include scenario-specific Pre-Migration and Post-Migration rules;
 9. reject unresolved or inactive references;
 10. sort objects and condition groups by defined keys rather than worksheet row position;
@@ -1419,7 +1627,7 @@ For a selected `ScenarioId`, the transformer shall:
 
 Questionnaire answers and actual qualifier values are project evidence and shall not be embedded in the reusable scenario configuration. The JSON contains the question catalogue, derivation rules, qualifier vocabulary, and output contract so the consuming application can collect context and produce a traceable scenario-selection result. Conditional activation with an unknown or missing context value shall produce the configured missing-evidence behavior; it shall not be treated as a false condition.
 
-### 12.3 Project scenario-selection result
+### 12.4 Project scenario-selection result
 
 The project scenario-selection result is execution evidence, not reusable configuration. It records the derived and confirmed scenario without copying customer answers into the master Runtime JSON. An illustrative result is:
 
@@ -1619,6 +1827,15 @@ JSON generation shall be blocked when any of the following is true:
 - `RuntimeExport=True` lacks a compatible `JSONPath`, or an exported requirement has an unresolved owner/source reference;
 - requirement, implementation and verification status are conflated or use an invalid lifecycle transition;
 - an applicable normative source statement has no Covered, Deferred or Superseded disposition;
+- an active `FieldCode` is duplicated, reused for a different semantic meaning, or lacks its definition, owner, type, cardinality, provenance profile, phase/operator list, source, or handling metadata;
+- `DataType=Code` lacks a resolvable active `ValueDomainType`/`ValueDomainCode`, or a non-Code field declares an incompatible controlled domain;
+- a numeric field requiring a unit lacks `UnitCode`, uses a non-canonical unit without an approved conversion, or conflicts with its `CanonicalFormat`;
+- a field references an operator incompatible with its data type, or a rule operator is not an active entry in the field's `OperatorListCode`;
+- a field is used in a phase absent from its `PhaseListCode`, or a required producer/normalization capability is not implemented and the field is not Deferred;
+- a field definition contains customer/project evidence, credentials, executable SQL/XPath/script content, or an example derived from real customer data;
+- an observation treats null/blank as `ConfirmedAbsent`, treats Unavailable/Invalid/Conflict/Unknown as `MISSING`, or treats NotApplicable as an evidence state;
+- an active value-list key `ListCode + Code` is duplicated, a parent reference is unresolved, a machine `Code` is derived from its label, or an AuthoringOnly value is required by runtime content;
+- a DMS evidence field or value-list entry is used to infer DMS-to-DMS support or bypass the `MS-07 / NeedsReview` route;
 - a rule refers to an unsupported field, operator, data type, engine capability, or parser profile;
 - condition grouping is incomplete or inconsistent;
 - numeric thresholds overlap, invert, or use mismatched units;
@@ -1685,6 +1902,11 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-031` | Set RequirementStatus=Approved, ImplementationStatus=Implemented and VerificationStatus=NotTested | The three states remain distinct and no Verified claim is inferred |
 | `MVP-AT-032` | Generate scenario JSON containing `REQ-SEQ-003` | `requirements[]` contains the structured owner, scope, missing-evidence, outcome-impact, implementation and source projection and links to every implementing sequence-gap rule |
 | `MVP-AT-033` | Reconcile approved enterprise and retained lower-level requirements | Every applicable normative source statement has a Covered, Deferred or Superseded disposition; missing disposition blocks completeness acceptance |
+| `MVP-AT-034` | Validate one active `07_Fields_Evidence` row | Its stable code, definition, owner, type, cardinality, value domain, origin, producer, provenance, operator/phase lists, baseline/reconciliation roles, handling, source, and export policy are complete and internally compatible |
+| `MVP-AT-035` | Use a Code field whose `ValueDomainCode` or `OperatorListCode` is missing/inactive | Generation is blocked and identifies the exact unresolved `22_Value_Lists` reference |
+| `MVP-AT-036` | Evaluate `MISSING` against ConfirmedAbsent, Unavailable, Invalid, Conflict and Unknown fixtures | Only ConfirmedAbsent matches; the other states produce the configured NotAssessed/InsufficientEvidence/FollowUp/Blocked behavior |
+| `MVP-AT-037` | Generate a scenario that references `ARCHIVE.LOOKUP_STATUS` | Its field definition and active `ARCHIVE_LOOKUP_STATUS`, operator, phase and provenance dependencies are included once in stable order; unreferenced AuthoringOnly values are excluded |
+| `MVP-AT-038` | Generate twice after changing only a controlled-value label | The stable machine code remains unchanged and only the intended display/description property changes; no identifier or relationship is recreated from the label |
 
 ## 17. MVP definition of done
 
@@ -1694,14 +1916,16 @@ The MVP is complete when:
 2. `04_Assessment_Modules` contains the fifteen approved active modules and `05_Scenario_Module_Map` contains all 360 active scenario/phase/module mappings;
 3. every workbook, transformer, migration-script, reporting, logging, safety and non-functional requirement is represented atomically in `06_Requirement_Catalogue`, belongs to one of the 24 mandatory families, and has an implementation or explicit deferral;
 4. every applicable normative source statement has a Covered, Deferred or Superseded disposition, and every active rule, engine capability and controlled report behavior resolves to a requirement;
-5. every supported scenario has complete phase-by-phase module applicability;
-6. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-7. scenario-specific JSON can be generated for all scenarios in Section 5;
-8. every JSON object is traceable to workbook records;
-9. invalid or incomplete workbook content blocks generation with actionable messages;
-10. unchanged input and scenario selection produce identical canonical JSON;
-11. the PowerShell runtime consumes JSON without reading Excel;
-12. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+5. every field required by an included rule, metric, mapping, baseline, reconciliation rule or result is defined once in `07_Fields_Evidence`, uses valid controlled values from `22_Value_Lists`, and has a deterministic scenario-JSON projection;
+6. actual customer/project evidence remains separate from reusable field definitions and every material observation can retain the required provenance and independent evidence/evaluation states;
+7. every supported scenario has complete phase-by-phase module applicability;
+8. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+9. scenario-specific JSON can be generated for all scenarios in Section 5;
+10. every JSON object is traceable to workbook records;
+11. invalid or incomplete workbook content blocks generation with actionable messages;
+12. unchanged input and scenario selection produce identical canonical JSON;
+13. the PowerShell runtime consumes JSON without reading Excel;
+14. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -1744,3 +1968,4 @@ Each review step shall answer four questions:
 | 4.2 MVP | 13 September 2026 | Approved deterministic scenario derivation based on primary migration input and target platform; added `Q-SCN-021` and `Q-SCN-022`; refined rule columns, selection statuses, conflict/fallback behavior, project selection-result JSON and edge cases; explicitly excluded DMS-to-DMS migration and routed it to `MS-07 / NeedsReview` with consultant discussion |
 | 4.3 MVP | 13 September 2026 | Approved the fifteen-module catalogue and boundaries; expanded `04_Assessment_Modules`; required all 360 explicit scenario/phase/module mappings; defined phase applicability, depth, missing-evidence, baseline and reconciliation semantics; added Hybrid composition question `Q-SCN-023`; replaced module-ID buckets with traceable module mapping objects in JSON; made `MOD-READINESS` required for `MS-07` Pre-Migration and excluded formal reconciliation for unresolved `MS-07` |
 | 4.4 MVP | 13 September 2026 | Approved the atomic `06_Requirement_Catalogue` model; added human purpose, cross-cutting ownership, lifecycle/phase/applicability scope, missing-evidence and outcome behavior, implementation disposition, runtime projection, acceptance/source traceability and separate requirement/implementation/verification statuses; defined 24 mandatory `REQ-*` families; removed direct one-to-one RuleId storage in favor of reverse rule references; added structured scenario `requirements[]`, completeness validation and acceptance tests |
+| 4.5 MVP | 13 September 2026 | Approved `07_Fields_Evidence` as the semantic dictionary for reusable field definitions and `22_Value_Lists` as the controlled-code authority; separated configuration definitions from execution observations and evidence state from evaluation status; added type/cardinality/domain, provenance, operator/phase lists, baseline/reconciliation and safe report/log handling; excluded assumed evidence and executable extraction content; defined deterministic transitive JSON inclusion, controlled-value families, validation and acceptance tests; retained the DMS-to-DMS scope prohibition |

@@ -2,7 +2,7 @@ schemaVersion: "1.5"
 status: Effective
 effectiveDate: "2026-07-13"
 owner: Documentation Owner
-decisionReference: DEC-2026-008
+decisionReference: DEC-2026-008 and DEC-2026-013 through DEC-2026-017
 purpose: >-
   Machine-readable routing index for selecting authoritative, architectural,
   operational-skill and task-specific eMAS context without loading the complete repository.
@@ -15,9 +15,9 @@ skillCatalog: skills/skill-catalog.json
 
 artifacts:
   - id: REQ-ENT
-    path: ../requirements/eMAS_Final_Enterprise_Requirements_v3.1.md
-    version: "3.1"
-    status: Effective
+    path: ../requirements/eMAS_Enterprise_Requirements_v5.0.md
+    version: "5.0"
+    status: ApprovedMVPDesignBaseline
     authorityRank: 1
     owner: Product Owner
     requiredFor: [requirements, architecture, configuration, powershell, reporting, testing, release]
@@ -56,8 +56,8 @@ artifacts:
 
   - id: CFG-FUNC
     path: ../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md
-    version: "3.0"
-    status: Effective
+    version: "4.5 MVP"
+    status: ApprovedMVPDesignBaseline
     authorityRank: 2
     owner: Product Owner
     requiredFor: [configuration, mapping-workbook]
@@ -106,7 +106,7 @@ artifacts:
   - id: CFG-DICT
     path: ../configuration/07_eMAS_Data_Dictionary.md
     version: "1.0"
-    status: EffectiveLogicalModelContract
+    status: HistoricalReferencePendingMVPReconciliation
     authorityRank: 4
     owner: Product Owner and Technical Architect
     requiredFor: [configuration, mapping-workbook, rule-model, json, schema, powershell, testing, architecture]
@@ -122,7 +122,7 @@ artifacts:
   - id: SCHEMA-JSON
     path: ../../config/schema/eMAS-runtime-config.schema.json
     version: "1.0.0"
-    status: Effective
+    status: HistoricalReferencePendingScenarioFieldSynchronization
     authorityRank: 5
     owner: Technical Architect
     requiredFor: [json, schema, mapping-workbook, powershell, testing, architecture]

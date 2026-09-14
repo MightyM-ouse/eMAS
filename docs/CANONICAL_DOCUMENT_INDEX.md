@@ -1,10 +1,10 @@
 # eMAS Canonical Document Index
 
-**Version:** 1.11 MVP requirement-catalogue alignment
+**Version:** 1.12 MVP field/evidence alignment
 **Status:** Approved MVP design baseline; implementation pending
 **Prepared date:** 2026-09-13
 **Owner:** Documentation Owner
-**Decision reference:** DEC-2026-008 / AP-008 and DEC-2026-013 through DEC-2026-016; requirements, scenario model, questionnaire, derivation rules, module catalogue, phase applicability, Requirement Catalogue, logical-model, schema, architecture, skills and historical XLSM/VBA POC synchronization
+**Decision reference:** DEC-2026-008 / AP-008 and DEC-2026-013 through DEC-2026-017; requirements, scenario model, questionnaire, derivation rules, module catalogue, phase applicability, Requirement Catalogue, Fields/Evidence, Value Lists, logical-model, schema, architecture, skills and historical XLSM/VBA POC synchronization
 
 ## Purpose
 
@@ -24,16 +24,16 @@ This index routes eMAS work to authoritative requirements, architecture, verific
 
 | ID | Rank | Artifact | Version/status | Owner |
 |---|---:|---|---|---|
-| CFG-MVP | 2 | [Mapping Workbook and Scenario JSON MVP Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v4.4 Approved MVP design baseline; implementation pending | Product Owner |
+| CFG-MVP | 2 | [Mapping Workbook and Scenario JSON MVP Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v4.5 Approved MVP design baseline; implementation pending | Product Owner |
 | CFG-TECH | Reference | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 historical reference pending MVP reconciliation | Technical Architect |
 | CFG-CAT | Reference | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 reference pending MVP reconciliation | Product Owner / SMEs |
 | CFG-JSON | Reference | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 reference pending scenario-JSON synchronization | Technical Architect |
 | CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.1 Approved | Product Owner / Technical Architect |
 | CFG-REL | 4 | [Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Product Owner / Technical Architect |
-| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 Effective | Product Owner / Technical Architect |
+| CFG-DICT | Reference | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 historical reference pending v4.5 Fields/Evidence reconciliation | Product Owner / Technical Architect |
 | CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.0 Effective | Technical Architect / QA Lead |
 | CFG-XLSM-POC | Historical | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | Historical POC; not current MVP direction | Technical Architect / QA Lead |
-| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective | Technical Architect |
+| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 historical reference pending scenario/field JSON synchronization | Technical Architect |
 | SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective | Technical Architect / QA Lead |
 
 ## Architecture and phase contracts

@@ -6,7 +6,7 @@
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Classification:** Internal
 **Prepared:** 13 September 2026
-**Decision references:** DEC-2026-013 through DEC-2026-016
+**Decision references:** DEC-2026-013 through DEC-2026-017
 
 ---
 
@@ -303,11 +303,13 @@ The internal Mapping Workbook shall be one macro-free `.xlsx` master workbook. I
 
 The Requirement Catalogue shall cover assessment-module and cross-cutting workbook, transformation, runtime, reporting, logging, safety and non-functional obligations. One row shall represent one atomic, testable requirement with stable identity, human purpose, owner, lifecycle/phase/applicability scope, implementation disposition, acceptance criterion, source and separate requirement/implementation/verification status. A requirement may be implemented by multiple rule rows, which shall reference the requirement rather than being stored as a comma-separated list in the requirement row. Completeness shall be demonstrated by disposition of applicable normative source statements and bidirectional traceability, not by an arbitrary row-count target.
 
+The Fields/Evidence catalogue shall define each reusable semantic field once with stable identity, meaning, owner, entity, type/cardinality, controlled value domain, origin, producer, normalization, provenance, permitted operators/phases, baseline/reconciliation role and safe report/log handling. Exact XML paths and source-system extraction mappings shall remain in profiles and rule/mapping sheets rather than redefining the field. Reusable field definitions shall remain separate from actual customer/project observations. Evidence value, evidence state, evaluation status, severity/RAG and confidence shall remain independent; null or unavailable evidence shall not be treated as confirmed absence. Controlled machine codes and labels shall be maintained in the Value Lists sheet and included in scenario JSON only when active and required by exported configuration.
+
 For one selected `ScenarioId`, the MVP transformer shall resolve applicable modules, requirements, rules, and referenced dependencies and generate one deterministic scenario-specific Runtime JSON file. That JSON shall contain all configuration applicable to Pre-Sales, Pre-Migration, and Post-Migration for the selected scenario. Every exported object shall be traceable to stable workbook identifiers.
 
 The workbook is an authoring interface, not a runtime dependency. PowerShell shall consume JSON and shall not open Excel or generate, repair, or reinterpret configuration JSON.
 
-The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, module catalogue, scenario/phase applicability, Requirement Catalogue, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.4](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
+The exact workbook sheets, columns, relationships, scenario catalogue, qualifier model, questionnaire, derivation rules, module catalogue, scenario/phase applicability, Requirement Catalogue, Fields/Evidence and Value Lists contracts, JSON shape, validation rules, and acceptance tests are defined by [Mapping Workbook and Scenario JSON MVP Requirements v4.5](../configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md).
 
 SharePoint authoring, Office Scripts, Power Automate, controlled approvals, immutable production releases, checksums, and GxP-oriented governance remain later-stage requirements and do not block MVP acceptance.
 
