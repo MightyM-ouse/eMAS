@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.6 MVP
+**Version:** 4.7 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 14 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-018
+**Decision references:** DEC-2026-013 through DEC-2026-019
 
 ## 1. Purpose and MVP decision
 
@@ -1042,24 +1042,272 @@ The supplied Regulatory, Technical & Migration Assessment Guide may be cited as 
 
 ### 9.10 `09_Dossier_Sequence_ID`
 
-This sheet contains rules that identify applications/dossiers, sequences/submission units, and lifecycle context.
+This executable rule sheet interprets observed and derived evidence to identify regulatory dimensions, application/dossier identity, sequence or submission-unit identity, and lifecycle context. It answers **what the evidence means**. Exact filenames, namespaces, XML elements, attributes, and other extraction locations remain normalized in `08_Regulatory_Profiles`; they shall not be duplicated in this sheet.
 
-In addition to the common rule columns, include:
+#### 9.10.1 Identification hierarchy and semantic separation
+
+The following targets shall remain independent:
+
+| Target | Meaning and constraint |
+|---|---|
+| `Region` | Regulatory jurisdiction; it is not the authority |
+| `Authority` | Receiving authority or authority family |
+| `TechnicalFormat` | eCTD3, eCTD4, NeeS, VNeeS, NonECTD, or Unknown; application/dossier types are prohibited |
+| `SpecificationVersion` | Core technical specification version |
+| `RegionalImplementation` | Versioned regional implementation of the technical format |
+| `ApplicationType` | IND, NDA, ANDA, BLA, MAA, CTA, or other controlled pathway |
+| `DossierContext` | ASMF, DMF, Marketing, Investigational, or other controlled context |
+| `ProcedureContext` | Centralised, DCP, MRP, National, or another applicable procedure |
+| `ApplicationId` | Authority-facing application identifier, retaining source and raw value |
+| `DossierId` | Canonical eMAS logical dossier identity; it may differ from ApplicationId |
+| `SequenceId` | eCTD v3 sequence identifier stored as text to preserve leading zeros |
+| `SubmissionUnitId` | eCTD v4 submission-unit identity; it shall not be forced into an eCTD v3 numeric sequence model |
+| `LifecycleOperation` | Profile/version-specific operation |
+| `LifecycleTargetId` | Referenced prior content, sequence, or submission unit |
+
+ASMF and DMF are dossier contexts; IND, NDA, ANDA, BLA, MAA, and CTA are application/pathway types. None is a technical format. A valid result may therefore simultaneously state `TechnicalFormat=eCTD3`, `Region=EU`, `ApplicationType=MAA`, and `DossierContext=ASMF`.
+
+#### 9.10.2 Rule-table columns
+
+The sheet follows the common rule and condition model in Section 8.2-8.3. One row is one atomic condition; rows sharing `RuleId + ConditionGroup` are ANDed, and different groups for the same rule are ORed. In addition to the common columns, include:
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `DetectionTarget` | Code | Yes | Region, Authority, Format, Version, ApplicationType, DossierContext, DossierId, SequenceId, Lifecycle |
-| `EvidenceFile` | Text | Conditional | Backbone or regional XML filename |
-| `XmlNamespace` | Text | Conditional | Selects version-appropriate XML semantics |
-| `XmlElementOrPath` | Text | Conditional | Exact element/section to inspect |
-| `XmlAttribute` | Text | Conditional | Exact attribute to read |
-| `ExpectedPattern` | Text | Conditional | Controlled filename/folder/value pattern |
-| `CandidateValue` | Code | Yes | Classification result proposed by the rule |
-| `EvidenceStrength` | Code | Yes | Strong, Medium, Weak |
-| `ConflictGroup` | Text | Yes | Identifies mutually competing results |
-| `ConflictStrategy` | Code | Yes | HighestEvidenceScore or ManualReview by default |
+| `IdentificationRuleType` | Code | Yes | Classify, ExtractIdentity, NormalizeIdentity, ValidateIdentity, CorrelateIdentity, ResolveConflict, or ObserveContinuity |
+| `DetectionTarget` | Code | Yes | Exact classification or identity dimension being determined |
+| `ProfileScope` | Code | Yes | AnySupported, SelectedProfile, or SpecificProfile |
+| `ProfileId` | Profile reference | Conditional | Required for SpecificProfile; references `08_Regulatory_Profiles` |
+| `SubjectScope` | Code | Yes | Repository, Application, Dossier, Sequence, or SubmissionUnit |
+| `SubjectKeyFieldCode` | Field reference | Yes | Identifies the object receiving the conclusion |
+| `ParentKeyFieldCode` | Field reference | Conditional | Connects a sequence/unit to its parent dossier/application |
+| `ProfileEvidenceId` | Locator reference | Conditional | Identifies the approved `08` locator that initiated or supports the rule |
+| `OutputFieldCode` | Field reference | Yes | Canonical field from `07_Fields_Evidence` receiving the result |
+| `CandidateValueMode` | Code | Yes | Constant, CopyField, NormalizeField, PatternCapture, ComposeFields, BooleanObservation, or StatusOnly |
+| `CandidateValue` | Typed scalar | Conditional | Required for Constant; for example EU, eCTD3, or ASMF |
+| `CandidateSourceFieldCode` | Field reference | Conditional | Required when a value is copied, normalized, captured, or composed |
+| `NormalizationCode` | Code | Conditional | Approved normalization operation; no workbook script expression |
+| `ExpectedPattern` | Text | Conditional | Declarative identifier/folder pattern where the rule requires it |
+| `MinimumEvidenceStrength` | Code | Yes | Weakest evidence permitted for the conclusion |
+| `MinimumEvidenceCount` | Integer | Yes | Minimum number of supporting observations |
+| `RequiresCorroboration` | Boolean | Yes | Whether independent supporting evidence is mandatory |
+| `CandidateAcceptancePolicy` | Code | Yes | Controlled policy governing candidate acceptance |
+| `MatchAction` | Code | Yes | Propose, confirm, reject, observe, or require review |
+| `IndeterminateAction` | Code | Yes | Explicit unavailable/invalid/unknown behavior |
+| `ConflictGroup` | Text | Yes | Groups mutually competing candidates for one subject/target |
+| `ConflictStrategy` | Code | Yes | HighestStrength, RequireAgreement, ManualReview, or DoNotInfer |
+| `ResultStatusOnMatch` | Code | Yes | Identified, ProvisionallyIdentified, Observation, or ManualReview |
 
-The rules shall support `index.xml` plus regional XML, eCTD v3/v4 differences, EU and US regional evidence, other supported regions, ASMF/DMF context, IND/NDA/ANDA/BLA/MAA/CTA pathways, numeric sequence patterns, sequence gaps, duplicate/nested sequence folders, XML-folder sequence mismatch, application conflicts, and ambiguous/manual-review outcomes. A gap such as `0000`, `0001`, `0003` shall be an observation, not automatically a regulatory defect.
+`EvidenceFile`, `XmlNamespace`, `XmlElementOrPath`, and `XmlAttribute` are prohibited here because those values belong to `tblProfileEvidenceLocators` in `08_Regulatory_Profiles`.
+
+#### 9.10.3 Candidate-value modes
+
+| Mode | Required behavior |
+|---|---|
+| `Constant` | Emit the configured candidate code |
+| `CopyField` | Copy a typed observed field without losing raw-value provenance |
+| `NormalizeField` | Apply one implemented normalization capability to the source field |
+| `PatternCapture` | Extract a captured value using a controlled pattern/capability |
+| `ComposeFields` | Construct a provisional canonical key from an explicit ordered component-field list |
+| `BooleanObservation` | Record a condition such as a gap, duplicate, nested sequence, or mismatch |
+| `StatusOnly` | Produce a status such as ManualReview without inventing an identity |
+
+`ComposeFields`, `PatternCapture`, and normalization shall name implemented engine capabilities and declarative parameters. Executable PowerShell, JavaScript, SQL, XPath logic, or formulas that implement business behavior are prohibited in cells.
+
+#### 9.10.4 Two-stage profile identification
+
+Identification shall support two controlled stages:
+
+1. **Bootstrap classification:** profile-neutral rules inspect supported high-level indicators such as filenames, namespaces, validated backbone type, regional XML presence, customer context, or source-system metadata and propose candidate region/format/profile values.
+2. **Profile-specific identification:** after a supported profile is selected or strongly proposed, version-specific rules identify application/dossier, sequence/submission-unit, and lifecycle values.
+
+When the questionnaire supplies a region or profile, it may narrow eligible profiles but shall not overwrite contradictory observed evidence. If the profile is unknown, scenario JSON shall include eligible bootstrap rules and relevant active Supported profiles rather than selecting an arbitrary region. In a mixed repository, classification shall be performed for each dossier/application subject, not once globally.
+
+#### 9.10.5 Controlled values in `22_Value_Lists`
+
+| List code | Minimum values |
+|---|---|
+| `IDENTIFICATION_RULE_TYPE` | Classify, ExtractIdentity, NormalizeIdentity, ValidateIdentity, CorrelateIdentity, ResolveConflict, ObserveContinuity |
+| `IDENTIFICATION_TARGET` | Region, Authority, TechnicalFormat, SpecificationVersion, RegionalImplementation, ApplicationType, DossierContext, ProcedureContext, ApplicationId, DossierId, SequenceId, SubmissionUnitId, LifecycleOperation, LifecycleTargetId |
+| `PROFILE_SCOPE` | AnySupported, SelectedProfile, SpecificProfile |
+| `IDENTIFICATION_SUBJECT_SCOPE` | Repository, Application, Dossier, Sequence, SubmissionUnit |
+| `CANDIDATE_VALUE_MODE` | Constant, CopyField, NormalizeField, PatternCapture, ComposeFields, BooleanObservation, StatusOnly |
+| `CANDIDATE_ACCEPTANCE_POLICY` | SingleStrong, StrongOrCorroboratedMedium, RequireAgreement, ManualReviewOnly |
+| `IDENTIFICATION_MATCH_ACTION` | ProposeCandidate, ConfirmCandidate, RejectCandidate, RecordObservation, RequireManualReview |
+| `IDENTIFICATION_INDETERMINATE_ACTION` | PreserveUnknown, RequestFollowUp, RecordInsufficientEvidence, RequireManualReview, BlockAssessment |
+| `IDENTIFICATION_STATUS` | Identified, ProvisionallyIdentified, PartiallyIdentified, Ambiguous, Conflict, Unknown, NotApplicable |
+| `IDENTIFICATION_CONFLICT_STRATEGY` | HighestStrength, RequireAgreement, ManualReview, DoNotInfer |
+| `SEQUENCE_OBSERVATION_TYPE` | Gap, Duplicate, Nested, XmlFolderMismatch, InvalidPattern, ApplicationConflict, OutOfOrder |
+| `IDENTITY_NORMALIZATION` | Preserve, Trim, UpperCase, LowerCase, NormalizeSequenceIdentifier, NormalizeApplicationIdentifier, ComposeCanonicalDossierKey |
+
+`LIFECYCLE_OPERATION` shall be profile/version appropriate and include Unknown. Adding a code shall not implement the related identification, parser, normalization, lifecycle, or conflict-resolution capability.
+
+#### 9.10.6 Candidate resolution
+
+Candidates shall be resolved within `SubjectKey + DetectionTarget + ConflictGroup`. Resolution shall preserve every contributing evidence reference and apply these minimum semantics:
+
+| Evidence situation | Required result |
+|---|---|
+| One accepted strong candidate with no conflict | Identified |
+| Multiple observations supporting the same candidate | Identified with all corroborating evidence retained |
+| Only weak/folder evidence | ProvisionallyIdentified or Unknown according to policy |
+| Different strong candidates | Conflict and ManualReview |
+| Evidence unavailable or invalid | Unknown or PartiallyIdentified with explicit reason |
+| Unsupported profile semantics | Unknown with `UnsupportedSourceSemantics` |
+| Customer answer conflicts with structured evidence | Preserve both; do not overwrite either |
+| Rule/module not applicable | NotApplicable, not Unknown |
+
+`HighestStrength` shall not silently select among different candidates of equal strength. Equal-strength conflicts require the configured agreement/manual-review behavior. Evidence strength, identification status, RAG, severity, and confidence remain separate concepts.
+
+#### 9.10.7 Sequence, submission-unit, and lifecycle behavior
+
+`SequenceId` shall use String and preserve leading zeros. For observed sequences `0000`, `0001`, and `0003`, eMAS may record missing candidate `0002` with observation type Gap, but shall not automatically declare a regulatory defect. The export may be partial, the sequence may be outside scope, or historical evidence may be unavailable.
+
+Duplicate normalized sequence IDs shall retain all physical paths. Nested sequence folders and XML-folder identifier mismatches shall retain both values and produce a controlled observation/conflict without renaming or modifying source content. Application-identity conflicts within one proposed dossier shall require review.
+
+eCTD v4 submission-unit identifiers shall not be required to be four-digit numeric, match eCTD v3 folder conventions, or use an eCTD v3 lifecycle-operation model. The selected regulatory profile determines the applicable identity and lifecycle semantics. Missing lifecycle targets and broken referenced files are evaluated by `11_Missing_Refs_Integrity`; this sheet identifies the relationship and target.
+
+#### 9.10.8 Workbook relationships
+
+The controlled flow is:
+
+`08 profile/locator -> 07 observed field -> 09 condition and candidate -> 09 resolution -> 15/16/18/19 interpretation -> 24 Final Config Master -> scenario JSON`
+
+`10_Folder_File_Structure` owns structural-conformance rules. `09` may use folder evidence for identity but shall not duplicate structural requirements. `11_Missing_Refs_Integrity` owns missing/broken-reference conclusions. Findings, RAG, confidence, effort, and actions remain referenced outputs rather than duplicated text.
+
+#### 9.10.9 Runtime configuration JSON
+
+Repeated condition rows shall be grouped into one deterministic rule object:
+
+```json
+{
+  "identificationRules": [
+    {
+      "ruleId": "ID-REGION-EU-001",
+      "requirementId": "REQ-REG-001",
+      "moduleId": "MOD-REGULATORY-CLASSIFICATION",
+      "phase": ["PreSales", "PreMigration", "PostMigration"],
+      "profileScope": "SpecificProfile",
+      "profileIds": ["RP-EU-ECTD3-M1-VERIFIED"],
+      "identification": {
+        "ruleType": "Classify",
+        "target": "Region",
+        "subjectScope": "Dossier",
+        "subjectKeyFieldCode": "DOSSIER.CANDIDATE_ID"
+      },
+      "conditionGroups": [
+        {
+          "groupId": "G1",
+          "conditions": [
+            {
+              "fieldCode": "REGULATORY.REGIONAL_PROFILE_EVIDENCE",
+              "operator": "EQUALS",
+              "value1": "EU_M1_SUPPORTED"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "outputFieldCode": "REGULATORY.REGION",
+        "candidateValueMode": "Constant",
+        "candidateValue": "EU",
+        "matchAction": "ConfirmCandidate",
+        "resultStatus": "Identified"
+      },
+      "acceptance": {
+        "minimumEvidenceStrength": "Strong",
+        "minimumEvidenceCount": 1,
+        "requiresCorroboration": false,
+        "policy": "SingleStrong"
+      },
+      "conflict": {
+        "group": "REGION",
+        "strategy": "ManualReview"
+      }
+    }
+  ]
+}
+```
+
+The workbook generates configuration JSON. PowerShell later generates assessment-result JSON. A result shall retain the subject, value, identification status, confidence, rule, and evidence references. For example:
+
+```json
+{
+  "subject": {
+    "subjectType": "Dossier",
+    "subjectKey": "DOSSIER-00017"
+  },
+  "classification": {
+    "region": {
+      "value": "EU",
+      "status": "Identified",
+      "confidence": "High",
+      "ruleId": "ID-REGION-EU-001",
+      "evidenceReferences": ["EVID-000145"]
+    },
+    "technicalFormat": {
+      "value": "eCTD3",
+      "status": "Identified",
+      "confidence": "High",
+      "evidenceReferences": ["EVID-000141"]
+    },
+    "applicationType": {
+      "value": "MAA",
+      "status": "ProvisionallyIdentified",
+      "confidence": "Medium",
+      "evidenceReferences": ["EVID-000153"]
+    },
+    "dossierContext": {
+      "value": "ASMF",
+      "status": "Identified",
+      "confidence": "High",
+      "evidenceReferences": ["EVID-000155", "EVID-000158"]
+    }
+  },
+  "sequences": [
+    {
+      "sequenceId": "0003",
+      "parentDossierId": "DOSSIER-00017",
+      "status": "Identified"
+    }
+  ],
+  "observations": [
+    {
+      "type": "Gap",
+      "missingCandidateSequenceId": "0002",
+      "findingStatus": "Observation",
+      "automaticRegulatoryDefect": false
+    }
+  ]
+}
+```
+
+#### 9.10.10 Scenario-specific inclusion
+
+An identification rule is emitted only when its module is Required or an activated Conditional mapping for the selected scenario/phase, the rule applies to the scenario/phase, its profile scope can be resolved, and every required profile, locator, field, value, capability, finding, action, and source dependency validates. If the region/profile is unknown, include eligible bootstrap rules and relevant Supported profiles. Do not arbitrarily select EU, US, or another profile.
+
+For a DB/archive scenario without dossier-export evidence, detailed XML rules may be excluded or return NotAssessed according to module policy. Missing non-mandatory regulatory export evidence shall not fail the whole migration assessment.
+
+#### 9.10.11 Mandatory validation and safeguards
+
+Generation shall be blocked when:
+
+1. a detection target has no output field;
+2. SpecificProfile lacks `ProfileId`, or a referenced profile/locator/field does not exist;
+3. the output datatype is incompatible with the candidate-value mode or value;
+4. SequenceId is configured as numeric and could lose leading zeros;
+5. a rule treats application type or dossier context as technical format;
+6. eCTD v3 rules/capabilities are applied to an eCTD v4 profile, or vice versa;
+7. Constant lacks `CandidateValue`, or a source-based mode lacks its source field/parameters;
+8. conflict group or strategy is absent;
+9. HighestStrength could silently resolve different candidates with equal strength;
+10. weak evidence is configured as authoritative without a supported source and policy;
+11. repeated rows for one RuleId disagree on rule-level output, acceptance, or conflict properties;
+12. an active rule uses an absent or unimplemented capability;
+13. direct extraction details duplicate `08_Regulatory_Profiles`; or
+14. an active rule, value, profile, selector, or source contains an unverified placeholder.
+
+The sheet shall support `index.xml` plus regional evidence, eCTD v3/v4 distinctions, all runtime-supported regions, ASMF/DMF context, IND/NDA/ANDA/BLA/MAA/CTA pathways, numeric sequence patterns, gaps, duplicates, nested sequences, XML-folder mismatch, application conflicts, and ambiguous/manual-review outcomes without claiming that every catalogue entry is implemented or regulatory-valid.
+
 
 ### 9.11 `10_Folder_File_Structure`
 
@@ -2041,6 +2289,20 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-044` | Represent ASMF or IND in profile data | ASMF is stored as dossier context and IND as application type; neither appears in `TechnicalFormat` |
 | `MVP-AT-045` | Activate a Planned, ReferenceOnly, unverified, placeholder-containing, or parser-incomplete profile | Runtime JSON generation is blocked for that profile and reports the exact unsupported dependency |
 | `MVP-AT-046` | Generate scenario JSON for a scenario whose identification rules reference one supported profile | The profile, its referenced locators, field definitions, controlled values, capabilities, and sources are emitted once in stable `ProfileId`/`Priority`/`ProfileEvidenceId` order; unrelated profiles are excluded |
+| `MVP-AT-047` | Validate `09_Dossier_Sequence_ID` structure | All approved common and identification-specific columns exist; direct filename/namespace/XML-locator columns are absent |
+| `MVP-AT-048` | Inspect a dossier containing only an eCTD-style `index.xml` | Technical format may be proposed, but region and authority remain Unknown until appropriate evidence is available |
+| `MVP-AT-049` | Process supported EU and US profile evidence | Candidate region/authority is produced per subject using the applicable profile, locator and source-backed rule |
+| `MVP-AT-050` | Provide a folder label that conflicts with strong structured evidence | Both values are preserved and Conflict/ManualReview is produced; the folder label does not override structured evidence |
+| `MVP-AT-051` | Assess eCTD v3 sequences `0000`, `0001`, `0003` | A Gap observation identifies candidate `0002`; no automatic regulatory defect, RAG, or readiness outcome is inferred |
+| `MVP-AT-052` | Provide two physical folders normalizing to sequence `0003` | A Duplicate observation retains both physical paths |
+| `MVP-AT-053` | Provide folder `0003` with XML evidence indicating `0004` | Both values and provenance are retained and XmlFolderMismatch/Conflict is produced |
+| `MVP-AT-054` | Classify an ASMF in EU eCTD evidence | TechnicalFormat=eCTD3 and DossierContext=ASMF remain separate simultaneous conclusions |
+| `MVP-AT-055` | Classify an IND in US eCTD evidence | TechnicalFormat=eCTD3 and ApplicationType=IND remain separate simultaneous conclusions |
+| `MVP-AT-056` | Process a valid nonnumeric eCTD v4 submission-unit identifier | The profile-appropriate unit identifier is accepted; no four-digit eCTD v3 sequence rule is applied |
+| `MVP-AT-057` | Process an unknown or unsupported namespace/profile | Result is Unknown/UnsupportedSourceSemantics with evidence retained and no forced classification |
+| `MVP-AT-058` | Assess a repository containing independently evidenced EU and US dossiers | Classification is resolved separately per dossier/application subject, not globally for the repository |
+| `MVP-AT-059` | Make required identification evidence inaccessible | Result is InsufficientEvidence/Unknown or configured follow-up; it never becomes Identified, Pass, or Green |
+| `MVP-AT-060` | Generate the same scenario JSON twice | Identification rules, grouped conditions, profiles and dependencies are byte-stable and deterministically ordered |
 
 ## 17. MVP definition of done
 
@@ -2053,14 +2315,15 @@ The MVP is complete when:
 5. every field required by an included rule, metric, mapping, baseline, reconciliation rule or result is defined once in `07_Fields_Evidence`, uses valid controlled values from `22_Value_Lists`, and has a deterministic scenario-JSON projection;
 6. actual customer/project evidence remains separate from reusable field definitions and every material observation can retain the required provenance and independent evidence/evaluation states;
 7. every runtime-supported regulatory profile has a version-specific profile record, normalized evidence locators, verified source references, compatible implemented parser capabilities, and deterministic field/JSON projections;
-8. every supported scenario has complete phase-by-phase module applicability;
-9. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-10. scenario-specific JSON can be generated for all scenarios in Section 5;
-11. every JSON object is traceable to workbook records;
-12. invalid or incomplete workbook content blocks generation with actionable messages;
-13. unchanged input and scenario selection produce identical canonical JSON;
-14. the PowerShell runtime consumes JSON without reading Excel;
-15. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+8. every active dossier/sequence identification rule separates extraction from interpretation, resolves per subject with explicit acceptance/conflict behavior, preserves leading-zero sequence IDs and eCTD v3/v4 distinctions, and has deterministic configuration/result JSON projections;
+9. every supported scenario has complete phase-by-phase module applicability;
+10. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+11. scenario-specific JSON can be generated for all scenarios in Section 5;
+12. every JSON object is traceable to workbook records;
+13. invalid or incomplete workbook content blocks generation with actionable messages;
+14. unchanged input and scenario selection produce identical canonical JSON;
+15. the PowerShell runtime consumes JSON without reading Excel;
+16. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -2105,3 +2368,4 @@ Each review step shall answer four questions:
 | 4.4 MVP | 13 September 2026 | Approved the atomic `06_Requirement_Catalogue` model; added human purpose, cross-cutting ownership, lifecycle/phase/applicability scope, missing-evidence and outcome behavior, implementation disposition, runtime projection, acceptance/source traceability and separate requirement/implementation/verification statuses; defined 24 mandatory `REQ-*` families; removed direct one-to-one RuleId storage in favor of reverse rule references; added structured scenario `requirements[]`, completeness validation and acceptance tests |
 | 4.5 MVP | 13 September 2026 | Approved `07_Fields_Evidence` as the semantic dictionary for reusable field definitions and `22_Value_Lists` as the controlled-code authority; separated configuration definitions from execution observations and evidence state from evaluation status; added type/cardinality/domain, provenance, operator/phase lists, baseline/reconciliation and safe report/log handling; excluded assumed evidence and executable extraction content; defined deterministic transitive JSON inclusion, controlled-value families, validation and acceptance tests; retained the DMS-to-DMS scope prohibition |
 | 4.6 MVP | 14 September 2026 | Approved the normalized `08_Regulatory_Profiles` design with separate profile and evidence-locator tables on one worksheet; kept format, application type, dossier context and procedure context independent; added version/namespace/parser/lifecycle boundaries, support status, controlled locator vocabulary, source verification, JSON nesting and transitive inclusion; prohibited weak-evidence overrides, cross-version generic selectors, placeholders and unsupported profile export; clarified the extraction boundary with `09_Dossier_Sequence_ID` |
+| 4.7 MVP | 14 September 2026 | Approved `09_Dossier_Sequence_ID` as the evidence-interpretation layer; removed duplicated extraction-location columns; separated regulatory dimensions and application/dossier/sequence/submission-unit/lifecycle identities; added profile-neutral bootstrap and profile-specific stages, per-subject candidate resolution, candidate-value/acceptance/conflict controls, sequence-gap/duplicate/mismatch observations, eCTD v3/v4 safeguards, controlled values, configuration/result JSON projections, validation and acceptance tests |
