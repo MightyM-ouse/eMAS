@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.5 MVP
+**Version:** 4.6 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
-**Prepared:** 13 September 2026
+**Prepared:** 14 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-017
+**Decision references:** DEC-2026-013 through DEC-2026-018
 
 ## 1. Purpose and MVP decision
 
@@ -889,30 +889,156 @@ DMS fields may support third-party/DMS source assessment into eCTDmanager and DM
 
 ### 9.9 `08_Regulatory_Profiles`
 
-This sheet defines independent classification dimensions and where strong evidence can be found.
+This sheet defines version-specific regulatory technical profiles and the controlled evidence locators that can populate canonical fields from `07_Fields_Evidence`. It answers **where a fact can be obtained for a particular profile**; it does not decide whether the extracted evidence passes, fails, or establishes a final classification. Interpretation remains in `09_Dossier_Sequence_ID` and the other rule sheets.
+
+The sheet shall contain two normalized Excel Tables. This preserves the stable worksheet name while avoiding comma-separated locators, repeated profile definitions, or one falsely universal XML path.
+
+#### 9.9.1 `tblRegulatoryProfiles`
+
+One row represents one exact supported combination of region, authority, technical format, core specification version, and regional implementation version.
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
 | `ProfileId` | Identifier | Yes | Primary key -> `regulatoryProfiles[].profileId` |
-| `Region` | Code | Yes | Jurisdiction dimension |
-| `Authority` | Code | Yes | Authority dimension |
-| `TechnicalFormat` | Code | Yes | eCTD v3, eCTD v4, NeeS, VNeeS, non-eCTD, Unknown |
-| `SpecificationVersion` | Text | Yes | Version-specific parsing contract |
-| `RegionalImplementation` | Code | Yes | EU, US, CA, UK, CH, AU, JP, SG, or future profile |
-| `ApplicationType` | Code | No | IND/NDA/ANDA/BLA/MAA/CTA when applicable |
-| `DossierContext` | Code | No | ASMF/DMF and other dossier contexts |
-| `ProcedureContext` | Code | No | Centralised, national, mutual recognition, decentralised, or other |
-| `BackboneFile` | Text | No | Example `index.xml` |
-| `RegionalXmlFile` | Text | No | Example `eu-regional.xml` or `us-regional.xml` |
-| `XmlNamespace` | Text | No | Exact namespace/version evidence |
-| `XmlElementOrPath` | Text | No | XML element/XPath-like location to inspect |
-| `XmlAttribute` | Text | No | Attribute containing the classification evidence |
-| `FolderEvidence` | Text | No | Supporting path/folder evidence |
-| `EvidenceStrength` | Code | Yes | Strong, Medium, Weak |
-| `ParserProfile` | Code | Yes | Version-appropriate parser contract |
-| `SourceId` | Reference | Yes | Regulatory source |
+| `ProfileName` | Text | Yes | Human-readable profile name |
+| `Region` | Code | Yes | Jurisdiction dimension; independent of authority |
+| `Authority` | Code | Yes | Receiving authority or controlled authority family |
+| `TechnicalFormat` | Code | Yes | eCTD3, eCTD4, NeeS, VNeeS, NonECTD, or Unknown; application/dossier types are prohibited here |
+| `SpecificationVersion` | Text | Yes | Core technical specification version and parser compatibility boundary |
+| `RegionalImplementation` | Code | Yes | Named regional implementation, independent of the core format |
+| `RegionalImplementationVersion` | Text | Yes | Exact regional specification version to which locators apply |
+| `BackboneModel` | Code | Yes | Compatible structural model, for example ICH eCTD v3, ICH eCTD v4, or folder-based |
+| `ParserProfile` | Code | Yes | Implemented generic parser capability; it shall not contain executable code |
+| `LifecycleModel` | Code | Yes | Applicable lifecycle interpretation model |
+| `AllowedApplicationTypeListCode` | Value-list reference | No | Permitted application/pathway codes without duplicating profiles |
+| `AllowedDossierContextListCode` | Value-list reference | No | Permitted ASMF/DMF or other dossier contexts without treating them as formats |
+| `AllowedProcedureContextListCode` | Value-list reference | No | Permitted procedure-context codes |
+| `SupportStatus` | Code | Yes | Supported, Partial, Planned, ReferenceOnly, or Unsupported |
+| `SourceId` | Reference | Yes | Primary authority specification or controlled interpretation source |
+| `SourceSection` | Text | Yes | Precise supporting section |
+| `IsActive` | Boolean | Yes | Authoring activation; runtime inclusion additionally requires supported status and parser capability |
+| `Notes` | Text | No | Limitations, verification notes, and reviewer explanation |
+
+`ApplicationType`, `DossierContext`, and `ProcedureContext` shall not be stored as one fixed value on a profile. A technical profile may allow several values, and the actual project/dossier classification is produced by rules. ASMF, DMF, IND, NDA, ANDA, BLA, MAA, and CTA shall never be represented as technical formats.
+
+#### 9.9.2 `tblProfileEvidenceLocators`
+
+One row represents one declarative, version-specific way of obtaining one canonical field.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ProfileEvidenceId` | Identifier | Yes | Stable locator key -> `regulatoryProfiles[].evidenceLocators[].profileEvidenceId` |
+| `ProfileId` | Reference | Yes | Parent profile |
+| `EvidencePurpose` | Code | Yes | Region, authority, format, version, dossier ID, sequence ID, lifecycle, or other controlled purpose |
+| `ArtifactType` | Code | Yes | Backbone XML, regional XML, submission-unit XML, folder, filename, regulatory document, source metadata, or manifest |
+| `FileNameOrPattern` | Text | Conditional | Expected filename or constrained pattern |
+| `NamespaceUri` | Text | Conditional | Exact namespace/version discriminator where XML semantics depend on it |
+| `SelectorType` | Code | Yes | XmlElement, XmlAttribute, NamespaceUri, RestrictedXPath, FolderPattern, FileNamePattern, MetadataKey, or ConstantFromProfile |
+| `Selector` | Text | Yes | Declarative, validated location or pattern; unrestricted executable expressions are prohibited |
+| `AttributeName` | Text | Conditional | Exact attribute to read where applicable |
+| `ExpectedValueOrPattern` | Typed text | No | Optional controlled match condition |
+| `OutputFieldCode` | Field reference | Yes | Canonical field from `07_Fields_Evidence` populated by the locator |
+| `EvidenceStrength` | Code | Yes | Strong, Medium, or Weak |
+| `EvidenceRole` | Code | Yes | Primary, Corroborating, Fallback, or Negative |
+| `Priority` | Integer | Yes | Stable evaluation order among alternatives |
+| `FallbackOnly` | Boolean | Yes | Prevents weak evidence replacing available stronger evidence |
+| `ProducerCapability` | Code | Yes | Generic engine operation required to execute the locator |
+| `ConflictStrategy` | Code | Yes | HighestStrength, RequireAgreement, ManualReview, or DoNotInfer |
+| `SourceId` | Reference | Yes | Supporting regulatory source |
 | `SourceSection` | Text | Yes | Exact source section |
-| `IsActive` | Boolean | Yes | Runtime inclusion |
+| `IsActive` | Boolean | Yes | Locator activation |
+| `Notes` | Text | No | Explanation and profile-specific constraints |
+
+#### 9.9.3 Controlled values in `22_Value_Lists`
+
+The following controlled-list families are mandatory for this sheet:
+
+| List code | Minimum values |
+|---|---|
+| `TECHNICAL_FORMAT` | eCTD3, eCTD4, NeeS, VNeeS, NonECTD, Unknown |
+| `PROFILE_SUPPORT_STATUS` | Supported, Partial, Planned, ReferenceOnly, Unsupported |
+| `BACKBONE_MODEL` | ICH_ECTD_V3, ICH_ECTD_V4, NEES_FOLDER, LEGACY_FOLDER, NONE |
+| `PROFILE_EVIDENCE_PURPOSE` | Region, Authority, TechnicalFormat, SpecificationVersion, RegionalImplementation, ApplicationType, DossierContext, ProcedureContext, DossierId, SequenceId, SubmissionUnitId, LifecycleOperation, LifecycleTarget, ReferencedFile |
+| `PROFILE_ARTIFACT_TYPE` | BackboneXml, RegionalXml, SubmissionUnitXml, FolderStructure, FileName, RegulatoryDocument, SourceSystemMetadata, Manifest |
+| `PROFILE_SELECTOR_TYPE` | XmlElement, XmlAttribute, NamespaceUri, RestrictedXPath, FolderPattern, FileNamePattern, MetadataKey, ConstantFromProfile |
+| `EVIDENCE_STRENGTH` | Strong, Medium, Weak |
+| `EVIDENCE_ROLE` | Primary, Corroborating, Fallback, Negative |
+| `PROFILE_CONFLICT_STRATEGY` | HighestStrength, RequireAgreement, ManualReview, DoNotInfer |
+| `LIFECYCLE_MODEL` | ECTD3_LIFECYCLE, ECTD4_CONTEXT_OF_USE, DOCUMENT_REPLACEMENT, NONE |
+
+Region, authority, application type, dossier context, procedure context, parser profile, and producer capability shall use their dedicated controlled lists. Adding a code to a value list shall not imply that the related parser or assessment behavior has been implemented.
+
+#### 9.9.4 Sheet relationships and decision boundary
+
+The controlled flow is:
+
+`08 profile -> 08 evidence locator -> 07 canonical field -> 09 identification rule -> finding/confidence/RAG/action rules -> Final Config Master -> scenario JSON`
+
+`08_Regulatory_Profiles` may produce candidate field values and evidence metadata. `09_Dossier_Sequence_ID` determines what those candidates mean, resolves permitted combinations and conflicts, and produces a classification conclusion. `index.xml` presence alone shall not determine region or authority. Folder or filename evidence shall not override conflicting stronger structured evidence.
+
+#### 9.9.5 Runtime JSON projection
+
+Each included profile shall project as a profile object with nested, individually identified locators:
+
+```json
+{
+  "regulatoryProfiles": [
+    {
+      "profileId": "RP-EU-ECTD3-M1-VERIFIED",
+      "region": "EU",
+      "authority": "EU_AUTHORITY",
+      "technicalFormat": "eCTD3",
+      "specificationVersion": "3.2.2",
+      "regionalImplementation": {
+        "name": "EU Module 1",
+        "version": "<verified-version>"
+      },
+      "backboneModel": "ICH_ECTD_V3",
+      "parserProfile": "PARSER-ECTD3-EU",
+      "lifecycleModel": "ECTD3_LIFECYCLE",
+      "supportStatus": "Supported",
+      "evidenceLocators": [
+        {
+          "profileEvidenceId": "PEL-EU-002",
+          "purpose": "Region",
+          "artifactType": "RegionalXml",
+          "fileNameOrPattern": "eu-regional.xml",
+          "selectorType": "NamespaceUri",
+          "selector": "<verified-namespace>",
+          "outputFieldCode": "REGULATORY.REGION",
+          "evidenceStrength": "Strong",
+          "evidenceRole": "Primary",
+          "priority": 10,
+          "conflictStrategy": "ManualReview"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Angle-bracket placeholders in this example are explanatory only and shall fail workbook validation if present in an active runtime record.
+
+A scenario JSON shall include a profile only when the selected scenario activates regulatory classification, an included rule references the profile, the profile and required locators are active, `SupportStatus` permits runtime use, its parser/producer capabilities are implemented, and all referenced fields, values, and sources validate. Planned, ReferenceOnly, Unsupported, unverified, or parser-incomplete profiles may remain visible for authoring but shall not be emitted as supported runtime behavior.
+
+#### 9.9.6 Mandatory validation and safeguards
+
+Generation shall be blocked when any of the following applies:
+
+1. `ProfileId` or `ProfileEvidenceId` is not unique;
+2. a locator references an absent/inactive profile, field, value, capability, or source;
+3. one profile collapses technical format, application type, dossier context, or procedure context into one semantic field;
+4. an eCTD v3 profile uses an eCTD v4 backbone/lifecycle parser, or vice versa;
+5. a version-dependent XML locator lacks the exact implementation version, namespace, or source section;
+6. one generic selector is used across incompatible specification versions;
+7. a locator contains comma-separated selectors or executable PowerShell/JavaScript/unrestricted XPath;
+8. `index.xml`, a folder label, or another weak heuristic is configured to independently establish region, authority, application identity, or dossier context contrary to stronger evidence;
+9. conflicting strong evidence can be resolved without an explicit controlled strategy;
+10. an active runtime profile is Planned, ReferenceOnly, Unsupported, unverified, or lacks an implemented parser capability; or
+11. a placeholder or unverified namespace, version, selector, or source remains in an active row.
+
+The supplied Regulatory, Technical & Migration Assessment Guide may be cited as a controlled internal interpretation source. Exact versions, namespaces, selectors, authority semantics, and activation decisions shall additionally resolve to the applicable official ICH or regional-authority source. Inclusion in the workbook catalogue shall not by itself assert regulatory validity or implemented eMAS support.
+
 
 ### 9.10 `09_Dossier_Sequence_ID`
 
@@ -1907,6 +2033,14 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-036` | Evaluate `MISSING` against ConfirmedAbsent, Unavailable, Invalid, Conflict and Unknown fixtures | Only ConfirmedAbsent matches; the other states produce the configured NotAssessed/InsufficientEvidence/FollowUp/Blocked behavior |
 | `MVP-AT-037` | Generate a scenario that references `ARCHIVE.LOOKUP_STATUS` | Its field definition and active `ARCHIVE_LOOKUP_STATUS`, operator, phase and provenance dependencies are included once in stable order; unreferenced AuthoringOnly values are excluded |
 | `MVP-AT-038` | Generate twice after changing only a controlled-value label | The stable machine code remains unchanged and only the intended display/description property changes; no identifier or relationship is recreated from the label |
+| `MVP-AT-039` | Validate `08_Regulatory_Profiles` structure | The sheet contains `tblRegulatoryProfiles` and `tblProfileEvidenceLocators`; every active locator resolves to exactly one active profile and one canonical field |
+| `MVP-AT-040` | Inspect a dossier containing only an eCTD-style `index.xml` | Technical-format evidence may be proposed, but region and authority remain Unknown until profile-appropriate evidence is available |
+| `MVP-AT-041` | Process supported EU and US regional XML fixtures | Version-specific namespaces and locators produce separate region/authority candidate evidence without using folder labels as overrides |
+| `MVP-AT-042` | Process the same classification target with conflicting strong locators | The configured conflict strategy is applied and ManualReview is produced where agreement is required; no arbitrary candidate wins |
+| `MVP-AT-043` | Configure an eCTD v4 profile with an eCTD v3 parser or lifecycle model | Validation blocks generation and identifies the incompatible profile capability |
+| `MVP-AT-044` | Represent ASMF or IND in profile data | ASMF is stored as dossier context and IND as application type; neither appears in `TechnicalFormat` |
+| `MVP-AT-045` | Activate a Planned, ReferenceOnly, unverified, placeholder-containing, or parser-incomplete profile | Runtime JSON generation is blocked for that profile and reports the exact unsupported dependency |
+| `MVP-AT-046` | Generate scenario JSON for a scenario whose identification rules reference one supported profile | The profile, its referenced locators, field definitions, controlled values, capabilities, and sources are emitted once in stable `ProfileId`/`Priority`/`ProfileEvidenceId` order; unrelated profiles are excluded |
 
 ## 17. MVP definition of done
 
@@ -1918,14 +2052,15 @@ The MVP is complete when:
 4. every applicable normative source statement has a Covered, Deferred or Superseded disposition, and every active rule, engine capability and controlled report behavior resolves to a requirement;
 5. every field required by an included rule, metric, mapping, baseline, reconciliation rule or result is defined once in `07_Fields_Evidence`, uses valid controlled values from `22_Value_Lists`, and has a deterministic scenario-JSON projection;
 6. actual customer/project evidence remains separate from reusable field definitions and every material observation can retain the required provenance and independent evidence/evaluation states;
-7. every supported scenario has complete phase-by-phase module applicability;
-8. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-9. scenario-specific JSON can be generated for all scenarios in Section 5;
-10. every JSON object is traceable to workbook records;
-11. invalid or incomplete workbook content blocks generation with actionable messages;
-12. unchanged input and scenario selection produce identical canonical JSON;
-13. the PowerShell runtime consumes JSON without reading Excel;
-14. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+7. every runtime-supported regulatory profile has a version-specific profile record, normalized evidence locators, verified source references, compatible implemented parser capabilities, and deterministic field/JSON projections;
+8. every supported scenario has complete phase-by-phase module applicability;
+9. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+10. scenario-specific JSON can be generated for all scenarios in Section 5;
+11. every JSON object is traceable to workbook records;
+12. invalid or incomplete workbook content blocks generation with actionable messages;
+13. unchanged input and scenario selection produce identical canonical JSON;
+14. the PowerShell runtime consumes JSON without reading Excel;
+15. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -1969,3 +2104,4 @@ Each review step shall answer four questions:
 | 4.3 MVP | 13 September 2026 | Approved the fifteen-module catalogue and boundaries; expanded `04_Assessment_Modules`; required all 360 explicit scenario/phase/module mappings; defined phase applicability, depth, missing-evidence, baseline and reconciliation semantics; added Hybrid composition question `Q-SCN-023`; replaced module-ID buckets with traceable module mapping objects in JSON; made `MOD-READINESS` required for `MS-07` Pre-Migration and excluded formal reconciliation for unresolved `MS-07` |
 | 4.4 MVP | 13 September 2026 | Approved the atomic `06_Requirement_Catalogue` model; added human purpose, cross-cutting ownership, lifecycle/phase/applicability scope, missing-evidence and outcome behavior, implementation disposition, runtime projection, acceptance/source traceability and separate requirement/implementation/verification statuses; defined 24 mandatory `REQ-*` families; removed direct one-to-one RuleId storage in favor of reverse rule references; added structured scenario `requirements[]`, completeness validation and acceptance tests |
 | 4.5 MVP | 13 September 2026 | Approved `07_Fields_Evidence` as the semantic dictionary for reusable field definitions and `22_Value_Lists` as the controlled-code authority; separated configuration definitions from execution observations and evidence state from evaluation status; added type/cardinality/domain, provenance, operator/phase lists, baseline/reconciliation and safe report/log handling; excluded assumed evidence and executable extraction content; defined deterministic transitive JSON inclusion, controlled-value families, validation and acceptance tests; retained the DMS-to-DMS scope prohibition |
+| 4.6 MVP | 14 September 2026 | Approved the normalized `08_Regulatory_Profiles` design with separate profile and evidence-locator tables on one worksheet; kept format, application type, dossier context and procedure context independent; added version/namespace/parser/lifecycle boundaries, support status, controlled locator vocabulary, source verification, JSON nesting and transitive inclusion; prohibited weak-evidence overrides, cross-version generic selectors, placeholders and unsupported profile export; clarified the extraction boundary with `09_Dossier_Sequence_ID` |
