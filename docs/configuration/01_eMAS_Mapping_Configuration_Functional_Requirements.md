@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.17 MVP
+**Version:** 4.18 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-029
+**Decision references:** DEC-2026-013 through DEC-2026-030
 
 ## 1. Purpose and MVP decision
 
@@ -4367,22 +4367,224 @@ The JSON shall use canonical codes rather than labels. Scenario configuration sh
 
 ### 9.24 `23_Source_References`
 
-| Column | Type | Required | Why / JSON mapping |
-|---|---|---:|---|
-| `SourceId` | Identifier | Yes | Primary key -> `sources[].sourceId` |
-| `SourceType` | Code | Yes | AuthorityPublication, VendorDocument, ProductRequirement, InternalDecision, Example |
-| `SourceTitle` | Text | Yes | Exact title |
-| `SourceVersion` | Text | Yes | Edition/version or Unknown |
-| `SourceDate` | Date | No | Issue/publication date |
-| `Reference` | Text | Yes | URL, document identifier, or repository reference |
-| `AuthorityOrOwner` | Text | Yes | Issuing authority or accountable owner |
-| `VerificationStatus` | Code | Yes | Unverified, Verified, Example |
-| `VerifiedBy` | Text | Conditional | Required only when actually verified |
-| `VerifiedOn` | Date | Conditional | Required only when actually verified |
-| `Notes` | Text | No | Scope and limitations |
-| `IsActive` | Boolean | Yes | Runtime/reference eligibility |
+#### 9.24.1 Purpose and MVP boundary
 
-Each rule shall additionally record the precise source section in its own row because the same source may support several different conclusions.
+`23_Source_References` shall provide normalized, human-readable and machine-traceable provenance for every reusable workbook conclusion. It shall distinguish a source document from a precise location, the atomic claim interpreted from that location, and the workbook objects that use the claim.
+
+The source model shall distinguish regulatory authority requirements, official guidance, technical standards, vendor/product constraints, reviewed interpretations, internal requirements, internal design decisions, assumptions and examples. An internal decision may support eMAS behavior but shall never be represented as an external regulatory requirement. Formal source approval workflow, electronic signatures, immutable release history and GxP validation controls remain deferred; truthful identity, attribution, verification status and applicability are MVP requirements.
+
+The workbook shall store concise metadata, precise locators and paraphrased claims. It shall not embed complete external publications, large copied passages, customer/project documents, credentials or execution evidence. Project-specific customer material remains execution evidence outside reusable configuration.
+
+#### 9.24.2 Required tables
+
+The sheet shall contain six Excel tables. Each row shall represent one atomic object or relationship; comma-separated identifiers and multi-valued cells are prohibited.
+
+##### A. `tblSourceDocuments`
+
+One row identifies one publication, specification, guide, product document, requirement baseline or internal decision source.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SourceId` | Yes | Stable primary key. It shall never be reused for a different source. |
+| `SourceType` | Yes | References `SOURCE_TYPE`. |
+| `SourceTitle` | Yes | Exact document/publication title. |
+| `DocumentIdentifier` | Conditional | Official document, standard, schema, product-document or decision identifier; required when one exists. |
+| `SourceVersion` | Yes | Edition/version, or explicit `Unknown` only when permitted by the source type and verification status. |
+| `PublicationDate` | Conditional | Published/issued date where available. |
+| `EffectiveDate` | Conditional | Effective date where the source defines one. |
+| `AuthorityOrOwner` | Yes | Issuing authority, standards body, vendor or accountable internal owner. |
+| `Jurisdiction` | Conditional | Controlled jurisdiction for jurisdiction-specific sources. |
+| `LanguageCode` | Yes | Original source language. |
+| `TranslationStatus` | Conditional | References `SOURCE_TRANSLATION_STATUS` when a translated source is used. |
+| `CanonicalReference` | Conditional | Official URL or stable external reference. A URL alone is not adequate source identity. |
+| `RetrievedOn` | Conditional | Date an online source was accessed. |
+| `LocalReference` | Conditional | Stable controlled local/repository reference supporting offline review; sensitive absolute paths are prohibited from runtime export. |
+| `LifecycleStatus` | Yes | References `SOURCE_LIFECYCLE_STATUS`. |
+| `VerificationStatus` | Yes | References `SOURCE_VERIFICATION_STATUS`; it shall not be inferred from lifecycle or definition status. |
+| `VerifiedBy` | Conditional | Reviewer identity or role; required when `VerificationStatus=Verified` or `PartiallyVerified`. |
+| `VerifiedOn` | Conditional | Verification date; required with `VerifiedBy`. |
+| `VerificationBasis` | Conditional | Concise description of what was verified and how. |
+| `RuntimeEligible` | Yes | Boolean controlling export of non-sensitive citation metadata. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `Notes` | No | Author guidance and limitations that do not alter source meaning. |
+
+##### B. `tblSourceLocations`
+
+One row identifies one precise location within one source document.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SourceLocationId` | Yes | Stable location identifier. |
+| `SourceId` | Yes | Foreign key to `tblSourceDocuments`. |
+| `LocationType` | Yes | References `SOURCE_LOCATION_TYPE`. |
+| `Locator` | Yes | Exact section, clause, page, annex, table, schema element, web anchor or decision locator. |
+| `LocationTitle` | Conditional | Human-readable heading/name where available. |
+| `PageNumber` | No | Page number when relevant and stable for the identified version. |
+| `TableFigureNumber` | No | Exact table/figure identifier when relevant. |
+| `AnchorReference` | No | Stable electronic anchor or source-relative reference. |
+| `RelevantSummary` | Yes | Concise paraphrase of the content relevant to eMAS. |
+| `ShortExcerpt` | No | Short attributable excerpt only where permitted and necessary; complete or substantial copied text is prohibited. |
+| `VerificationStatus` | Yes | Verification state of this exact location. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+##### C. `tblSourceClaims`
+
+One row defines one atomic requirement, guidance statement, technical constraint, reviewed interpretation, internal decision, assumption or example derived from sources.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ClaimId` | Yes | Stable primary key. |
+| `ClaimType` | Yes | References `SOURCE_CLAIM_TYPE`. |
+| `ClaimStatement` | Yes | Atomic plain-language statement; it shall not claim more authority than its evidence supports. |
+| `ObligationLevel` | Yes | References `SOURCE_OBLIGATION_LEVEL`. |
+| `ApplicabilitySummary` | Yes | Human explanation of the jurisdictions, formats, versions, products or contexts in which the claim applies. It does not replace normalized profile/scenario applicability. |
+| `AuthorityClass` | Yes | References `SOURCE_AUTHORITY_CLASS`. |
+| `VerificationStatus` | Yes | Verification status of the claim and interpretation. |
+| `DefinitionStatus` | Yes | References `DEFINITION_STATUS`. |
+| `RequiresSMEReview` | Yes | Boolean indicating unresolved regulatory, product, technical or consultant review. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `Notes` | No | Limitations that do not alter the claim. |
+
+##### D. `tblSourceClaimEvidence`
+
+One row connects one claim to one supporting or limiting source location.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ClaimEvidenceId` | Yes | Stable relationship identifier. |
+| `ClaimId` | Yes | Foreign key to `tblSourceClaims`. |
+| `SourceLocationId` | Yes | Foreign key to `tblSourceLocations`. |
+| `EvidenceRole` | Yes | References `SOURCE_EVIDENCE_ROLE`. |
+| `Priority` | Yes | Integer deterministic order. |
+| `IsPrimary` | Yes | Boolean marking the principal evidence location for the claim; multiple primary locations require explicit non-conflicting justification. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `Rationale` | Yes | Explains how the location supports, contextualizes, limits or contradicts the claim. |
+
+##### E. `tblSourceObjectLinks`
+
+One row connects one claim and one of its evidence locations to one stable record in another workbook table.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SourceObjectLinkId` | Yes | Stable link identifier. |
+| `ClaimId` | Yes | Referenced source claim. |
+| `SourceLocationId` | Yes | Exact source location used for this target; it shall be an active evidence location for `ClaimId`. |
+| `TargetSheet` | Yes | Exact workbook sheet name. |
+| `TargetTable` | Yes | Exact Excel table name. |
+| `TargetIdColumn` | Yes | Exact column containing the target stable identifier. |
+| `TargetRecordId` | Yes | Requirement, rule, profile, value, finding, recommendation or other stable record identifier. |
+| `LinkRole` | Yes | References `SOURCE_LINK_ROLE`. |
+| `IsPrimary` | Yes | Boolean identifying the citation shown in the target row's convenience fields. Exactly one primary is required where those fields are mandatory. |
+| `RuntimeExport` | Yes | Boolean indicating whether the link is required in scenario Runtime JSON. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `Rationale` | Yes | Explains why the claim applies to the target object. |
+
+##### F. `tblSourceRelationships`
+
+One row defines a document-level relationship. `FromSourceId` is the relating/newer document and `ToSourceId` is the referenced/predecessor document.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SourceRelationshipId` | Yes | Stable relationship identifier. |
+| `FromSourceId` | Yes | Active source document establishing the relationship. |
+| `ToSourceId` | Yes | Related, predecessor or affected source document. |
+| `RelationshipType` | Yes | References `SOURCE_RELATIONSHIP_TYPE`. |
+| `EffectiveDate` | Conditional | Date the amendment, correction, replacement or supersession became applicable. |
+| `ApplicabilitySummary` | Yes | Scope of the relationship, including affected versions/sections where relevant. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `Rationale` | Yes | Explanation and limitations. |
+
+#### 9.24.3 Compatibility with source columns in other sheets
+
+Existing `SourceId` and `SourceSection` columns in sheets `01` through `22` shall remain as human-readable primary-citation convenience fields:
+
+- `SourceId` shall equal the document that owns the primary linked `SourceLocationId`;
+- `SourceSection` shall equal the canonical display locator of that primary source location;
+- `tblSourceObjectLinks` is authoritative for all source relationships and supports additional sources without comma-separated cells; and
+- disagreement between convenience fields and the normalized primary link is a blocking validation error.
+
+Every active executable/configuration record shall have at least one active source-object link. Multiple sources are permitted, but their roles, priorities, limitations and conflicts shall remain explicit.
+
+#### 9.24.4 Source authority and interpretation rules
+
+1. Regulatory authority publications and normative technical standards shall remain distinguishable from official guidance, vendor documentation and secondary references.
+2. A reviewed interpretation shall cite its underlying locations and shall not be relabelled as source text or a binding authority requirement.
+3. An internal requirement or design decision may define eMAS behavior, scope or safety, but it shall not be presented as an external regulatory obligation.
+4. An example may demonstrate authoring or testing but shall not be the sole basis for active runtime behavior.
+5. Source authority classification describes provenance; it shall not silently resolve conflicts. Conflicting applicable claims require explicit review/decision.
+6. A superseded/historical source may remain applicable only when a version-bounded regulatory/product profile deliberately assesses that historical standard and the relationship is traceable.
+7. An unavailable URL shall not by itself erase a valid source identity. When document identity, version, locator and controlled offline reference remain available, the condition produces a review warning rather than automatic invalidation.
+8. `Verified` means the identified document/location/claim was reviewed for identity, content and stated applicability. It does not establish regulatory approval, validated-system status or customer acceptance.
+
+The `eMAS_Regulatory_Technical_Migration_Assessment_Guide_v2.0` shall be represented as `ReviewedTechnicalGuide` with `SecondaryReference` authority. Claims derived from its analysis are `ReviewedInterpretation`. Where it cites an authority publication or official specification, the underlying source shall have its own `SourceId` and exact location; the guide shall not masquerade as the primary authority.
+
+#### 9.24.5 Required controlled lists in `22_Value_Lists`
+
+| ListCode | Required active codes |
+|---|---|
+| `SOURCE_TYPE` | `RegulatoryAuthorityPublication`, `TechnicalStandard`, `SchemaSpecification`, `VendorDocumentation`, `ProductRequirement`, `InternalRequirement`, `InternalDecision`, `ReviewedTechnicalGuide`, `Example` |
+| `SOURCE_LIFECYCLE_STATUS` | `Current`, `Historical`, `Superseded`, `Withdrawn`, `Unknown` |
+| `SOURCE_VERIFICATION_STATUS` | `Unverified`, `PartiallyVerified`, `Verified`, `VerificationFailed` |
+| `SOURCE_TRANSLATION_STATUS` | `OriginalLanguage`, `OfficialTranslation`, `ControlledTranslation`, `UnverifiedTranslation`, `NotApplicable` |
+| `SOURCE_LOCATION_TYPE` | `Section`, `Page`, `Clause`, `Table`, `Figure`, `Annex`, `SchemaElement`, `WebAnchor`, `Decision` |
+| `SOURCE_CLAIM_TYPE` | `ExternalRequirement`, `ExternalGuidance`, `TechnicalSpecification`, `VendorConstraint`, `ProductRequirement`, `ReviewedInterpretation`, `InternalDesignDecision`, `Assumption`, `Example` |
+| `SOURCE_OBLIGATION_LEVEL` | `Mandatory`, `Recommended`, `Permitted`, `Informational`, `Internal` |
+| `SOURCE_AUTHORITY_CLASS` | `PrimaryAuthority`, `NormativeStandard`, `OfficialGuidance`, `VendorAuthority`, `InternalControlled`, `SecondaryReference`, `ExampleOnly` |
+| `SOURCE_EVIDENCE_ROLE` | `PrimaryBasis`, `Corroborating`, `Context`, `Limitation`, `Contradicts` |
+| `SOURCE_LINK_ROLE` | `Basis`, `Constraint`, `Interpretation`, `ScopeBoundary`, `Example`, `TestBasis` |
+| `SOURCE_RELATIONSHIP_TYPE` | `Supersedes`, `Amends`, `Replaces`, `Corrects`, `Implements`, `References` |
+
+#### 9.24.6 Runtime JSON projection
+
+For a selected scenario, the transformer shall export only source documents, locations, claims, claim-evidence relationships and object links transitively referenced by included configuration. Full documents, substantial copied text, absolute local paths, reviewer notes and reviewer personal information shall not be exported. Runtime interpretation shall not depend on internet availability.
+
+~~~json
+{
+  "sources": [
+    {
+      "sourceId": "SRC-INTERNAL-MVP-SCOPE",
+      "sourceType": "InternalDecision",
+      "title": "eMAS MVP Scope Decision",
+      "version": "1",
+      "authorityClass": "InternalControlled",
+      "verificationStatus": "Verified"
+    }
+  ],
+  "sourceLocations": [
+    {
+      "sourceLocationId": "SRCLOC-MVP-SCOPE-DMS",
+      "sourceId": "SRC-INTERNAL-MVP-SCOPE",
+      "locationType": "Decision",
+      "locator": "DMS migration scope"
+    }
+  ],
+  "sourceClaims": [
+    {
+      "claimId": "CLM-MVP-DMS-001",
+      "claimType": "InternalDesignDecision",
+      "statement": "DMS-to-DMS migration is outside the current eMAS MVP scope.",
+      "obligationLevel": "Internal",
+      "evidence": [
+        {
+          "sourceLocationId": "SRCLOC-MVP-SCOPE-DMS",
+          "evidenceRole": "PrimaryBasis"
+        }
+      ]
+    }
+  ],
+  "sourceLinks": [
+    {
+      "targetSheet": "01_Migration_Scenarios",
+      "targetRecordId": "MS-08",
+      "claimId": "CLM-MVP-DMS-001",
+      "linkRole": "ScopeBoundary"
+    }
+  ]
+}
+~~~
+
+Canonical ordering shall be `SourceId`, `SourceLocationId`, `ClaimId`, claim-evidence priority/identifier and target sheet/table/record/link identifier. Unreferenced sources and authoring-only examples shall be excluded. Verification, lifecycle, authority and limitation information shall remain explicit and shall not be upgraded during transformation.
+
 
 ### 9.25 `24_Final_Config_Master`
 
@@ -5013,6 +5215,19 @@ JSON generation shall be blocked when any of the following is true:
 - list export that violates `RuntimeExportMode`, omits required active values, produces nondeterministic order or emits a label instead of its canonical code; and
 - any emitted controlled code that cannot be traced to exactly one active list definition, value row, usage row and source reference.
 
+- missing, duplicate or broken source-document, location, claim, claim-evidence, object-link or source-relationship identifiers and foreign keys;
+- an active executable/configuration record with no active source-object link, or a target sheet/table/identifier that does not resolve;
+- a mandatory source reference without adequate document identity, issuer/owner, version handling or precise source location;
+- convenience `SourceId`/`SourceSection` values that disagree with the normalized primary source-object link, or zero/multiple unexplained primary citations;
+- a source claim whose type, obligation or authority class exceeds the authority of its supporting evidence;
+- a regulatory claim supported only by an internal decision, assumption, secondary guide or example, or an active runtime behavior supported only by `ExampleOnly` material;
+- an active claim with no supporting location, an object link whose location is not evidence for its claim, or a contradictory/limiting source that is silently discarded;
+- use of a superseded, withdrawn or historical source outside an explicitly matching version-bounded profile, or an invalid/cyclic source replacement relationship;
+- a translated source with missing/invalid translation status, or `Verified` asserted without required reviewer/date/basis information;
+- customer/project documents, execution evidence, substantial copied publications, sensitive local paths, reviewer notes or reviewer personal information included in reusable Runtime JSON;
+- missing transitively referenced sources, locations, claims or links; export of unreferenced/authoring-only source objects; or nondeterministic source ordering; and
+- any transformation that changes source verification, lifecycle, authority, conflict, limitation or review status.
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -5379,6 +5594,41 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-342` | JSON code coverage | Scenario JSON contains a code not represented by an active list definition, value and usage mapping | Export blocked |
 | `MVP-AT-343` | Deterministic list output | The same canonical workbook configuration is exported repeatedly | Byte-equivalent `valueLists` and `valueAliases` sections |
 
+| `MVP-AT-344` | Sheet 23 structure | `23_Source_References` contains exactly the six required normalized tables with all mandatory columns | Pass |
+| `MVP-AT-345` | Source identity | Duplicate active `SourceId` or reuse of a retired identifier for another document is introduced | Export blocked |
+| `MVP-AT-346` | Document identity | A mandatory source lacks title, issuer/owner, version handling and available official identifier | Export blocked |
+| `MVP-AT-347` | URL-only source | A URL is supplied without adequate document identity | Export blocked |
+| `MVP-AT-348` | Precise source location | A mandatory rule cites a document but no exact location | Export blocked |
+| `MVP-AT-349` | Location identity | Duplicate or unresolved `SourceLocationId` is introduced | Export blocked |
+| `MVP-AT-350` | Atomic claim | A source claim combines materially different requirements/interpretations | Export blocked until split |
+| `MVP-AT-351` | Claim authority | Claim type/obligation/authority exceeds what supporting source locations establish | Export blocked |
+| `MVP-AT-352` | Multiple evidence locations | One claim is supported by primary and corroborating source locations | All roles retained deterministically |
+| `MVP-AT-353` | One location, multiple claims | One source location supports several distinct atomic claims | Claims remain separate and traceable |
+| `MVP-AT-354` | Claim evidence integrity | Claim evidence points to an inactive or missing claim/location | Export blocked |
+| `MVP-AT-355` | Workbook object link | Source link target sheet/table/identifier/record does not resolve | Export blocked |
+| `MVP-AT-356` | Complete source coverage | Every active executable/configuration record has at least one active source-object link | Pass |
+| `MVP-AT-357` | Primary citation | A target requiring convenience source fields has zero or multiple unexplained primary links | Export blocked |
+| `MVP-AT-358` | Citation consistency | Target `SourceId`/`SourceSection` disagrees with its normalized primary source location | Export blocked |
+| `MVP-AT-359` | Additional sources | One target uses multiple supporting/limiting source claims | Primary and additional links remain explicit; no comma-separated cells |
+| `MVP-AT-360` | Source-class distinction | Regulatory requirement, reviewed interpretation and internal decision use distinct claim/authority codes | Pass |
+| `MVP-AT-361` | Internal decision boundary | An internal decision is labelled as an external regulatory obligation | Export blocked |
+| `MVP-AT-362` | Regulatory basis | An external regulatory claim is supported only by internal/secondary/example material | Export blocked or claim remains non-authoritative and requires review |
+| `MVP-AT-363` | Technical guide classification | The eMAS Regulatory Technical Migration Assessment Guide is registered | Classified as `ReviewedTechnicalGuide` / `SecondaryReference`; underlying primary sources remain separate |
+| `MVP-AT-364` | Example boundary | `ExampleOnly` material is the sole source for active runtime behavior | Export blocked |
+| `MVP-AT-365` | Verification truth | Unverified or partially verified content is exported for MVP use | Original verification state retained and warning emitted; no Verified status inferred |
+| `MVP-AT-366` | Verified metadata | `Verified` is asserted without reviewer, date or verification basis | Export blocked |
+| `MVP-AT-367` | Source conflict | Applicable claims contradict one another | Conflict retained and review required; no automatic precedence |
+| `MVP-AT-368` | Superseded source | A superseded source is used for a current profile without explicit version applicability | Export blocked |
+| `MVP-AT-369` | Historical profile | A historical specification is intentionally used by its matching version-bounded profile | Source remains eligible with historical/supersession context retained |
+| `MVP-AT-370` | Dead URL | Official URL is unavailable but stable identity, version, exact locator and controlled offline reference exist | Review warning; source is not silently deleted |
+| `MVP-AT-371` | Translation status | A translated source is used without declared translation status | Export blocked or review required according to source usage |
+| `MVP-AT-372` | Project evidence boundary | Customer/project document or execution evidence is added to reusable source configuration | Export blocked |
+| `MVP-AT-373` | Publication-copy boundary | Full/substantial external publication text is embedded in the workbook | Validation error; retain metadata, locator, summary and permitted short excerpt only |
+| `MVP-AT-374` | Transitive source export | Scenario configuration references a linked claim | Required source, location, claim, evidence and object link are emitted once |
+| `MVP-AT-375` | Minimal/offline runtime | Scenario JSON is generated with unreferenced sources, sensitive local paths, notes/reviewer personal data or internet dependency | Unneeded/sensitive fields excluded; runtime remains offline |
+| `MVP-AT-376` | Relationship integrity | Source replacement/supersession relationships are cyclic or unresolved | Export blocked |
+| `MVP-AT-377` | Deterministic source output | The same canonical workbook/scenario is exported repeatedly | Byte-equivalent source, location, claim and link sections |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -5403,14 +5653,15 @@ The MVP is complete when:
 18. every supported Pre-Migration scenario has exactly one blocker-first complete-coverage readiness model; missing applicable mandatory evidence, unresolved blockers/conflicts and invalid minimum baselines prevent Ready; technical failures remain NotDetermined; outcome-changing exceptions require both policies and preserve original interpretation; and attributable scenario-specific baseline entities, composite keys, fields and relationships are defined without storing project values in reusable configuration;
 19. every supported Post-Migration scenario has exactly one discrepancy-first complete-coverage reconciliation model linked to a compatible baseline; target evidence is verified/version-qualified; entities use atomic exact/normalized composite keys without silent fallback; field, relationship and aggregate comparisons preserve expected/observed provenance and do not let counts hide item discrepancies; technical failure remains NotDetermined; exceptions never rewrite baseline/discrepancies; and Reconciled requires complete applicable mandatory coverage;
 20. every controlled-code column has exactly one active value-list usage contract; list definitions, values, aliases and genuine dependencies are normalized and sourced; stable codes are never reused; `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank remain distinct; canonical `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters avoid duplication; authoring-only or unimplemented values never enter Runtime JSON; and exported lists/codes are complete, deterministic and traceable;
-21. every scenario has complete phase/module applicability;
-22. `24_Final_Config_Master` explains every inclusion/exclusion;
-23. scenario JSON generates for all Section 5 scenarios;
-24. every JSON object traces to workbook records;
-25. invalid/incomplete content blocks with actionable messages;
-26. unchanged input/selection produces identical canonical JSON;
-27. PowerShell consumes JSON without reading Excel;
-28. deferred SharePoint, release governance and GxP controls are not represented as complete.
+21. every active executable/configuration record has normalized source provenance from document through exact location and atomic claim to workbook-object link; regulatory requirements, reviewed interpretations, vendor/product constraints, internal decisions, assumptions and examples remain distinguishable; convenience citations agree with primary links; conflicts, limitations, lifecycle, translation and verification states remain explicit; historical sources require version-bounded applicability; project evidence and substantial copied publications stay outside reusable configuration; and scenario JSON contains only complete, deterministic, non-sensitive, transitively referenced source metadata without an internet dependency;
+22. every scenario has complete phase/module applicability;
+23. `24_Final_Config_Master` explains every inclusion/exclusion;
+24. scenario JSON generates for all Section 5 scenarios;
+25. every JSON object traces to workbook records;
+26. invalid/incomplete content blocks with actionable messages;
+27. unchanged input/selection produces identical canonical JSON;
+28. PowerShell consumes JSON without reading Excel;
+29. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -5466,3 +5717,4 @@ Each review step shall answer four questions:
 | 4.15 MVP | 15 September 2026 | Approved `20_PreMigration_Readiness` with seven normalized readiness-model, evidence-requirement, decision-rule, atomic-condition, baseline-entity, baseline-field and baseline-relationship tables; separated decision status from the three approved outcomes and defined blocker-first complete-coverage evaluation, missing mandatory evidence behavior, technical failure, conditional activation and dual-policy accepted-exception handling; prohibited Ready by default or from a single supporting rule; required a valid attributable scenario-specific baseline with atomic composite keys, fields, relationships, exclusions/limitations boundaries and source provenance for later reconciliation; excluded MS-07 and DMS-to-DMS readiness models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.16 MVP | 15 September 2026 | Approved `21_PostMigration_Reconciliation` with nine normalized reconciliation-model, evidence-requirement, entity-rule, composite-key, field-comparison, aggregate-comparison, relationship-comparison, decision-rule and atomic-condition tables; defined Expected baseline versus Observed target semantics, exact/normalized composite matching without fuzzy/silent fallback, separate missing/extra/duplicate/ambiguous/value/relationship results and scenario-specific target-evidence profiles; required baseline/configuration compatibility, complete mandatory comparison coverage and discrepancy-first outcome precedence; prohibited tolerance for identity/hash, counts hiding item discrepancies and post-hoc baseline exclusions; preserved carried/new accepted differences without rewriting baseline or evidence; excluded MS-07 and DMS-to-DMS models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.17 MVP | 15 September 2026 | Approved `22_Value_Lists` with five normalized list-definition, value, usage-map, alias and dependency tables; made sheet 22 the single authority for reusable machine codes across sheets 01–21; defined immutable code identity, explicit code format/status/runtime eligibility/export mode, complete usage mapping, controlled aliases preserving raw values and genuine acyclic dependencies; separated `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank semantics; consolidated `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters while retaining semantically distinct domain lists; prohibited code addition from implying transformer/engine support; added deterministic scenario JSON, cross-sheet audit, blocking validation and acceptance tests |
+| 4.18 MVP | 15 September 2026 | Approved `23_Source_References` with six normalized source-document, precise-location, atomic-claim, claim-evidence, workbook-object-link and source-relationship tables; retained existing `SourceId`/`SourceSection` as validated primary-citation convenience fields while making normalized links authoritative; distinguished regulatory authority, standards, guidance, vendor/product constraints, reviewed interpretations, internal requirements/decisions, assumptions and examples; classified the eMAS Regulatory Technical Migration Assessment Guide as a secondary reviewed guide whose underlying primary sources remain separate; defined truthful lifecycle, verification, translation, conflict and historical-version handling; prohibited examples/internal decisions from masquerading as regulatory authority and excluded project evidence, substantial publication copies and sensitive metadata from reusable/runtime configuration; added transitive offline deterministic JSON, blocking validation and acceptance tests |
