@@ -4193,7 +4193,6 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-182` | Test threshold boundaries and overlapping criteria | Boundaries are deterministic; ambiguous overlaps or gaps block generation |
 | `MVP-AT-183` | Let readiness/reconciliation consume RAG and confidence | Sheets 20/21 use the results but do not redefine or overwrite them |
 | `MVP-AT-184` | Generate unchanged interpretation configuration twice | Rules, criteria, policies and dependencies have identical order and canonical bytes |
-
 | `MVP-AT-185` | Validate `17_Effort_Drivers` structure | All six approved named tables and columns exist with unique stable keys |
 | `MVP-AT-186` | Validate one active model | It contains a complete ordered set of VeryLow through VeryHigh bands |
 | `MVP-AT-187` | Evaluate a value exactly at a shared threshold | Inclusive lower/exclusive upper semantics select exactly one range |
