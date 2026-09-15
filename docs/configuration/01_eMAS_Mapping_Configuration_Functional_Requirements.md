@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.18 MVP
+**Version:** 4.19 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-030
+**Decision references:** DEC-2026-013 through DEC-2026-031
 
 ## 1. Purpose and MVP decision
 
@@ -4588,24 +4588,215 @@ Canonical ordering shall be `SourceId`, `SourceLocationId`, `ClaimId`, claim-evi
 
 ### 9.25 `24_Final_Config_Master`
 
-This generated sheet is the reviewer’s filterable answer to: “What exactly will be included in JSON for this scenario, and why?” It shall not be manually edited.
+#### 9.25.1 Purpose and authority boundary
 
-| Column | Why |
+`24_Final_Config_Master` shall be the generated, filterable audit manifest answering: “For this confirmed scenario and context, which workbook records are included in Runtime JSON, which are excluded or deferred, and why?” It shall expose the resolved scenario, phase, module, regulatory dimensions, conditions, interpretation, dependencies, sources, engine support and JSON destination without requiring a reviewer to reconstruct joins manually.
+
+The sheet shall never be manually maintained, treated as configuration authority or read as an input to transformation. The transformer shall generate sheet 24 and Runtime JSON independently from the same authoritative maintained sheets. Manual edits shall be discarded on regeneration. Sheets `24`, `26` and `27` are generated outputs and shall never become sources for one another's business meaning.
+
+The sheet shall contain four generated Excel tables. Generated rows shall contain values rather than formulas that can silently recalculate differently between Excel clients. Navigation hyperlinks and display-only metadata may be added outside the canonical tables, but timestamps, usernames, workbook paths and other volatile metadata shall not affect canonical comparison.
+
+#### 9.25.2 `tblFinalConfigContext`
+
+One row represents one scenario-selection or qualifier value used for the current generation.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ContextRowId` | Yes | Deterministic identifier derived from scenario and context field, never Excel row number. |
+| `SelectedScenarioId` | Yes | Exactly one confirmed scenario for the generation. |
+| `ContextFieldCode` | Yes | Canonical scenario/qualifier field from `07_Fields_Evidence`. |
+| `ResolvedValue` | Yes | Canonical value; raw questionnaire free text shall not be copied into reusable configuration or Runtime JSON. |
+| `ValueOrigin` | Yes | References `FINAL_CONFIG_VALUE_ORIGIN`. |
+| `ResolutionStatus` | Yes | References `FINAL_CONFIG_RESOLUTION_STATUS`. |
+| `AffectsInclusion` | Yes | Boolean identifying whether the context value changes record selection. |
+| `SourceQuestionId` | Conditional | Question that supplied the value. |
+| `DerivationRuleId` | Conditional | Rule that derived the value. |
+| `Explanation` | Yes | Human-readable reason and limitation. |
+| `ValidationStatus` | Yes | Canonical Valid, Warning or Error status. |
+
+Exactly one base `ScenarioId` shall be confirmed. `MS-07` may generate safe follow-up and limited-assessment configuration. A DMS-to-DMS or other unsupported route shall resolve to `MS-07` with `NeedsReview`; no unsupported migration instructions may be included.
+
+#### 9.25.3 `tblFinalConfigMaster`
+
+One row represents one distinct selected-scenario + resolved-phase + source-record + JSON-mapping projection. A record mapped to multiple JSON locations shall have one row per `MappingId`. A record referenced by multiple parents shall remain one master projection and use `tblFinalConfigDependencies` for its relationship edges.
+
+##### A. Identity and navigation
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `FinalConfigRowId` | Yes | Deterministic generated primary key based on stable identifiers; never row position. |
+| `SelectedScenarioId` | Yes | Confirmed generation scenario. |
+| `ResolvedPhase` | Yes | `PreSales`, `PreMigration`, `PostMigration` or `Shared`. |
+| `SourceSheet` | Yes | Exact authoritative maintained sheet. |
+| `SourceTable` | Yes | Exact Excel table. |
+| `SourceRecordType` | Yes | References `FINAL_CONFIG_RECORD_TYPE`. |
+| `SourceRecordId` | Yes | Stable identifier from the source table. |
+| `RecordTitle` | Yes | Human-readable record name. |
+| `RecordSummary` | Yes | Concise plain-language meaning. |
+| `SourceRowLink` | No | Authoring hyperlink to the maintained record; never used as identity or runtime data. |
+
+##### B. Filter dimensions
+
+The generated table shall expose the following normalized dimensions when applicable. A value shall be blank only when the dimension genuinely does not apply; blank shall not mean `Unknown`, `ALL` or `NotApplicable`.
+
+| Column | Purpose |
 |---|---|
-| `SelectedScenarioId` | Confirms the generation context |
-| `Phase` | Shows which phase consumes the record |
-| `ModuleId` and `ModuleApplicability` | Shows the scenario-module decision |
-| `RequirementId`, `RequirementTitle` and `RequirementStatement` | Shows the human requirement and its atomic obligation |
-| `SourceSheet` and `SourceRecordId` | Locates the exact workbook row |
-| `RecordType` | Scenario, Module, Requirement, Field, Profile, Rule, Finding, Recommendation, Source, ValueList |
-| `InclusionStatus` | Included, Conditional, Optional, Excluded, Deferred, Error |
-| `InclusionReason` | Explains the join/filter decision |
-| `JSONPath` | Shows the destination in JSON |
-| `ReferencedBy` | Shows dependency that caused inclusion |
-| `ValidationStatus` | Valid, Warning, Error |
-| `EngineCapability` | Shows the runtime feature needed |
+| `ModuleId` | Assessment-module filter |
+| `RequirementId` | Requirement traceability |
+| `ProfileId` | Regulatory/profile traceability |
+| `Region` | Regulatory region |
+| `Authority` | Authority independent of region |
+| `TechnicalFormat` | eCTD/NeeS/non-eCTD format dimension |
+| `SpecificationVersion` | Version-specific applicability |
+| `ApplicationType` | IND/NDA/ANDA/BLA/MAA/CTA or other pathway |
+| `DossierContext` | ASMF/DMF or other dossier context independent of format |
+| `ProcedureContext` | Procedure dimension |
+| `ScopeLevel` | Repository/application/dossier/sequence/document/file scope |
+| `FieldCode` | Canonical evidence field |
+| `RuleId` | Executable/configuration rule |
+| `FindingCode` | Linked reusable finding |
+| `RecommendationCode` | Linked reusable action/recommendation |
 
-The sheet shall show excluded records as well as included records. Otherwise, a reviewer cannot distinguish intentional exclusion from a broken join.
+These columns are generated filter projections and shall not replace the authoritative source-sheet values.
+
+##### C. Human interpretation and provenance
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ConditionSummary` | Conditional | Plain-language rendering of atomic conditions without executable expressions. |
+| `ExpectedEvidenceSummary` | Conditional | Evidence expected by the rule/profile. |
+| `OutcomeSummary` | Conditional | Finding, classification, metric or decision produced. |
+| `RagImpact` | Conditional | Resolved RAG contribution; separate from severity and confidence. |
+| `Severity` | Conditional | Resolved severity contribution. |
+| `ConfidenceImpact` | Conditional | Resolved confidence contribution. |
+| `EffortImpact` | Conditional | Resolved effort/complexity contribution without unsupported hours. |
+| `ReadinessContribution` | Conditional | Pre-Migration readiness contribution. |
+| `ReconciliationContribution` | Conditional | Post-Migration reconciliation contribution. |
+| `PrimarySourceId` | Yes | Primary source document resolved through `23_Source_References`. |
+| `PrimarySourceSection` | Yes | Exact primary source location. |
+| `SourceVerificationStatus` | Yes | Source/claim verification status; transformation shall not upgrade it. |
+
+##### D. Separate applicability, activation, inclusion and export decisions
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ScenarioApplicability` | Yes | Applicable or NotApplicable for the selected scenario. |
+| `ModuleApplicability` | Conditional | Required, Conditional, Optional or NotApplicable from `05_Scenario_Module_Map`. |
+| `ProfileApplicability` | Conditional | Applicable, NotApplicable or Unknown. |
+| `PhaseApplicability` | Yes | Applicable or NotApplicable. |
+| `ActivationStatus` | Yes | `Met`, `NotMet`, `Unknown` or `NotRequired`; Conditional/Optional are not activation outcomes. |
+| `ActivationReasonCode` | Yes | Controlled reason for the activation result. |
+| `ActivationReason` | Yes | Human-readable explanation. |
+| `InclusionStatus` | Yes | `Included`, `Excluded`, `Deferred` or `Error`; Required/Conditional/Optional are not inclusion results. |
+| `InclusionReasonCode` | Yes | Controlled reason for inclusion/exclusion/defer/error. |
+| `InclusionReason` | Yes | Human-readable explanation of the complete join/filter decision. |
+| `ExportStatus` | Yes | `Exported`, `NotExported` or `Blocked`. |
+| `MappingId` | Conditional | Active mapping from `25_JSON_Field_Map`; required for exported projection. |
+| `JSONPath` | Conditional | Resolved destination; required when `ExportStatus=Exported`. |
+| `EngineCapability` | Conditional | Required generic runtime capability for executable records. |
+| `EngineSupportStatus` | Conditional | Supported, Deferred or Unsupported. |
+| `ValidationStatus` | Yes | Valid, Warning or Error; detailed messages remain in sheet 27. |
+| `CanonicalSortKey` | Yes | Stable generated ordering key. |
+
+Required configuration shall not be included or excluded by default. Conditional records require an explicit `Met` or `NotMet` result; `Unknown` shall block when the unresolved condition could change Runtime JSON. Optional records require an explicit selection policy/result. An exported record shall always be Included, valid and mapped.
+
+#### 9.25.4 `tblFinalConfigDependencies`
+
+One row represents one dependency edge. The former free-text `ReferencedBy` concept is replaced by this atomic relationship table; comma-separated dependency identifiers are prohibited.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `DependencyRowId` | Yes | Deterministic relationship identifier. |
+| `SelectedScenarioId` | Yes | Generation context. |
+| `ResolvedPhase` | Yes | Resolved phase or Shared. |
+| `ParentFinalConfigRowId` | Yes | Record requiring the dependency. |
+| `ChildFinalConfigRowId` | Yes | Referenced dependency. |
+| `DependencyType` | Yes | Controlled relationship such as RequirementRule, RuleField, RuleFinding, FindingRecommendation, ValueListUsage, SourceClaim or JSONMapping. |
+| `DependencyStatus` | Yes | `Resolved`, `Missing`, `Excluded`, `Conflict` or `Circular`. |
+| `CausedInclusion` | Yes | Boolean showing whether the edge brought the child into exported configuration. |
+| `ReasonCode` | Yes | Machine-readable relationship reason. |
+| `Explanation` | Yes | Human-readable relationship explanation. |
+
+At minimum, the closure shall expose requirement-to-rule, profile-to-locator, rule-to-field, rule-to-finding, finding-to-recommendation, controlled-column-to-value-list, workbook-object-to-source-claim and included-record-to-JSON-mapping relationships. Multiple parents may point to one child without duplicating the child projection.
+
+#### 9.25.5 `tblFinalConfigSummary`
+
+One row summarizes one selected scenario + phase/shared + optional module + record-type grouping. These expected counts shall be reconciled with actual `26_JSON_Preview` counts.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SummaryRowId` | Yes | Deterministic identifier. |
+| `SelectedScenarioId` | Yes | Confirmed scenario. |
+| `ResolvedPhase` | Yes | Phase or Shared. |
+| `ModuleId` | Conditional | Optional module grouping. |
+| `SourceRecordType` | Yes | Record category. |
+| `CandidateCount` | Yes | Records evaluated. |
+| `IncludedCount` | Yes | Included records. |
+| `ExcludedCount` | Yes | Excluded records. |
+| `DeferredCount` | Yes | Deferred records. |
+| `ErrorCount` | Yes | Invalid records. |
+| `ExportedCount` | Yes | Projections expected in JSON. |
+| `DistinctJSONObjectCount` | Yes | Expected objects after mapping/grouping. |
+| `WarningCount` | Yes | Non-blocking warnings. |
+| `ReconciliationStatus` | Yes | `Match`, `Mismatch` or `Blocked`. |
+
+Counts shall reconcile mathematically and shall be based on stable record identities rather than worksheet row counts.
+
+#### 9.25.6 Candidate universe and exclusion visibility
+
+The generated master shall evaluate maintained configuration from sheets `01` through `23` plus mappings from `25_JSON_Field_Map`. It shall include active and inactive candidate records, directly included records, records rejected by scenario/phase/module/profile/activation, transitively referenced dependencies, and deferred/error records. Generated sheets `24`, `26` and `27` are never candidates.
+
+Excluded records shall remain visible with controlled reason codes. This is required to distinguish intentional exclusion from a missing join or broken dependency. Unreferenced value/source catalogue rows may be summarized as unreachable/excluded rather than expanded per phase, but every value/source dependency used by included configuration shall have a master row and dependency lineage.
+
+#### 9.25.7 Deterministic resolution sequence
+
+The transformer shall:
+
+1. confirm one selected base scenario;
+2. resolve qualifiers and `NeedsReview` conditions;
+3. establish the maintained candidate-record universe;
+4. resolve phase and scenario-module applicability;
+5. resolve regulatory-profile applicability;
+6. evaluate structured activation conditions;
+7. calculate complete transitive dependency closure;
+8. validate controlled values and source references;
+9. validate required transformer/engine capabilities;
+10. resolve mappings from `25_JSON_Field_Map`;
+11. generate master and dependency rows;
+12. generate expected summary counts;
+13. reconcile expected counts with `26_JSON_Preview`; and
+14. block export when any blocking error remains.
+
+Repeated generation from unchanged canonical inputs and selection context shall produce identical canonical rows and ordering. Any relevant maintained-table change shall mark sheets 24 and 26 stale until both are regenerated with the same transformation logic.
+
+#### 9.25.8 Required controlled values in `22_Value_Lists`
+
+Existing semantic masters shall be reused where applicable. The following generated-view lists shall be added only when an equivalent canonical list does not already exist:
+
+| ListCode | Required active codes |
+|---|---|
+| `FINAL_CONFIG_RECORD_TYPE` | `Scenario`, `Context`, `Module`, `Requirement`, `Field`, `Profile`, `Rule`, `Finding`, `Recommendation`, `ValueList`, `Value`, `Source`, `SourceClaim`, `JSONMapping` |
+| `FINAL_CONFIG_INCLUSION_STATUS` | `Included`, `Excluded`, `Deferred`, `Error` |
+| `FINAL_CONFIG_ACTIVATION_STATUS` | `Met`, `NotMet`, `Unknown`, `NotRequired` |
+| `FINAL_CONFIG_EXPORT_STATUS` | `Exported`, `NotExported`, `Blocked` |
+| `FINAL_CONFIG_DEPENDENCY_STATUS` | `Resolved`, `Missing`, `Excluded`, `Conflict`, `Circular` |
+| `FINAL_CONFIG_VALUE_ORIGIN` | `Questionnaire`, `Derived`, `ExplicitSelection`, `Default` |
+| `FINAL_CONFIG_RESOLUTION_STATUS` | `Resolved`, `Unknown`, `Conflict`, `NeedsReview` |
+| `FINAL_CONFIG_RECONCILIATION_STATUS` | `Match`, `Mismatch`, `Blocked` |
+
+`FINAL_CONFIG_REASON_CODE` shall include at least `ScenarioRoot`, `RequiredModule`, `ConditionalActivated`, `OptionalSelected`, `ReferencedDependency`, `AlwaysExported`, `ScenarioNotApplicable`, `PhaseNotApplicable`, `ModuleNotApplicable`, `ProfileNotApplicable`, `ConditionNotMet`, `ConditionUnknown`, `OptionalNotSelected`, `Inactive`, `Deferred`, `MissingDependency`, `UnsupportedCapability` and `ValidationError`.
+
+#### 9.25.9 Boundary with sheets 25 through 27
+
+| Sheet | Exclusive responsibility |
+|---|---|
+| `24_Final_Config_Master` | Resolved inclusion/exclusion, human explanation and dependency lineage |
+| `25_JSON_Field_Map` | Typed workbook-column-to-JSON-property mapping and grouping contract |
+| `26_JSON_Preview` | Actual candidate JSON, actual section counts and stale/eligibility state |
+| `27_Validation_Results` | Individual errors, warnings, affected records and corrective actions |
+
+Sheet 24 may display summarized validation status but shall not duplicate detailed messages from sheet 27. Sheet 26 shall reconcile its actual object counts to sheet 24's expected counts. Neither sheet 24 nor 26 shall contain independent transformation logic.
+
 
 ### 9.26 `25_JSON_Field_Map`
 
@@ -5228,6 +5419,21 @@ JSON generation shall be blocked when any of the following is true:
 - missing transitively referenced sources, locations, claims or links; export of unreferenced/authoring-only source objects; or nondeterministic source ordering; and
 - any transformation that changes source verification, lifecycle, authority, conflict, limitation or review status.
 
+- no single confirmed scenario, conflicting scenario context, or unsupported route that does not resolve safely to `MS-07`/`NeedsReview`;
+- missing, duplicate or nondeterministic context, master, dependency or summary identifiers;
+- a required/applicable record excluded without an approved rule, a Conditional record with unresolved outcome that can change JSON, or an Optional record included without explicit selection;
+- an Included/Exported record whose scenario, phase, module or profile applicability is NotApplicable, or an Excluded/Deferred/Error record marked Exported;
+- an inclusion, exclusion, activation, dependency or export result without a controlled reason code and human-readable explanation;
+- a source record, stable identifier, field, value list, source claim, finding, recommendation or other referenced dependency that does not resolve;
+- a missing, excluded, conflicting or circular dependency required by included configuration, or duplicate master projections caused only by multiple dependency parents;
+- an executable included record with unsupported/deferred engine capability, or an included runtime record with no active applicable mapping/JSON path;
+- a primary citation or verification state that disagrees with `23_Source_References`, or transformation that upgrades source verification/authority;
+- candidate, included, excluded, deferred, error, exported or distinct-object summary counts that do not reconcile;
+- expected sheet-24 counts that disagree with actual `26_JSON_Preview` counts;
+- customer raw answers, identifiers or free text copied into reusable/runtime configuration, or DMS-to-DMS instructions included for `MS-07`;
+- generated sheet content used as configuration input, manual changes preserved as authority, or volatile metadata changing canonical output; and
+- unchanged canonical workbook/context producing different rows, inclusion decisions, dependency closure, counts or ordering.
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -5629,6 +5835,41 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-376` | Relationship integrity | Source replacement/supersession relationships are cyclic or unresolved | Export blocked |
 | `MVP-AT-377` | Deterministic source output | The same canonical workbook/scenario is exported repeatedly | Byte-equivalent source, location, claim and link sections |
 
+| `MVP-AT-378` | Sheet 24 structure | Four required generated tables exist with all mandatory columns | Pass |
+| `MVP-AT-379` | Generated-only authority | Manually edit a Final Config table and regenerate | Manual change discarded; no source configuration changes |
+| `MVP-AT-380` | No generated input | Configure transformer to read sheet 24 as business input | Generation blocked |
+| `MVP-AT-381` | Scenario confirmation | Zero or multiple base scenarios are confirmed | Generation blocked |
+| `MVP-AT-382` | Context atomicity | Scenario and qualifiers resolve | One deterministic context row per field with origin and explanation |
+| `MVP-AT-383` | Project-data boundary | Questionnaire contains customer free text/identifier | Canonical context uses approved codes; raw customer data not exported as reusable config |
+| `MVP-AT-384` | MS-01 projection | Select eCTDmanager SQL-to-SQL | DB/archive/mapping/readiness/reconciliation records included and irrelevant DMS/export-only records excluded with reasons |
+| `MVP-AT-385` | MS-04 projection | Select regulatory export to eCTDmanager | Repository/profile/sequence/XML/file records included and DB/archive source mappings excluded with reasons |
+| `MVP-AT-386` | MS-07 safe projection | Select Scenario Pending | Follow-up/limited-assessment configuration included; unsupported migration actions excluded |
+| `MVP-AT-387` | DMS-to-DMS boundary | Questionnaire requests DMS-to-DMS | Resolves to MS-07/NeedsReview; no DMS migration instructions exported |
+| `MVP-AT-388` | Candidate visibility | Evaluate selected scenario | Active/inactive/included/excluded/deferred/error candidates represented or explicitly summarized according to the candidate-universe rule |
+| `MVP-AT-389` | Required applicability | Required applicable module/rule resolves | Included with RequiredModule reason |
+| `MVP-AT-390` | Conditional met | Conditional activation evaluates Met | Included with ConditionalActivated reason |
+| `MVP-AT-391` | Conditional not met | Conditional activation evaluates NotMet | Excluded with ConditionNotMet reason |
+| `MVP-AT-392` | Conditional unknown | Conditional activation is Unknown and could change JSON | Export blocked with ConditionUnknown reason |
+| `MVP-AT-393` | Optional selected | Optional configuration has an explicit permitted selection | Included with OptionalSelected reason |
+| `MVP-AT-394` | Optional not selected | Optional configuration has no selection | Excluded with OptionalNotSelected reason |
+| `MVP-AT-395` | Not-applicable record | Scenario/module/profile/phase is NotApplicable | Excluded and NotExported with precise reason |
+| `MVP-AT-396` | Separate statuses | Review Conditional, activation, inclusion and export columns | Applicability, activation, inclusion and export semantics remain independent |
+| `MVP-AT-397` | Stable row identity | Workbook rows are reordered without semantic change | FinalConfigRowId values remain unchanged |
+| `MVP-AT-398` | Multiple JSON mappings | One source record maps to two JSON properties | One master projection per MappingId, each with exact JSONPath |
+| `MVP-AT-399` | Multiple dependency parents | Several rules reference one field/finding/value/source | Child projection appears once per phase/mapping; separate dependency edges retained |
+| `MVP-AT-400` | Dependency closure | Included rule references field, finding, recommendation, values, source and mapping | Complete transitive closure appears with caused-inclusion lineage |
+| `MVP-AT-401` | Broken dependency | Included record references missing/inactive dependency | Dependency marked Missing and export blocked |
+| `MVP-AT-402` | Circular dependency | Dependency graph contains a cycle | Dependency marked Circular and export blocked |
+| `MVP-AT-403` | Reason completeness | Inclusion/exclusion has no controlled reason or explanation | Export blocked |
+| `MVP-AT-404` | Source traceability | Included record resolves primary source | SourceId, exact section and verification status agree with sheet 23 |
+| `MVP-AT-405` | Controlled-value traceability | Included record uses controlled codes | Required list/value/usage dependencies appear and resolve to sheet 22 |
+| `MVP-AT-406` | Engine support | Included executable rule needs unsupported capability | Record Error/Deferred and export blocked according to approved disposition |
+| `MVP-AT-407` | JSON mapping coverage | Included runtime record has no active applicable mapping | Export blocked |
+| `MVP-AT-408` | Export consistency | Record is Excluded, Deferred or Error but marked Exported | Export blocked |
+| `MVP-AT-409` | Summary arithmetic | Compare candidate/included/excluded/deferred/error/export counts to master rows | Counts reconcile by stable identity |
+| `MVP-AT-410` | Preview reconciliation | Compare expected sheet-24 objects with actual sheet-26 JSON section counts | Match required; mismatch blocks export |
+| `MVP-AT-411` | Deterministic regeneration | Generate twice with unchanged canonical workbook and context | Byte-equivalent canonical context/master/dependency/summary rows and order |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -5654,14 +5895,15 @@ The MVP is complete when:
 19. every supported Post-Migration scenario has exactly one discrepancy-first complete-coverage reconciliation model linked to a compatible baseline; target evidence is verified/version-qualified; entities use atomic exact/normalized composite keys without silent fallback; field, relationship and aggregate comparisons preserve expected/observed provenance and do not let counts hide item discrepancies; technical failure remains NotDetermined; exceptions never rewrite baseline/discrepancies; and Reconciled requires complete applicable mandatory coverage;
 20. every controlled-code column has exactly one active value-list usage contract; list definitions, values, aliases and genuine dependencies are normalized and sourced; stable codes are never reused; `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank remain distinct; canonical `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters avoid duplication; authoring-only or unimplemented values never enter Runtime JSON; and exported lists/codes are complete, deterministic and traceable;
 21. every active executable/configuration record has normalized source provenance from document through exact location and atomic claim to workbook-object link; regulatory requirements, reviewed interpretations, vendor/product constraints, internal decisions, assumptions and examples remain distinguishable; convenience citations agree with primary links; conflicts, limitations, lifecycle, translation and verification states remain explicit; historical sources require version-bounded applicability; project evidence and substantial copied publications stay outside reusable configuration; and scenario JSON contains only complete, deterministic, non-sensitive, transitively referenced source metadata without an internet dependency;
-22. every scenario has complete phase/module applicability;
-23. `24_Final_Config_Master` explains every inclusion/exclusion;
-24. scenario JSON generates for all Section 5 scenarios;
-25. every JSON object traces to workbook records;
-26. invalid/incomplete content blocks with actionable messages;
-27. unchanged input/selection produces identical canonical JSON;
-28. PowerShell consumes JSON without reading Excel;
-29. deferred SharePoint, release governance and GxP controls are not represented as complete.
+22. `24_Final_Config_Master` is a generated, non-authoritative, filterable audit manifest with deterministic context, master-projection, dependency and summary tables; it separately resolves scenario/module/profile/phase applicability, activation, inclusion, validation and export; shows every candidate inclusion/exclusion/defer/error with controlled reasons; exposes regulatory and assessment filter dimensions, interpretation and source lineage; computes complete non-duplicating dependency closure and expected JSON counts; excludes raw customer data and unsupported DMS-to-DMS instructions; reconciles with sheet 26; never becomes transformation input; and regenerates identically from unchanged canonical workbook/context;
+23. every scenario has complete phase/module applicability;
+24. `24_Final_Config_Master` explains every inclusion/exclusion;
+25. scenario JSON generates for all Section 5 scenarios;
+26. every JSON object traces to workbook records;
+27. invalid/incomplete content blocks with actionable messages;
+28. unchanged input/selection produces identical canonical JSON;
+29. PowerShell consumes JSON without reading Excel;
+30. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -5718,3 +5960,4 @@ Each review step shall answer four questions:
 | 4.16 MVP | 15 September 2026 | Approved `21_PostMigration_Reconciliation` with nine normalized reconciliation-model, evidence-requirement, entity-rule, composite-key, field-comparison, aggregate-comparison, relationship-comparison, decision-rule and atomic-condition tables; defined Expected baseline versus Observed target semantics, exact/normalized composite matching without fuzzy/silent fallback, separate missing/extra/duplicate/ambiguous/value/relationship results and scenario-specific target-evidence profiles; required baseline/configuration compatibility, complete mandatory comparison coverage and discrepancy-first outcome precedence; prohibited tolerance for identity/hash, counts hiding item discrepancies and post-hoc baseline exclusions; preserved carried/new accepted differences without rewriting baseline or evidence; excluded MS-07 and DMS-to-DMS models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.17 MVP | 15 September 2026 | Approved `22_Value_Lists` with five normalized list-definition, value, usage-map, alias and dependency tables; made sheet 22 the single authority for reusable machine codes across sheets 01–21; defined immutable code identity, explicit code format/status/runtime eligibility/export mode, complete usage mapping, controlled aliases preserving raw values and genuine acyclic dependencies; separated `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank semantics; consolidated `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters while retaining semantically distinct domain lists; prohibited code addition from implying transformer/engine support; added deterministic scenario JSON, cross-sheet audit, blocking validation and acceptance tests |
 | 4.18 MVP | 15 September 2026 | Approved `23_Source_References` with six normalized source-document, precise-location, atomic-claim, claim-evidence, workbook-object-link and source-relationship tables; retained existing `SourceId`/`SourceSection` as validated primary-citation convenience fields while making normalized links authoritative; distinguished regulatory authority, standards, guidance, vendor/product constraints, reviewed interpretations, internal requirements/decisions, assumptions and examples; classified the eMAS Regulatory Technical Migration Assessment Guide as a secondary reviewed guide whose underlying primary sources remain separate; defined truthful lifecycle, verification, translation, conflict and historical-version handling; prohibited examples/internal decisions from masquerading as regulatory authority and excluded project evidence, substantial publication copies and sensitive metadata from reusable/runtime configuration; added transitive offline deterministic JSON, blocking validation and acceptance tests |
+| 4.19 MVP | 15 September 2026 | Approved `24_Final_Config_Master` as a generated, read-only audit manifest with four deterministic context, master-projection, dependency-edge and summary tables; separated scenario/module/profile/phase applicability, conditional activation, final inclusion, validation and export statuses; defined stable row identity, filterable regulatory/assessment dimensions, human condition/evidence/outcome interpretation, source verification and engine/mapping visibility; replaced free-text `ReferencedBy` with atomic transitive dependency lineage; required visibility and controlled reasons for included, excluded, deferred and error candidates; defined safe MS-07 and DMS-to-DMS handling, candidate-universe boundaries, deterministic resolution order, stale/regeneration behavior and expected-count reconciliation with JSON Preview; prohibited generated sheets as configuration inputs and raw customer data/volatile metadata from canonical output; added controlled values, blocking validation and acceptance tests |
