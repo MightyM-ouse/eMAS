@@ -1,0 +1,71 @@
+name: Bootstrap Mapping Workbook MVP v0.2 artifacts
+
+on:
+  push:
+    branches:
+      - implementation/mvp-mapping-workbook-v0.2
+    paths:
+      - .github/workflows/bootstrap-mvp-v0.2-artifacts.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore reviewed source files
+        run: |
+          test -f .bootstrap/emas-v0.2-source.tar.gz
+          tar -xzf .bootstrap/emas-v0.2-source.tar.gz
+          rm -f .bootstrap/emas-v0.2-source.tar.gz
+          rmdir .bootstrap 2>/dev/null || true
+
+      - name: Restore historical v0.1 workbook
+        run: |
+          git fetch origin 6a861b7342631ef1b7aa017c3fa6a67c832c89d4
+          mkdir -p dist
+          git show 6a861b7342631ef1b7aa017c3fa6a67c832c89d4:dist/eMAS_Mapping_Workbook_MVP_v0.1.xlsx > dist/eMAS_Mapping_Workbook_MVP_v0.1.xlsx
+          echo "b57ababd9dcb4b9bb627e9f6ea1c7398d697a85a21d3185cda573673ec8932da  dist/eMAS_Mapping_Workbook_MVP_v0.1.xlsx" | sha256sum -c -
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: build/requirements-mvp-workbook.txt
+
+      - name: Install workbook dependency
+        run: python -m pip install --disable-pip-version-check -r build/requirements-mvp-workbook.txt
+
+      - name: Regenerate controlled JSON map and v0.2 workbook
+        run: |
+          python build/emas_mvp_json_map.py --write
+          python build/generate_emas_mapping_workbook.py --force
+          echo "1572788f29261c92b47306b2cabcf7a7044b0d21566a7f12224ecb2079e69183  dist/eMAS_Mapping_Workbook_MVP_v0.2.xlsx" | sha256sum -c -
+
+      - name: Validate saved workbook and source contract
+        run: |
+          python build/validate_emas_mapping_workbook.py
+          python build/emas_mvp_loader.py dist/eMAS_Mapping_Workbook_MVP_v0.2.xlsx
+          python -m unittest discover -s tests/workbook -p "test_*.py" -v
+
+      - name: Commit materialized implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build/emas_mvp_*.py build/generate_emas_mapping_workbook.py build/validate_emas_mapping_workbook.py
+          git add config/authoring/mvp/json-field-map.json docs/configuration/10_MVP_Workbook_Implementation_Baseline.md tests/workbook
+          git add -f dist/eMAS_Mapping_Workbook_MVP_v0.1.xlsx dist/eMAS_Mapping_Workbook_MVP_v0.2.xlsx
+          git add -u .bootstrap || true
+          if git diff --cached --quiet; then
+            echo "No implementation files changed."
+          else
+            git commit -m "Materialize eMAS mapping workbook MVP v0.2 implementation"
+            git push origin HEAD:implementation/mvp-mapping-workbook-v0.2
+          fi
