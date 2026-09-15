@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.16 MVP
+**Version:** 4.17 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-028
+**Decision references:** DEC-2026-013 through DEC-2026-029
 
 ## 1. Purpose and MVP decision
 
@@ -4166,106 +4166,204 @@ Generation shall be blocked when a required table/column is missing; a supported
 
 ### 9.23 `22_Value_Lists`
 
-This sheet is the authority for reusable machine codes and their human labels. A code controls authoring and, where applicable, runtime serialization; it does not implement an engine capability or create a supported migration scenario.
+#### 9.23.1 Purpose and MVP boundary
 
-| Column | Type | Required | Why / JSON mapping |
-|---|---|---:|---|
-| `ListCode` | Identifier | Yes | Identifies the controlled list -> `valueLists` |
-| `Code` | Code | Yes | Stable machine value |
-| `Label` | Text | Yes | Human display value |
-| `Description` | Text | Yes | Exact meaning |
-| `ParentListCode` | Reference | Conditional | Identifies a parent list for a genuinely dependent value |
-| `ParentCode` | Reference | Conditional | Identifies the active parent value; required with `ParentListCode` |
-| `SortOrder` | Integer | Yes | Stable display/serialization order |
-| `Usage` | Code | Yes | AuthoringOnly, Runtime, Both |
-| `SourceId` | Reference | Yes | Regulatory, product, requirement, or approved internal source in `23_Source_References` |
-| `SourceSection` | Text | Yes | Precise source section or decision supporting the code and meaning |
-| `IsActive` | Boolean | Yes | Dropdown/runtime eligibility |
-| `Notes` | Text | No | Author guidance and limitations |
+`22_Value_Lists` shall be the single authority for reusable machine codes used by the Mapping Workbook and scenario Runtime JSON. It shall separate list definitions, list values, workbook usage, source-value aliases and genuine value dependencies so that authors can understand the permitted values and the transformer can validate them deterministically.
 
-`ListCode + Code` shall be unique among active rows. Labels and descriptions may be clarified, but a code shall not be reused for another meaning. Parent references shall resolve to active values and shall not be used to reproduce relationships that belong in a catalogue or mapping sheet.
+The sheet shall not contain project/customer answers, scenario derivation logic, regulatory-profile logic, assessment rules or executable engine logic. Adding a code for an operator, normalization policy or engine capability does not implement that behavior; a runtime-eligible code may be exported only when the transformer and PowerShell engine declare support for it.
 
-At minimum, lists shall include phase, scenario family, primary source mechanism, included source mechanism, target platform, derivation-rule purpose, derivation status, missing-input action, applicability, assessment depth, phase-outcome impact, baseline contribution, reconciliation role, module, requirement domain/type, obligation level, owning component, lifecycle stage, requirement phase scope, requirement applicability basis, missing-evidence behavior, implementation disposition, verification method, requirement/implementation/verification status, region, authority, technical format, application type, dossier context, procedure, lifecycle, evidence source/state, evaluation status, RAG, severity, confidence, datatype-specific operators, data type, cardinality, entity type, field role, value-domain type, value origin, null policy, provenance profile, report/log usage, sensitivity class, export policy, unit, finding category, effort band, decision outcome, comparison type, requirement basis, engine capability, normalization code, and status/reason.
+#### 9.23.2 Required tables
 
-#### Field-definition controlled lists
+The sheet shall contain five Excel tables. Every identifier shall be stable and unique within its stated scope. Multi-valued cells and comma-separated code lists are prohibited.
 
-| `ListCode` | Required codes |
+##### A. `tblValueListDefinitions`
+
+One row defines one reusable controlled list.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ListCode` | Yes | Stable `UPPER_SNAKE_CASE` identifier and primary key. It shall never be reused for a different semantic list. |
+| `ListName` | Yes | Human-readable name. A label change shall not change `ListCode`. |
+| `Description` | Yes | Explains the business meaning and boundary of the list. |
+| `BusinessDomain` | Yes | Controlled domain used to group and review lists. |
+| `ValueOwner` | Yes | Controlled owner role responsible for the list's meaning. |
+| `CodeFormat` | Yes | References `CODE_FORMAT` and defines the required format of member `Code` values. |
+| `AllowsUnknown` | Yes | Boolean declaring whether `Unknown` is a valid member. |
+| `AllowsNotApplicable` | Yes | Boolean declaring whether `NotApplicable` is a valid member. |
+| `AllowsMultipleSelection` | Yes | Boolean. If true, selections shall still be represented through child/link rows, not comma-separated cells. |
+| `Usage` | Yes | References `VALUE_LIST_USAGE`: `AuthoringOnly`, `Runtime` or `Both`. |
+| `RuntimeExportMode` | Yes | References `VALUE_LIST_EXPORT_MODE`. |
+| `DefinitionStatus` | Yes | References `DEFINITION_STATUS`. Only approved, active definitions may enter Runtime JSON. |
+| `SourceId` | Yes | References `23_Source_References`. |
+| `SourceSection` | Conditional | Precise source locator where applicable. |
+| `Rationale` | Yes | Explains why the controlled list exists and why its scope is appropriate. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+##### B. `tblValueListValues`
+
+One row defines one canonical member of a controlled list.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValueId` | Yes | Stable row identifier. |
+| `ListCode` | Yes | Foreign key to `tblValueListDefinitions`. |
+| `Code` | Yes | Stable machine code, unique within `ListCode`, conforming to the list's `CodeFormat`. It shall never be reused for a different meaning. |
+| `Label` | Yes | Human-readable display label. |
+| `Description` | Yes | Defines the exact semantic meaning and exclusions. |
+| `SortOrder` | Yes | Integer used for deterministic authoring and JSON order. |
+| `IsDefault` | Yes | Boolean. At most one selectable default may exist per list unless the list explicitly permits multiple selection. |
+| `IsSelectable` | Yes | Boolean controlling new authoring selections. Historical values may remain non-selectable. |
+| `RuntimeEligible` | Yes | Boolean. False values shall not be emitted into runtime configuration. |
+| `DefinitionStatus` | Yes | References `DEFINITION_STATUS`. |
+| `ReplacementCode` | Conditional | Required for a retired/superseded value when a canonical replacement exists; shall reference the same list unless explicitly justified. |
+| `SourceId` | Yes | References `23_Source_References`. |
+| `SourceSection` | Conditional | Precise source locator where applicable. |
+| `Rationale` | Yes | Explains the value's inclusion and meaning. |
+| `Notes` | No | Author guidance that does not alter runtime semantics. |
+
+##### C. `tblValueListUsageMap`
+
+One row binds one controlled list to one workbook column. Every controlled-code column in sheets `01` through `21` shall resolve to exactly one active usage row.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValueListUsageId` | Yes | Stable usage identifier. |
+| `ListCode` | Yes | Foreign key to `tblValueListDefinitions`. |
+| `SheetName` | Yes | Exact workbook sheet name. |
+| `TableName` | Yes | Exact Excel table name. |
+| `ColumnName` | Yes | Exact controlled-code column name. |
+| `UsagePurpose` | Yes | References `VALUE_USAGE_PURPOSE`. |
+| `Requiredness` | Yes | Controlled requiredness for that column. |
+| `AllowsBlank` | Yes | Boolean. Blank is never inferred to mean `Unknown`, `NotApplicable`, `NotAssessed` or `ALL`. |
+| `AllowsAllWildcard` | Yes | Boolean. `ALL` may be used only where this flag is true and its matching semantics are defined. |
+| `AllowedSubsetCode` | No | Optional named subset/view of the master list; it shall not create a duplicate list. |
+| `JsonPath` | Conditional | Canonical Runtime JSON destination when the usage is runtime-relevant. |
+| `DependencyBehavior` | Yes | References `VALUE_DEPENDENCY_BEHAVIOR`. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+##### D. `tblValueAliases`
+
+One row maps a raw/imported value to one canonical code while preserving the raw evidence.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValueAliasId` | Yes | Stable alias identifier. |
+| `ListCode` | Yes | Target controlled list. |
+| `AliasValue` | Yes | Raw spelling, abbreviation or source-system value. |
+| `CanonicalCode` | Yes | Canonical member of the target list. |
+| `AliasScope` | Yes | References `VALUE_ALIAS_SCOPE`. |
+| `SourceProfileId` | Conditional | Optional source-profile qualifier where the same raw value has source-specific meaning. |
+| `NormalizationPolicyCode` | Yes | Approved normalization policy; the code does not itself implement the policy. |
+| `CaseSensitivityPolicy` | Yes | References `CASE_SENSITIVITY_POLICY`. |
+| `Priority` | Yes | Integer tie-break order; ambiguous equal-priority matches are blocking. |
+| `PreserveRawValue` | Yes | Shall be true for source/import normalization so the original value remains evidence. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `SourceId` | Yes | References `23_Source_References`. |
+| `Rationale` | Yes | Explains why the alias is safe and necessary. |
+
+##### E. `tblValueDependencies`
+
+One row defines a genuine controlled-value relationship used for authoring validation or permitted-code restriction. It shall not encode scenario selection, profile applicability or assessment-rule logic.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValueDependencyId` | Yes | Stable dependency identifier. |
+| `ParentListCode` | Yes | Parent controlled list. |
+| `ParentCode` | Yes | Canonical parent value. |
+| `ChildListCode` | Yes | Child controlled list. |
+| `ChildCode` | Yes | Canonical child value. |
+| `RelationshipType` | Yes | References `VALUE_RELATIONSHIP_TYPE`. |
+| `ValueListUsageId` | No | Optional qualifier restricting the dependency to one usage context. |
+| `Priority` | Yes | Integer deterministic evaluation order. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+| `SourceId` | Yes | References `23_Source_References`. |
+| `Rationale` | Yes | Explains the relationship and why it belongs in this table. |
+
+#### 9.23.3 Canonical master lists and subsets
+
+The workbook shall use one canonical master where the underlying meaning is the same. A domain-specific usage may define a named subset/view in `tblValueListUsageMap`; it shall not duplicate the master codes.
+
+| Canonical master | Required consolidation |
 |---|---|
-| `FIELD_ROLE` | Context, Input, Observation, Derived, Outcome, Metadata |
-| `ENTITY_TYPE` | Project, Execution, Repository, Container, SourceSystem, Database, DatabaseRecord, Archive, ArchiveObject, DMSObject, Application, Dossier, Sequence, SubmissionUnit, Document, File, XMLDocument, XMLReference, Relationship, TargetObject |
-| `DATA_TYPE` | String, Code, Integer, Decimal, Boolean, Date, DateTime, Path, URI, Hash, Object |
-| `CARDINALITY` | One, ZeroOrOne, ZeroOrMany, OneOrMany |
-| `VALUE_DOMAIN_TYPE` | None, ValueList, ScenarioCatalogue, ModuleCatalogue, RequirementCatalogue, FindingCatalogue, RecommendationCatalogue, SourceCatalogue |
-| `VALUE_ORIGIN` | CustomerProvided, Observed, Imported, Derived, TargetObserved |
-| `EVIDENCE_SOURCE_TYPE` | Customer, Folder, FileMetadata, FileContent, XML, Database, Archive, DMS, Manifest, MigrationLog, ImportReport, TargetSystem, Derived |
-| `NULL_POLICY` | DisallowNull, AllowNull, OmitWhenUnavailable, EmptyCollection |
-| `BASELINE_ROLE` | None, Identifier, ComparisonKey, ExpectedValue, SupportingEvidence, ExclusionFlag, ExceptionReference |
-| `RECONCILIATION_ROLE` | None, SourceKey, TargetKey, ExpectedValue, ObservedValue, ComparisonEvidence, Outcome |
-| `REPORT_USAGE` | Never, Summary, Detail, EvidenceOnly |
-| `LOG_USAGE` | Never, IdentifierOnly, Sanitized, Full |
-| `SENSITIVITY_CLASS` | NonSensitive, Internal, CustomerMetadata, CustomerContent, PersonalData, Confidential |
-| `EXPORT_POLICY` | ReferencedDependency, Always, AuthoringOnly |
-| `DEFINITION_STATUS` | Draft, Reviewed, Approved, Deferred, Retired |
-| `UNIT` | Count, Bytes, Percent, Days, Seconds; additional units require an approved canonical conversion rule |
-| `NORMALIZATION_CODE` | None, Trim, UpperCase, LowerCase, NormalizePath, NormalizeSequenceIdentifier, NormalizeArchiveIdentifier, NormalizeHash, NormalizeDateTime |
-| `VALUE_LIST_USAGE` | AuthoringOnly, Runtime, Both |
+| `UNIT` | Master for measurement units. Former `METRIC_UNIT` and `COMPARISON_UNIT` concepts become subsets/views. |
+| `ENTITY_TYPE` | Master for canonical entity types. `SOURCE_ENTITY_TYPE` becomes a source-oriented subset/view. |
+| `CARDINALITY` | One master for relationship cardinality. |
+| `RAG` | One master for Green, Amber, Red and Unknown. |
+| `SEVERITY` | One master severity scale. |
+| `CONFIDENCE` | One master for High, Medium, Low and Unknown. |
 
-Canonical quantitative evidence shall prefer base units such as Bytes and Count. Human-readable GB/MB display values may be derived for reports and shall not replace canonical values used for comparison.
+Lists shall remain separate when their values represent different business semantics even if labels overlap, including role types, assessment outcomes, evidence states and missing-evidence behaviors.
 
-#### Evidence and evaluation controlled lists
+#### 9.23.4 Special semantic values
 
-| `ListCode` | Required codes and meaning |
+| Value | Meaning | Rule |
+|---|---|---|
+| `Unknown` | A domain value cannot be determined from available evidence. | Permitted only when `AllowsUnknown=true`; it is never equivalent to blank. |
+| `NotApplicable` | The concept does not apply to the selected scenario/context. | Permitted only when `AllowsNotApplicable=true`. |
+| `NotAssessed` | An assessment was in scope but was not performed. | It is an assessment status, not a substitute domain value. |
+| `ALL` | Explicit wildcard meaning all permitted values for one usage. | Permitted only where `AllowsAllWildcard=true`; its selection/matching semantics shall be defined. |
+| blank | No value supplied. | Governed only by `AllowsBlank`; it shall not be silently converted to another semantic value. |
+
+#### 9.23.5 Required sheet-local controlled lists
+
+The five tables shall themselves use controlled values. At minimum, `22_Value_Lists` shall define:
+
+| ListCode | Required active codes |
 |---|---|
-| `EVIDENCE_STATE` | Present, ConfirmedAbsent, Unavailable, Invalid, Conflict, Unknown |
-| `EVALUATION_STATUS` | Evaluated, NotAssessed, NotApplicable, InsufficientEvidence, Error, Conflict |
-| `STATUS_REASON` | InputUnavailable, AccessDenied, ParseFailed, NotPerformed, ScenarioNotApplicable, ConflictingEvidence, InsufficientEvidence, UnsupportedSourceSemantics |
-| `ARCHIVE_LOOKUP_STATUS` | Found, Missing, Multiple, Invalid, Inaccessible |
+| `VALUE_LIST_USAGE` | `AuthoringOnly`, `Runtime`, `Both` |
+| `VALUE_LIST_EXPORT_MODE` | `CompleteListWhenUsed`, `ReferencedValuesOnly`, `Never` |
+| `DEFINITION_STATUS` | `Draft`, `Reviewed`, `Approved`, `Deferred`, `Retired` |
+| `CODE_FORMAT` | `PascalCase`, `UpperSnakeCase`, `UpperCase`, `Identifier` |
+| `VALUE_USAGE_PURPOSE` | `AuthoringValidation`, `RuntimeValidation`, `Reporting`, `ConditionOperand` |
+| `VALUE_DEPENDENCY_BEHAVIOR` | `Block`, `Warning`, `AuthoringOnly` |
+| `VALUE_RELATIONSHIP_TYPE` | `ParentChild`, `AllowedCombination`, `RestrictedSubset` |
+| `VALUE_ALIAS_SCOPE` | `SourceNormalization`, `ImportNormalization`, `AuthoringImport`, `DisplayOnly` |
+| `CASE_SENSITIVITY_POLICY` | `Exact`, `CaseInsensitive`, `PlatformDefined` |
 
-`NotApplicable` is an evaluation status rather than an evidence state. `Skipped` shall not be used as an unexplained terminal status; use `NotAssessed` with an explicit `STATUS_REASON`, normally `NotPerformed`.
+#### 9.23.6 Cross-sheet controlled-code audit
 
-#### Provenance profiles
+Before JSON generation, the transformer shall inspect every active table in sheets `01` through `21` and shall prove that:
 
-| Code | Minimum evidence reference |
-|---|---|
-| `PROV_CUSTOMER` | Question/answer identifier and supplied value |
-| `PROV_PATH` | Root, container, and physical path |
-| `PROV_FILE` | Physical path and relevant file metadata |
-| `PROV_XML` | XML file, namespace, element/path, attribute, and raw observed value where available |
-| `PROV_DB` | Source adapter, logical entity, record key, field, and raw observed value |
-| `PROV_ARCHIVE` | Archive root, original identifier, normalized identifier, lookup outcome, and resolved path where available |
-| `PROV_DMS` | Source adapter, object/version/rendition identifier, and metadata key |
-| `PROV_IMPORT` | Manifest, migration/import report or log, and source record |
-| `PROV_DERIVED` | Producer capability and input evidence references |
-| `PROV_TARGET` | Target system, entity, object identifier, and target field |
+1. every controlled-code column has exactly one active `tblValueListUsageMap` row;
+2. every nonblank code resolves to one active canonical value permitted by that usage and any declared subset;
+3. every `ALL`, `Unknown`, `NotApplicable`, `NotAssessed` or blank occurrence is valid for the specific usage;
+4. no authoring-only, non-runtime, deferred, retired or engine-unsupported code is included in Runtime JSON;
+5. aliases resolve unambiguously to canonical codes and the raw value remains available as provenance;
+6. dependencies are valid, acyclic and limited to controlled-value relationships;
+7. canonical master lists are used instead of duplicate domain copies; and
+8. every emitted code is traceable to its list definition, value row, usage row and source reference.
 
-#### Datatype-appropriate operator lists
+#### 9.23.7 Runtime JSON projection
 
-`07_Fields_Evidence.OperatorListCode` references one of the following `ListCode` values. Each operator is stored as its own row in `22_Value_Lists`; comma-separated operator cells are prohibited.
+For a selected scenario, JSON shall contain only lists transitively used by the included configuration. `CompleteListWhenUsed` shall emit the complete active runtime-eligible member set; `ReferencedValuesOnly` shall emit only referenced active runtime-eligible codes; `Never` shall emit no list. Ordering shall be deterministic by `ListCode`, `SortOrder`, `Code`, alias priority and stable identifiers.
 
-| `ListCode` | Required operator codes |
-|---|---|
-| `OPS_TEXT` | EQUALS, NOT_EQUALS, IN_LIST, CONTAINS, STARTS_WITH, ENDS_WITH, MATCHES_PATTERN, EXISTS, MISSING |
-| `OPS_CODE` | EQUALS, NOT_EQUALS, IN_LIST, EXISTS, MISSING |
-| `OPS_NUMBER` | EQUALS, NOT_EQUALS, GT, GTE, LT, LTE, BETWEEN, EXISTS, MISSING |
-| `OPS_BOOLEAN` | EQUALS, NOT_EQUALS, EXISTS, MISSING |
-| `OPS_DATE` | EQUALS, BEFORE, ON_OR_BEFORE, AFTER, ON_OR_AFTER, BETWEEN, EXISTS, MISSING |
-| `OPS_PATH` | EQUALS, STARTS_WITH, ENDS_WITH, MATCHES_PATTERN, EXISTS, MISSING |
-| `OPS_HASH` | EQUALS, NOT_EQUALS, EXISTS, MISSING |
-| `OPS_OBJECT` | EXISTS, MISSING |
+~~~json
+{
+  "valueLists": [
+    {
+      "listCode": "RAG",
+      "values": [
+        { "code": "Green", "label": "Green" },
+        { "code": "Amber", "label": "Amber" },
+        { "code": "Red", "label": "Red" },
+        { "code": "Unknown", "label": "Unknown" }
+      ]
+    }
+  ],
+  "valueAliases": [
+    {
+      "listCode": "RAG",
+      "aliasValue": "G",
+      "canonicalCode": "Green",
+      "aliasScope": "ImportNormalization",
+      "preserveRawValue": true
+    }
+  ]
+}
+~~~
 
-Phase availability shall use `PhaseListCode` values whose active entries are explicit phase codes:
+The JSON shall use canonical codes rather than labels. Scenario configuration shall not embed an undeclared code, and list export shall not imply that an operator, normalization policy or engine capability is implemented.
 
-| `ListCode` | Active phase codes |
-|---|---|
-| `PHASES_ALL` | PreSales, PreMigration, PostMigration |
-| `PHASES_PRE_SALES` | PreSales |
-| `PHASES_PRE_MIGRATION` | PreMigration |
-| `PHASES_POST_MIGRATION` | PostMigration |
-| `PHASES_PRE_AND_POST_MIGRATION` | PreMigration, PostMigration |
-
-Additional combinations may be added as controlled lists without placing comma-separated phases in `07_Fields_Evidence`.
-
-Adding a new operator, normalization code, parser profile, or engine capability to this sheet does not make it executable. Runtime export shall be blocked until the corresponding transformer/runtime capability is implemented or the dependent configuration is explicitly Deferred.
 
 ### 9.24 `23_Source_References`
 
@@ -4904,6 +5002,17 @@ JSON generation shall be blocked when any of the following is true:
 - a baseline exclusion is introduced post hoc, or an exception/difference exceeds scope/validity/effect, changes the baseline, or erases original discrepancy evidence;
 - Reconciled can be produced by default/one success/incomplete coverage, project results/approvals appear in reusable configuration, or wording/ordering/traceability is unsafe;
 
+- missing, duplicate or broken list-definition, value, usage-map, alias or dependency identifiers and foreign keys;
+- reuse of a stable list/value code for a different semantic object, or violation of the declared code format;
+- a controlled-code column in sheets `01` through `21` with no active usage mapping or more than one active usage mapping;
+- use of `ALL`, `Unknown`, `NotApplicable`, `NotAssessed` or blank contrary to the specific usage contract;
+- comma-separated/multi-valued controlled-code cells, values outside an allowed subset, or duplicate canonical lists for a shared semantic domain;
+- a runtime reference to an authoring-only, inactive, deferred, retired, non-runtime-eligible or transformer/engine-unsupported code;
+- ambiguous aliases, alias normalization that loses the raw value, invalid canonical targets or unresolved source-profile qualification;
+- missing, cyclic or invalid dependencies, or dependencies that duplicate scenario, profile or assessment-rule logic;
+- list export that violates `RuntimeExportMode`, omits required active values, produces nondeterministic order or emits a label instead of its canonical code; and
+- any emitted controlled code that cannot be traced to exactly one active list definition, value row, usage row and source reference.
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -5237,6 +5346,39 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-311` | Generate unchanged reconciliation configuration twice | Models, evidence, comparisons, keys, relationships and decisions have identical order and canonical bytes |
 
 
+| `MVP-AT-312` | Sheet 22 structure | `22_Value_Lists` contains exactly the five required normalized tables with all mandatory columns | Pass |
+| `MVP-AT-313` | List identity | Duplicate active `ListCode` is introduced | Export blocked |
+| `MVP-AT-314` | Value identity | Duplicate active `ListCode` + `Code` is introduced | Export blocked |
+| `MVP-AT-315` | Stable-code reuse | A retired list/value code is reassigned to a different semantic object | Export blocked |
+| `MVP-AT-316` | Label independence | A label or description changes while its semantic code remains unchanged | Code identity and JSON references remain unchanged |
+| `MVP-AT-317` | Code format | A value violates its list's declared `CodeFormat` | Export blocked |
+| `MVP-AT-318` | Unknown permission | `Unknown` is used where `AllowsUnknown=false` | Export blocked |
+| `MVP-AT-319` | Not-applicable permission | `NotApplicable` is used where `AllowsNotApplicable=false` | Export blocked |
+| `MVP-AT-320` | Not-assessed semantics | `NotAssessed` is used as a domain value rather than an assessment status | Export blocked |
+| `MVP-AT-321` | ALL permission | `ALL` is used where `AllowsAllWildcard=false` or its matching semantics are undefined | Export blocked |
+| `MVP-AT-322` | Blank semantics | Blank is supplied where `AllowsBlank=false`, or is silently coerced to another semantic value | Export blocked |
+| `MVP-AT-323` | Multi-valued cells | A controlled-code cell contains comma-separated or otherwise packed multiple values | Export blocked |
+| `MVP-AT-324` | Usage coverage | Every controlled-code column in sheets 01–21 has exactly one active usage mapping | Pass |
+| `MVP-AT-325` | Usage ambiguity | A controlled-code column has no active usage row or more than one active usage row | Export blocked |
+| `MVP-AT-326` | Usage subset | A code outside the usage's declared subset is supplied | Export blocked |
+| `MVP-AT-327` | Unit consolidation | Metric and comparison columns use `UNIT` subsets rather than duplicate master lists | Pass |
+| `MVP-AT-328` | Entity consolidation | Source-oriented entity columns use an `ENTITY_TYPE` subset rather than a duplicate master list | Pass |
+| `MVP-AT-329` | Cardinality consolidation | Relationship cardinality columns use the single `CARDINALITY` master | Pass |
+| `MVP-AT-330` | Common scales | All relevant sheets use the canonical `RAG`, `SEVERITY` and `CONFIDENCE` masters | Pass |
+| `MVP-AT-331` | Authoring-only exclusion | An `AuthoringOnly` list/value is referenced by runtime configuration | Export blocked |
+| `MVP-AT-332` | Lifecycle exclusion | A deferred, retired, inactive or non-runtime-eligible value is referenced for export | Export blocked |
+| `MVP-AT-333` | Engine support | A runtime code names an operator, normalization policy or capability not declared by transformer/engine support | Export blocked |
+| `MVP-AT-334` | No implementation by declaration | A new operator/capability code is added without implementation | Code may be authored as non-runtime only; runtime export blocked |
+| `MVP-AT-335` | Complete-list export | A used list with `CompleteListWhenUsed` is exported | All active runtime-eligible members are emitted in deterministic order |
+| `MVP-AT-336` | Alias resolution | A qualified raw value matches one active alias | Canonical code emitted and raw value preserved as provenance |
+| `MVP-AT-337` | Alias ambiguity | The same normalized alias resolves to multiple equal-priority canonical codes in one scope | Export blocked |
+| `MVP-AT-338` | Profile-qualified alias | The same raw value has different meanings in distinct source profiles | Correct profile-qualified canonical code selected deterministically |
+| `MVP-AT-339` | Dependency validation | A valid parent/child controlled-value relation is used | Permitted combination accepted |
+| `MVP-AT-340` | Dependency cycle | Active dependencies form a cycle | Export blocked |
+| `MVP-AT-341` | Dependency boundary | A dependency row attempts to encode scenario, profile or assessment-rule logic | Export blocked |
+| `MVP-AT-342` | JSON code coverage | Scenario JSON contains a code not represented by an active list definition, value and usage mapping | Export blocked |
+| `MVP-AT-343` | Deterministic list output | The same canonical workbook configuration is exported repeatedly | Byte-equivalent `valueLists` and `valueAliases` sections |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -5260,14 +5402,15 @@ The MVP is complete when:
 17. every finding is a reusable sourced semantic definition separate from occurrences and contextual severity/RAG/confidence; exception policies cannot rewrite evidence/original interpretation; every recommendation is separate from findings, has ordered atomic owned actions, and is connected through deterministic scenario/phase links; occurrence grouping retains all evidence; project-specific workflow data is excluded; and DMS-to-DMS routes yield consultant review rather than migration instructions;
 18. every supported Pre-Migration scenario has exactly one blocker-first complete-coverage readiness model; missing applicable mandatory evidence, unresolved blockers/conflicts and invalid minimum baselines prevent Ready; technical failures remain NotDetermined; outcome-changing exceptions require both policies and preserve original interpretation; and attributable scenario-specific baseline entities, composite keys, fields and relationships are defined without storing project values in reusable configuration;
 19. every supported Post-Migration scenario has exactly one discrepancy-first complete-coverage reconciliation model linked to a compatible baseline; target evidence is verified/version-qualified; entities use atomic exact/normalized composite keys without silent fallback; field, relationship and aggregate comparisons preserve expected/observed provenance and do not let counts hide item discrepancies; technical failure remains NotDetermined; exceptions never rewrite baseline/discrepancies; and Reconciled requires complete applicable mandatory coverage;
-20. every scenario has complete phase/module applicability;
-21. `24_Final_Config_Master` explains every inclusion/exclusion;
-22. scenario JSON generates for all Section 5 scenarios;
-23. every JSON object traces to workbook records;
-24. invalid/incomplete content blocks with actionable messages;
-25. unchanged input/selection produces identical canonical JSON;
-26. PowerShell consumes JSON without reading Excel;
-27. deferred SharePoint, release governance and GxP controls are not represented as complete.
+20. every controlled-code column has exactly one active value-list usage contract; list definitions, values, aliases and genuine dependencies are normalized and sourced; stable codes are never reused; `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank remain distinct; canonical `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters avoid duplication; authoring-only or unimplemented values never enter Runtime JSON; and exported lists/codes are complete, deterministic and traceable;
+21. every scenario has complete phase/module applicability;
+22. `24_Final_Config_Master` explains every inclusion/exclusion;
+23. scenario JSON generates for all Section 5 scenarios;
+24. every JSON object traces to workbook records;
+25. invalid/incomplete content blocks with actionable messages;
+26. unchanged input/selection produces identical canonical JSON;
+27. PowerShell consumes JSON without reading Excel;
+28. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -5322,3 +5465,4 @@ Each review step shall answer four questions:
 | 4.14 MVP | 15 September 2026 | Approved `18_Findings` and `19_Recommendations_Actions` with five normalized finding-definition, exception-policy, recommendation-definition, atomic-action and finding-recommendation-link tables; separated reusable definitions from execution occurrences and removed default severity/RAG/confidence from finding ownership; added controlled customer/consultant wording, source/basis classification, template-token safety, deterministic occurrence identity, occurrence-preserving grouping and recommendation de-duplication; defined scenario/phase-qualified many-to-many links, ordered owned actions and accepted-exception effects that never rewrite evidence or original interpretation; retained project assignees/dates/status/approvals outside reusable configuration and routed DMS-to-DMS requests to consultant review; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.15 MVP | 15 September 2026 | Approved `20_PreMigration_Readiness` with seven normalized readiness-model, evidence-requirement, decision-rule, atomic-condition, baseline-entity, baseline-field and baseline-relationship tables; separated decision status from the three approved outcomes and defined blocker-first complete-coverage evaluation, missing mandatory evidence behavior, technical failure, conditional activation and dual-policy accepted-exception handling; prohibited Ready by default or from a single supporting rule; required a valid attributable scenario-specific baseline with atomic composite keys, fields, relationships, exclusions/limitations boundaries and source provenance for later reconciliation; excluded MS-07 and DMS-to-DMS readiness models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.16 MVP | 15 September 2026 | Approved `21_PostMigration_Reconciliation` with nine normalized reconciliation-model, evidence-requirement, entity-rule, composite-key, field-comparison, aggregate-comparison, relationship-comparison, decision-rule and atomic-condition tables; defined Expected baseline versus Observed target semantics, exact/normalized composite matching without fuzzy/silent fallback, separate missing/extra/duplicate/ambiguous/value/relationship results and scenario-specific target-evidence profiles; required baseline/configuration compatibility, complete mandatory comparison coverage and discrepancy-first outcome precedence; prohibited tolerance for identity/hash, counts hiding item discrepancies and post-hoc baseline exclusions; preserved carried/new accepted differences without rewriting baseline or evidence; excluded MS-07 and DMS-to-DMS models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
+| 4.17 MVP | 15 September 2026 | Approved `22_Value_Lists` with five normalized list-definition, value, usage-map, alias and dependency tables; made sheet 22 the single authority for reusable machine codes across sheets 01–21; defined immutable code identity, explicit code format/status/runtime eligibility/export mode, complete usage mapping, controlled aliases preserving raw values and genuine acyclic dependencies; separated `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank semantics; consolidated `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters while retaining semantically distinct domain lists; prohibited code addition from implying transformer/engine support; added deterministic scenario JSON, cross-sheet audit, blocking validation and acceptance tests |
