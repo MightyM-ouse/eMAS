@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.10 MVP
+**Version:** 4.11 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-022
+**Decision references:** DEC-2026-013 through DEC-2026-023
 
 ## 1. Purpose and MVP decision
 
@@ -2118,35 +2118,363 @@ Generation is blocked if an active metric lacks required identity, meaning, owne
 
 ### 9.15 `14_Source_DB_Archive_DMS`
 
-This sheet holds source-specific mapping configuration without storing executable proprietary SQL.
+#### 9.15.1 Purpose and boundary
+
+This sheet shall define, for each supported scenario, source system, product version and phase, what source evidence eMAS can read, how logical source values and relationships map to canonical `07_Fields_Evidence` fields, and how archive or target evidence is identified and compared.
+
+It shall contain reusable configuration only. It shall not contain executable SQL, database column queries, credentials, connection strings, customer server names, repository URLs, customer paths, executable PowerShell/JavaScript/XPath/API calls, unverified SHA or identifier-conversion assumptions, migration code, or DMS-to-DMS rules.
+
+Exact proprietary SQL, physical source columns, vendor APIs, and conversion algorithms shall reside in a controlled implementation specification referenced by the workbook. The workbook shall expose the logical meaning, version boundary, named policy, capability, verification status and evidence required to use that implementation.
+
+The worksheet shall contain six normalized Excel Tables:
+
+1. `tblSourceProfiles`;
+2. `tblSourceCapabilities`;
+3. `tblSourceFieldMappings`;
+4. `tblSourceRelationshipMappings`;
+5. `tblArchiveIdentityRules`; and
+6. `tblArchiveLookupSafeguards`.
+
+#### 9.15.2 `tblSourceProfiles`
+
+One row represents one qualified source-system and version profile.
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `MappingRuleId` | Identifier | Yes | Stable mapping identity -> `sourceMappings[]` |
-| `RequirementId` | Reference | Yes | Requirement traceability |
-| `ModuleId` | Reference | Yes | Source, DB, Archive, DMS, or Mapping module |
-| `ScenarioId` | Code | Yes | Applicable scenario |
-| `SourceSystem` | Code | Yes | Product/vendor/source family |
-| `SourceVersionFrom` | Text | No | Minimum supported version |
-| `SourceVersionTo` | Text | No | Maximum supported version |
-| `SourceEntity` | Text | Yes | Application, dossier, sequence, document, rendition, archive object |
-| `SourceIdentifierField` | Text | Yes | Logical identifier, not executable query text |
-| `IdentifierFormat` | Code | Yes | GUID, SHA-derived name, path, database key, vendor key |
-| `NormalizationPolicy` | Code | Yes | Named conversion policy applied before lookup |
-| `TargetEntity` | Text | Yes | ArchiveObject, MigratedDocument, TargetDossier, etc. |
-| `TargetLookupField` | Text | Yes | Logical target key |
-| `ComparisonKey` | Code | Yes | Stable reconciliation key |
-| `LookupStatusMap` | Code | Yes | Found/Missing/Multiple/Invalid/Inaccessible mapping |
-| `FalseMissingSafeguard` | Code | Yes | Named safeguard profile |
-| `AdapterKey` | Code | Yes | Engine adapter implementing the technical read |
-| `Phase` | Code | Yes | Phase applicability |
-| `SourceId` | Reference | Yes | Product/vendor/internal specification |
-| `BusinessExplanation` | Text | Yes | Explains the mapping to reviewers |
+| `SourceProfileId` | Identifier | Yes | Stable primary key -> `sourceProfiles[].sourceProfileId` |
+| `SourceSystemFamily` | Code | Yes | eCTDmanager, DMS, ThirdPartySystem, ArchiveStorage, eSUBmanager, RegulatoryExport, or Unknown |
+| `Vendor` | Text | Yes | Source-system vendor |
+| `ProductName` | Text | Yes | Product or source-platform name |
+| `SourceKind` | Code | Yes | ProductDatabase, PhysicalArchive, DmsRepository, ThirdPartySystem, MigrationManifest, or TargetEvidence |
+| `ProductVersionFromInclusive` | Version/text | No | Inclusive lower supported version |
+| `ProductVersionToExclusive` | Version/text | No | Exclusive upper supported version |
+| `DatabasePlatform` | Code | Conditional | SQLServer, Access, Oracle, NotApplicable, or Unknown |
+| `HostingModel` | Code | Yes | OnPremises, Cloud, Hybrid, or Unknown |
+| `AdapterKey` | Code | Yes | Named engine adapter |
+| `ImplementationSpecificationId` | Reference | Yes | Controlled extraction/mapping implementation specification |
+| `SupportStatus` | Code | Yes | Supported, Conditional, Planned, Unsupported, or ReferenceOnly |
+| `VerificationStatus` | Code | Yes | Verified, PartiallyVerified, or Unverified |
+| `SupportedTargetPlatform` | Code | Yes | Supported intended target; eCTDmanager for `MS-08` |
+| `UnsupportedSemanticsOutcome` | Code | Yes | Unknown, NotAssessed, or ManualReview |
+| `SourceId` | Reference | Yes | Vendor or controlled internal source |
+| `SourceSection` | Text | Yes | Exact source/specification section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+| `Notes` | Text | No | Human explanation |
+
+An active runtime source profile shall be `Supported` or explicitly `Conditional` and shall be `Verified`. A source whose version cannot be resolved to exactly one supported profile shall not silently use the closest profile.
+
+#### 9.15.3 `tblSourceCapabilities`
+
+Capabilities shall use separate rows rather than comma-separated lists.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `SourceCapabilityId` | Identifier | Yes | Stable capability identity -> `sourceCapabilities[].sourceCapabilityId` |
+| `SourceProfileId` | Reference | Yes | Parent source profile |
+| `ScenarioId` | Code | Yes | Applicable base scenario |
+| `Phase` | Code | Yes | Pre-Sales, Pre-Migration, or Post-Migration |
+| `ModuleId` | Reference | Yes | `MOD-SOURCE`, `MOD-DB`, `MOD-ARCHIVE`, `MOD-DMS`, or `MOD-MAPPING` |
+| `AssessmentDepth` | Code | Yes | AvailabilityOnly, Summary, Detailed, or Reconciliation |
+| `CapabilityCode` | Code | Yes | Controlled source capability |
+| `SourceEntityType` | Code | Yes | Entity supplied by the capability |
+| `EvidenceRequirementCode` | Reference | Yes | Evidence needed to execute the capability |
+| `MissingEvidenceOutcome` | Code | Yes | FollowUp, NotAssessed, Blocked, or other approved outcome |
+| `EngineCapability` | Code | Yes | Implemented generic PowerShell capability |
+| `Priority` | Integer | Yes | Stable execution order |
 | `IsActive` | Boolean | Yes | Runtime inclusion |
 
-False-missing safeguards shall verify identifier mapping, conversion, root selection, recursion, extension assumptions, case behavior, duplicate candidates, and access before declaring an object missing. Business/display filename shall not automatically be treated as archive identity. Archive verification shall remain distinct from regulatory dossier validation.
+A profile may expose availability and approximate scale during Pre-Sales while exposing record-level inventory and archive correlation only during Pre-Migration/Post-Migration.
 
-For DMS sources migrating into eCTDmanager, the same structure shall support document ID, version/rendition ID, metadata fields, relationships, ownership/source reference, export completeness, and unsupported semantics returning Unknown or Not Assessed. These mapping rows shall not be interpreted as DMS-to-DMS migration support.
+#### 9.15.4 `tblSourceFieldMappings`
+
+One row maps one logical source value into the canonical eMAS evidence model.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `MappingRuleId` | Identifier | Yes | Stable mapping key -> `sourceFieldMappings[].mappingRuleId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
+| `SourceProfileId` | Reference | Yes | Qualified source profile |
+| `SourceCapabilityId` | Reference | Yes | Capability producing the value |
+| `ScenarioId` | Code | Yes | `ALL` or scenario override |
+| `Phase` | Code | Yes | Phase applicability |
+| `MappingPurpose` | Code | Yes | Availability, Inventory, Identification, MetricInput, Baseline, or Reconciliation |
+| `SourceEntityType` | Code | Yes | Logical source entity |
+| `SourceLogicalFieldCode` | Code | Yes | Logical field identifier, not SQL/API expression |
+| `SourceFieldCode` | Reference | Yes | Canonical source-side field from `07_Fields_Evidence` |
+| `TargetEntityType` | Code | No | Expected target entity |
+| `TargetFieldCode` | Reference | No | Canonical target-side field |
+| `SourceDataType` | Code | Yes | Expected logical source type |
+| `CanonicalDataType` | Code | Yes | Resulting canonical type |
+| `Cardinality` | Code | Yes | One, ZeroOrOne, OneOrMore, or Many |
+| `NormalizationPolicyCode` | Code | Yes | Named implemented normalization policy |
+| `TransformationPolicyCode` | Code | Yes | Named implemented transformation policy |
+| `NullHandling` | Code | Yes | PreserveNull, NotAssessed, Error, or approved alternative |
+| `KeyRole` | Code | Yes | BusinessKey, TechnicalKey, ArchiveKey, ComparisonKey, or None |
+| `ComparisonKeyCode` | Code | No | Baseline/reconciliation key |
+| `BaselineRole` | Code | Yes | None, BaselineIdentity, or BaselineAttribute |
+| `ReconciliationRole` | Code | Yes | None, Expected, Observed, or Compare |
+| `SourceId` | Reference | Yes | Mapping source |
+| `SourceSection` | Text | Yes | Exact mapping source location |
+| `BusinessExplanation` | Text | Yes | Plain-language meaning |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+The logical field code shall describe what the adapter returns. It shall not expose proprietary table/column names unless those names are intentionally approved for authoring; executable extraction remains in the implementation specification.
+
+#### 9.15.5 `tblSourceRelationshipMappings`
+
+Fields and relationships shall remain separate.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `RelationshipMappingId` | Identifier | Yes | Stable key -> `sourceRelationshipMappings[].relationshipMappingId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
+| `SourceProfileId` | Reference | Yes | Applicable profile |
+| `ScenarioId` / `Phase` | Code | Yes | Applicability |
+| `ParentEntityType` | Code | Yes | Application, dossier, document, version, etc. |
+| `ChildEntityType` | Code | Yes | Sequence, rendition, archive object, etc. |
+| `RelationshipType` | Code | Yes | Contains, BelongsTo, HasVersion, HasRendition, StoredAs, or controlled equivalent |
+| `ParentKeyFieldCode` | Reference | Yes | Canonical parent key |
+| `ChildKeyFieldCode` | Reference | Yes | Canonical child key |
+| `Cardinality` | Code | Yes | OneToOne, OneToMany, ManyToOne, or ManyToMany |
+| `RelationshipRequired` | Boolean | Yes | Whether absence affects completeness |
+| `MissingParentOutcome` | Code | Yes | Controlled result |
+| `MissingChildOutcome` | Code | Yes | Controlled result |
+| `AmbiguousOutcome` | Code | Yes | Conflict or ManualReview where several candidates exist |
+| `ComparisonKeyCode` | Code | No | Baseline/reconciliation identity |
+| `BaselineRole` / `ReconciliationRole` | Code | Yes | Downstream role |
+| `EngineCapability` | Code | Yes | Relationship-construction capability |
+| `SourceId` / `SourceSection` | Reference / Text | Yes | Source provenance |
+| `BusinessExplanation` | Text | Yes | Understandable relationship meaning |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Required relationship coverage includes application-to-dossier, dossier-to-sequence/submission-unit, document-to-version, version-to-rendition, source record-to-archive object, and source object-to-migrated target object where supported.
+
+#### 9.15.6 `tblArchiveIdentityRules`
+
+The supported identity chain is:
+
+~~~mermaid
+flowchart TD
+    A["Source record"] --> B["Raw archive identifier"]
+    B --> C["Qualified normalization"]
+    C --> D["Expected object key/path"]
+    D --> E["Safeguarded physical lookup"]
+    E --> F["Lookup result + provenance"]
+~~~
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ArchiveIdentityRuleId` | Identifier | Yes | Primary key -> `archiveIdentityRules[].archiveIdentityRuleId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
+| `SourceProfileId` | Reference | Yes | Product/version-qualified mapping |
+| `ScenarioId` / `Phase` | Code | Yes | Applicability |
+| `SourceEntityType` | Code | Yes | Entity holding the archive reference |
+| `SourceRecordKeyFieldCode` | Reference | Yes | Source record identity |
+| `RawArchiveIdentifierFieldCode` | Reference | Yes | Original stored identifier |
+| `IdentifierFormatCode` | Code | Yes | GUID, BinaryHash, Hex, VendorKey, Path, etc. |
+| `NormalizationPolicyCode` | Code | Yes | Qualified named conversion |
+| `NormalizedIdentifierFieldCode` | Reference | Yes | Normalized value retained separately |
+| `PathDerivationPolicyCode` | Code | Yes | Named expected path/object-key policy |
+| `LookupRootRoleCode` | Code | Yes | Project evidence field/role supplying the root; no project path is stored here |
+| `CandidateNamePolicyCode` | Code | Yes | Controlled candidate-name generation |
+| `ExtensionListCode` | Reference | Yes | Controlled extension/candidate set |
+| `CaseSensitivityPolicyCode` | Code | Yes | Exact, CaseInsensitive, or PlatformDefined |
+| `RecursionPolicyCode` | Code | Yes | ExactLocation, BoundedRecursive, or controlled alternative |
+| `SafeguardPolicyId` | Reference | Yes | False-missing policy |
+| `ExpectedObjectKeyFieldCode` | Reference | Yes | Expected physical identity |
+| `ChecksumFieldCode` | Reference | No | Optional independent integrity evidence |
+| `LookupStatusFieldCode` | Reference | Yes | Found/Missing/Multiple/etc. output |
+| `EngineCapability` | Code | Yes | Generic lookup capability |
+| `SourceId` / `SourceSection` | Reference / Text | Yes | Mapping provenance |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Raw identifier, normalized identifier, candidate name/key, selected root, and matched path(s) shall remain separate evidence.
+
+A SHA-derived or other vendor-specific identifier policy shall be source-system/version qualified, identified by a stable policy code, linked to an implemented capability and implementation specification, verified with approved known-input/known-output fixtures, and blocked from runtime export while unverified.
+
+#### 9.15.7 `tblArchiveLookupSafeguards`
+
+One row represents one ordered false-missing safeguard.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `SafeguardRuleId` | Identifier | Yes | Stable safeguard identity |
+| `SafeguardPolicyId` | Reference | Yes | Groups safeguard rows |
+| `SafeguardSequence` | Integer | Yes | Required evaluation order |
+| `SafeguardType` | Code | Yes | Mapping, identifier, normalization, root, access, recursion, extension, case, candidate, or completeness check |
+| `IsMandatory` | Boolean | Yes | Whether Missing is prohibited without completion |
+| `FailureLookupStatus` | Code | Yes | Invalid, Inaccessible, Multiple, Unsupported, or NotAssessed |
+| `AllowsMissingConclusion` | Boolean | Yes | True only for the final verified complete-search condition |
+| `ResultFieldCode` | Reference | Yes | Safeguard result evidence |
+| `EngineCapability` | Code | Yes | Implemented check |
+| `BusinessExplanation` | Text | Yes | Why this prevents false missing |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+`Missing` is permitted only after the correct mapping/version is verified, raw identifier is valid, normalization succeeds, the correct root is accessible, configured recursion completes, required extension/case/candidate alternatives are evaluated, no candidate matches, and no permission or inventory-completeness failure exists. Otherwise the result shall be Invalid, Inaccessible, Multiple, Unsupported, or NotAssessed as appropriate.
+
+Database presence alone is not physical-object proof. A physical file alone is not business-linkage proof. `IdentityMismatch` remains distinct from `Missing`.
+
+#### 9.15.8 Scenario and phase behavior
+
+| Scenario | Pre-Sales | Pre-Migration | Post-Migration |
+|---|---|---|---|
+| `MS-01` SQL Server to SQL Server | DB/archive availability and approximate count/bytes | Detailed SQL record, relationship, archive and mapping assessment | DB/object/metadata reconciliation |
+| `MS-02` Access to SQL Server | Availability, size and legacy-risk indicators | Detailed Access extraction and archive correlation | Access baseline versus SQL target |
+| `MS-03` Oracle to SQL Server | Availability, size and conversion indicators | Detailed Oracle mapping and archive correlation | Oracle baseline versus SQL target |
+| `MS-04` Regulatory export | Normally NotApplicable | Export assessment through sheets `08`–`13` | Export/import comparison where configured |
+| `MS-05` Hybrid | Summary by included mechanism | Only mappings activated by `IncludedSourceMechanisms` | Reconcile each included population |
+| `MS-06` Archive/storage only | Archive availability and approximate size | Physical inventory, object identity and explicit identity limitations | Physical-object comparison where a baseline exists |
+| `MS-07` Pending/incomplete | Follow-up only | Blocked until a supported route exists | No formal reconciliation |
+| `MS-08` Third-party/DMS to eCTDmanager | Source availability, exportability and scale | Documents, versions, renditions, metadata and relationships | Source baseline versus eCTDmanager target |
+
+Pre-Sales DB/archive evidence shall normally be availability and approximate scale only. Missing direct-copy evidence shall be NotAssessed, not zero. Detailed record-to-object verification is a Pre-Migration/Post-Migration capability.
+
+For `MS-06`, physical objects shall not be assigned an application, dossier, document or business relationship without authoritative DB, manifest, DMS or other evidence.
+
+For `MS-08`, field/relationship mappings shall support source document ID, version ID, rendition ID/type, filename/media type, status, metadata and controlled values, application/dossier/sequence relationships, ownership/source reference, export presence/completeness, canonical mapping, and eCTDmanager comparison keys. Unsupported semantics shall remain Unknown, NotAssessed, or ManualReview.
+
+DMS-to-DMS remains outside scope. A DMS target shall derive `MS-07 / NeedsReview` with `DMS_TO_DMS_OUT_OF_SCOPE` and require consultant review; `MS-08` Runtime JSON generation is prohibited.
+
+#### 9.15.9 Connections
+
+| Sheet/component | Connection |
+|---|---|
+| `01`–`05` | Resolve scenario, qualifiers, modules, phase/depth and source-mechanism activation |
+| `06_Requirement_Catalogue` | Supplies atomic requirements |
+| `07_Fields_Evidence` | Defines every source, target, key, lookup and result field |
+| `09_Dossier_Sequence_ID` | Consumes authoritative source identity evidence where available |
+| `11_Missing_Refs_Integrity` | Consumes checksum/integrity evidence without duplicating it |
+| `13_Size_Volume_Metrics` | Calculates DB/archive/DMS counts and bytes from eligible populations |
+| `15`–`17` | Interpret mappings/results for RAG, confidence and effort |
+| `20` / `21` | Use baseline identities, attributes and reconciliation keys |
+| `22_Value_Lists` | Controls all machine codes |
+| `23_Source_References` | Stores vendor/internal specification provenance |
+| `24_Final_Config_Master` / `25_JSON_Field_Map` | Expose resolved inclusion and typed JSON projection |
+| PowerShell adapters | Execute approved implementation specifications and return canonical evidence |
+
+#### 9.15.10 Controlled values required in `22_Value_Lists`
+
+At minimum:
+
+- `SOURCE_SYSTEM_FAMILY`: `eCTDmanager`, `DMS`, `ThirdPartySystem`, `ArchiveStorage`, `eSUBmanager`, `RegulatoryExport`, `Unknown`;
+- `SOURCE_KIND`: `ProductDatabase`, `PhysicalArchive`, `DmsRepository`, `ThirdPartySystem`, `MigrationManifest`, `TargetEvidence`;
+- `DATABASE_PLATFORM`: `SQLServer`, `Access`, `Oracle`, `NotApplicable`, `Unknown`;
+- `SOURCE_SUPPORT_STATUS`: `Supported`, `Conditional`, `Planned`, `Unsupported`, `ReferenceOnly`;
+- `MAPPING_VERIFICATION_STATUS`: `Verified`, `PartiallyVerified`, `Unverified`;
+- `SOURCE_CAPABILITY`: `ReadAvailability`, `ReadApproximateScale`, `InventoryEntities`, `ReadMetadata`, `ReadRelationships`, `NormalizeIdentifier`, `LookupArchiveObject`, `ReadRenditions`, `BuildBaseline`, `ReadTargetEvidence`;
+- `SOURCE_ENTITY_TYPE`: `Application`, `Dossier`, `Sequence`, `SubmissionUnit`, `Document`, `DocumentVersion`, `Rendition`, `DatabaseRecord`, `ArchiveObject`, `DmsObject`, `TargetObject`;
+- `MAPPING_PURPOSE`: `Availability`, `Inventory`, `Identification`, `MetricInput`, `Baseline`, `Reconciliation`;
+- `KEY_ROLE`: `BusinessKey`, `TechnicalKey`, `ArchiveKey`, `ComparisonKey`, `None`;
+- `RELATIONSHIP_TYPE`: `Contains`, `BelongsTo`, `HasVersion`, `HasRendition`, `StoredAs`, `MigratedAs`;
+- `CARDINALITY`: `One`, `ZeroOrOne`, `OneOrMore`, `Many`, `OneToOne`, `OneToMany`, `ManyToOne`, `ManyToMany`;
+- `ARCHIVE_LOOKUP_STATUS`: `Found`, `Missing`, `Multiple`, `Invalid`, `Inaccessible`, `IdentityMismatch`, `Unsupported`, `NotAssessed`;
+- `ARCHIVE_SAFEGUARD_TYPE`: `Mapping`, `Identifier`, `Normalization`, `Root`, `Access`, `Recursion`, `Extension`, `Case`, `Candidate`, `Completeness`;
+- `CASE_SENSITIVITY_POLICY`: `Exact`, `CaseInsensitive`, `PlatformDefined`;
+- `RECURSION_POLICY`: `ExactLocation`, `BoundedRecursive`, `NotApplicable`; and
+- controlled `IDENTIFIER_FORMAT`, `NORMALIZATION_POLICY`, `TRANSFORMATION_POLICY`, `NULL_HANDLING`, `BASELINE_ROLE` and `RECONCILIATION_ROLE` lists.
+
+Every runtime-eligible normalization/transformation policy shall identify its engine capability, supported source profile/version and verification evidence. No generic fallback may guess a vendor-specific conversion.
+
+#### 9.15.11 Configuration and result JSON
+
+~~~json
+{
+  "sourceProfiles": [{
+    "sourceProfileId": "SRC-ECTDMGR-SQL-001",
+    "systemFamily": "eCTDmanager",
+    "databasePlatform": "SQLServer",
+    "adapterKey": "ECTDManagerSql",
+    "implementationSpecificationId": "IMPL-ECTDMGR-SQL-001",
+    "supportStatus": "Supported",
+    "verificationStatus": "Verified"
+  }],
+  "archiveIdentityRules": [{
+    "archiveIdentityRuleId": "ARC-ID-001",
+    "sourceProfileId": "SRC-ECTDMGR-SQL-001",
+    "sourceRecordKeyFieldCode": "DB.DOCUMENT_RECORD_ID",
+    "rawArchiveIdentifierFieldCode": "DB.ARCHIVE_IDENTIFIER_RAW",
+    "identifierFormatCode": "VendorKey",
+    "normalizationPolicyCode": "ARCHIVE-ID-POLICY-001",
+    "normalizedIdentifierFieldCode": "ARCHIVE.IDENTIFIER_NORMALIZED",
+    "pathDerivationPolicyCode": "ARCHIVE-PATH-POLICY-001",
+    "lookupRootRoleCode": "PROJECT.ARCHIVE_ROOT",
+    "safeguardPolicyId": "ARC-SAFE-001",
+    "lookupStatusFieldCode": "ARCHIVE.LOOKUP_STATUS",
+    "engineCapability": "LookupPhysicalObject"
+  }]
+}
+~~~
+
+~~~json
+{
+  "sourceFieldMappings": [{
+    "mappingRuleId": "MAP-DMS-RENDITION-001",
+    "sourceProfileId": "SRC-DMS-001",
+    "scenarioIds": ["MS-08"],
+    "phase": ["PreMigration", "PostMigration"],
+    "mappingPurpose": "Baseline",
+    "sourceEntityType": "Rendition",
+    "sourceLogicalFieldCode": "RENDITION_ID",
+    "sourceFieldCode": "DMS.RENDITION_ID",
+    "keyRole": "ComparisonKey",
+    "normalizationPolicyCode": "Preserve"
+  }],
+  "policies": {
+    "unsupportedSemanticsOutcome": "NotAssessed",
+    "supportedTargetPlatform": "eCTDmanager",
+    "dmsToDmsSupported": false
+  }
+}
+~~~
+
+Execution evidence shall preserve the complete identity and safeguard chain:
+
+~~~json
+{
+  "archiveLookups": [{
+    "archiveIdentityRuleId": "ARC-ID-001",
+    "sourceRecordId": "DOC-184",
+    "rawIdentifier": "source-value",
+    "normalizedIdentifier": "normalized-value",
+    "candidateObjectKey": "expected-object-name",
+    "lookupRoot": "project-supplied-root",
+    "lookupStatus": "Found",
+    "matchedPaths": ["archive/path/expected-object-name"],
+    "safeguards": {
+      "mappingVerified": true,
+      "normalizationSucceeded": true,
+      "rootAccessible": true,
+      "searchComplete": true
+    },
+    "evidenceState": "Present",
+    "evaluationStatus": "Assessed"
+  }]
+}
+~~~
+
+Configuration arrays shall be ordered deterministically by dependency, then Priority where present, then stable identifier. Only profiles, capabilities, mappings, policies, fields and controlled values transitively required by the selected scenario shall be emitted.
+
+#### 9.15.12 Blocking validation
+
+Generation shall be blocked when:
+
+- a required named table or column is missing;
+- an active profile lacks a unique identifier, adapter, supported target, source, version boundary, implementation specification or verified mapping status;
+- profile version ranges overlap ambiguously or a required version resolves to no supported profile;
+- an active capability/field/relationship/archive mapping references an inactive, missing or unsupported profile, field, module, scenario, policy, capability, source or controlled value;
+- source/canonical data types, cardinalities, key roles or comparison keys are incompatible;
+- executable SQL, credentials, connection strings, customer endpoints or customer paths appear in reusable configuration or scenario JSON;
+- a normalization/path/SHA-derived policy is missing, unimplemented, unverified, not source/version qualified, or lacks approved fixtures;
+- `Missing` can be produced before every mandatory safeguard completes;
+- invalid normalization, inaccessible root, incomplete recursion/search, multiple candidates or permission failure is mapped to `Missing`;
+- an archive-only physical object is treated as proof of business linkage without authoritative evidence;
+- unsupported source/DMS semantics are forced into a known value;
+- an `MS-08` profile or mapping supports a target other than eCTDmanager;
+- DMS-to-DMS runtime content is active;
+- a Pre-Sales direct-copy configuration requires record/file detail rather than availability/approximate aggregate scale;
+- a field/relationship/archive dependency is cyclic or nondeterministically ordered; or
+- unchanged input and scenario selection do not produce identical canonical JSON.
+
 
 ### 9.16 `15_RAG_Severity`
 
@@ -2968,6 +3296,16 @@ JSON generation shall be blocked when any of the following is true:
 - a metric condition/dimension is duplicated, unresolved, type-incompatible, or combines separate regulatory dimensions;
 - a metric uses noncanonical size units, Percent outside 0–100, formatted numeric text, scientific notation, unsafe precision, or silently converts incomplete evidence into complete zero;
 
+- a required `14_Source_DB_Archive_DMS` table/column is missing, or an active source profile is ambiguous, unsupported, unverified, version-unqualified, or lacks a controlled implementation specification;
+- a source capability, field mapping, relationship mapping, archive identity rule or safeguard has an unresolved/incompatible profile, field, policy, key, cardinality, target, capability or source;
+- reusable source configuration contains executable SQL/API/XPath/script content, credentials, connection strings, customer endpoints or customer paths;
+- a vendor/SHA identifier policy lacks source/version qualification, implementation, approved fixtures or verification;
+- an archive lookup can return Missing before all mandatory mapping, identifier, normalization, root, access, recursion, extension/case/candidate and completeness safeguards pass;
+- invalid normalization, inaccessible root, incomplete search, multiple candidates or permission failure is converted to Missing;
+- physical archive presence is treated as proof of business linkage without authoritative relationship evidence;
+- Pre-Sales direct-copy configuration requires detailed records/files instead of availability and approximate aggregate scale;
+- unsupported DMS semantics are guessed, `MS-08` permits a non-eCTDmanager target, or DMS-to-DMS runtime content is active;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -3122,6 +3460,32 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-132` | Configure MS-08 source-DMS and DMS-to-DMS metrics | Supported source-DMS metrics export; DMS-to-DMS remains `MS-07 / NeedsReview` |
 | `MVP-AT-133` | Generate metric configuration/results twice | Deterministic typed results; canonical Bytes and non-scientific integers |
 
+| `MVP-AT-134` | Validate `14_Source_DB_Archive_DMS` structure | All six named tables and approved columns exist with unique stable keys |
+| `MVP-AT-135` | Resolve supported SQL Server, Access and Oracle source versions | Each version selects exactly one verified source profile and adapter |
+| `MVP-AT-136` | Provide an overlapping or unsupported source version | Generation blocks or returns the configured unsupported/follow-up outcome; no closest profile is guessed |
+| `MVP-AT-137` | Inspect workbook and scenario JSON for SQL, credentials, connection strings, endpoints or customer paths | None are present in reusable configuration |
+| `MVP-AT-138` | Run Pre-Sales for MS-01/MS-02/MS-03 with direct-copy evidence | Only availability and approximate aggregate count/bytes capabilities activate by default |
+| `MVP-AT-139` | Process a source archive identifier | Raw identifier, normalized identifier, candidate key and policy identity remain separate |
+| `MVP-AT-140` | Complete all safeguards with exactly one physical match | Lookup result is Found and retains the matched path and provenance |
+| `MVP-AT-141` | Complete all mandatory safeguards with no candidate match | Missing is allowed only after complete-search evidence is retained |
+| `MVP-AT-142` | Make the configured archive root inaccessible | Result is Inaccessible/NotAssessed, never Missing |
+| `MVP-AT-143` | Provide an invalid or unnormalizable identifier | Result is Invalid and physical absence is not claimed |
+| `MVP-AT-144` | Produce several candidate physical matches | Result is Multiple/ManualReview; no arbitrary path wins |
+| `MVP-AT-145` | Find an object whose independent identity/checksum conflicts | IdentityMismatch is retained separately from Found and Missing |
+| `MVP-AT-146` | Activate a vendor/SHA-derived policy without approved fixtures | Generation blocks and identifies the missing verification evidence |
+| `MVP-AT-147` | Exercise configured case, extension and bounded-recursion alternatives | Every mandatory safeguard result is retained before Missing is permitted |
+| `MVP-AT-148` | Assess MS-06 archive-only evidence | Physical inventory is produced, but application/dossier/document linkage remains Unknown without authoritative evidence |
+| `MVP-AT-149` | Activate MS-05 with DB/archive and DMS included mechanisms | Only capabilities/mappings for the selected mechanisms are emitted and evaluated |
+| `MVP-AT-150` | Map a DMS document, version and rendition | Canonical identities and HasVersion/HasRendition relationships remain distinct |
+| `MVP-AT-151` | Map DMS metadata and application/dossier/sequence relationships | Values and relationships retain source identifiers and provenance |
+| `MVP-AT-152` | Encounter unsupported DMS metadata or relationship semantics | Outcome is Unknown/NotAssessed/ManualReview; no mapping is guessed |
+| `MVP-AT-153` | Set source=DMS and target=eCTDmanager | MS-08 mappings and supported adapter capabilities may be emitted |
+| `MVP-AT-154` | Set source=DMS and target=DMS | Derivation remains MS-07/NeedsReview with DMS_TO_DMS_OUT_OF_SCOPE; MS-08 JSON is blocked |
+| `MVP-AT-155` | Build a Pre-Migration baseline from DB/archive or DMS mappings | Baseline identities, attributes, relationships and comparison keys are traceable to source evidence |
+| `MVP-AT-156` | Reconcile source baseline with target evidence | Expected, observed, matched/missing/extra/mismatch evidence uses the approved comparison keys |
+| `MVP-AT-157` | Generate the same source-mapping configuration twice | Profiles, capabilities, mappings, safeguards and dependencies have identical order and canonical bytes |
+| `MVP-AT-158` | Complete source/DB/archive/DMS assessment | No source or target DB, archive object, DMS object, relationship, metadata or file is modified |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -3138,14 +3502,15 @@ The MVP is complete when:
 10. every reference/integrity rule preserves raw/resolved evidence, distinguishes missing/unavailable/invalid/multiple/external, requires complete inventories, and projects deterministically;
 11. every technical-observation rule is atomic, typed, source-backed, capability-bound and deterministic; separates failure, unsupported and unavailable; and makes no unsupported validity claim;
 12. every metric defines population, calculation, fields/dependencies, conditions/dimensions, canonical unit, rounding, missing/empty/zero-denominator behavior, retention, completeness, acyclic order and typed JSON;
-13. every scenario has complete phase/module applicability;
-14. `24_Final_Config_Master` explains every inclusion/exclusion;
-15. scenario JSON generates for all Section 5 scenarios;
-16. every JSON object traces to workbook records;
-17. invalid/incomplete content blocks with actionable messages;
-18. unchanged input/selection produces identical canonical JSON;
-19. PowerShell consumes JSON without reading Excel;
-20. deferred SharePoint, release governance and GxP controls are not represented as complete.
+13. every runtime-supported source profile is product/version qualified and verified; its capabilities, fields, relationships and archive policies are normalized and traceable; false-missing safeguards are mandatory; DB/archive/DMS evidence boundaries are phase appropriate; unsupported semantics remain Unknown/NotAssessed; and DMS-to-DMS remains blocked;
+14. every scenario has complete phase/module applicability;
+15. `24_Final_Config_Master` explains every inclusion/exclusion;
+16. scenario JSON generates for all Section 5 scenarios;
+17. every JSON object traces to workbook records;
+18. invalid/incomplete content blocks with actionable messages;
+19. unchanged input/selection produces identical canonical JSON;
+20. PowerShell consumes JSON without reading Excel;
+21. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -3194,3 +3559,4 @@ Each review step shall answer four questions:
 | 4.8 MVP | 15 September 2026 | Approved `10_Folder_File_Structure` with normalized structure-rule and container-discovery-policy tables; separated physical roots, containers, wrappers, dossier roots and sequence/submission-unit roots; added profile/version-specific relative-path expectations, conditional module behavior, wrapper/mixed-root/unexpected-item handling, ZIP/nested-ZIP resource and traversal safeguards, read-only temporary extraction, DMS logical-hierarchy boundaries, controlled values, deterministic JSON, validation and acceptance tests |
 | 4.9 MVP | 15 September 2026 | Approved `11_Missing_Refs_Integrity` with normalized integrity-rule and reference-resolution-policy tables; removed duplicated XML extraction fields; preserved raw/normalized/resolved evidence; separated missing, inaccessible, invalid, multiple, external, zero-byte and unreadable outcomes; required complete inventories for missing/orphan conclusions; distinguished duplicate types; added bounded reference resolution, checksum and lifecycle-target semantics, scenario/phase boundaries, controlled values, deterministic JSON, validation and acceptance tests |
 | 4.10 MVP | 15 September 2026 | Approved `12_Technical_Observations` and `13_Size_Volume_Metrics`; normalized one technical-rule table and three metric tables; separated invalid, unsupported, unavailable and NotAssessed outcomes; defined XML/PDF/file/path/platform coverage without unsupported validity claims; added canonical Count/Bytes/Percent calculations, populations, conditions, dimensions, dependencies, rounding, null/empty/zero-denominator and retention semantics; required metrics before dependent technical rules; added controlled values, deterministic configuration/result JSON, validation and acceptance tests; retained aggregate-only direct-copy evidence and DMS-to-DMS exclusion |
+| 4.11 MVP | 15 September 2026 | Approved `14_Source_DB_Archive_DMS` with six normalized source-profile, capability, field, relationship, archive-identity and lookup-safeguard tables; separated logical workbook mappings from proprietary extraction implementations; added product/version-qualified verified adapters, phase/scenario evidence depth, explicit source-to-canonical and source-to-target keys, database-record-to-archive-object identity chains, SHA/vendor-policy fixture requirements and mandatory false-missing safeguards; defined source-DMS-to-eCTDmanager document/version/rendition/metadata/relationship mappings while retaining the DMS-to-DMS exclusion; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
