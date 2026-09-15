@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.14 MVP
+**Version:** 4.15 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-026
+**Decision references:** DEC-2026-013 through DEC-2026-027
 
 ## 1. Purpose and MVP decision
 
@@ -3494,25 +3494,295 @@ Generation shall be blocked when a required table/column is missing; an active i
 
 ### 9.21 `20_PreMigration_Readiness`
 
+#### 9.21.1 Purpose and decision boundary
+
+This sheet defines how detailed Pre-Migration evidence is converted into one controlled readiness decision and what attributable baseline structure must be created for later Post-Migration reconciliation. It defines configuration only; actual customer values, scope selections, exclusions, findings, accepted exceptions and baseline records are execution/project evidence.
+
+The only readiness outcomes are `Ready`, `ReadyWithAcceptedExceptions` and `Blocked`. Readiness decision status remains separate as `Determined`, `NotDetermined` or `NotApplicable`.
+
+`Ready` means that the configured technical migration-readiness criteria are satisfied for the explicitly assessed scope and that the required comparison baseline is valid. It does not mean regulatory validity, formal customer approval, migration acceptance or guaranteed migration success.
+
+The sheet shall contain seven Excel Tables:
+
+1. `tblReadinessModels`;
+2. `tblReadinessEvidenceRequirements`;
+3. `tblReadinessDecisionRules`;
+4. `tblReadinessDecisionConditions`;
+5. `tblBaselineEntityRequirements`;
+6. `tblBaselineFieldRequirements`; and
+7. `tblBaselineRelationshipRequirements`.
+
+#### 9.21.2 `tblReadinessModels`
+
+Exactly one active model shall exist for every scenario that supports `MOD-READINESS` in Pre-Migration. `MS-07` and DMS-to-DMS shall not have an active readiness model.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `ReadinessRuleId` | Identifier | Yes | Stable decision rule -> `phaseRules.preMigration[]` |
-| `ScenarioId` | Code | Yes | Scenario scope |
-| `ModuleId` | Reference | Yes | Assessment area contributing to readiness |
-| `ConditionGroup` | Text | Yes | AND/OR grouping |
-| `FieldCode` | Reference | Yes | Readiness evidence or derived metric |
-| `Operator` | Code | Yes | Controlled comparison |
-| `Value1` | Scalar | No | Expected value |
-| `Outcome` | Code | Yes | Ready, ReadyWithAcceptedExceptions, Blocked |
-| `BlockerOverride` | Boolean | Yes | Forces Blocked when unresolved |
-| `RequiredBaselineEntity` | Code | No | Dossier, sequence, document, archive object, DB record, DMS record |
-| `RequiredComparisonKey` | Code | No | Key to preserve for Post-Migration |
-| `MissingEvidenceOutcome` | Code | Yes | NotAssessed, FollowUp, or Blocked |
-| `FindingCode` | Reference | Yes | Decision evidence |
-| `RecommendationCode` | Reference | Yes | Remediation action |
-| `Priority` | Integer | Yes | Ordered first-match with blocker override |
+| `ReadinessModelId` | Identifier | Yes | Stable model -> `phaseRules.preMigration.readinessModels[].readinessModelId` |
+| `ScenarioId` | Reference | Yes | Supported base scenario -> `scenarioId` |
+| `ModelName` | Text | Yes | Human-readable name -> `name` |
+| `BusinessMeaning` | Text | Yes | Explains what readiness means for the scenario -> `businessMeaning` |
+| `DecisionStrategy` | Code | Yes | Fixed conservative aggregation -> `decisionStrategy` |
+| `MinimumMandatoryCoveragePercent` | Decimal | Yes | Required applicable mandatory coverage -> `minimumMandatoryCoveragePercent` |
+| `BaselineRequired` | Boolean | Yes | Requires a valid comparison baseline -> `baselineRequired` |
+| `AcceptedExceptionsPermitted` | Boolean | Yes | Whether approved policies may affect readiness -> `acceptedExceptionsPermitted` |
+| `NoMatchBehavior` | Code | Yes | Shall never default to Ready -> `noMatchBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Model basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Human explanation -> `rationale` |
 
-The baseline shall record the expected migration population, comparison keys, exclusions, accepted exceptions, unavailable evidence, and limitations at the entity levels applicable to the scenario.
+The MVP decision strategy is `BlockerFirstCompleteCoverage`. Minimum mandatory coverage shall be 100 percent unless a separately approved scenario model provides a documented reason for a different threshold. Coverage below the active threshold cannot produce Ready.
+
+#### 9.21.3 `tblReadinessEvidenceRequirements`
+
+One row describes one understandable assessment/evidence requirement that must be satisfied, activated conditionally or retained as supporting context before readiness can be determined.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReadinessEvidenceRequirementId` | Identifier | Yes | Stable requirement -> `evidenceRequirements[].id` |
+| `ReadinessModelId` | Reference | Yes | Parent model -> `readinessModelId` |
+| `RequirementId` | Reference | Yes | Atomic catalogue requirement -> `requirementId` |
+| `ModuleId` | Reference | Yes | Responsible assessment module -> `moduleId` |
+| `RequirementTitle` | Text | Yes | Human-readable filterable requirement -> `title` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ActivationQualifierCode` | Reference | Conditional | Qualifier controlling Conditional applicability -> `activation.qualifierCode` |
+| `ActivationOperator` | Code | Conditional | Controlled activation operator -> `activation.operator` |
+| `ActivationValue` | Typed scalar | Conditional | Expected qualifier value -> `activation.value` |
+| `RequiredEvaluationStatus` | Code | Yes | Required assessment state -> `requiredEvaluationStatus` |
+| `RequiredEvidenceState` | Code | Yes | Required evidence availability -> `requiredEvidenceState` |
+| `MinimumCoveragePercent` | Decimal | Yes | Required scoped coverage -> `minimumCoveragePercent` |
+| `MissingEvidenceBehavior` | Code | Yes | Block, limitation or failed execution behavior -> `missingEvidenceBehavior` |
+| `ConflictBehavior` | Code | Yes | Controlled handling of unresolved conflicts -> `conflictBehavior` |
+| `ExceptionHandling` | Code | Yes | NotPermitted or PolicyControlled -> `exceptionHandling` |
+| `FindingCode` | Reference | Yes | Finding emitted when unsatisfied -> `findingCode` |
+| `Priority` | Integer | Yes | Deterministic evaluation order -> `priority` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Requirement basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why it is required -> `rationale` |
+
+A Conditional requirement becomes mandatory when its activation condition matches. For example, `DmsDependency=Yes` activates the applicable DMS evidence requirements. Missing optional/supporting evidence may add a limitation and reduce confidence, but missing applicable mandatory evidence shall block readiness.
+
+#### 9.21.4 `tblReadinessDecisionRules`
+
+A rule contributes to the final decision; no single positive rule may declare the overall migration Ready.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReadinessRuleId` | Identifier | Yes | Stable decision rule -> `decisionRules[].readinessRuleId` |
+| `ReadinessModelId` | Reference | Yes | Parent model -> `readinessModelId` |
+| `RuleTitle` | Text | Yes | Human-readable rule -> `title` |
+| `DecisionEffect` | Code | Yes | SupportsReady, Blocks, RequiresAcceptedException or AddsLimitation -> `decisionEffect` |
+| `ConditionGroupOperator` | Code | Yes | AND/OR across groups -> `conditionGroupOperator` |
+| `ExceptionHandling` | Code | Yes | Whether an allowed exception may satisfy the rule -> `exceptionHandling` |
+| `FindingCode` | Reference | Yes | Finding emitted when the rule applies -> `findingCode` |
+| `Priority` | Integer | Yes | Deterministic order -> `priority` |
+| `StopProcessing` | Boolean | Yes | Permitted only for terminal execution/blocker conditions -> `stopProcessing` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Rule basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the effect is correct -> `rationale` |
+
+Recommendations shall normally resolve through `tblFindingRecommendationLinks`. Any retained rule-level shortcut must resolve to the identical authoritative link and shall not create duplicate action output.
+
+#### 9.21.5 `tblReadinessDecisionConditions`
+
+One row represents one atomic condition.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReadinessConditionId` | Identifier | Yes | Stable condition -> nested `conditions[].conditionId` |
+| `ReadinessRuleId` | Reference | Yes | Parent rule -> derived nesting/reference |
+| `ConditionGroupId` | Identifier | Yes | AND-group identity -> `conditionGroupId` |
+| `GroupSequence` | Integer | Yes | Deterministic group order -> `groupSequence` |
+| `ConditionSequence` | Integer | Yes | Deterministic condition order -> `sequence` |
+| `ConditionSubjectType` | Code | Yes | Module result, finding, evidence state, metric, RAG, severity, confidence, exception, baseline or qualifier -> `subjectType` |
+| `ReferenceCode` | Reference | Yes | Referenced semantic object -> `referenceCode` |
+| `Operator` | Code | Yes | Controlled comparison -> `operator` |
+| `ValueType` | Code | Yes | Typed operand contract -> `valueType` |
+| `Value1` | Typed scalar | Conditional | First operand -> `value1` |
+| `Value2` | Typed scalar | Conditional | Range operand -> `value2` |
+| `Negate` | Boolean | Yes | Controlled inversion -> `negate` |
+| `MissingInputBehavior` | Code | Yes | Block, NoMatch, AddLimitation or FailExecution -> `missingInputBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+
+Conditions consume results created by their owning modules/sheets. They shall not recalculate metrics, rewrite findings, change RAG/confidence, or contain executable expressions.
+
+#### 9.21.6 Baseline configuration boundary
+
+The workbook defines which baseline entities, fields and relationships must be produced. The actual `BaselineId`, customer population, values, exclusions, accepted exceptions, limitations and integrity metadata are attributable Pre-Migration execution evidence. Once used for a readiness decision, the generated baseline shall not be silently changed; formal production approval/release workflow remains deferred beyond MVP.
+
+##### `tblBaselineEntityRequirements`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `BaselineEntityRequirementId` | Identifier | Yes | Stable entity requirement -> `baseline.entities[].id` |
+| `ReadinessModelId` | Reference | Yes | Parent model -> `readinessModelId` |
+| `ScenarioId` | Reference | Yes | Scenario applicability -> `scenarioId` |
+| `EntityType` | Code | Yes | Population entity -> `entityType` |
+| `ModuleId` | Reference | Yes | Producer module -> `moduleId` |
+| `PopulationDefinition` | Text | Yes | Explains exactly what is included -> `populationDefinition` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ActivationQualifierCode` | Reference | Conditional | Optional activation qualifier -> `activation.qualifierCode` |
+| `ParentEntityType` | Code | No | Expected hierarchy -> `parentEntityType` |
+| `ExpectedCountMetricCode` | Reference | Yes | Population-count metric -> `expectedCountMetricCode` |
+| `PostMigrationComparisonRequired` | Boolean | Yes | Sheet 21 reconciliation dependency -> `postMigrationComparisonRequired` |
+| `MissingPopulationBehavior` | Code | Yes | Block, limitation or NotApplicable -> `missingPopulationBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the population is required -> `rationale` |
+
+##### `tblBaselineFieldRequirements`
+
+One row defines one field retained for one baseline entity. Composite comparison keys use multiple ordered rows rather than comma-separated fields.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `BaselineFieldRequirementId` | Identifier | Yes | Stable field requirement -> `baseline.fields[].id` |
+| `BaselineEntityRequirementId` | Reference | Yes | Parent entity -> `entityRequirementId` |
+| `FieldCode` | Reference | Yes | Canonical field from `07_Fields_Evidence` -> `fieldCode` |
+| `BaselineFieldRole` | Code | Yes | Identity, ComparisonKey, Measure, Metadata, RelationshipKey or Provenance -> `role` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ComparisonKeyGroup` | Identifier | Conditional | Composite-key group -> `comparisonKeyGroup` |
+| `ComparisonKeySequence` | Integer | Conditional | Composite-key order -> `comparisonKeySequence` |
+| `KeyStrength` | Code | Conditional | Primary, Alternate or Supporting -> `keyStrength` |
+| `NormalizationRuleId` | Reference | No | Existing controlled normalization -> `normalizationRuleId` |
+| `NullBehavior` | Code | Yes | BlockBaseline, AllowWithLimitation, ExcludeEntity or NotApplicable -> `nullBehavior` |
+| `SensitiveDataHandling` | Code | Yes | Safe report/log handling -> `sensitiveDataHandling` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the field is retained -> `rationale` |
+
+##### `tblBaselineRelationshipRequirements`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `BaselineRelationshipRequirementId` | Identifier | Yes | Stable relationship requirement -> `baseline.relationships[].id` |
+| `ReadinessModelId` | Reference | Yes | Parent model -> `readinessModelId` |
+| `RelationshipRuleId` | Reference | Yes | Relationship defined in source/mapping sheets -> `relationshipRuleId` |
+| `FromEntityRequirementId` | Reference | Yes | Source entity -> `fromEntityRequirementId` |
+| `ToEntityRequirementId` | Reference | Yes | Related entity -> `toEntityRequirementId` |
+| `RelationshipType` | Code | Yes | ParentChild, References, StoredAs, VersionOf, RenditionOf, LifecycleOf, etc. -> `relationshipType` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ExpectedCardinality` | Code | Yes | Expected relationship shape -> `expectedCardinality` |
+| `MissingRelationshipBehavior` | Code | Yes | Block or limitation -> `missingRelationshipBehavior` |
+| `PostMigrationComparisonRequired` | Boolean | Yes | Reconciliation dependency -> `postMigrationComparisonRequired` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the relationship is retained -> `rationale` |
+
+Baseline relationships include, where applicable, DB record -> archive object, application/dossier -> sequence/submission unit, XML leaf -> physical file, DMS document -> version -> rendition and lifecycle source -> lifecycle target.
+
+#### 9.21.7 Deterministic readiness algorithm
+
+The runtime shall:
+
+1. validate execution prerequisites and the resolved supported scenario;
+2. load the single active scenario readiness model;
+3. resolve and evaluate applicable evidence requirements;
+4. evaluate atomic decision conditions and rule effects;
+5. validate any project accepted exceptions against both readiness and finding-exception policies;
+6. create and validate required baseline entities, fields, composite keys and relationships;
+7. apply unresolved blocker precedence;
+8. calculate applicable mandatory coverage; and
+9. determine decision status and, only when determined, the readiness outcome.
+
+Outcome precedence is:
+
+| Situation | DecisionStatus | Outcome |
+|---|---|---|
+| Technical execution cannot complete reliably | NotDetermined | Omitted |
+| `MS-07`, DMS-to-DMS or otherwise unsupported route | NotApplicable | Omitted |
+| Applicable mandatory requirement unsatisfied, required evidence missing, unresolved blocker/conflict, invalid exception or required baseline invalid | Determined | Blocked |
+| Mandatory criteria/baseline satisfied only by relying on valid outcome-changing accepted exceptions | Determined | ReadyWithAcceptedExceptions |
+| Complete applicable mandatory coverage, valid baseline, no unresolved blocker and no relied-upon outcome-changing exception | Determined | Ready |
+
+An acknowledged minor exception that is not required to satisfy readiness remains reported but does not itself force `ReadyWithAcceptedExceptions`. A blocker may be satisfied by exception only when the readiness rule is `PolicyControlled`, the finding exception policy explicitly permits `PermitReadyWithAcceptedExceptions`, and the project exception record is valid.
+
+#### 9.21.8 Scenario baseline focus
+
+| Scenario | Minimum attributable baseline focus |
+|---|---|
+| `MS-01` | SQL records, archive objects, stable identifiers, DB/archive relationships, applications/dossiers and migration population |
+| `MS-02` | Access records, extraction identity, archive correlation, conversion population and legacy limitations |
+| `MS-03` | Oracle records, mapped canonical identity, archive correlation and conversion population |
+| `MS-04` | Applications/dossiers, sequences/submission units, XML leaves, documents/files, relative paths, counts and integrity evidence |
+| `MS-05` | Union of included source mechanisms with provenance, relationship and duplicate-population controls |
+| `MS-06` | Archive/storage objects, physical identity, paths, sizes and explicit business-identity limitations |
+| `MS-07` | No readiness decision; resolve the scenario first |
+| `MS-08` | DMS documents, versions, renditions, metadata, relationships and source-to-target identifiers |
+
+An archive-only `MS-06` scope may have a valid archive baseline. It shall not claim dossier/application completeness when the required identity evidence is unavailable. DMS-to-DMS remains outside scope.
+
+#### 9.21.9 Controlled values in `22_Value_Lists`
+
+`22_Value_Lists` shall include:
+
+- `READINESS_OUTCOME`: `Ready`, `ReadyWithAcceptedExceptions`, `Blocked`;
+- `READINESS_DECISION_STATUS`: `Determined`, `NotDetermined`, `NotApplicable`;
+- `READINESS_REQUIREMENT_LEVEL`: `Mandatory`, `Conditional`, `Supporting`;
+- `READINESS_REQUIREMENT_RESULT`: `Satisfied`, `Unsatisfied`, `AcceptedException`, `NotApplicable`, `NotAssessed`, `Error`;
+- `READINESS_DECISION_EFFECT`: `SupportsReady`, `Blocks`, `RequiresAcceptedException`, `AddsLimitation`;
+- `READINESS_DECISION_STRATEGY`: `BlockerFirstCompleteCoverage`;
+- `READINESS_EXCEPTION_HANDLING`: `NotPermitted`, `PolicyControlled`;
+- `READINESS_MISSING_BEHAVIOR`: `Block`, `AddLimitation`, `NoMatch`, `FailExecution`;
+- `BASELINE_STATUS`: `Created`, `CreatedWithLimitations`, `NotCreated`, `Invalid`;
+- `BASELINE_FIELD_ROLE`: `Identity`, `ComparisonKey`, `Measure`, `Metadata`, `RelationshipKey`, `Provenance`;
+- `COMPARISON_KEY_STRENGTH`: `Primary`, `Alternate`, `Supporting`; and
+- `BASELINE_NULL_BEHAVIOR`: `BlockBaseline`, `AllowWithLimitation`, `ExcludeEntity`, `NotApplicable`.
+
+Existing lists supply scenario qualifiers, module/evaluation/evidence status, operators, types, entity/scope, relationship/cardinality, sensitivity, severity, RAG and confidence values.
+
+#### 9.21.10 Configuration and result JSON
+
+~~~json
+{
+  "phaseRules": {
+    "preMigration": {
+      "readinessModels": [{
+        "readinessModelId": "RDY-MS04-001",
+        "scenarioId": "MS-04",
+        "decisionStrategy": "BlockerFirstCompleteCoverage",
+        "minimumMandatoryCoveragePercent": 100,
+        "baselineRequired": true
+      }],
+      "evidenceRequirements": [],
+      "decisionRules": [{
+        "readinessRuleId": "RDY-MS04-BLOCK-REFS",
+        "decisionEffect": "Blocks",
+        "exceptionHandling": "PolicyControlled",
+        "findingCode": "FND-REF-MISSING-001",
+        "conditions": []
+      }],
+      "baseline": {"entities": [], "fields": [], "relationships": []}
+    }
+  }
+}
+~~~
+
+~~~json
+{
+  "preMigrationReadiness": {
+    "decisionStatus": "Determined",
+    "outcome": "ReadyWithAcceptedExceptions",
+    "scenarioId": "MS-04",
+    "mandatoryCoveragePercent": 100,
+    "baselineStatus": "Created",
+    "blockingFindings": [],
+    "acceptedExceptionReferences": ["EXC-PROJECT-004"],
+    "limitations": ["One excluded historical sequence is covered by an approved exception."],
+    "baselineReference": {
+      "baselineId": "BASE-EXEC-20260915-001",
+      "entityCount": 4821,
+      "comparisonKeyGroups": ["DOSSIER_SEQUENCE_FILE"]
+    }
+  }
+}
+~~~
+
+Project exception and baseline values remain execution evidence outside reusable Runtime configuration. Configuration and result arrays shall use deterministic dependency, priority, sequence and identifier ordering.
+
+#### 9.21.11 Blocking validation
+
+Generation shall be blocked when a required table/column is missing; a supported scenario lacks exactly one active readiness model; `MS-07` or DMS-to-DMS has an active model; a model can default to Ready; a mandatory/conditional requirement lacks complete applicability, coverage, missing/conflict or exception behavior; a condition references an incompatible field/metric/module/finding/type; rules with indistinguishable priority can produce conflicting effects; a supporting rule can independently produce Ready; a blocker can be bypassed without both policies permitting it; Ready is possible without complete required coverage and a valid baseline; a required baseline entity lacks stable identity/count definition; a composite key is empty, duplicated or ambiguously ordered; a mandatory baseline field permits an unsafe null; a required relationship has missing endpoints/mapping/cardinality; actual project baseline/exclusion/exception values appear in reusable configuration; readiness wording implies regulatory validation/guaranteed success; or deterministic ordering/traceability is incomplete.
 
 ### 9.22 `21_PostMigration_Reconciliation`
 
@@ -4259,6 +4529,15 @@ JSON generation shall be blocked when any of the following is true:
 - an eligible exception lacks approval/evidence/expiry semantics, attempts to change evidence/original interpretation, or stores project-specific acceptance data as reusable configuration;
 - occurrence grouping or recommendation consolidation deletes contributing occurrence/evidence references, or DMS-to-DMS migration instructions are runtime eligible;
 
+- a `20_PreMigration_Readiness` model/evidence/rule/condition/baseline-entity/baseline-field/baseline-relationship record lacks required identity, semantics, source, applicability or deterministic order;
+- a supported Pre-Migration scenario lacks exactly one active readiness model, or `MS-07`/DMS-to-DMS has an active model;
+- a model defaults to Ready, permits Ready without complete applicable mandatory coverage/valid baseline, or lets one supporting rule declare Ready;
+- an applicable mandatory/conditional evidence requirement lacks coverage, missing/conflict or exception behavior, or missing mandatory evidence does not block;
+- readiness conditions recalculate owned results, use incompatible references/types, contain executable content, or allow ambiguous equal-priority effects;
+- a blocker is bypassed without both readiness and finding-exception policies permitting it, or an exception changes original evidence/finding/interpretation;
+- a required baseline entity lacks identity/count semantics, a composite key is empty/duplicated/ambiguously ordered, or a required relationship has missing endpoints/mapping/cardinality;
+- project baseline values/exclusions/exceptions appear in reusable configuration, readiness wording overclaims validation/success, or output ordering/traceability is incomplete;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -4518,6 +4797,38 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-237` | Generate MS-08 source-DMS-to-eCTDmanager configuration | Applicable findings, links and actions are included |
 | `MVP-AT-238` | Request DMS-to-DMS migration | No migration instructions are exported; MS-07 consultant-review action is returned |
 | `MVP-AT-239` | Generate unchanged finding/action configuration twice | Definitions, policies, actions and links have identical order and canonical bytes |
+| `MVP-AT-240` | Validate `20_PreMigration_Readiness` structure | All seven approved named tables and required columns exist with unique stable keys |
+| `MVP-AT-241` | Inspect supported Pre-Migration scenarios | Each has exactly one active readiness model |
+| `MVP-AT-242` | Activate readiness model for MS-07 | Generation blocks; unresolved scenario cannot receive readiness outcome |
+| `MVP-AT-243` | Activate DMS-to-DMS readiness model | Generation blocks and routes scope to consultant review |
+| `MVP-AT-244` | Configure a model that defaults to Ready | Generation blocks |
+| `MVP-AT-245` | Evaluate all applicable mandatory requirements as satisfied with valid baseline | DecisionStatus is Determined and outcome may be Ready |
+| `MVP-AT-246` | Remove one applicable mandatory evidence item | Outcome is Blocked, not Ready/Unknown |
+| `MVP-AT-247` | Omit supporting evidence | Limitation/confidence impact is retained without automatic blocker |
+| `MVP-AT-248` | Activate a Conditional requirement qualifier | Requirement becomes mandatory and enters coverage calculation |
+| `MVP-AT-249` | Do not activate a Conditional requirement | Requirement is NotApplicable and excluded from denominator |
+| `MVP-AT-250` | Match only one SupportsReady rule | Overall result does not become Ready without complete required coverage |
+| `MVP-AT-251` | Match an unresolved Blocks rule | Blocker precedence produces Blocked |
+| `MVP-AT-252` | Configure conflicting equal-priority readiness effects | Generation blocks rather than choosing arbitrarily |
+| `MVP-AT-253` | Encounter technical failure before reliable decision | DecisionStatus is NotDetermined and readiness outcome is omitted |
+| `MVP-AT-254` | Evaluate valid outcome-changing accepted exception | ReadyWithAcceptedExceptions is possible only when both policies permit it |
+| `MVP-AT-255` | Try to accept an exception-ineligible blocker | Outcome remains Blocked |
+| `MVP-AT-256` | Use invalid/expired/unsupported exception evidence | Outcome remains Blocked and original finding is preserved |
+| `MVP-AT-257` | Record acknowledged minor exception not relied upon for readiness | Exception remains reportable without forcing ReadyWithAcceptedExceptions |
+| `MVP-AT-258` | Inspect exception-affected result | Original evidence, finding, RAG, severity and confidence remain unchanged |
+| `MVP-AT-259` | Validate scenario baseline entity catalogue | Required populations match selected scenario/source mechanisms |
+| `MVP-AT-260` | Build composite comparison key | Ordered atomic field rows produce one deterministic key group |
+| `MVP-AT-261` | Omit mandatory identity/comparison-key field | Baseline is Invalid/NotCreated and readiness is Blocked |
+| `MVP-AT-262` | Omit supporting baseline field with AllowWithLimitation | Baseline is CreatedWithLimitations and limitation is retained |
+| `MVP-AT-263` | Validate baseline relationship requirements | Endpoints, source mapping and cardinality resolve |
+| `MVP-AT-264` | Generate MS-01 baseline | SQL records, archive objects and DB/archive relationships remain attributable |
+| `MVP-AT-265` | Generate MS-04 baseline | Application/dossier, sequence/submission-unit, XML/file and metric identities remain attributable |
+| `MVP-AT-266` | Generate MS-05 hybrid baseline | Source provenance and duplicate-population controls are retained |
+| `MVP-AT-267` | Generate MS-06 archive-only baseline | Archive identity is valid while unavailable dossier/application identity is an explicit limitation |
+| `MVP-AT-268` | Generate MS-08 baseline | DMS document/version/rendition/metadata/relationship and target identifiers are retained |
+| `MVP-AT-269` | Put customer values, exclusions or accepted-exception decisions in configuration tables | Generation blocks as project/execution evidence |
+| `MVP-AT-270` | Inspect readiness report terminology | It does not claim regulatory validity, customer acceptance or guaranteed migration success |
+| `MVP-AT-271` | Generate unchanged readiness/baseline configuration twice | Models, requirements, rules, conditions, entities, fields and relationships have identical order and canonical bytes |
 
 
 ## 17. MVP definition of done
@@ -4541,14 +4852,15 @@ The MVP is complete when:
 15. every confidence rule identifies its context, evidence criteria, independence, coverage, conflict and aggregation behavior; multiple independent strong indicators are required for High under the default policy; heuristic-only evidence is capped at Low; conflicting/no evidence remains Unknown; and separate confidence contexts remain reportable;
 16. every active effort model has traceable bands, drivers, atomic impacts, typed conditions and double-count controls; no evidence never becomes VeryLow; incomplete evidence remains Provisional/NotAssessed; the final band is the higher of score-derived band and floor; effort confidence remains separate; raw scores are internal by default; and unsupported hours/cost/duration/team-size estimates are absent;
 17. every finding is a reusable sourced semantic definition separate from occurrences and contextual severity/RAG/confidence; exception policies cannot rewrite evidence/original interpretation; every recommendation is separate from findings, has ordered atomic owned actions, and is connected through deterministic scenario/phase links; occurrence grouping retains all evidence; project-specific workflow data is excluded; and DMS-to-DMS routes yield consultant review rather than migration instructions;
-18. every scenario has complete phase/module applicability;
-19. `24_Final_Config_Master` explains every inclusion/exclusion;
-20. scenario JSON generates for all Section 5 scenarios;
-21. every JSON object traces to workbook records;
-22. invalid/incomplete content blocks with actionable messages;
-23. unchanged input/selection produces identical canonical JSON;
-24. PowerShell consumes JSON without reading Excel;
-25. deferred SharePoint, release governance and GxP controls are not represented as complete.
+18. every supported Pre-Migration scenario has exactly one blocker-first complete-coverage readiness model; missing applicable mandatory evidence, unresolved blockers/conflicts and invalid minimum baselines prevent Ready; technical failures remain NotDetermined; outcome-changing exceptions require both policies and preserve original interpretation; and attributable scenario-specific baseline entities, composite keys, fields and relationships are defined without storing project values in reusable configuration;
+19. every scenario has complete phase/module applicability;
+20. `24_Final_Config_Master` explains every inclusion/exclusion;
+21. scenario JSON generates for all Section 5 scenarios;
+22. every JSON object traces to workbook records;
+23. invalid/incomplete content blocks with actionable messages;
+24. unchanged input/selection produces identical canonical JSON;
+25. PowerShell consumes JSON without reading Excel;
+26. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -4601,3 +4913,4 @@ Each review step shall answer four questions:
 | 4.12 MVP | 15 September 2026 | Approved `15_RAG_Severity` and `16_Confidence` with three normalized tables per sheet; separated severity, RAG, confidence, blocker, decision impact, evidence state and evaluation status; defined explicit Red/Unknown/Amber/Green aggregation and complete-coverage prerequisites for Green; prohibited Warning/Error and NotApplicable shortcuts; retained original interpretations under accepted exceptions; adopted rule-based confidence with separate classification, coverage, effort, readiness and reconciliation contexts, multiple independent strong indicators for High, heuristic-only cap at Low and conflict/no-evidence Unknown; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
 | 4.13 MVP | 15 September 2026 | Approved `17_Effort_Drivers` with six normalized model, driver, impact, condition, double-count and band tables; retained complexity bands instead of unsupported hours/cost/duration/team-size estimates; defined AddScore and MinimumComplexity as separate atomic modes, inclusive-lower/exclusive-upper thresholds, complete five-band models, deterministic score/floor calculation and mandatory correlated-driver suppression; added Calculated/Provisional/NotAssessed evidence behavior, prohibited VeryLow from missing evidence, kept EffortEstimate confidence separate and raw score internal by default; required traceable owner/SME evidence for weights and thresholds; added controlled values, deterministic JSON, validation and acceptance tests |
 | 4.14 MVP | 15 September 2026 | Approved `18_Findings` and `19_Recommendations_Actions` with five normalized finding-definition, exception-policy, recommendation-definition, atomic-action and finding-recommendation-link tables; separated reusable definitions from execution occurrences and removed default severity/RAG/confidence from finding ownership; added controlled customer/consultant wording, source/basis classification, template-token safety, deterministic occurrence identity, occurrence-preserving grouping and recommendation de-duplication; defined scenario/phase-qualified many-to-many links, ordered owned actions and accepted-exception effects that never rewrite evidence or original interpretation; retained project assignees/dates/status/approvals outside reusable configuration and routed DMS-to-DMS requests to consultant review; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
+| 4.15 MVP | 15 September 2026 | Approved `20_PreMigration_Readiness` with seven normalized readiness-model, evidence-requirement, decision-rule, atomic-condition, baseline-entity, baseline-field and baseline-relationship tables; separated decision status from the three approved outcomes and defined blocker-first complete-coverage evaluation, missing mandatory evidence behavior, technical failure, conditional activation and dual-policy accepted-exception handling; prohibited Ready by default or from a single supporting rule; required a valid attributable scenario-specific baseline with atomic composite keys, fields, relationships, exclusions/limitations boundaries and source provenance for later reconciliation; excluded MS-07 and DMS-to-DMS readiness models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
