@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.9 MVP
+**Version:** 4.10 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-021
+**Decision references:** DEC-2026-013 through DEC-2026-022
 
 ## 1. Purpose and MVP decision
 
@@ -1809,39 +1809,312 @@ Exact reference semantics, extraction provenance, resolution bases, algorithms, 
 
 ### 9.13 `12_Technical_Observations`
 
+#### Purpose and table
+
+This sheet defines reusable technical checks that may affect extraction, interpretation, transport, import, or migration effort. It shall not duplicate reference/integrity logic from `11_Missing_Refs_Integrity`, metric formulas from `13_Size_Volume_Metrics`, or severity decisions from `15_RAG_Severity`. It shall not claim formal regulatory, PDF, or schema validity beyond an implemented compatible capability.
+
+The sheet shall contain one Excel Table, `tblTechnicalObservationRules`. One row is one atomic observation rule; the common rule columns in Section 8.2 apply.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| Common rule columns | Mixed | Yes | Standard rule linkage |
-| `ObservationType` | Code | Yes | PDFVersion, Encryption, Signature, XmlWellFormed, Namespace, Schema, ExtensionMismatch, PathLength, IllegalName, DuplicateContent, Symlink, Unreadable |
-| `TargetExtension` | Text | No | Limits a check to PDF/XML/etc. |
-| `ExpectedValue` | Scalar | No | Expected technical characteristic |
-| `MinimumValue` | Scalar | No | Lower permitted threshold |
-| `MaximumValue` | Scalar | No | Upper permitted threshold |
-| `ComparisonUnit` | Code | No | Version, Characters, Bytes, Count |
-| `TechnicalImpact` | Text | Yes | Explains migration relevance without claiming authority validation |
+| `RuleId` | Identifier | Yes | Primary key -> `technicalObservationRules[].ruleId` |
+| `RuleName` | Text | Yes | Human-readable filter/review label |
+| `RequirementId` / `ModuleId` | Reference | Yes | Requirement and owning module traceability |
+| `IsActive` / `Priority` | Boolean / Integer | Yes | Inclusion and deterministic order |
+| `Phase` / `ScenarioId` / `ProfileId` | Code / Reference | Yes / Yes / No | Phase, base-scenario and optional profile applicability |
+| `ScopeLevel` | Code | Yes | Container, repository, dossier, sequence, document, file, XML document, or PDF document |
+| `ObservationType` | Code | Yes | Controlled technical characteristic |
+| `TargetMediaType` / `TargetExtension` | Code / Text | No | Optional subject filter; extension is not detected-content proof |
+| `InputFieldCode` | Reference | Yes | Canonical evidence field evaluated |
+| `ComparisonFieldCode` | Reference | No | Optional second evidence field |
+| `Operator` | Code | Yes | Data-type-compatible comparison |
+| `ExpectedValueDataType` | Code | Yes | Deterministic operand parsing |
+| `ExpectedValue` / `MinimumValue` / `MaximumValue` | Typed scalar | No | Expected or bounded value |
+| `ComparisonUnit` | Code | No | `Version`, `Characters`, `Bytes`, or `Count` |
+| `PassOutcomeCode` / `FailOutcomeCode` | Code | Yes | Outcomes for satisfied/failed check |
+| `UnsupportedOutcomeCode` / `UnavailableOutcomeCode` | Code | Yes | Separate capability/evidence failure outcomes |
+| `ResultFieldCode` | Reference | Yes | Typed output field |
+| `FindingCode` / `RecommendationCode` | Reference | No | Reusable interpretation/action links |
+| `TechnicalImpact` | Text | Yes | Migration relevance without an authority-validity claim |
+| `EngineCapability` | Code | Yes | Implemented generic operation |
+| `SourceId` / `SourceSection` | Reference / Text | Yes | Exact source traceability |
+| `Notes` | Text | No | Non-executable maintainer guidance |
 
-The sheet shall support malformed XML, unexpected namespaces/schema versions, invalid constructs, PDF version, encrypted/password-protected files, unreadable files, extension/content mismatch, zero-byte files, excessive path length, illegal names, duplicate content candidates, and platform-specific path risks.
+#### Required coverage and semantics
+
+Active rules shall cover, where applicable and supported:
+
+- XML well-formedness, encoding, namespace/version, schema declaration, implemented schema validation, unsupported constructs, DTD/external-entity handling;
+- PDF readability/parseability, version, encryption/password protection, digital-signature presence, and unsupported features;
+- file readability, zero-byte state, extension-versus-detected-content mismatch, and media-type observations;
+- path length, invalid/reserved names, case-sensitivity and platform compatibility risks, symbolic links/reparse points, and unsafe archive-entry names;
+- duplicate-content candidates, without performing deduplication; and
+- container technical characteristics not already governed as discovery limits in `10_Folder_File_Structure`.
+
+`XmlWellFormed=false` is an observed failure. `XmlSchemaValidation=Unsupported` means the validation could not be performed. They are not interchangeable. An encrypted PDF may exist and be readable as a file while its content is inaccessible to the parser.
+
+Metrics shall be calculated before technical rules that consume a metric `OutputFieldCode`. Such a rule shall reference the output field and shall not repeat the formula. Dependencies shall be acyclic.
+
+#### Connections
+
+| Sheet/component | Connection |
+|---|---|
+| `07_Fields_Evidence` | Defines every input, comparison and result field |
+| `08_Regulatory_Profiles` | Supplies profile/version-specific expectations |
+| `10_Folder_File_Structure` / `11_Missing_Refs_Integrity` | Supply subjects and integrity evidence without duplicated checks |
+| `13_Size_Volume_Metrics` | Supplies calculated fields before dependent rules |
+| `15_RAG_Severity` | Interprets technical outcomes separately |
+| `18_Findings` / `19_Recommendations_Actions` | Supply reusable finding/action objects |
+| `22_Value_Lists` | Controls types, outcomes, media, units, operators and states |
+| `24_Final_Config_Master` / `25_JSON_Field_Map` | Show inclusion and deterministic JSON projection |
+| PowerShell | Executes the named capability and emits typed results |
+
+#### Controlled values
+
+`22_Value_Lists` shall include:
+
+- `TECHNICAL_OBSERVATION_TYPE`: `XmlWellFormed`, `XmlEncoding`, `XmlNamespace`, `XmlSchemaDeclaration`, `XmlSchemaValidation`, `XmlExternalEntity`, `PdfParseability`, `PdfVersion`, `PdfEncryption`, `PdfPasswordProtection`, `PdfSignature`, `FileReadability`, `ZeroByte`, `ExtensionContentMatch`, `PathLength`, `InvalidName`, `ReservedName`, `PlatformPathCompatibility`, `CaseSensitivityRisk`, `SymbolicLinkOrReparsePoint`, `UnsafeArchiveEntryName`, `DuplicateContentCandidate`;
+- `TECHNICAL_OUTCOME`: `Conforms`, `DoesNotConform`, `Detected`, `NotDetected`, `Invalid`, `Unsupported`, `Unavailable`, `NotAssessed`, `ManualReview`;
+- `COMPARISON_UNIT`: `Version`, `Characters`, `Bytes`, `Count`; and
+- applicable existing `TARGET_MEDIA_TYPE`, `DATA_TYPE`, `OPERATOR`, `PHASE`, `SCOPE_LEVEL`, `EVIDENCE_STATE`, and `EVALUATION_STATUS` values.
+
+`Unsupported` and `Unavailable` shall never alias `DoesNotConform`.
+
+#### JSON
+
+~~~json
+{
+  "technicalObservationRules": [{
+    "ruleId": "TECH-XML-001",
+    "requirementId": "REQ-TECH-001",
+    "moduleId": "MOD-FILE",
+    "phase": ["PreMigration"],
+    "scenarioIds": ["MS-04"],
+    "profileIds": ["RP-EU-ECTD3"],
+    "scopeLevel": "XmlDocument",
+    "observationType": "XmlWellFormed",
+    "inputFieldCode": "FILE.XML_WELL_FORMED",
+    "operator": "Equals",
+    "expectedValueType": "Boolean",
+    "expectedValue": true,
+    "outcomes": {"pass": "Conforms", "fail": "Invalid", "unsupported": "Unsupported", "unavailable": "Unavailable"},
+    "resultFieldCode": "OBS.XML_WELL_FORMED_STATUS",
+    "engineCapability": "XmlWellFormed",
+    "findingCode": "FIND-XML-MALFORMED",
+    "recommendationCode": "REC-XML-REVIEW"
+  }]
+}
+~~~
+
+~~~json
+{
+  "technicalObservations": [{
+    "ruleId": "TECH-XML-001",
+    "subjectId": "file-000184",
+    "subjectPath": "sequence/0001/index.xml",
+    "observationType": "XmlWellFormed",
+    "observedValue": false,
+    "outcome": "Invalid",
+    "evidenceState": "Present",
+    "evaluationStatus": "Assessed",
+    "capabilityStatus": "Supported",
+    "provenance": {"sourceType": "File", "sourcePath": "sequence/0001/index.xml"}
+  }]
+}
+~~~
+
+Configuration order is `Priority` then `RuleId`. Results retain subject, observed values, provenance, evidence state, evaluation status and capability support.
+
+#### Blocking validation
+
+Generation is blocked if an active rule lacks a unique identity, owner, applicability, typed fields/operands, controlled outcomes, implemented capability, source, or valid dependency; uses incompatible operator/type/unit/bounds; maps Unsupported/Unavailable/NotAssessed to success; claims unsupported validity; trusts extension as sole content proof; duplicates integrity/metric ownership; or creates a dependency cycle.
 
 ### 9.14 `13_Size_Volume_Metrics`
+
+#### Purpose and tables
+
+This sheet defines typed counts, byte totals, percentages, ratios, differences, minima, maxima, averages and distinct measures for inventory, complexity, baseline, reconciliation and reporting. It contains configuration, not customer results, formulas, or PowerShell expressions.
+
+It shall contain:
+
+1. `tblMetricDefinitions` — one row per metric;
+2. `tblMetricConditions` — population/filter conditions; and
+3. `tblMetricDimensions` — grouping dimensions.
+
+Metrics are evaluated before technical observations, RAG, confidence, effort, readiness, or reconciliation rules that consume metric output fields.
+
+#### `tblMetricDefinitions`
 
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
 | `MetricCode` | Identifier | Yes | Primary key -> `metrics[].metricCode` |
-| `MetricName` | Text | Yes | Human-readable measure |
-| `ModuleId` | Reference | Yes | Owning assessment module |
-| `ScopeLevel` | Code | Yes | Repository, DB, archive, DMS, dossier, sequence, file |
-| `EvidenceSourceType` | Code | Yes | Where it is measured |
-| `Aggregation` | Code | Yes | Count, Sum, DistinctCount, Min, Max, Average, Percent |
-| `SourceFieldCode` | Reference | Yes | Raw evidence used for calculation |
-| `OutputFieldCode` | Reference | Yes | Active `07_Fields_Evidence` field that receives the typed calculated value for rule/baseline/reconciliation use |
-| `Unit` | Code | Yes | Canonical unit such as Bytes, Count, Percent, or Days; report display conversion is separate |
-| `Phase` | Code | Yes | Phase applicability |
-| `ScenarioId` | Code | Yes | `ALL` or scenario override |
-| `StoreDetail` | Boolean | Yes | Controls whether only aggregate or item-level evidence is retained |
-| `EffortDriverId` | Reference | No | Connects volume to complexity |
-| `IsActive` | Boolean | Yes | Runtime inclusion |
+| `MetricName` / `MetricDescription` | Text | Yes | Human-readable name and exact population/meaning |
+| `RequirementId` / `ModuleId` | Reference | Yes | Requirement and owner |
+| `IsActive` / `Priority` | Boolean / Integer | Yes | Inclusion and stable order |
+| `Phase` / `ScenarioId` / `ProfileId` | Code / Reference | Yes / Yes / No | Applicability |
+| `ScopeLevel` / `EvidenceSourceType` | Code | Yes | Population subject and source |
+| `PopulationFieldCode` | Reference | Yes | Collection/item population |
+| `CalculationType` | Code | Yes | Count, Sum, DistinctCount, Minimum, Maximum, Average, Percentage, Ratio, Difference |
+| `ValueFieldCode` | Reference | Conditional | Value aggregated by Sum/Min/Max/Average |
+| `DistinctKeyFieldCode` | Reference | Conditional | Stable identity for distinct counting |
+| `NumeratorMetricCode` / `DenominatorMetricCode` | Reference | Conditional | Percentage/ratio dependencies |
+| `SubtractMetricCode` | Reference | Conditional | Difference subtrahend |
+| `OutputFieldCode` / `OutputDataType` | Reference / Code | Yes | Typed canonical result |
+| `UnitCode` | Code | Yes | `Count`, `Bytes`, or `Percent` |
+| `Precision` / `RoundingMode` | Integer / Code | Yes | Deterministic numeric output |
+| `NullHandling` / `EmptyPopulationHandling` | Code | Yes | Explicit missing/empty semantics |
+| `ZeroDenominatorHandling` | Code | Conditional | Required for Percentage/Ratio |
+| `EvidenceRetention` | Code | Yes | AggregateOnly, AggregateAndContributors, ItemLevel |
+| `BaselineRole` / `ReconciliationRole` | Code | Yes | Baseline and comparison use |
+| `EffortDriverId` | Reference | No | Complexity link without unsupported hours |
+| `SourceId` / `SourceSection` | Reference / Text | Yes | Exact provenance |
+| `Notes` | Text | No | Non-executable guidance |
 
-Required metrics include DB size/count, archive size/object count, export/storage size, dossier/application count, sequence/submission-unit count, document/file/folder count, ZIP/nested-ZIP count, total bytes, missing/multiple/inaccessible count, region/format/version diversity, unknown classifications, malformed XML, broken references, and reconciliation differences.
+#### `tblMetricConditions`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `MetricConditionId` / `MetricCode` | Identifier / Reference | Yes | Stable condition and parent |
+| `ConditionGroup` / `ConditionSequence` | Text / Integer | Yes | AND within groups; OR between groups; stable order |
+| `FieldCode` / `Operator` | Reference / Code | Yes | Population predicate |
+| `ValueDataType` | Code | Yes | Typed operands |
+| `Value1` / `Value2` | Typed scalar | Conditional | Comparison/range values |
+| `MissingInputBehavior` | Code | Yes | Exclude, IncludeAsUnknown, NotAssessed, Error |
+| `IsActive` / `Notes` | Boolean / Text | Yes / No | Inclusion and explanation |
+
+Conditions select population only; they shall not encode severity, confidence, effort weights, findings, or actions.
+
+#### `tblMetricDimensions`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `MetricDimensionId` / `MetricCode` | Identifier / Reference | Yes | Stable dimension and parent |
+| `DimensionSequence` | Integer | Yes | Stable grouping order |
+| `DimensionFieldCode` | Reference | Yes | Separate canonical grouping field |
+| `IncludeUnknown` | Boolean | Yes | Controls explicit Unknown bucket |
+| `UnknownBucketCode` | Code | Conditional | Required when Unknown is included |
+| `IsActive` / `Notes` | Boolean / Text | Yes / No | Inclusion and explanation |
+
+Region, Technical Format, Specification Version and Application Type shall use separate dimension rows, never a combined free-text field.
+
+#### Calculation semantics
+
+- Count/Bytes are JSON integers. Percent/Ratio are JSON numbers, never formatted strings.
+- Bytes is the canonical size unit; report KB/MB/GB conversion does not change runtime data.
+- Percent uses 0–100: `numerator / denominator * 100` before configured rounding.
+- Count/Bytes precision is zero; other precision is explicit.
+- Null, empty, unavailable, incomplete and zero-denominator cases remain distinct and never silently become zero.
+- DistinctCount requires a stable key; labels and filenames are not assumed unique.
+- Incomplete evidence retains completeness/evidence status beside any number.
+- Derived metrics reference only explicit dependency metric codes. The graph is acyclic; order is dependencies, then `Priority` and `MetricCode`.
+- Aggregate-only DB/archive direct-copy evidence remains aggregate-only. Export evidence may retain item detail when the scenario requires it.
+- Large integers are written without scientific notation; values beyond supported safe precision are rejected rather than rounded silently.
+
+#### Required metric families
+
+| Family | Measures |
+|---|---|
+| Regulatory inventory | Application/dossier, sequence, submission-unit, document and file counts |
+| Repository/container | Root/repository, folder, ZIP, nested-ZIP counts and total bytes |
+| Technical/integrity | Zero-byte, unreadable, malformed-XML, broken-reference, orphan, duplicate-reference/content and extension/content mismatch counts |
+| Classification diversity | Distinct and Unknown region, authority, format, version, application type and dossier context |
+| Database | Database/table/record populations and bytes where reliable evidence exists |
+| Archive | Object count/bytes and found, missing, multiple, invalid, inaccessible lookup counts |
+| DMS | Source-DMS document, rendition, metadata/relationship and byte counts for supported DMS-to-eCTDmanager scope only |
+| Distribution | Minimum, maximum and average file/object bytes where useful |
+| Baseline | Expected populations/bytes and approved exclusions by comparison key/dimension |
+| Reconciliation | Expected, observed, matched, missing, extra, mismatched, duplicate and inaccessible counts; difference and match percent |
+| Effort inputs | Evidence-backed volume, diversity, integrity, mapping and exception measures only |
+
+DMS metrics do not imply DMS-to-DMS support. Such a route remains `MS-07 / NeedsReview` and requires consultant discussion.
+
+#### Connections and controlled values
+
+All population, value, condition, dimension and output fields resolve to `07_Fields_Evidence`. Scenario/module/profile applicability resolves through `05` and `08`. Sheets `10`, `11`, `12` and `14` supply populations/observations without repeating formulas. Sheets `15`–`17` and `20`–`21` consume output fields without recalculation. `24_Final_Config_Master` exposes inclusion/dependencies and `25_JSON_Field_Map` defines typed projection.
+
+`22_Value_Lists` shall include:
+
+- `METRIC_CALCULATION_TYPE`: `Count`, `Sum`, `DistinctCount`, `Minimum`, `Maximum`, `Average`, `Percentage`, `Ratio`, `Difference`;
+- `METRIC_UNIT`: `Count`, `Bytes`, `Percent`;
+- `METRIC_ROUNDING_MODE`: `None`, `Floor`, `Ceiling`, `HalfUp`, `HalfEven`;
+- `METRIC_NULL_HANDLING`: `Exclude`, `TreatAsZero`, `NotAssessed`, `Error`;
+- `METRIC_EMPTY_POPULATION`: `Zero`, `Null`, `NotAssessed`, `Error`;
+- `METRIC_ZERO_DENOMINATOR`: `Null`, `Zero`, `NotApplicable`, `NotAssessed`, `Error`;
+- `METRIC_MISSING_INPUT_BEHAVIOR`: `Exclude`, `IncludeAsUnknown`, `NotAssessed`, `Error`;
+- `METRIC_EVIDENCE_RETENTION`: `AggregateOnly`, `AggregateAndContributors`, `ItemLevel`;
+- `METRIC_BASELINE_ROLE`: `None`, `BaselineMeasure`, `BaselineComparisonInput`;
+- `METRIC_RECONCILIATION_ROLE`: `None`, `Expected`, `Observed`, `Difference`, `MatchRate`; and
+- applicable existing `DATA_TYPE`, `OPERATOR`, `PHASE`, `SCOPE_LEVEL` and `EVIDENCE_SOURCE_TYPE` values.
+
+#### JSON
+
+~~~json
+{
+  "metrics": [
+    {
+      "metricCode": "MET-FILE-TOTAL-BYTES",
+      "requirementId": "REQ-VOL-001",
+      "moduleId": "MOD-VOLUME",
+      "phase": ["PreSales", "PreMigration"],
+      "scenarioIds": ["MS-04"],
+      "scopeLevel": "File",
+      "evidenceSourceType": "RepositoryInventory",
+      "populationFieldCode": "INVENTORY.FILES",
+      "calculationType": "Sum",
+      "valueFieldCode": "FILE.SIZE_BYTES",
+      "outputFieldCode": "METRIC.FILE_TOTAL_BYTES",
+      "outputDataType": "Integer",
+      "unitCode": "Bytes",
+      "precision": 0,
+      "roundingMode": "None",
+      "nullHandling": "Exclude",
+      "emptyPopulationHandling": "Zero",
+      "evidenceRetention": "AggregateAndContributors",
+      "conditions": [{
+        "conditionId": "METCOND-FILE-TOTAL-001",
+        "group": "G1",
+        "sequence": 1,
+        "fieldCode": "FILE.IN_SCOPE",
+        "operator": "Equals",
+        "valueType": "Boolean",
+        "value1": true,
+        "missingInputBehavior": "Error"
+      }],
+      "dimensions": []
+    },
+    {
+      "metricCode": "MET-RECON-MATCH-PCT",
+      "moduleId": "MOD-RECONCILE",
+      "phase": ["PostMigration"],
+      "scenarioIds": ["ALL"],
+      "calculationType": "Percentage",
+      "numeratorMetricCode": "MET-RECON-MATCHED-COUNT",
+      "denominatorMetricCode": "MET-RECON-EXPECTED-COUNT",
+      "outputFieldCode": "METRIC.RECON_MATCH_PERCENT",
+      "outputDataType": "Decimal",
+      "unitCode": "Percent",
+      "precision": 2,
+      "roundingMode": "HalfUp",
+      "zeroDenominatorHandling": "NotAssessed",
+      "evidenceRetention": "AggregateOnly"
+    }
+  ]
+}
+~~~
+
+~~~json
+{
+  "metricResults": [
+    {"metricCode": "MET-FILE-TOTAL-BYTES", "value": 1483290042, "unitCode": "Bytes", "dataType": "Integer", "populationCount": 2187, "completeness": "Complete", "evidenceState": "Present"},
+    {"metricCode": "MET-RECON-MATCH-PCT", "value": 99.75, "unitCode": "Percent", "dataType": "Decimal", "numerator": 399, "denominator": 400, "completeness": "Complete", "evidenceState": "Present"}
+  ]
+}
+~~~
+
+#### Blocking validation
+
+Generation is blocked if an active metric lacks required identity, meaning, owner, population, calculation, output, type/unit, applicability, handling, retention or source fields; has incompatible calculation/type/unit/dependencies; references missing/inactive fields or codes; has duplicate conditions/dimensions; contains a self/circular dependency; lacks range or Unknown-bucket data; silently treats incomplete evidence as complete zero; requires detail where only aggregate evidence is permitted; exceeds supported numeric precision; or implies supported DMS-to-DMS scope.
+
 
 ### 9.15 `14_Source_DB_Archive_DMS`
 
@@ -2687,6 +2960,14 @@ JSON generation shall be blocked when any of the following is true:
 - a DMS-to-DMS, third-party-to-third-party, or otherwise unsupported target route is presented as `MS-08` instead of `MS-07 / NeedsReview`;
 - a second generation from unchanged workbook content and the same scenario produces different canonical bytes.
 
+- an active technical-observation rule lacks typed fields, controlled outcomes, implemented capability, source, or explicit unsupported/unavailable behavior;
+- a technical rule treats unsupported/unavailable parser or validator output as valid, conforming, Green, Pass, or an assessed failure;
+- a technical rule relies on extension as sole content proof, duplicates reference/integrity/metric ownership, or creates a circular metric dependency;
+- an active metric lacks fields/dependencies required by its calculation type or uses an incompatible type, unit, precision, rounding, null/empty or zero-denominator policy;
+- a metric dependency graph has a self-reference/cycle or cannot produce one deterministic order;
+- a metric condition/dimension is duplicated, unresolved, type-incompatible, or combines separate regulatory dimensions;
+- a metric uses noncanonical size units, Percent outside 0–100, formatted numeric text, scientific notation, unsafe precision, or silently converts incomplete evidence into complete zero;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -2816,6 +3097,32 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-107` | Process identical input/configuration twice | Reference checks and integrity observations are deterministically ordered |
 | `MVP-AT-108` | Complete integrity assessment | No source or target object is modified, deleted, renamed, repaired, followed externally, or deduplicated |
 
+| `MVP-AT-109` | Validate `12_Technical_Observations` | One `tblTechnicalObservationRules` table exists; active rows resolve all approved fields, outcomes, capability and source |
+| `MVP-AT-110` | Process malformed XML with supported well-formedness check | False/Invalid is emitted with rule, subject and provenance |
+| `MVP-AT-111` | Request unimplemented schema validation | Unsupported/NotAssessed is emitted; no validity, Pass or Green claim is made |
+| `MVP-AT-112` | Make eligible XML/PDF evidence inaccessible | Unavailable remains separate from missing or nonconforming |
+| `MVP-AT-113` | Process an encrypted/password-protected PDF | File presence and content-access observations remain separate |
+| `MVP-AT-114` | Conflict extension and detected media type | Both values drive ExtensionContentMatch; extension alone is not content proof |
+| `MVP-AT-115` | Test long/reserved/platform-incompatible paths | Atomic typed observations are emitted without changing source paths |
+| `MVP-AT-116` | Invert bounds or mix operand type/unit | Generation blocks with exact rule/column |
+| `MVP-AT-117` | Technical rule references metric output | Metric evaluates first; rule consumes `OutputFieldCode` without formula duplication |
+| `MVP-AT-118` | Create metric/technical dependency cycle | Generation blocks and reports the cycle |
+| `MVP-AT-119` | Generate technical configuration twice | Stable priority/rule ordering and identical canonical bytes result |
+| `MVP-AT-120` | Validate `13_Size_Volume_Metrics` | The three approved named tables and columns exist with unique keys |
+| `MVP-AT-121` | Count files and sum bytes over complete inventory | Integer Count/Bytes results retain population and completeness |
+| `MVP-AT-122` | DistinctCount lacks stable key | Generation blocks; label/filename is not assumed identity |
+| `MVP-AT-123` | Calculate 399/400 percent | 99.75 is emitted as numeric Percent with configured rounding |
+| `MVP-AT-124` | Percentage denominator is zero | Configured policy applies; no Infinity, NaN or silent zero |
+| `MVP-AT-125` | Evaluate empty, unavailable and incomplete populations | Zero, Null, NotAssessed and completeness remain distinct |
+| `MVP-AT-126` | Group by Region, Format, Version and Application Type | Separate deterministic dimensions/buckets result |
+| `MVP-AT-127` | Include Unknown dimension values | Controlled Unknown bucket appears only when configured |
+| `MVP-AT-128` | Evaluate derived metric chain | Dependencies evaluate before priority/code order |
+| `MVP-AT-129` | Create metric self-reference/cycle | Generation blocks and lists the cycle |
+| `MVP-AT-130` | Measure aggregate-only DB/archive direct copy | Counts/bytes remain aggregate; item detail is not invented |
+| `MVP-AT-131` | Produce reconciliation measures | Expected, observed, difference and match percent remain distinct/traceable |
+| `MVP-AT-132` | Configure MS-08 source-DMS and DMS-to-DMS metrics | Supported source-DMS metrics export; DMS-to-DMS remains `MS-07 / NeedsReview` |
+| `MVP-AT-133` | Generate metric configuration/results twice | Deterministic typed results; canonical Bytes and non-scientific integers |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -2824,20 +3131,22 @@ The MVP is complete when:
 2. `04_Assessment_Modules` contains the fifteen approved active modules and `05_Scenario_Module_Map` contains all 360 active scenario/phase/module mappings;
 3. every workbook, transformer, migration-script, reporting, logging, safety and non-functional requirement is represented atomically in `06_Requirement_Catalogue`, belongs to one of the 24 mandatory families, and has an implementation or explicit deferral;
 4. every applicable normative source statement has a Covered, Deferred or Superseded disposition, and every active rule, engine capability and controlled report behavior resolves to a requirement;
-5. every field required by an included rule, metric, mapping, baseline, reconciliation rule or result is defined once in `07_Fields_Evidence`, uses valid controlled values from `22_Value_Lists`, and has a deterministic scenario-JSON projection;
-6. actual customer/project evidence remains separate from reusable field definitions and every material observation can retain the required provenance and independent evidence/evaluation states;
-7. every runtime-supported regulatory profile has a version-specific profile record, normalized evidence locators, verified source references, compatible implemented parser capabilities, and deterministic field/JSON projections;
-8. every active dossier/sequence identification rule separates extraction from interpretation, resolves per subject with explicit acceptance/conflict behavior, preserves leading-zero sequence IDs and eCTD v3/v4 distinctions, and has deterministic configuration/result JSON projections;
-9. every active structure rule and container policy uses profile/scenario-appropriate relative paths, bounded safe discovery, explicit unexpected/empty/failure behavior, immutable-source handling, deterministic JSON projection, and preserves original container/path context;
-10. every active reference/integrity rule and resolution policy preserves raw evidence, resolves only within approved boundaries, distinguishes missing/unavailable/invalid/multiple/external states, requires complete inventories for missing/orphan conclusions, applies supported checksum/lifecycle semantics, and projects deterministically to JSON;
-11. every supported scenario has complete phase-by-phase module applicability;
-12. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-13. scenario-specific JSON can be generated for all scenarios in Section 5;
-14. every JSON object is traceable to workbook records;
-15. invalid or incomplete workbook content blocks generation with actionable messages;
-16. unchanged input and scenario selection produce identical canonical JSON;
-17. the PowerShell runtime consumes JSON without reading Excel;
-18. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+5. every required field is defined once in `07_Fields_Evidence`, uses `22_Value_Lists`, and has deterministic scenario-JSON projection;
+6. customer/project evidence remains separate from reusable definitions and retains provenance plus independent evidence/evaluation states;
+7. every runtime-supported regulatory profile has version-specific records, locators, verified sources, compatible capabilities and deterministic projection;
+8. every dossier/sequence rule separates extraction/interpretation, resolves per subject, preserves leading zeros and eCTD v3/v4 distinctions, and projects deterministically;
+9. every structure/container rule uses profile/scenario-relative expectations, bounded safe discovery, explicit failure behavior, immutable sources and original context;
+10. every reference/integrity rule preserves raw/resolved evidence, distinguishes missing/unavailable/invalid/multiple/external, requires complete inventories, and projects deterministically;
+11. every technical-observation rule is atomic, typed, source-backed, capability-bound and deterministic; separates failure, unsupported and unavailable; and makes no unsupported validity claim;
+12. every metric defines population, calculation, fields/dependencies, conditions/dimensions, canonical unit, rounding, missing/empty/zero-denominator behavior, retention, completeness, acyclic order and typed JSON;
+13. every scenario has complete phase/module applicability;
+14. `24_Final_Config_Master` explains every inclusion/exclusion;
+15. scenario JSON generates for all Section 5 scenarios;
+16. every JSON object traces to workbook records;
+17. invalid/incomplete content blocks with actionable messages;
+18. unchanged input/selection produces identical canonical JSON;
+19. PowerShell consumes JSON without reading Excel;
+20. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -2885,3 +3194,4 @@ Each review step shall answer four questions:
 | 4.7 MVP | 14 September 2026 | Approved `09_Dossier_Sequence_ID` as the evidence-interpretation layer; removed duplicated extraction-location columns; separated regulatory dimensions and application/dossier/sequence/submission-unit/lifecycle identities; added profile-neutral bootstrap and profile-specific stages, per-subject candidate resolution, candidate-value/acceptance/conflict controls, sequence-gap/duplicate/mismatch observations, eCTD v3/v4 safeguards, controlled values, configuration/result JSON projections, validation and acceptance tests |
 | 4.8 MVP | 15 September 2026 | Approved `10_Folder_File_Structure` with normalized structure-rule and container-discovery-policy tables; separated physical roots, containers, wrappers, dossier roots and sequence/submission-unit roots; added profile/version-specific relative-path expectations, conditional module behavior, wrapper/mixed-root/unexpected-item handling, ZIP/nested-ZIP resource and traversal safeguards, read-only temporary extraction, DMS logical-hierarchy boundaries, controlled values, deterministic JSON, validation and acceptance tests |
 | 4.9 MVP | 15 September 2026 | Approved `11_Missing_Refs_Integrity` with normalized integrity-rule and reference-resolution-policy tables; removed duplicated XML extraction fields; preserved raw/normalized/resolved evidence; separated missing, inaccessible, invalid, multiple, external, zero-byte and unreadable outcomes; required complete inventories for missing/orphan conclusions; distinguished duplicate types; added bounded reference resolution, checksum and lifecycle-target semantics, scenario/phase boundaries, controlled values, deterministic JSON, validation and acceptance tests |
+| 4.10 MVP | 15 September 2026 | Approved `12_Technical_Observations` and `13_Size_Volume_Metrics`; normalized one technical-rule table and three metric tables; separated invalid, unsupported, unavailable and NotAssessed outcomes; defined XML/PDF/file/path/platform coverage without unsupported validity claims; added canonical Count/Bytes/Percent calculations, populations, conditions, dimensions, dependencies, rounding, null/empty/zero-denominator and retention semantics; required metrics before dependent technical rules; added controlled values, deterministic configuration/result JSON, validation and acceptance tests; retained aggregate-only direct-copy evidence and DMS-to-DMS exclusion |
