@@ -3831,7 +3831,6 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-156` | Reconcile source baseline with target evidence | Expected, observed, matched/missing/extra/mismatch evidence uses the approved comparison keys |
 | `MVP-AT-157` | Generate the same source-mapping configuration twice | Profiles, capabilities, mappings, safeguards and dependencies have identical order and canonical bytes |
 | `MVP-AT-158` | Complete source/DB/archive/DMS assessment | No source or target DB, archive object, DMS object, relationship, metadata or file is modified |
-
 | `MVP-AT-159` | Validate `15_RAG_Severity` and `16_Confidence` structures | All six approved named tables and columns exist with unique stable keys |
 | `MVP-AT-160` | Aggregate results containing one confirmed applicable Red | Aggregate RAG is Red and retains the contributing result |
 | `MVP-AT-161` | Aggregate without Red but with incomplete mandatory coverage | Aggregate RAG is Unknown, never Green or Amber certainty |
