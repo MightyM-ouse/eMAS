@@ -3096,7 +3096,6 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-106` | Generate post-migration checksum/presence evidence | Evidence is passed to `21_PostMigration_Reconciliation` for final comparison |
 | `MVP-AT-107` | Process identical input/configuration twice | Reference checks and integrity observations are deterministically ordered |
 | `MVP-AT-108` | Complete integrity assessment | No source or target object is modified, deleted, renamed, repaired, followed externally, or deduplicated |
-
 | `MVP-AT-109` | Validate `12_Technical_Observations` | One `tblTechnicalObservationRules` table exists; active rows resolve all approved fields, outcomes, capability and source |
 | `MVP-AT-110` | Process malformed XML with supported well-formedness check | False/Invalid is emitted with rule, subject and provenance |
 | `MVP-AT-111` | Request unimplemented schema validation | Unsupported/NotAssessed is emitted; no validity, Pass or Green claim is made |
