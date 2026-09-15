@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.8 MVP
+**Version:** 4.9 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-020
+**Decision references:** DEC-2026-013 through DEC-2026-021
 
 ## 1. Purpose and MVP decision
 
@@ -1557,20 +1557,255 @@ Exact profile folder structures, artifacts, patterns, case rules, and occurrence
 
 ### 9.12 `11_Missing_Refs_Integrity`
 
+This sheet defines profile- and scenario-appropriate reference resolution and file/reference integrity rules. It answers **whether each expected or referenced object resolves to a valid, accessible and appropriate target and what integrity condition was actually observed**. It shall distinguish confirmed absence from unavailable evidence and shall not duplicate XML extraction, dossier identity, DB/archive mapping, technical-content analysis, or final reconciliation logic.
+
+The worksheet shall contain two normalized Excel Tables:
+
+1. `tblIntegrityRules` for references, presence, readability, non-empty, checksum, orphan, duplicate, external, lifecycle-target, and extension/content checks; and
+2. `tblReferenceResolutionPolicies` for controlled conversion of raw references into candidate targets.
+
+#### 9.12.1 Integrity-state distinctions
+
+| Situation | Required interpretation |
+|---|---|
+| Complete valid search finds no target | Missing / ConfirmedAbsent |
+| Parent folder, history, inventory, or container cannot be inspected | Inaccessible or Unavailable |
+| Reference syntax cannot be interpreted | Invalid |
+| More than one candidate target matches | Multiple / Conflict |
+| Reference points beyond the approved root | OutsideRoot or External |
+| Target exists but cannot be opened | Unreadable |
+| Target exists with length zero | ZeroByte |
+| Declared and calculated digests differ | ChecksumMismatch |
+| Physical content is unreferenced after complete inventories | OrphanCandidate |
+
+A target is Missing only when the reference is valid enough to resolve, the resolution base and required inventories were completely inspected, no match exists, and no approved scope/exclusion applies. Unavailable or partially inspected evidence shall never satisfy Missing.
+
+#### 9.12.2 `tblIntegrityRules`
+
+The table follows the common rule/condition model. In addition to the common columns, include:
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| Common rule columns | Mixed | Yes | Standard rule identity and interpretation |
-| `CheckType` | Code | Yes | XmlReference, OrphanCandidate, Checksum, PhysicalPresence, DuplicateReference, ExternalReference |
-| `SourceXmlFile` | Text | Conditional | XML document containing the reference |
-| `XmlElementOrPath` | Text | Conditional | Element containing the link/checksum |
-| `ReferenceAttribute` | Text | Conditional | Attribute such as href or checksum value |
-| `ResolutionBase` | Code | Conditional | SequenceRoot, XmlDirectory, DossierRoot, ArchiveRoot |
-| `NormalizationPolicy` | Code | Conditional | Path separator, URI decoding, case, extension, identifier normalization |
-| `ChecksumAlgorithm` | Code | Conditional | MD5, SHA1, SHA256, or source-declared algorithm |
-| `ExpectedState` | Code | Yes | Present, Absent, Match, Unique, Internal, Readable |
-| `FailureState` | Code | Yes | Missing, Mismatch, Multiple, Invalid, Inaccessible, External |
+| `IntegrityRuleType` | Code | Yes | ResolveReference, presence/readability/non-empty/checksum verification, orphan/duplicate/external detection, lifecycle-target verification, or extension/content comparison |
+| `ProfileScope` | Code | Yes | AnySupported, SelectedProfile, or SpecificProfile |
+| `ProfileId` | Profile reference | Conditional | Required for SpecificProfile |
+| `SubjectScope` | Code | Yes | Dossier, Sequence, SubmissionUnit, Document, File, or Relationship |
+| `SubjectKeyFieldCode` | Field reference | Yes | Object receiving the result |
+| `ReferenceKind` | Code | Yes | Type of reference being evaluated |
+| `ProfileEvidenceId` | Locator reference | Conditional | `08_Regulatory_Profiles` locator that produced the raw value |
+| `SourceReferenceFieldCode` | Field reference | Conditional | Canonical raw-reference field from `07_Fields_Evidence` |
+| `ResolutionPolicyId` | Policy reference | Conditional | Resolution policy used for path/URI targets |
+| `TargetInventoryFieldCode` | Field reference | Conditional | Candidate target inventory searched |
+| `OutputFieldCode` | Field reference | Yes | Canonical integrity-result field |
+| `ExpectedIntegrityState` | Code | Yes | Present, Resolved, Readable, NonEmpty, ChecksumMatch, Unique, or Internal |
+| `ObservationTypeOnFailure` | Code | Yes | Exact controlled observation |
+| `RequiresCompleteReferenceInventory` | Boolean | Yes | Required before orphan/duplicate-reference conclusions where applicable |
+| `RequiresCompleteTargetInventory` | Boolean | Yes | Required before missing/orphan conclusions |
+| `ChecksumMode` | Code | Conditional | DeclaredVsCalculated, SourceVsTarget, CalculateOnly, or NotApplicable |
+| `DeclaredAlgorithmFieldCode` | Field reference | Conditional | Algorithm declared by profile/source evidence |
+| `DeclaredChecksumFieldCode` | Field reference | Conditional | Expected digest |
+| `CalculatedChecksumFieldCode` | Field reference | Conditional | Computed digest |
+| `AllowedAlgorithmListCode` | Value-list reference | Conditional | Permitted supported algorithms |
+| `DuplicateScope` | Code | Conditional | Boundary for duplicate evaluation |
+| `ContentTypeDetectionMethod` | Code | Conditional | Extension, signature, MIME, or parser basis |
+| `ExcludedItemPolicyCode` | Code/reference | Conditional | Approved exclusion treatment |
+| `IndeterminateAction` | Code | Yes | Explicit incomplete/unavailable-evidence behavior |
+| `BusinessExample` | Text | Yes | Plain-language example |
 
-Missing referenced files and orphan candidates shall be reported separately. The rules shall also cover absolute/external references, broken lifecycle targets, duplicate references, zero-byte/unreadable referenced files, checksum mismatches, inaccessible targets, and provenance containing source file, element/path, attribute, and observed value.
+`SourceXmlFile`, `XmlElementOrPath`, and `ReferenceAttribute` are prohibited here. Extraction belongs to `tblProfileEvidenceLocators` in `08_Regulatory_Profiles`; this sheet references the resulting field and locator.
+
+Integrity-rule types shall include `ResolveReference`, `VerifyPresence`, `VerifyReadable`, `VerifyNonEmpty`, `VerifyChecksum`, `DetectOrphanCandidate`, `DetectDuplicateReference`, `DetectDuplicatePath`, `DetectDuplicateContent`, `DetectExternalReference`, `VerifyLifecycleTarget`, and `DetectExtensionContentMismatch`.
+
+#### 9.12.3 `tblReferenceResolutionPolicies`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ResolutionPolicyId` | Identifier | Yes | Stable key -> `referenceResolutionPolicies[].resolutionPolicyId` |
+| `ProfileScope` | Code | Yes | AnySupported, SelectedProfile, or SpecificProfile |
+| `ProfileId` | Profile reference | Conditional | Required for SpecificProfile/version semantics |
+| `ReferenceKind` | Code | Yes | Reference type handled |
+| `ResolutionBase` | Code | Yes | ReferencingFileDirectory, SequenceRoot, SubmissionUnitRoot, DossierRoot, ContainerRoot, ArchiveRoot, or LogicalRepositoryRoot |
+| `PathSeparatorPolicy` | Code | Yes | Controlled separator normalization |
+| `UriDecodingPolicy` | Code | Yes | Controlled percent/URI decoding |
+| `UnicodeNormalization` | Code | Yes | Preserve, NFC, or profile-defined normalization |
+| `CaseSensitivity` | Code | Yes | Sensitive, Insensitive, or ExactThenInsensitive |
+| `DotSegmentPolicy` | Code | Yes | Treatment of `.` and `..` |
+| `FragmentPolicy` | Code | Yes | Preserve/separate/reject URI fragment |
+| `QueryPolicy` | Code | Yes | Preserve/separate/reject URI query |
+| `AbsolutePathPolicy` | Code | Yes | Controlled absolute-path behavior |
+| `ExternalUriPolicy` | Code | Yes | External-scheme handling; normal runtime network access is prohibited |
+| `ContainerBoundaryPolicy` | Code | Yes | Prevents resolution outside approved scope |
+| `SymbolicLinkPolicy` | Code | Yes | Prevents external link traversal |
+| `AmbiguousTargetPolicy` | Code | Yes | RecordMultiple, ManualReview, or BlockRule |
+| `EngineCapability` | Code | Yes | Implemented generic resolver |
+| `SourceId` | Reference | Yes | Supporting specification/design source |
+| `SourceSection` | Text | Yes | Precise source location |
+| `IsActive` | Boolean | Yes | Runtime eligibility |
+| `Notes` | Text | No | Explanation and limitations |
+
+The runtime shall use only the resolution base defined by the applicable profile/policy. It shall not try unrelated bases and accept whichever happens to produce a file.
+
+#### 9.12.4 Raw, normalized, and resolved evidence
+
+Every material reference result shall retain the raw observed value, referencing evidence/file, `ProfileEvidenceId`, resolution base, normalized path component, separately retained fragment/query, candidate target, resolution status, and matched target evidence. Normalization shall never overwrite the raw reference.
+
+Absolute drive paths, UNC paths, file URIs, HTTP(S), other external schemes, and path traversal beyond the approved root shall be recorded but never followed during normal offline runtime. For a reference containing a fragment, file resolution uses the path component while retaining the fragment separately.
+
+Case handling shall attempt an exact match first. If policy permits case-insensitive fallback, a fallback-only match records CaseMismatch and preserves the target's actual spelling. Multiple matches produce Multiple/Conflict rather than an arbitrary target.
+
+#### 9.12.5 Orphan and duplicate semantics
+
+An OrphanCandidate is a physical content file within the assessed scope that is not referenced by the applicable **complete** reference inventory. Both content and reference inventories shall be complete; otherwise orphan evaluation is NotAssessed. Expected structural artifacts, approved support files, recorded technical-debris exclusions, out-of-scope files, supported alternative references, and files dependent on unavailable history shall not be falsely classified as orphans.
+
+DuplicateReference, DuplicatePath, DuplicateContent, and DuplicateIdentity are distinct. DuplicateIdentity is primarily owned by `09_Dossier_Sequence_ID` or `14_Source_DB_Archive_DMS`. Matching hashes or repeated references shall not automatically cause deletion, deduplication, or a defect conclusion.
+
+#### 9.12.6 Zero-byte, unreadable, and content-type behavior
+
+Missing, ZeroByte, Unreadable, InvalidContent, ContentTypeMismatch, and Inaccessible are separate outcomes. A zero-byte file exists and has a calculable checksum; it is not Missing, and a matching digest does not establish acceptable content. Extension/content mismatch may use file signature, MIME, or a profile-appropriate parser and shall retain both the declared extension and detected type.
+
+#### 9.12.7 Checksum contract
+
+| Mode | Purpose |
+|---|---|
+| `DeclaredVsCalculated` | Compare source-declared digest with the physical file |
+| `SourceVsTarget` | Produce/consume evidence for post-migration comparison |
+| `CalculateOnly` | Calculate evidence when no declared checksum exists |
+| `NotApplicable` | Profile/phase does not require the check |
+
+The rule shall use the valid supported source-declared algorithm where required. It shall not substitute a stronger algorithm and claim to have verified the declared checksum. Textual digest case and permitted whitespace may be normalized before comparison. UnsupportedAlgorithm is not ChecksumMismatch; missing declared checksum is NotAvailable/NotApplicable according to profile. Checksums are calculated only for readable files.
+
+A checksum match establishes byte-level agreement only; it does not establish regulatory validity, authenticity, correct dossier identity, safe content, or migration acceptance. `21_PostMigration_Reconciliation` owns the final source-versus-target reconciliation outcome.
+
+#### 9.12.8 Lifecycle-target integrity
+
+`09_Dossier_Sequence_ID` identifies a lifecycle relationship and candidate target; this sheet verifies whether the target resolves within the available supported history. Complete history with no target may produce MissingLifecycleTarget. If prior sequences/submission units were not supplied or accessible, return HistoryUnavailable/InsufficientEvidence rather than MissingLifecycleTarget. Malformed, ambiguous, external, and out-of-scope targets remain distinct.
+
+#### 9.12.9 Controlled values in `22_Value_Lists`
+
+| List code | Minimum values |
+|---|---|
+| `INTEGRITY_RULE_TYPE` | ResolveReference, VerifyPresence, VerifyReadable, VerifyNonEmpty, VerifyChecksum, DetectOrphanCandidate, DetectDuplicateReference, DetectDuplicatePath, DetectDuplicateContent, DetectExternalReference, VerifyLifecycleTarget, DetectExtensionContentMismatch |
+| `REFERENCE_KIND` | DocumentHref, XmlLeaf, LifecycleTarget, ManifestEntry, SubmissionUnitReference, FilePath, ChecksumDeclaration |
+| `REFERENCE_RESOLUTION_BASE` | ReferencingFileDirectory, SequenceRoot, SubmissionUnitRoot, DossierRoot, ContainerRoot, ArchiveRoot, LogicalRepositoryRoot |
+| `REFERENCE_RESOLUTION_STATUS` | Resolved, Missing, Multiple, Invalid, Inaccessible, External, OutsideRoot, OutsideScope, UnsupportedScheme, CaseMismatch, Unknown |
+| `REFERENCE_SCHEME` | RelativePath, AbsolutePath, UNC, FileUri, HttpUri, HttpsUri, OtherUri |
+| `PATH_SEPARATOR_POLICY` | CanonicalSlash, ProfileDefined |
+| `URI_DECODING_POLICY` | None, DecodeOnce, ProfileDefined |
+| `UNICODE_NORMALIZATION` | Preserve, NFC, ProfileDefined |
+| `DOT_SEGMENT_POLICY` | NormalizeWithinRoot, RejectParentTraversal, ProfileDefined |
+| `FRAGMENT_POLICY` | Preserve, SeparateFromPath, Reject, ProfileDefined |
+| `QUERY_POLICY` | Preserve, SeparateFromPath, Reject, ProfileDefined |
+| `REFERENCE_BOUNDARY_POLICY` | RemainWithinContainer, RemainWithinDossier, RemainWithinApprovedRoot |
+| `AMBIGUOUS_TARGET_POLICY` | RecordMultiple, ManualReview, BlockRule |
+| `INTEGRITY_EXPECTED_STATE` | Present, Resolved, Readable, NonEmpty, ChecksumMatch, Unique, Internal |
+| `INTEGRITY_OBSERVATION_TYPE` | ReferencedFileMissing, OrphanCandidate, Unreadable, ZeroByte, ChecksumMismatch, UnsupportedAlgorithm, DuplicateReference, DuplicatePath, DuplicateContent, ExternalReference, OutsideRoot, CaseMismatch, InvalidReference, MissingLifecycleTarget, HistoryUnavailable, ContentTypeMismatch |
+| `CHECKSUM_MODE` | DeclaredVsCalculated, SourceVsTarget, CalculateOnly, NotApplicable |
+| `CHECKSUM_ALGORITHM` | MD5, SHA1, SHA256, SourceDeclared |
+| `DUPLICATE_SCOPE` | Sequence, SubmissionUnit, Dossier, Application, Container, MigrationPopulation |
+| `CONTENT_TYPE_DETECTION_METHOD` | ExtensionOnly, FileSignature, MIME, Parser |
+| `INTEGRITY_INDETERMINATE_ACTION` | RecordNotAssessed, RecordInsufficientEvidence, RequestFollowUp, ManualReview, BlockRule, BlockAssessment |
+
+`SourceDeclared` is an algorithm-selection behavior, not a concrete checksum implementation. Adding any reference, normalization, content-detection, or checksum code does not implement it; runtime export remains blocked until the corresponding capability exists.
+
+#### 9.12.10 Sheet relationships
+
+The controlled flow is:
+
+`08 locator -> 07 raw reference/evidence -> 11 resolution policy -> 11 integrity rule/result -> 15/16/18/19 interpretation -> 21 reconciliation where applicable -> 24 Final Config Master -> scenario JSON`
+
+`10_Folder_File_Structure` owns expected physical placement. `12_Technical_Observations` owns malformed XML/PDF and deeper content properties. `14_Source_DB_Archive_DMS` owns source-system record-to-archive/DMS mapping and false-missing safeguards. `11` may consume their canonical evidence but shall not duplicate those adapter contracts.
+
+#### 9.12.11 Runtime configuration JSON
+
+```json
+{
+  "referenceResolutionPolicies": [
+    {
+      "resolutionPolicyId": "RES-PROFILE-RELATIVE-001",
+      "profileScope": "SelectedProfile",
+      "referenceKind": "DocumentHref",
+      "resolutionBase": "ReferencingFileDirectory",
+      "pathSeparatorPolicy": "CanonicalSlash",
+      "uriDecodingPolicy": "DecodeOnce",
+      "unicodeNormalization": "Preserve",
+      "caseSensitivity": "ExactThenInsensitive",
+      "dotSegmentPolicy": "RejectParentTraversal",
+      "fragmentPolicy": "SeparateFromPath",
+      "queryPolicy": "SeparateFromPath",
+      "absolutePathPolicy": "RecordExternal",
+      "externalUriPolicy": "DoNotAccess",
+      "containerBoundaryPolicy": "RemainWithinApprovedRoot",
+      "ambiguousTargetPolicy": "RecordMultiple",
+      "engineCapability": "ResolveProfileReference"
+    }
+  ],
+  "integrityRules": [
+    {
+      "ruleId": "INT-REF-PRESENCE-001",
+      "requirementId": "REQ-INTEGRITY-001",
+      "moduleId": "MOD-XML-REFERENCE",
+      "profileScope": "SelectedProfile",
+      "integrity": {
+        "ruleType": "VerifyPresence",
+        "subjectScope": "Document",
+        "referenceKind": "DocumentHref",
+        "sourceReferenceFieldCode": "XML_REFERENCE.RAW_VALUE",
+        "resolutionPolicyId": "RES-PROFILE-RELATIVE-001",
+        "targetInventoryFieldCode": "FILE.INVENTORY"
+      },
+      "expectation": {
+        "state": "Present",
+        "requiresCompleteTargetInventory": true
+      },
+      "failure": {
+        "observationType": "ReferencedFileMissing",
+        "indeterminateAction": "RecordInsufficientEvidence"
+      }
+    }
+  ]
+}
+```
+
+Assessment-result JSON shall retain raw and normalized references, resolution base/status, matched target evidence, presence/readability/size/checksum evidence, inventory-completeness flags, rule/observation IDs, and independent evidence/evaluation states. An orphan record shall carry `automaticRegulatoryDefect=false` until downstream rules establish an applicable interpretation.
+
+#### 9.12.12 Scenario and phase applicability
+
+| Context | Expected scope |
+|---|---|
+| Pre-Sales | Lightweight inventory/presence and obvious broken-reference sampling where configured |
+| Pre-Migration | Full profile-appropriate reference, readability, non-empty, orphan/duplicate, lifecycle-target, and checksum assessment |
+| Post-Migration | Recalculate target evidence and provide it to `21_PostMigration_Reconciliation` |
+| Third-party regulatory export | Full supported file/XML reference assessment |
+| DB/archive migration | Exact archive lookup belongs to `14`; regulatory reference checks require dossier/export evidence |
+| DMS into eCTDmanager | Supported logical references/renditions and exported dossier evidence |
+| Partial evidence | Evaluate only complete supplied scopes; do not infer missing/orphan status |
+| DMS-to-DMS | Out of scope; route to `MS-07 / NeedsReview` and consultant discussion |
+
+#### 9.12.13 Mandatory validation and safeguards
+
+Generation shall be blocked when:
+
+1. an integrity rule duplicates extraction details from `08_Regulatory_Profiles`;
+2. a reference rule lacks a source-reference field or active resolution policy;
+3. SpecificProfile lacks a valid compatible profile;
+4. the resolution base is incompatible with the profile/reference kind;
+5. absolute/external references or symbolic links can be followed automatically;
+6. traversal can escape the approved root;
+7. normalized values overwrite raw evidence;
+8. Missing can be produced without complete target inventory;
+9. OrphanCandidate can be produced without complete target and reference inventories;
+10. an inaccessible/partial scope can become Missing;
+11. an unsupported algorithm can become ChecksumMismatch;
+12. a checksum rule lacks required algorithm/declared/calculated fields or evaluates an unreadable file;
+13. a zero-byte file can be treated as absent;
+14. duplicate evidence can trigger source deletion/deduplication;
+15. a lifecycle target can be declared missing when required history was unavailable;
+16. SourceVsTarget comparison bypasses `21_PostMigration_Reconciliation`;
+17. required fields, values, policies, sources, or capabilities are absent/unimplemented; or
+18. an active record contains an unverified placeholder.
+
+Exact reference semantics, extraction provenance, resolution bases, algorithms, lifecycle rules, and expected states shall resolve to an applicable official ICH/regional source or approved internal product/migration requirement. The Regulatory, Technical & Migration Assessment Guide may be used as a ReviewedInterpretation source but shall not activate unsupported behavior.
+
 
 ### 9.13 `12_Technical_Observations`
 
@@ -2554,6 +2789,32 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-080` | Assess a supported DMS logical hierarchy | Logical nodes retain source identifiers and are not converted to invented filesystem paths |
 | `MVP-AT-081` | Evaluate identical source/configuration twice | Candidate-root and structure-observation ordering is deterministic |
 | `MVP-AT-082` | Complete discovery and structural assessment | Source files, folders, containers, and DMS objects remain unchanged |
+| `MVP-AT-083` | Resolve a valid relative reference | Resolved is returned with raw value, normalized path, base, target and provenance retained |
+| `MVP-AT-084` | Search a complete inventory containing no target | Missing/ConfirmedAbsent is returned |
+| `MVP-AT-085` | Make the resolution base/container inaccessible | Inaccessible/Unavailable is returned; Missing is prohibited |
+| `MVP-AT-086` | Provide an empty or malformed raw reference | InvalidReference is recorded |
+| `MVP-AT-087` | Provide a parent-traversal reference escaping the root | OutsideRoot is recorded and the external target is not accessed |
+| `MVP-AT-088` | Provide an HTTP(S), file URI, UNC or absolute-path reference | External/unsupported scheme is recorded and no external/network access occurs |
+| `MVP-AT-089` | Resolve a reference containing a URI fragment/query | Path, fragment and query are separated and raw evidence remains intact |
+| `MVP-AT-090` | Make only a case-insensitive target match available | CaseMismatch and actual target spelling are retained |
+| `MVP-AT-091` | Make several target candidates match | Multiple/Conflict or ManualReview is returned; no arbitrary target wins |
+| `MVP-AT-092` | Reference a zero-byte target | ZeroByte is recorded; the target is not Missing |
+| `MVP-AT-093` | Reference an existing unreadable target | Unreadable/Inaccessible is recorded |
+| `MVP-AT-094` | Compare matching declared and calculated digests | ChecksumMatch with algorithm and both digest evidence values is returned |
+| `MVP-AT-095` | Compare differing declared and calculated digests | ChecksumMismatch retains both values and algorithm |
+| `MVP-AT-096` | Use an unsupported source-declared checksum algorithm | UnsupportedAlgorithm is returned, not ChecksumMismatch |
+| `MVP-AT-097` | Omit a declared checksum | NotAvailable/NotApplicable follows profile policy; no mismatch is invented |
+| `MVP-AT-098` | Provide an unreferenced content file with complete inventories | OrphanCandidate is recorded with automaticRegulatoryDefect=false |
+| `MVP-AT-099` | Make the reference or content inventory incomplete | Orphan evaluation is NotAssessed/InsufficientEvidence |
+| `MVP-AT-100` | Provide an unreferenced approved technical-debris/support file | The controlled exclusion is recorded; the file is not silently ignored |
+| `MVP-AT-101` | Reference the same target more than once | DuplicateReference is recorded without automatic defect/deletion |
+| `MVP-AT-102` | Provide different paths with identical hashes | DuplicateContent is recorded without automatic deduplication |
+| `MVP-AT-103` | Use complete lifecycle history whose target is absent | MissingLifecycleTarget is returned |
+| `MVP-AT-104` | Omit required prior lifecycle history | HistoryUnavailable is returned, not MissingLifecycleTarget |
+| `MVP-AT-105` | Provide a file whose extension conflicts with detected content | ContentTypeMismatch retains extension and detected type evidence |
+| `MVP-AT-106` | Generate post-migration checksum/presence evidence | Evidence is passed to `21_PostMigration_Reconciliation` for final comparison |
+| `MVP-AT-107` | Process identical input/configuration twice | Reference checks and integrity observations are deterministically ordered |
+| `MVP-AT-108` | Complete integrity assessment | No source or target object is modified, deleted, renamed, repaired, followed externally, or deduplicated |
 
 ## 17. MVP definition of done
 
@@ -2568,14 +2829,15 @@ The MVP is complete when:
 7. every runtime-supported regulatory profile has a version-specific profile record, normalized evidence locators, verified source references, compatible implemented parser capabilities, and deterministic field/JSON projections;
 8. every active dossier/sequence identification rule separates extraction from interpretation, resolves per subject with explicit acceptance/conflict behavior, preserves leading-zero sequence IDs and eCTD v3/v4 distinctions, and has deterministic configuration/result JSON projections;
 9. every active structure rule and container policy uses profile/scenario-appropriate relative paths, bounded safe discovery, explicit unexpected/empty/failure behavior, immutable-source handling, deterministic JSON projection, and preserves original container/path context;
-10. every supported scenario has complete phase-by-phase module applicability;
-11. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-12. scenario-specific JSON can be generated for all scenarios in Section 5;
-13. every JSON object is traceable to workbook records;
-14. invalid or incomplete workbook content blocks generation with actionable messages;
-15. unchanged input and scenario selection produce identical canonical JSON;
-16. the PowerShell runtime consumes JSON without reading Excel;
-17. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+10. every active reference/integrity rule and resolution policy preserves raw evidence, resolves only within approved boundaries, distinguishes missing/unavailable/invalid/multiple/external states, requires complete inventories for missing/orphan conclusions, applies supported checksum/lifecycle semantics, and projects deterministically to JSON;
+11. every supported scenario has complete phase-by-phase module applicability;
+12. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+13. scenario-specific JSON can be generated for all scenarios in Section 5;
+14. every JSON object is traceable to workbook records;
+15. invalid or incomplete workbook content blocks generation with actionable messages;
+16. unchanged input and scenario selection produce identical canonical JSON;
+17. the PowerShell runtime consumes JSON without reading Excel;
+18. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -2622,3 +2884,4 @@ Each review step shall answer four questions:
 | 4.6 MVP | 14 September 2026 | Approved the normalized `08_Regulatory_Profiles` design with separate profile and evidence-locator tables on one worksheet; kept format, application type, dossier context and procedure context independent; added version/namespace/parser/lifecycle boundaries, support status, controlled locator vocabulary, source verification, JSON nesting and transitive inclusion; prohibited weak-evidence overrides, cross-version generic selectors, placeholders and unsupported profile export; clarified the extraction boundary with `09_Dossier_Sequence_ID` |
 | 4.7 MVP | 14 September 2026 | Approved `09_Dossier_Sequence_ID` as the evidence-interpretation layer; removed duplicated extraction-location columns; separated regulatory dimensions and application/dossier/sequence/submission-unit/lifecycle identities; added profile-neutral bootstrap and profile-specific stages, per-subject candidate resolution, candidate-value/acceptance/conflict controls, sequence-gap/duplicate/mismatch observations, eCTD v3/v4 safeguards, controlled values, configuration/result JSON projections, validation and acceptance tests |
 | 4.8 MVP | 15 September 2026 | Approved `10_Folder_File_Structure` with normalized structure-rule and container-discovery-policy tables; separated physical roots, containers, wrappers, dossier roots and sequence/submission-unit roots; added profile/version-specific relative-path expectations, conditional module behavior, wrapper/mixed-root/unexpected-item handling, ZIP/nested-ZIP resource and traversal safeguards, read-only temporary extraction, DMS logical-hierarchy boundaries, controlled values, deterministic JSON, validation and acceptance tests |
+| 4.9 MVP | 15 September 2026 | Approved `11_Missing_Refs_Integrity` with normalized integrity-rule and reference-resolution-policy tables; removed duplicated XML extraction fields; preserved raw/normalized/resolved evidence; separated missing, inaccessible, invalid, multiple, external, zero-byte and unreadable outcomes; required complete inventories for missing/orphan conclusions; distinguished duplicate types; added bounded reference resolution, checksum and lifecycle-target semantics, scenario/phase boundaries, controlled values, deterministic JSON, validation and acceptance tests |
