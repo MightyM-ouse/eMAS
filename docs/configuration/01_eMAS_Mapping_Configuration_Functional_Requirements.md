@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.13 MVP
+**Version:** 4.14 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-025
+**Decision references:** DEC-2026-013 through DEC-2026-026
 
 ## 1. Purpose and MVP decision
 
@@ -3200,36 +3200,297 @@ Generation shall be blocked when a required table/column is missing; an active m
 
 ### 9.19 `18_Findings`
 
+#### 9.19.1 Purpose and boundary
+
+This sheet defines reusable finding meanings and exception-eligibility policies. It shall not contain customer/project finding occurrences, observed values, affected paths, accepted-exception decisions, assignees, due dates or completion status.
+
+A `FindingCode` identifies one reusable semantic finding definition. It does not identify an execution occurrence. When a configured rule produces a finding, the runtime shall create a separate occurrence with its own `FindingOccurrenceId`, scope, evidence, provenance, evaluation status, severity/RAG and confidence.
+
+The finding definition shall not own default severity, default RAG, confidence, readiness or reconciliation outcome. Contextual severity/RAG comes from `15_RAG_Severity`; confidence comes from `16_Confidence`; readiness and reconciliation remain in sheets `20` and `21`.
+
+The sheet shall contain two Excel Tables:
+
+1. `tblFindingDefinitions`; and
+2. `tblFindingExceptionPolicies`.
+
+#### 9.19.2 `tblFindingDefinitions`
+
+One row represents one reusable finding definition.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `FindingCode` | Identifier | Yes | Stable result code -> `findings[]` |
-| `FindingTitle` | Text | Yes | Short report label |
-| `Category` | Code | Yes | Filterable domain |
-| `Description` | Text | Yes | Meaning of the finding |
-| `DefaultSeverity` | Code | Yes | Default seriousness |
-| `DefaultRAG` | Code | Yes | Default colour when assessed |
-| `ExceptionEligible` | Boolean | Yes | Whether project governance may accept it |
-| `ReportAudience` | Code | Yes | Customer, Consultant, Both |
-| `IsActive` | Boolean | Yes | Runtime inclusion |
-| `SourceId` | Reference | Yes | Basis |
+| `FindingCode` | Identifier | Yes | Stable semantic definition -> `findings[].findingCode` |
+| `FindingTitle` | Text | Yes | Short filterable/reportable title -> `title` |
+| `FindingCategory` | Code | Yes | Controlled functional grouping -> `category` |
+| `FindingClass` | Code | Yes | Confirmed condition, issue, observation, evidence gap, conflict or discrepancy -> `findingClass` |
+| `ScopeLevel` | Code | Yes | Level at which occurrences may be emitted -> `scopeLevel` |
+| `CustomerSummaryTemplate` | Text/template | Yes | Plain-language report text -> `customerSummaryTemplate` |
+| `ConsultantDetailTemplate` | Text/template | Yes | Technical interpretation -> `consultantDetailTemplate` |
+| `EvidenceExplanationTemplate` | Text/template | No | Optional explanation of supporting evidence -> `evidenceExplanationTemplate` |
+| `StatementBasisType` | Code | Yes | Separates authority requirements, interpretations, technical/product rules and internal migration rules -> `statementBasisType` |
+| `ReportAudience` | Code | Yes | Customer, Consultant, Both or InternalOnly -> `reportAudience` |
+| `CustomerVisible` | Boolean | Yes | Controls customer-report eligibility -> `customerVisible` |
+| `ContainsSensitiveDetail` | Boolean | Yes | Activates safe report/log rendering -> `containsSensitiveDetail` |
+| `AggregationBehavior` | Code | Yes | Controls display grouping without deleting occurrences -> `aggregationBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `SourceSection` | Text | Yes | Precise source location -> `sourceReference.section` |
+| `Rationale` | Text | Yes | Human explanation of the controlled meaning -> `rationale` |
+| `ExampleOccurrence` | Text | No | Workbook-only realistic maintenance example; excluded from runtime JSON |
+| `Notes` | Text | No | Workbook-only clarification; excluded from runtime JSON |
+
+`FindingClass` describes the nature of a finding and shall not imply severity, RAG or regulatory non-compliance. In particular:
+
+- a numeric sequence gap is an `Observation` unless stronger configured evidence establishes an issue;
+- unavailable required input is an `EvidenceGap`, not confirmed absence;
+- incompatible evidence may be a `Conflict` while the classification remains Unknown/ManualReview;
+- Post-Migration expected-versus-observed differences are `Discrepancy` findings; and
+- a positive detected condition may be `ConfirmedCondition` without automatically becoming Green.
+
+Templates may use only controlled tokens that the emitting rule/engine can populate. Example tokens include `{ObservedValue}`, `{ExpectedValue}`, `{EvidenceLocation}`, `{SourceXml}`, `{ReferencedPath}`, `{ScopeIdentifier}`, `{Count}` and `{Unit}`. Tokens shall describe evidence; they shall not execute formulas, code, XPath, SQL or scripts.
+
+Example definitions:
+
+| FindingCode | FindingClass | CustomerSummaryTemplate | Required interpretation behavior |
+|---|---|---|---|
+| `FND-REF-MISSING-001` | Issue | Referenced file `{ReferencedPath}` was not found for `{SourceXml}`. | Severity/RAG depends on phase, scope and mandatory/reference semantics |
+| `FND-SEQ-GAP-001` | Observation | A numeric gap was observed between sequences `{PreviousSequence}` and `{NextSequence}`. | A gap alone is not automatically invalid or Red |
+| `FND-EVIDENCE-DB-001` | EvidenceGap | Required database evidence was unavailable; database scope was not assessed. | Shall remain NotAssessed/Unknown rather than confirmed absent |
+| `FND-ARCHIVE-MISSING-001` | Issue | No physical archive object was found after configured lookup safeguards were completed. | May be emitted only after mandatory false-missing safeguards |
+
+#### 9.19.3 Finding occurrences, grouping and traceability
+
+Runtime occurrences shall retain at least `ExecutionId`, `FindingOccurrenceId`, `FindingCode`, `RuleId`, phase, scenario, scope entity, evidence reference, observed/expected values where applicable, evaluation status, evidence state, severity/RAG result reference, confidence result reference and applicable recommendation references.
+
+The recommended deterministic occurrence-key inputs are:
+
+~~~text
+ExecutionId + Phase + FindingCode + RuleId + ScopeEntityType + ScopeEntityId + EvidenceLocation
+~~~
+
+An exact duplicate emission with the same key may be consolidated. Occurrences for different files, sequences, dossiers, records, DMS documents, renditions or archive objects shall not be silently collapsed. `GroupInSummary` may produce one summary row with a count, but all contributing occurrence identifiers and evidence remain available in detail/log output.
+
+#### 9.19.4 `tblFindingExceptionPolicies`
+
+One row defines whether and how a finding may be handled as an accepted project exception in one scenario/phase context. This table defines reusable eligibility policy only. The actual exception request, reason, approver, decision, timestamp, expiry, evidence and status are project/execution records outside the Mapping Workbook and Runtime configuration.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ExceptionPolicyId` | Identifier | Yes | Stable policy -> `exceptionPolicies[].exceptionPolicyId` |
+| `FindingCode` | Reference | Yes | Eligible finding -> `findingCode` |
+| `ScenarioId` | Code | Yes | `ALL` or one base scenario -> `scenarioId` |
+| `Phase` | Code | Yes | Phase applicability -> `phase` |
+| `ExceptionEligible` | Boolean | Yes | Whether project acceptance is permitted -> `exceptionEligible` |
+| `AllowedEffect` | Code | Yes | Strictly limited permitted outcome effect -> `allowedEffect` |
+| `RequiredApproverRole` | Code | Conditional | Required when eligible -> `requiredApproverRole` |
+| `ReasonRequired` | Boolean | Yes | Requires documented justification -> `reasonRequired` |
+| `EvidenceRequirement` | Text | Conditional | Evidence required before acceptance -> `evidenceRequirement` |
+| `ExpiryRequired` | Boolean | Yes | Whether acceptance must expire -> `expiryRequired` |
+| `MaximumValidityDays` | Integer | Conditional | Required when an expiry limit applies -> `maximumValidityDays` |
+| `CarryForwardToPostMigration` | Boolean | Yes | Whether an approved project exception may be considered during reconciliation -> `carryForwardToPostMigration` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Policy basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the effect is permitted -> `rationale` |
+
+An accepted exception may acknowledge a finding or permit an explicitly controlled `ReadyWithAcceptedExceptions` / `ReconciledWithAcceptedExceptions` outcome. It shall never change source evidence, evidence state, evaluation status, finding identity, original severity/RAG/confidence, or historical result. `ExceptionEligible=false` shall never be overridden by customer/project data.
+
+#### 9.19.5 Connections
+
+Executable rules in sheets `09`-`14`, `20` and `21` emit `FindingCode` references. `15_RAG_Severity` interprets occurrences. `16_Confidence` provides context-specific confidence. `17_Effort_Drivers` may consume finding results as complexity/remediation drivers. `19_Recommendations_Actions` resolves actions through explicit links. `20_PreMigration_Readiness` and `21_PostMigration_Reconciliation` may consume accepted-exception status without rewriting the finding. `22_Value_Lists`, `23_Source_References`, `24_Final_Config_Master` and `25_JSON_Field_Map` supply codes, provenance, inclusion explanation and JSON mapping.
 
 ### 9.20 `19_Recommendations_Actions`
 
+#### 9.20.1 Purpose and boundary
+
+This sheet defines reusable recommendations, their ordered atomic action steps and the contextual many-to-many links from findings to recommendations. Findings and recommendations shall remain separate semantic objects.
+
+A recommendation describes guidance or a desired response. An action describes one concrete step within that recommendation. The sheet shall not contain actual assignee names, project due dates, action status, completion comments, approvals, accepted-exception decisions or customer-specific evidence.
+
+The sheet shall contain three Excel Tables:
+
+1. `tblRecommendationDefinitions`;
+2. `tblRecommendationActions`; and
+3. `tblFindingRecommendationLinks`.
+
+#### 9.20.2 `tblRecommendationDefinitions`
+
+One row represents one reusable recommendation.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `RecommendationCode` | Identifier | Yes | Stable action -> `recommendations[]` |
-| `FindingCode` | Reference | Yes | Finding addressed |
-| `Phase` | Code | Yes | Phase-specific action |
-| `ScenarioId` | Code | Yes | Scenario scope |
-| `CustomerText` | Text | Yes | Clear customer-facing action |
-| `ConsultantNote` | Text | No | Internal interpretation guidance suitable for runtime packaging |
-| `NextAction` | Text | Yes | Concrete next step |
-| `ResponsibilityCategory` | Code | Yes | Customer, EXTEDO, Joint, RegulatorySME, MigrationTeam |
-| `Sequence` | Integer | Yes | Ordered output |
-| `IsActive` | Boolean | Yes | Runtime inclusion |
-| `SourceId` | Reference | Yes | Basis |
+| `RecommendationCode` | Identifier | Yes | Stable recommendation -> `recommendations[].recommendationCode` |
+| `RecommendationTitle` | Text | Yes | Short report title -> `title` |
+| `RecommendationType` | Code | Yes | Clarification, evidence, review, remediation, planning, reassessment or escalation -> `type` |
+| `CustomerFacingText` | Text/template | Yes | Plain-language guidance -> `customerFacingText` |
+| `ConsultantGuidance` | Text/template | Yes | Internal interpretation/implementation guidance -> `consultantGuidance` |
+| `ExpectedOutcome` | Text | Yes | Intended result of completing the recommendation -> `expectedOutcome` |
+| `ActionBasisType` | Code | Yes | Distinguishes authority-driven action from eMAS/project advice -> `actionBasisType` |
+| `DefaultAudience` | Code | Yes | Default visibility -> `defaultAudience` |
+| `IsAutomatable` | Boolean | Yes | Indicates possible administrative assistance only -> `isAutomatable` |
+| `RequiresConsultantReview` | Boolean | Yes | Specialist review trigger -> `requiresConsultantReview` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `SourceSection` | Text | Yes | Precise source location -> `sourceReference.section` |
+| `Rationale` | Text | Yes | Why the recommendation exists -> `rationale` |
+| `Notes` | Text | No | Workbook-only note; excluded from runtime JSON |
 
-Changing recommendation wording shall not change the identity or evidence of a historical finding.
+`IsAutomatable=true` shall never authorize eMAS to modify, delete, rename, move or repair customer/source/target content. It may only describe whether a separately approved future workflow could assist with an administrative action.
+
+#### 9.20.3 `tblRecommendationActions`
+
+One row represents one atomic ordered action step. A recommendation shall have at least one active action.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ActionCode` | Identifier | Yes | Stable action-step identity -> `recommendations[].actions[].actionCode` |
+| `RecommendationCode` | Reference | Yes | Parent recommendation -> derived nesting/link |
+| `ActionSequence` | Integer | Yes | Deterministic execution/display order -> `sequence` |
+| `ActionTitle` | Text | Yes | Short action label -> `title` |
+| `ActionText` | Text/template | Yes | Concrete instruction -> `actionText` |
+| `ResponsibilityCategory` | Code | Yes | Reusable role category, not a named assignee -> `responsibilityCategory` |
+| `ActionRequirement` | Code | Yes | Required, Conditional or Advisory -> `requirement` |
+| `DuePhase` | Code | Yes | Phase by which the step should be addressed -> `duePhase` |
+| `CompletionEvidenceRequirement` | Text | No | Expected proof of completion -> `completionEvidenceRequirement` |
+| `CustomerVisible` | Boolean | Yes | Customer-report eligibility -> `customerVisible` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Action basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the step is necessary -> `rationale` |
+
+#### 9.20.4 `tblFindingRecommendationLinks`
+
+One row links one finding to one recommendation for one scenario/phase context. This table is the authoritative many-to-many relationship. A rule-level `RecommendationCode`, where retained for authoring convenience, shall resolve to an identical active link row and shall not create a second independent relationship.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `FindingRecommendationLinkId` | Identifier | Yes | Stable link -> `findingRecommendationLinks[].linkId` |
+| `FindingCode` | Reference | Yes | Source finding -> `findingCode` |
+| `RecommendationCode` | Reference | Yes | Applicable recommendation -> `recommendationCode` |
+| `ScenarioId` | Code | Yes | `ALL` or one base scenario -> `scenarioId` |
+| `Phase` | Code | Yes | Phase applicability -> `phase` |
+| `LinkType` | Code | Yes | Primary, Supporting, Alternative or Escalation -> `linkType` |
+| `RequiredEvaluationStatus` | Code | No | Optional contextual result predicate -> `requiredEvaluationStatus` |
+| `RequiredRAG` | Code | No | Optional contextual RAG predicate -> `requiredRag` |
+| `RequiredSeverity` | Code | No | Optional contextual severity predicate -> `requiredSeverity` |
+| `Priority` | Integer | Yes | Deterministic applicability precedence -> `priority` |
+| `Sequence` | Integer | Yes | Deterministic report/action order -> `sequence` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Relationship basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why this action applies in this context -> `rationale` |
+
+One finding may link to several recommendations. One recommendation may serve several findings. `Primary` identifies the normal first response; `Supporting` adds another required/advisory action; `Alternative` offers a controlled alternative; `Escalation` activates specialist/manual review. Links with identical finding, scenario, phase and predicates shall not contain ambiguous equal priorities.
+
+Example relationships:
+
+| Finding | Scenario/phase | LinkType | Recommendation intent |
+|---|---|---|---|
+| Missing XML-referenced file | `MS-04` / PreMigration | Primary | Restore the file or confirm controlled exclusion from migration population |
+| Missing XML-referenced file | `MS-04` / PreMigration | Supporting | Re-run XML/reference assessment after correction |
+| Archive object not found after safeguards | `MS-01` / PreMigration | Primary | Confirm archive identity mapping and lookup configuration |
+| Archive object remains unresolved | `MS-01` / PreMigration | Escalation | Review unrecovered objects with the migration consultant |
+| Unsupported DMS-to-DMS route | `MS-07` / PreSales | Primary | Discuss scope and feasibility with an EXTEDO consultant |
+
+#### 9.20.5 Resolution and de-duplication
+
+For an evaluated finding occurrence, the runtime shall:
+
+1. resolve active links applicable to the selected scenario and phase;
+2. apply optional evaluation-status, RAG and severity predicates using results from the owning sheets;
+3. order matching links by Priority, LinkType, Sequence and stable identifier;
+4. load each referenced active recommendation and its ordered active actions;
+5. retain the finding-occurrence identifiers that triggered each recommendation/action; and
+6. present customer/consultant text according to audience and sensitivity rules.
+
+Report-level duplicate recommendations may be consolidated using `RecommendationCode + Phase + ScenarioId + TargetScope`, but all contributing finding-occurrence references shall remain traceable. Consolidation shall not hide a more restrictive owner, requirement level, escalation or due phase.
+
+#### 9.20.6 Controlled values in `22_Value_Lists`
+
+`22_Value_Lists` shall include:
+
+- `FINDING_CLASS`: `ConfirmedCondition`, `Issue`, `Observation`, `EvidenceGap`, `Conflict`, `Discrepancy`;
+- `FINDING_CATEGORY`: `Scenario`, `SourceSystem`, `Database`, `Archive`, `DMS`, `Repository`, `RegulatoryClassification`, `Dossier`, `SequenceLifecycle`, `XmlReference`, `FileIntegrity`, `Technical`, `Volume`, `Mapping`, `Readiness`, `Reconciliation`;
+- `STATEMENT_BASIS_TYPE`: `RegulatoryRequirement`, `RegulatoryGuidance`, `ReviewedInterpretation`, `TechnicalStandard`, `VendorProductRule`, `InternalMigrationRule`;
+- `REPORT_AUDIENCE`: `Customer`, `Consultant`, `Both`, `InternalOnly`;
+- `AGGREGATION_BEHAVIOR`: `SeparateOccurrences`, `GroupInSummary`, `SinglePerScope`;
+- `RECOMMENDATION_TYPE`: `Clarification`, `ProvideEvidence`, `ManualReview`, `Remediation`, `MigrationPlanning`, `Reassessment`, `Escalation`, `ConsultantReview`;
+- `RECOMMENDATION_LINK_TYPE`: `Primary`, `Supporting`, `Alternative`, `Escalation`;
+- `RESPONSIBILITY_CATEGORY`: `Customer`, `EXTEDO`, `Joint`, `RegulatorySME`, `MigrationTeam`;
+- `ACTION_REQUIREMENT`: `Required`, `Conditional`, `Advisory`;
+- `EXCEPTION_ALLOWED_EFFECT`: `AcknowledgeOnly`, `PermitReadyWithAcceptedExceptions`, `PermitReconciledWithAcceptedExceptions`, `NoOutcomeOverride`; and
+- `REQUIRED_APPROVER_ROLE`: `CustomerBusinessOwner`, `CustomerMigrationOwner`, `EXTEDOConsultant`, `RegulatorySME`, `JointApproval`.
+
+Existing controlled lists shall supply scope, phase, evaluation status, evidence state, severity and RAG. `NotAssessed`, `NotApplicable` and `Unknown` are not finding classes.
+
+#### 9.20.7 Configuration and result JSON
+
+~~~json
+{
+  "findings": [{
+    "findingCode": "FND-REF-MISSING-001",
+    "title": "Referenced file is missing",
+    "category": "XmlReference",
+    "findingClass": "Issue",
+    "scopeLevel": "File",
+    "customerSummaryTemplate": "Referenced file {ReferencedPath} was not found for {SourceXml}.",
+    "consultantDetailTemplate": "The XML reference resolved to no accessible physical file.",
+    "statementBasisType": "TechnicalStandard",
+    "aggregationBehavior": "GroupInSummary",
+    "sourceReference": {"sourceId": "SRC-ECTD-SPEC-001", "section": "File reference requirements"}
+  }],
+  "recommendations": [{
+    "recommendationCode": "REC-REF-RESTORE-001",
+    "title": "Resolve missing referenced file",
+    "type": "Remediation",
+    "customerFacingText": "Restore the referenced file or confirm that it is outside the approved migration population.",
+    "consultantGuidance": "Verify source completeness before changing the baseline.",
+    "requiresConsultantReview": false,
+    "actions": [{
+      "actionCode": "ACT-REF-001",
+      "sequence": 100,
+      "responsibilityCategory": "Customer",
+      "requirement": "Required",
+      "actionText": "Confirm whether the referenced file should exist in the source population."
+    }]
+  }],
+  "findingRecommendationLinks": [{
+    "linkId": "FRL-REF-001",
+    "findingCode": "FND-REF-MISSING-001",
+    "recommendationCode": "REC-REF-RESTORE-001",
+    "scenarioId": "MS-04",
+    "phase": "PreMigration",
+    "linkType": "Primary",
+    "priority": 100,
+    "sequence": 100
+  }]
+}
+~~~
+
+~~~json
+{
+  "findingOccurrenceId": "EXEC-001-FND-REF-MISSING-001-00017",
+  "findingCode": "FND-REF-MISSING-001",
+  "ruleId": "RULE-REF-TARGET-001",
+  "phase": "PreMigration",
+  "scenarioId": "MS-04",
+  "scope": {"entityType": "File", "entityId": "FILE-00017"},
+  "evidence": {
+    "sourceXml": "0003/index.xml",
+    "referencedPath": "m5/53-clin-stud-rep/study-report.pdf",
+    "evidenceState": "ConfirmedAbsent"
+  },
+  "evaluationStatus": "Evaluated",
+  "severity": "High",
+  "rag": "Red",
+  "confidence": "High",
+  "recommendationCodes": ["REC-REF-RESTORE-001"],
+  "acceptedException": null
+}
+~~~
+
+Configuration JSON contains reusable definitions and links. Execution results contain occurrences, observed evidence, contextual interpretation, action instances and project decisions. Arrays shall use deterministic dependency, priority, sequence and identifier ordering.
+
+#### 9.20.8 Blocking validation
+
+Generation shall be blocked when a required table/column is missing; an active identifier is duplicated; a rule references a missing/inactive finding; a finding embeds default severity/RAG/confidence/readiness/reconciliation logic; a template contains an unsupported/unpopulatable token or executable content; customer-visible text exposes sensitive detail; a regulatory claim lacks an appropriate source/basis; a recommendation lacks an active action; an action lacks owner, requirement, due phase or unique order; a link references missing/inactive endpoints; equivalent links have ambiguous priority; a rule-level recommendation does not resolve to an identical authoritative link; a link is applicable where its finding cannot occur; an eligible exception lacks required approval/evidence/expiry semantics; an exception attempts to change evidence or original interpretation; project-specific finding/action/exception data appears in reusable configuration; grouping deletes contributing occurrences; or DMS-to-DMS migration instructions are runtime eligible.
 
 ### 9.21 `20_PreMigration_Readiness`
 
@@ -3989,6 +4250,15 @@ JSON generation shall be blocked when any of the following is true:
 - raw internal score is exposed contrary to visibility policy, effort confidence is not obtained separately, or effort logic overwrites RAG/severity/readiness/reconciliation;
 - exact scores, weights, caps, floors or thresholds lack traceable owner/SME evidence, or DMS-to-DMS effort content is runtime eligible;
 
+- a `18_Findings` or `19_Recommendations_Actions` table/column is missing, or an active finding, exception policy, recommendation, action or link identifier is duplicated;
+- a rule references a missing/inactive finding, or a finding embeds default severity, RAG, confidence, readiness or reconciliation logic owned by another sheet;
+- a finding/recommendation/action template contains an unsupported or unpopulatable token, executable content, or customer-visible sensitive detail;
+- a regulatory claim lacks an appropriate source and basis type, or an internal migration recommendation is presented as an authority requirement;
+- an active recommendation has no active atomic action, or an action lacks owner category, requirement level, due phase or unique deterministic sequence;
+- a finding-recommendation link has a missing/inactive endpoint, impossible scenario/phase applicability, an unmatched rule-level shortcut, or ambiguous equal priority;
+- an eligible exception lacks approval/evidence/expiry semantics, attempts to change evidence/original interpretation, or stores project-specific acceptance data as reusable configuration;
+- occurrence grouping or recommendation consolidation deletes contributing occurrence/evidence references, or DMS-to-DMS migration instructions are runtime eligible;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -4220,6 +4490,35 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-209` | Assess MS-08 source-DMS documents/renditions/relationships | Supported DMS-to-eCTDmanager drivers activate; DMS-to-DMS remains blocked |
 | `MVP-AT-210` | Inspect workbook/JSON/report outputs | No unsupported hours, cost, duration, team-size or committed-date estimate exists |
 | `MVP-AT-211` | Generate unchanged effort configuration twice | Models, drivers, rules, conditions, policies and bands have identical order and canonical bytes |
+| `MVP-AT-212` | Validate findings/recommendations structure | All five approved named tables and required columns exist with unique stable keys |
+| `MVP-AT-213` | Create a finding definition | Definition contains semantic meaning, scope, audience, basis and source but no project observation |
+| `MVP-AT-214` | Add DefaultSeverity, DefaultRAG or default confidence to a finding | Generation blocks and identifies the owning interpretation sheet |
+| `MVP-AT-215` | Use an allowed finding-template token populated by the emitting rule | Token is validated and preserved deterministically in configuration JSON |
+| `MVP-AT-216` | Use an unknown/unpopulatable token or executable expression | Generation blocks with finding/recommendation/action and token details |
+| `MVP-AT-217` | Mark customer-visible text containing a restricted path or sensitive detail | Safe-output validation blocks or requires InternalOnly according to policy |
+| `MVP-AT-218` | Emit the same finding for two different files | Two occurrence IDs and both evidence paths are retained |
+| `MVP-AT-219` | Emit an exact duplicate occurrence key | Duplicate may consolidate once while all provenance remains traceable |
+| `MVP-AT-220` | Group twenty occurrences in a report summary | One summary count may display while all twenty occurrence/evidence references remain available |
+| `MVP-AT-221` | Define a numeric sequence-gap finding | It remains Observation unless a separate contextual rule establishes a stronger issue |
+| `MVP-AT-222` | Define unavailable required DB input | Finding is EvidenceGap/NotAssessed and is not converted to confirmed absence |
+| `MVP-AT-223` | Define an archive-missing finding | It can emit only after applicable false-missing safeguards have completed |
+| `MVP-AT-224` | Link one finding to primary and supporting recommendations | Both links resolve in deterministic priority/sequence order |
+| `MVP-AT-225` | Link one reusable recommendation to several findings | One definition is reused while each contextual link remains traceable |
+| `MVP-AT-226` | Create a recommendation with several action steps | Each atomic action retains unique code, owner, requirement, due phase and order |
+| `MVP-AT-227` | Activate a recommendation with no active action | Generation blocks |
+| `MVP-AT-228` | Create equivalent links with equal priority but conflicting recommendations | Generation blocks rather than selecting arbitrarily |
+| `MVP-AT-229` | Retain a rule-level RecommendationCode | It must resolve to an identical authoritative active link and shall not duplicate output |
+| `MVP-AT-230` | Resolve recommendation links for different scenarios/phases | Only matching links and transitive dependencies enter scenario JSON |
+| `MVP-AT-231` | Consolidate one recommendation triggered by several occurrences | One report action may display while every contributing occurrence reference is retained |
+| `MVP-AT-232` | Configure an exception-ineligible finding | Project data cannot override the policy |
+| `MVP-AT-233` | Accept an eligible Pre-Migration exception | Original evidence/finding/RAG/severity/confidence remain unchanged and outcome may become ReadyWithAcceptedExceptions only when permitted |
+| `MVP-AT-234` | Carry an approved exception to Post-Migration | Carry-forward occurs only when policy permits and the project record remains separately traceable |
+| `MVP-AT-235` | Put assignee, due date, completion status or approval decision in reusable tables | Generation blocks as project/execution data |
+| `MVP-AT-236` | Present an internal migration action as an authority requirement | Source/basis validation blocks |
+| `MVP-AT-237` | Generate MS-08 source-DMS-to-eCTDmanager configuration | Applicable findings, links and actions are included |
+| `MVP-AT-238` | Request DMS-to-DMS migration | No migration instructions are exported; MS-07 consultant-review action is returned |
+| `MVP-AT-239` | Generate unchanged finding/action configuration twice | Definitions, policies, actions and links have identical order and canonical bytes |
+
 
 ## 17. MVP definition of done
 
@@ -4241,14 +4540,15 @@ The MVP is complete when:
 14. every severity/RAG rule is finding-, scenario-, phase- and scope-specific; keeps severity, RAG, blocker, decision impact and evaluation status independent; applies explicit Red/Unknown/Amber/Green aggregation; requires complete mandatory coverage for Green; and preserves original interpretations under accepted exceptions;
 15. every confidence rule identifies its context, evidence criteria, independence, coverage, conflict and aggregation behavior; multiple independent strong indicators are required for High under the default policy; heuristic-only evidence is capped at Low; conflicting/no evidence remains Unknown; and separate confidence contexts remain reportable;
 16. every active effort model has traceable bands, drivers, atomic impacts, typed conditions and double-count controls; no evidence never becomes VeryLow; incomplete evidence remains Provisional/NotAssessed; the final band is the higher of score-derived band and floor; effort confidence remains separate; raw scores are internal by default; and unsupported hours/cost/duration/team-size estimates are absent;
-17. every scenario has complete phase/module applicability;
-18. `24_Final_Config_Master` explains every inclusion/exclusion;
-19. scenario JSON generates for all Section 5 scenarios;
-20. every JSON object traces to workbook records;
-21. invalid/incomplete content blocks with actionable messages;
-22. unchanged input/selection produces identical canonical JSON;
-23. PowerShell consumes JSON without reading Excel;
-24. deferred SharePoint, release governance and GxP controls are not represented as complete.
+17. every finding is a reusable sourced semantic definition separate from occurrences and contextual severity/RAG/confidence; exception policies cannot rewrite evidence/original interpretation; every recommendation is separate from findings, has ordered atomic owned actions, and is connected through deterministic scenario/phase links; occurrence grouping retains all evidence; project-specific workflow data is excluded; and DMS-to-DMS routes yield consultant review rather than migration instructions;
+18. every scenario has complete phase/module applicability;
+19. `24_Final_Config_Master` explains every inclusion/exclusion;
+20. scenario JSON generates for all Section 5 scenarios;
+21. every JSON object traces to workbook records;
+22. invalid/incomplete content blocks with actionable messages;
+23. unchanged input/selection produces identical canonical JSON;
+24. PowerShell consumes JSON without reading Excel;
+25. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -4300,3 +4600,4 @@ Each review step shall answer four questions:
 | 4.11 MVP | 15 September 2026 | Approved `14_Source_DB_Archive_DMS` with six normalized source-profile, capability, field, relationship, archive-identity and lookup-safeguard tables; separated logical workbook mappings from proprietary extraction implementations; added product/version-qualified verified adapters, phase/scenario evidence depth, explicit source-to-canonical and source-to-target keys, database-record-to-archive-object identity chains, SHA/vendor-policy fixture requirements and mandatory false-missing safeguards; defined source-DMS-to-eCTDmanager document/version/rendition/metadata/relationship mappings while retaining the DMS-to-DMS exclusion; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
 | 4.12 MVP | 15 September 2026 | Approved `15_RAG_Severity` and `16_Confidence` with three normalized tables per sheet; separated severity, RAG, confidence, blocker, decision impact, evidence state and evaluation status; defined explicit Red/Unknown/Amber/Green aggregation and complete-coverage prerequisites for Green; prohibited Warning/Error and NotApplicable shortcuts; retained original interpretations under accepted exceptions; adopted rule-based confidence with separate classification, coverage, effort, readiness and reconciliation contexts, multiple independent strong indicators for High, heuristic-only cap at Low and conflict/no-evidence Unknown; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
 | 4.13 MVP | 15 September 2026 | Approved `17_Effort_Drivers` with six normalized model, driver, impact, condition, double-count and band tables; retained complexity bands instead of unsupported hours/cost/duration/team-size estimates; defined AddScore and MinimumComplexity as separate atomic modes, inclusive-lower/exclusive-upper thresholds, complete five-band models, deterministic score/floor calculation and mandatory correlated-driver suppression; added Calculated/Provisional/NotAssessed evidence behavior, prohibited VeryLow from missing evidence, kept EffortEstimate confidence separate and raw score internal by default; required traceable owner/SME evidence for weights and thresholds; added controlled values, deterministic JSON, validation and acceptance tests |
+| 4.14 MVP | 15 September 2026 | Approved `18_Findings` and `19_Recommendations_Actions` with five normalized finding-definition, exception-policy, recommendation-definition, atomic-action and finding-recommendation-link tables; separated reusable definitions from execution occurrences and removed default severity/RAG/confidence from finding ownership; added controlled customer/consultant wording, source/basis classification, template-token safety, deterministic occurrence identity, occurrence-preserving grouping and recommendation de-duplication; defined scenario/phase-qualified many-to-many links, ordered owned actions and accepted-exception effects that never rewrite evidence or original interpretation; retained project assignees/dates/status/approvals outside reusable configuration and routed DMS-to-DMS requests to consultant review; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
