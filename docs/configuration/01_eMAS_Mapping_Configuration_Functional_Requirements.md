@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.11 MVP
+**Version:** 4.12 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-023
+**Decision references:** DEC-2026-013 through DEC-2026-024
 
 ## 1. Purpose and MVP decision
 
@@ -2478,41 +2478,377 @@ Generation shall be blocked when:
 
 ### 9.16 `15_RAG_Severity`
 
+#### 9.16.1 Purpose and boundary
+
+Severity describes how serious a confirmed condition is. RAG describes the configured risk treatment of that condition. Neither concept is evidence state, evaluation status, confidence, blocker status, readiness outcome, reconciliation outcome, or exception disposition.
+
+The sheet shall contain three normalized Excel Tables:
+
+1. `tblRagSeverityRules`;
+2. `tblRagSeverityConditions`; and
+3. `tblRagAggregationPolicies`.
+
+An observed result or finding shall be interpreted only by an applicable rule. Warning and Error evaluation statuses shall not directly determine RAG. Missing, inaccessible, invalid, conflicting, or incomplete mandatory evidence shall never resolve to Green.
+
+#### 9.16.2 `tblRagSeverityRules`
+
+One row defines one phase/scenario interpretation of a finding.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `RagRuleId` | Identifier | Yes | Stable rule -> `interpretation.ragRules[]` |
+| `RagSeverityRuleId` | Identifier | Yes | Primary key -> `interpretation.ragSeverityRules[].ragSeverityRuleId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
 | `FindingCode` | Reference | Yes | Finding being interpreted |
-| `Phase` | Code | Yes | Allows phase-specific risk treatment |
-| `ScenarioId` | Code | Yes | `ALL` or override |
-| `EvidenceState` | Code | Yes | Present, ConfirmedAbsent, Unavailable, Invalid, Conflict |
-| `EvaluationStatus` | Code | Yes | Assessed, NotAssessed, NotApplicable, Unknown, Error |
-| `Severity` | Code | Yes | Info, Low, Medium, High, Critical |
-| `RAG` | Code | Yes | Green, Amber, Red, Unknown |
-| `IsBlocker` | Boolean | Yes | Readiness decision effect |
-| `AggregationStrategy` | Code | Yes | MostSevere, Aggregate, FirstMatch, ManualReview |
-| `Rationale` | Text | Yes | Explains the interpretation |
-| `SourceId` | Reference | Yes | Basis for the rule |
+| `ModuleId` | Reference | Yes | Owning assessment module |
+| `ScenarioId` | Code | Yes | `ALL` or scenario override |
+| `Phase` | Code | Yes | Phase-specific treatment |
+| `ScopeLevel` | Code | Yes | Entity level to which the interpretation applies |
+| `Severity` | Code | Yes | Info, Low, Medium, High, or Critical |
+| `RAG` | Code | Yes | Green, Amber, Red, or Unknown |
+| `IsBlocker` | Boolean | Yes | Whether this interpretation can block the phase decision |
+| `DecisionImpact` | Code | Yes | Informational, FollowUp, RemediationRequired, ReadinessBlocker, ReconciliationReview, etc. |
+| `ExceptionEligible` | Boolean | Yes | Whether a later approved exception may change decision treatment |
+| `AggregationPolicyId` | Reference | Yes | Applicable summary policy |
+| `Priority` | Integer | Yes | Deterministic rule selection |
+| `Rationale` | Text | Yes | Plain-language interpretation |
+| `SourceId` | Reference | Yes | Regulatory, product, technical, or approved internal basis |
+| `SourceSection` | Text | Yes | Exact source section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
 
-`NotAssessed` and `NotApplicable` are statuses, not colours. Missing, inaccessible, invalid, or conflicting mandatory evidence shall not resolve to Green.
+`IsBlocker` and `DecisionImpact` remain independent of RAG. A required-evidence limitation may block readiness while the unassessed conclusion remains Unknown. Conversely, a confirmed Red may be nonblocking in a phase only where an explicit approved rule permits it.
+
+`ExceptionEligible` never changes or replaces the original finding, evidence, evaluation status, severity, RAG, or confidence. It permits only later decision treatment under `20_PreMigration_Readiness` or `21_PostMigration_Reconciliation`.
+
+#### 9.16.3 `tblRagSeverityConditions`
+
+One row represents one atomic applicability condition.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `RagConditionId` | Identifier | Yes | Stable key -> `ragSeverityRules[].conditions[].ragConditionId` |
+| `RagSeverityRuleId` | Reference | Yes | Parent rule |
+| `ConditionGroup` | Text | Yes | Conditions within a group are ANDed; groups are ORed |
+| `ConditionSequence` | Integer | Yes | Deterministic order |
+| `ConditionSubjectType` | Code | Yes | Finding, EvidenceState, EvaluationStatus, Field, Metric, Qualifier, or Count |
+| `ReferenceCode` | Reference/code | Yes | Finding, field, metric, qualifier or controlled status evaluated |
+| `Operator` | Code | Yes | Data-type-compatible controlled operator |
+| `ValueDataType` | Code | Yes | Deterministic operand parsing |
+| `Value1` | Typed scalar | Conditional | First operand |
+| `Value2` | Typed scalar | Conditional | Second range operand |
+| `MissingInputBehavior` | Code | Yes | NotAssessed, Unknown, NoMatch, or Error |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Conditions may reference evidence such as `ARCHIVE.LOOKUP_STATUS Equals Missing`, `EvidenceState Equals ConfirmedAbsent`, `MET-BROKEN-REFERENCE-COUNT GreaterThan 0`, or `EvaluationStatus Equals Conflict`. A missing input shall not be treated as a failed predicate and then accidentally produce Green.
+
+#### 9.16.4 `tblRagAggregationPolicies`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `RagAggregationPolicyId` | Identifier | Yes | Primary key -> `interpretation.ragAggregationPolicies[].ragAggregationPolicyId` |
+| `AggregationScope` | Code | Yes | Finding, file, dossier, module, scenario, or phase |
+| `AggregationStrategy` | Code | Yes | Normally MostSevere |
+| `ConfirmedRedBehavior` | Code | Yes | Handling of confirmed applicable Red results |
+| `RequiredCoverageBehavior` | Code | Yes | Behavior when mandatory coverage is incomplete |
+| `ConflictBehavior` | Code | Yes | Behavior for material conflicting evidence |
+| `AmberBehavior` | Code | Yes | Amber precedence when no Red/Unknown override applies |
+| `GreenPrerequisite` | Code | Yes | Coverage and result prerequisites for Green |
+| `AllNotApplicableBehavior` | Code | Yes | NotApplicable/NotAssessed behavior; never Green |
+| `OptionalSkippedBehavior` | Code | Yes | Preserve, IgnoreForAggregation, or ConfidenceDown |
+| `BlockerAggregation` | Code | Yes | AnyBlocker, CountThreshold, FirstMatch, or controlled equivalent |
+| `TieStrategy` | Code | Yes | Deterministic tie handling |
+| `SourceId` | Reference | Yes | Policy source |
+| `SourceSection` | Text | Yes | Exact source/policy section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+The default aggregation policy shall apply this order:
+
+1. any confirmed applicable Red may produce aggregate Red;
+2. if no confirmed Red exists but mandatory coverage is incomplete or material evidence conflicts, aggregate RAG is Unknown;
+3. otherwise any Amber produces Amber;
+4. Green is permitted only when all required applicable checks were assessed and no adverse result exists; and
+5. when all checks are NotApplicable, evaluation remains NotApplicable/NotAssessed and no Green is produced.
+
+Unknown is not a severity rank above or below Red. It represents insufficient or contradictory knowledge and therefore requires explicit precedence.
+
+Optional skipped checks remain visible and affect confidence only where the policy says so.
+
+#### 9.16.5 Interpretation examples
+
+| Situation | Evaluation status | RAG treatment | Explanation |
+|---|---|---|---|
+| Required archive object confirmed absent after complete safeguarded lookup | Assessed | Red | Confirmed adverse condition |
+| Archive root inaccessible for object-presence assessment | NotAssessed | Unknown | Presence cannot be concluded |
+| Separate finding that required archive access is unavailable | Assessed | Amber or Red by rule | The access limitation itself is confirmed |
+| Optional module not applicable | NotApplicable | No RAG | Not a successful Green assessment |
+| Conflicting strong application identities | Conflict | Unknown | No arbitrary identity wins |
+| Numeric sequence gap without lifecycle proof | Assessed observation | No automatic Red | Gap alone does not prove a regulatory defect |
+| Valid check with complete required evidence | Assessed | Green | Green prerequisites satisfied |
+| Parser crashes unexpectedly | Error | Unknown | Engine failure is not evidence of invalid content |
+| Parser confirms malformed XML | Assessed | Amber or Red by rule | Invalid content is confirmed |
+
+#### 9.16.6 Connections and controlled values
+
+Sheets `09`–`14` produce observations, findings, metrics, lookup results and provenance. `18_Findings` supplies the finding definition and `19_Recommendations_Actions` supplies actions. `20` and `21` consume severity, RAG, blocker and decision impact without redefining them. `07_Fields_Evidence` defines all status/result fields; `22_Value_Lists` controls codes; `24` and `25` expose inclusion and JSON projection.
+
+`22_Value_Lists` shall include:
+
+- `SEVERITY`: `Info`, `Low`, `Medium`, `High`, `Critical`;
+- `RAG`: `Green`, `Amber`, `Red`, `Unknown`;
+- `AGGREGATION_STRATEGY`: `MostSevere`, `LowestConfidence`, `FirstMatch`, `ManualReview`;
+- `DECISION_IMPACT`: `None`, `Informational`, `FollowUp`, `RemediationRequired`, `ReadinessBlocker`, `ReconciliationReview`, `ReconciliationFailure`;
+- `CONDITION_SUBJECT_TYPE`: `Finding`, `EvidenceState`, `EvaluationStatus`, `Field`, `Metric`, `Qualifier`, `Count`;
+- `OPTIONAL_SKIPPED_BEHAVIOR`: `Preserve`, `IgnoreForAggregation`, `ConfidenceDown`;
+- `BLOCKER_AGGREGATION`: `AnyBlocker`, `CountThreshold`, `FirstMatch`; and
+- reason codes including `INPUT_UNAVAILABLE`, `ACCESS_DENIED`, `PARSE_FAILED`, `NOT_APPLICABLE`, `CONFLICTING_EVIDENCE`, `INSUFFICIENT_EVIDENCE` and `REQUIRED_COVERAGE_INCOMPLETE`.
+
+`NotAssessed`, `NotApplicable`, `Skipped`, `Warning` and `Error` remain evaluation statuses and shall not appear in the RAG list.
+
+#### 9.16.7 Configuration and result JSON
+
+~~~json
+{
+  "interpretation": {
+    "ragSeverityRules": [{
+      "ragSeverityRuleId": "RAG-ARCHIVE-MISSING-001",
+      "requirementId": "REQ-RAG-001",
+      "findingCode": "FIND-ARCHIVE-MISSING",
+      "moduleId": "MOD-ARCHIVE",
+      "scenarioIds": ["MS-01", "MS-02", "MS-03"],
+      "phase": ["PreMigration"],
+      "severity": "Critical",
+      "rag": "Red",
+      "isBlocker": true,
+      "decisionImpact": "ReadinessBlocker",
+      "exceptionEligible": true,
+      "aggregationPolicyId": "RAG-AGG-DEFAULT",
+      "conditions": [{
+        "ragConditionId": "RAGCOND-ARCHIVE-MISSING-001",
+        "conditionSubjectType": "EvidenceState",
+        "referenceCode": "ARCHIVE.OBJECT_EVIDENCE_STATE",
+        "operator": "Equals",
+        "valueType": "Code",
+        "value1": "ConfirmedAbsent"
+      }]
+    }]
+  }
+}
+~~~
+
+~~~json
+{
+  "findingResults": [{
+    "findingCode": "FIND-ARCHIVE-MISSING",
+    "subjectId": "DOC-184",
+    "evaluationStatus": "Assessed",
+    "evidenceState": "ConfirmedAbsent",
+    "severity": "Critical",
+    "rag": "Red",
+    "isBlocker": true,
+    "decisionImpact": "ReadinessBlocker",
+    "ragSeverityRuleId": "RAG-ARCHIVE-MISSING-001"
+  }]
+}
+~~~
+
+Rule arrays shall be ordered by dependency, Priority and stable identifier. Aggregate results shall retain contributing result identifiers, required-coverage state, conflict state and blocker sources.
+
+#### 9.16.8 Blocking validation
+
+Generation shall be blocked when an active rule/policy lacks a stable identifier, finding, module, scenario, phase, scope, severity, RAG, decision impact, aggregation policy, rationale or source; uses incompatible or unresolved conditions; stores an evaluation status as RAG; permits Green from incomplete/unavailable/invalid/conflicting mandatory evidence; maps every Warning or Error directly to Amber/Red; allows all-NotApplicable to become Green; hides a confirmed Red; lets an exception replace an original interpretation; contains overlapping/inverted/gapped thresholds without explicit fall-through; or encodes readiness/reconciliation outcomes as RAG values.
 
 ### 9.17 `16_Confidence`
 
+#### 9.17.1 Purpose and boundary
+
+Confidence describes how strongly the available evidence supports a specific conclusion. It shall remain independent from severity, RAG, evaluation status, blocker status and phase outcome.
+
+The sheet shall contain:
+
+1. `tblConfidenceRules`;
+2. `tblConfidenceCriteria`; and
+3. `tblConfidenceAggregationPolicies`.
+
+Confidence shall be rule-based for the MVP. An unexplained numeric score or average of High/Medium/Low values is prohibited.
+
+Classification confidence, assessment-coverage confidence, effort-estimate confidence, readiness-evidence confidence and reconciliation confidence shall remain separately reportable. A generic OverallConfidence shall not replace these dimensions.
+
+#### 9.17.2 `tblConfidenceRules`
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `ConfidenceRuleId` | Identifier | Yes | Stable rule -> `interpretation.confidenceRules[]` |
-| `ModuleId` | Reference | Yes | Assessment area |
-| `ScenarioId` | Code | Yes | Scenario scope |
-| `EvidenceStrength` | Code | Yes | Strong, Medium, Weak, None |
-| `RequiredEvidenceCoverage` | Decimal | No | Coverage threshold where meaningful |
-| `ConflictCountFrom` | Integer | No | Lower boundary |
-| `ConflictCountTo` | Integer | No | Upper boundary |
-| `UnavailableEvidenceImpact` | Code | Yes | DownOneLevel, Low, Unknown, NoChange |
-| `ResultConfidence` | Code | Yes | High, Medium, Low, Unknown |
+| `ConfidenceRuleId` | Identifier | Yes | Primary key -> `interpretation.confidenceRules[].confidenceRuleId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
+| `ConfidenceContext` | Code | Yes | Classification, AssessmentCoverage, EffortEstimate, ReadinessEvidence, or ReconciliationEvidence |
+| `AppliesToResultType` | Code | Yes | Finding, Classification, Metric, ModuleAssessment, ReadinessInput, or ReconciliationInput |
+| `ModuleId` | Reference | Conditional | Required for module-specific confidence |
+| `ScenarioId` | Code | Yes | `ALL` or scenario override |
+| `Phase` | Code | Yes | Phase applicability |
+| `ScopeLevel` | Code | Yes | Entity level evaluated |
+| `ResultConfidence` | Code | Yes | High, Medium, Low, or Unknown |
+| `ReasonCode` | Code | Yes | Stable explanation code |
 | `ReasonTemplate` | Text | Yes | Human-readable explanation |
-| `Priority` | Integer | Yes | Deterministic selection |
-| `SourceId` | Reference | Yes | Basis |
+| `AggregationPolicyId` | Reference | Yes | Applicable summary policy |
+| `Priority` | Integer | Yes | First matching rule order |
+| `SourceId` | Reference | Yes | Policy source |
+| `SourceSection` | Text | Yes | Exact source section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
 
-Classification confidence, assessment coverage, and effort-estimate confidence shall remain separately reportable even if they share the same controlled levels.
+A confidence result shall identify its context. `High` classification confidence does not imply High effort-estimate confidence or complete assessment coverage.
+
+#### 9.17.3 `tblConfidenceCriteria`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ConfidenceCriterionId` | Identifier | Yes | Stable key -> `confidenceRules[].criteria[].confidenceCriterionId` |
+| `ConfidenceRuleId` | Reference | Yes | Parent rule |
+| `CriterionGroup` | Text | Yes | AND within groups; OR between groups |
+| `CriterionSequence` | Integer | Yes | Stable order |
+| `CriterionType` | Code | Yes | EvidenceStrength, IndependentSourceCount, CoveragePercent, ConflictCount, UnavailableRequiredCount, StructuredEvidencePresent, or HeuristicOnly |
+| `ReferenceCode` | Reference/code | Conditional | Field, metric, evidence family or result measured |
+| `Operator` | Code | Yes | Controlled comparison |
+| `ValueDataType` | Code | Yes | Typed operand |
+| `Value1` | Typed scalar | Conditional | First operand |
+| `Value2` | Typed scalar | Conditional | Second range operand |
+| `MissingInputBehavior` | Code | Yes | Unknown, Low, NoMatch, or Error |
+| `IsMandatory` | Boolean | Yes | Whether the criterion must be satisfied |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Coverage percentages and counts shall be referenced from `13_Size_Volume_Metrics`. The confidence sheet shall not recalculate them.
+
+#### 9.17.4 `tblConfidenceAggregationPolicies`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ConfidenceAggregationPolicyId` | Identifier | Yes | Primary key -> `interpretation.confidenceAggregationPolicies[].confidenceAggregationPolicyId` |
+| `ConfidenceContext` | Code | Yes | Confidence dimension being aggregated |
+| `AggregationScope` | Code | Yes | Finding, entity, module, scenario, or phase |
+| `AggregationStrategy` | Code | Yes | LowestConfidence, FirstMatch, or ManualReview |
+| `RequiredResultTreatment` | Code | Yes | Treatment of mandatory results |
+| `OptionalResultTreatment` | Code | Yes | Treatment of optional results |
+| `UnknownBehavior` | Code | Yes | UnknownOverride, Preserve, or ManualReview |
+| `ConflictBehavior` | Code | Yes | Normally UnknownOverride |
+| `MinimumCoveragePercent` | Decimal | Conditional | Coverage needed for non-Unknown aggregate |
+| `HighConfidencePrerequisite` | Code | Yes | Required strong/independent evidence pattern |
+| `NoUsableEvidenceOutcome` | Code | Yes | Unknown |
+| `TieStrategy` | Code | Yes | Deterministic resolution |
+| `SourceId` | Reference | Yes | Policy source |
+| `SourceSection` | Text | Yes | Exact source/policy section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+The default confidence model is:
+
+| Evidence pattern | Maximum/result confidence |
+|---|---|
+| Multiple independent strong indicators, required coverage satisfied and no material conflict | High |
+| One strong indicator without independent confirmation | Medium |
+| Consistent medium-strength evidence with sufficient coverage | Medium |
+| Heuristic, folder-name, filename or customer-stated evidence only | Low |
+| Required evidence unavailable or assessment not performed | Unknown |
+| Material contradiction between strong indicators | Unknown |
+| No usable evidence | Unknown |
+| NotApplicable subject | No confidence result |
+
+Unknown means confidence cannot be established. It is not equivalent to Low. Weak heuristics shall not produce High or Medium by themselves.
+
+#### 9.17.5 Permitted severity/confidence combinations
+
+| Severity/RAG | Confidence | Meaning |
+|---|---|---|
+| Critical / Red | High | Serious condition supported by strong evidence |
+| Critical / Red | Low | Potentially serious condition based on weak evidence; confirmation required |
+| High / Unknown | Unknown | Potential impact exists but the underlying state cannot be assessed |
+| Medium / Amber | High | Confirmed manageable issue |
+| Low / Green | High | Confirmed acceptable or informational condition |
+| No severity / no RAG | Unknown | Applicable assessment could not be performed |
+| No severity / no RAG | No result | Subject was NotApplicable |
+
+Low confidence shall not increase severity. It shall create follow-up, manual review or evidence limitation. High confidence shall not increase RAG severity. Low confidence shall not downgrade a confirmed Red.
+
+#### 9.17.6 Connections and controlled values
+
+`05_Scenario_Module_Map` supplies applicability and missing-evidence behavior. `07_Fields_Evidence` defines confidence/evidence/result fields. Sheets `09`–`15` supply observations, metrics, findings, severity and provenance. `18`–`21` consume confidence without overwriting it. `22_Value_Lists` controls all codes and `24`/`25` provide resolved traceability and JSON projection.
+
+`22_Value_Lists` shall include:
+
+- `CONFIDENCE`: `High`, `Medium`, `Low`, `Unknown`;
+- `EVIDENCE_STRENGTH`: `Strong`, `Medium`, `Weak`, `None`;
+- `CONFIDENCE_CONTEXT`: `Classification`, `AssessmentCoverage`, `EffortEstimate`, `ReadinessEvidence`, `ReconciliationEvidence`;
+- `APPLIES_TO_RESULT_TYPE`: `Finding`, `Classification`, `Metric`, `ModuleAssessment`, `ReadinessInput`, `ReconciliationInput`;
+- `CONFIDENCE_CRITERION_TYPE`: `EvidenceStrength`, `IndependentSourceCount`, `CoveragePercent`, `ConflictCount`, `UnavailableRequiredCount`, `StructuredEvidencePresent`, `HeuristicOnly`;
+- `CONFIDENCE_AGGREGATION_STRATEGY`: `LowestConfidence`, `FirstMatch`, `ManualReview`;
+- `UNKNOWN_BEHAVIOR`: `UnknownOverride`, `Preserve`, `ManualReview`; and
+- confidence reason codes including `MULTIPLE_STRONG_INDICATORS`, `SINGLE_STRONG_INDICATOR`, `MEDIUM_EVIDENCE`, `HEURISTIC_ONLY`, `NO_USABLE_EVIDENCE`, `CONFLICTING_EVIDENCE` and `REQUIRED_COVERAGE_INCOMPLETE`.
+
+NotAssessed and NotApplicable remain evaluation statuses and shall not be added to the confidence list. A NotApplicable subject has no confidence result; an applicable but unsupported/unperformed conclusion normally has Unknown confidence.
+
+#### 9.17.7 Configuration and result JSON
+
+~~~json
+{
+  "interpretation": {
+    "confidenceRules": [{
+      "confidenceRuleId": "CONF-CLASSIFY-HIGH-001",
+      "requirementId": "REQ-CONF-001",
+      "confidenceContext": "Classification",
+      "appliesToResultType": "Classification",
+      "scenarioIds": ["ALL"],
+      "phase": ["PreMigration"],
+      "resultConfidence": "High",
+      "reasonCode": "MULTIPLE_STRONG_INDICATORS",
+      "aggregationPolicyId": "CONF-AGG-CLASSIFY",
+      "priority": 10,
+      "criteria": [
+        {
+          "confidenceCriterionId": "CONFCRIT-HIGH-001",
+          "criterionType": "IndependentSourceCount",
+          "operator": "GreaterThanOrEqual",
+          "valueType": "Integer",
+          "value1": 2
+        },
+        {
+          "confidenceCriterionId": "CONFCRIT-HIGH-002",
+          "criterionType": "EvidenceStrength",
+          "operator": "Equals",
+          "valueType": "Code",
+          "value1": "Strong"
+        },
+        {
+          "confidenceCriterionId": "CONFCRIT-HIGH-003",
+          "criterionType": "ConflictCount",
+          "operator": "Equals",
+          "valueType": "Integer",
+          "value1": 0
+        }
+      ]
+    }]
+  }
+}
+~~~
+
+~~~json
+{
+  "confidenceSummaries": [{
+    "confidenceContext": "Classification",
+    "scopeType": "Dossier",
+    "scopeId": "DOSSIER-001",
+    "level": "Medium",
+    "reasonCode": "SINGLE_STRONG_INDICATOR",
+    "coveragePercent": 100,
+    "independentStrongSourceCount": 1,
+    "conflictCount": 0,
+    "confidenceRuleId": "CONF-CLASSIFY-MEDIUM-001"
+  }]
+}
+~~~
+
+Confidence results shall retain context, scope, contributing evidence/result identifiers, coverage, independent-source count, conflicts, unavailable-required count, rule identity and reason code where applicable.
+
+#### 9.17.8 Decision boundaries and blocking validation
+
+A Warning shall not automatically become Amber. An Error shall not automatically become Red. Confirmed absence may become Red only when the applicable rule and complete evidence support it. Green requires an assessed result and complete required coverage. Accepted exceptions never overwrite severity, RAG or confidence. Readiness and reconciliation outcomes remain controlled by sheets `20` and `21`.
+
+Generation shall be blocked when an active confidence rule/policy lacks a context, result type, applicability, criteria, output, reason, aggregation policy, priority or source; permits High from heuristic-only evidence; permits one strong indicator to produce High under the default policy; forces conflicting/no evidence to a known confidence; treats Unknown as Low; creates confidence for NotApplicable; combines confidence contexts into one uncontrolled value; recalculates metrics; has overlapping/inverted/gapped criteria without explicit fallback; uses nondeterministic priority; or changes RAG/severity/blocker values as a side effect.
+
 
 ### 9.18 `17_Effort_Drivers`
 
@@ -3306,6 +3642,17 @@ JSON generation shall be blocked when any of the following is true:
 - Pre-Sales direct-copy configuration requires detailed records/files instead of availability and approximate aggregate scale;
 - unsupported DMS semantics are guessed, `MS-08` permits a non-eCTDmanager target, or DMS-to-DMS runtime content is active;
 
+- a `15_RAG_Severity` rule/policy lacks its finding, scope, phase/scenario, controlled interpretation, aggregation, rationale or source, or stores an evaluation status as RAG;
+- Green can result from missing, inaccessible, invalid, conflicting or incomplete mandatory evidence, or all-NotApplicable results aggregate to Green;
+- Warning/Error directly determines Amber/Red without an interpreted finding, or RAG aggregation can hide a confirmed applicable Red;
+- severity, RAG, blocker and decision impact are inferred from one another rather than explicitly configured;
+- an accepted exception replaces the original finding, evidence, evaluation status, severity, RAG or confidence;
+- a `16_Confidence` rule/policy lacks context, criteria, applicability, output, reason, aggregation, priority or source;
+- High confidence can result from heuristic-only evidence or one unconfirmed strong indicator under the default policy;
+- conflicting/no usable evidence produces a known confidence, Unknown is treated as Low, or NotApplicable produces confidence;
+- classification, coverage, effort, readiness and reconciliation confidence are collapsed into one uncontrolled value;
+- RAG/confidence conditions or thresholds overlap, invert, leave unintended gaps, recalculate metrics or evaluate nondeterministically;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -3485,6 +3832,33 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-157` | Generate the same source-mapping configuration twice | Profiles, capabilities, mappings, safeguards and dependencies have identical order and canonical bytes |
 | `MVP-AT-158` | Complete source/DB/archive/DMS assessment | No source or target DB, archive object, DMS object, relationship, metadata or file is modified |
 
+| `MVP-AT-159` | Validate `15_RAG_Severity` and `16_Confidence` structures | All six approved named tables and columns exist with unique stable keys |
+| `MVP-AT-160` | Aggregate results containing one confirmed applicable Red | Aggregate RAG is Red and retains the contributing result |
+| `MVP-AT-161` | Aggregate without Red but with incomplete mandatory coverage | Aggregate RAG is Unknown, never Green or Amber certainty |
+| `MVP-AT-162` | Aggregate complete Green and Amber results | Amber takes precedence over Green |
+| `MVP-AT-163` | Attempt Green with one required result NotAssessed | Green is prohibited until required coverage is complete |
+| `MVP-AT-164` | Aggregate all-NotApplicable subjects | Evaluation remains NotApplicable/NotAssessed and no Green/RAG is invented |
+| `MVP-AT-165` | Skip an optional assessment | The skip remains visible and follows configured confidence treatment |
+| `MVP-AT-166` | Produce Warning without an adverse finding | Warning does not automatically assign Amber |
+| `MVP-AT-167` | Produce parser Error without content evidence | Error does not automatically assign Red; assessment conclusion remains Unknown |
+| `MVP-AT-168` | Confirm malformed XML using implemented parser evidence | Applicable finding receives configured severity/RAG independently from Error handling |
+| `MVP-AT-169` | Make archive root inaccessible | Object-presence assessment is NotAssessed/Unknown, not Missing/Red |
+| `MVP-AT-170` | Confirm archive object absent after complete safeguarded lookup | ConfirmedAbsent may produce configured Red/blocker interpretation |
+| `MVP-AT-171` | Detect numeric sequence gap without lifecycle evidence | No automatic regulatory defect, Critical severity or Red is assigned |
+| `MVP-AT-172` | Configure RAG Unknown with IsBlocker=true | Values remain valid and independent for mandatory evidence limitation |
+| `MVP-AT-173` | Accept an eligible exception | Original finding, evidence, severity, RAG, blocker and confidence remain unchanged; only later decision treatment changes |
+| `MVP-AT-174` | Supply multiple independent strong consistent indicators | High confidence is selected when coverage/conflict criteria also pass |
+| `MVP-AT-175` | Supply one strong indicator without confirmation | Confidence is capped at Medium under the default policy |
+| `MVP-AT-176` | Supply only folder/filename/customer-stated heuristic evidence | Confidence is Low at most |
+| `MVP-AT-177` | Supply materially conflicting strong indicators | Confidence is Unknown and ManualReview/follow-up is retained |
+| `MVP-AT-178` | Supply no usable evidence | Confidence is Unknown, not Low |
+| `MVP-AT-179` | Evaluate a NotApplicable subject | No confidence result is created |
+| `MVP-AT-180` | Produce classification, coverage, effort, readiness and reconciliation confidence | Five contexts remain separately identifiable and reportable |
+| `MVP-AT-181` | Reference coverage/count metrics in confidence criteria | Existing metric outputs are consumed without recalculation |
+| `MVP-AT-182` | Test threshold boundaries and overlapping criteria | Boundaries are deterministic; ambiguous overlaps or gaps block generation |
+| `MVP-AT-183` | Let readiness/reconciliation consume RAG and confidence | Sheets 20/21 use the results but do not redefine or overwrite them |
+| `MVP-AT-184` | Generate unchanged interpretation configuration twice | Rules, criteria, policies and dependencies have identical order and canonical bytes |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -3502,14 +3876,16 @@ The MVP is complete when:
 11. every technical-observation rule is atomic, typed, source-backed, capability-bound and deterministic; separates failure, unsupported and unavailable; and makes no unsupported validity claim;
 12. every metric defines population, calculation, fields/dependencies, conditions/dimensions, canonical unit, rounding, missing/empty/zero-denominator behavior, retention, completeness, acyclic order and typed JSON;
 13. every runtime-supported source profile is product/version qualified and verified; its capabilities, fields, relationships and archive policies are normalized and traceable; false-missing safeguards are mandatory; DB/archive/DMS evidence boundaries are phase appropriate; unsupported semantics remain Unknown/NotAssessed; and DMS-to-DMS remains blocked;
-14. every scenario has complete phase/module applicability;
-15. `24_Final_Config_Master` explains every inclusion/exclusion;
-16. scenario JSON generates for all Section 5 scenarios;
-17. every JSON object traces to workbook records;
-18. invalid/incomplete content blocks with actionable messages;
-19. unchanged input/selection produces identical canonical JSON;
-20. PowerShell consumes JSON without reading Excel;
-21. deferred SharePoint, release governance and GxP controls are not represented as complete.
+14. every severity/RAG rule is finding-, scenario-, phase- and scope-specific; keeps severity, RAG, blocker, decision impact and evaluation status independent; applies explicit Red/Unknown/Amber/Green aggregation; requires complete mandatory coverage for Green; and preserves original interpretations under accepted exceptions;
+15. every confidence rule identifies its context, evidence criteria, independence, coverage, conflict and aggregation behavior; multiple independent strong indicators are required for High under the default policy; heuristic-only evidence is capped at Low; conflicting/no evidence remains Unknown; and separate confidence contexts remain reportable;
+16. every scenario has complete phase/module applicability;
+17. `24_Final_Config_Master` explains every inclusion/exclusion;
+18. scenario JSON generates for all Section 5 scenarios;
+19. every JSON object traces to workbook records;
+20. invalid/incomplete content blocks with actionable messages;
+21. unchanged input/selection produces identical canonical JSON;
+22. PowerShell consumes JSON without reading Excel;
+23. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -3559,3 +3935,4 @@ Each review step shall answer four questions:
 | 4.9 MVP | 15 September 2026 | Approved `11_Missing_Refs_Integrity` with normalized integrity-rule and reference-resolution-policy tables; removed duplicated XML extraction fields; preserved raw/normalized/resolved evidence; separated missing, inaccessible, invalid, multiple, external, zero-byte and unreadable outcomes; required complete inventories for missing/orphan conclusions; distinguished duplicate types; added bounded reference resolution, checksum and lifecycle-target semantics, scenario/phase boundaries, controlled values, deterministic JSON, validation and acceptance tests |
 | 4.10 MVP | 15 September 2026 | Approved `12_Technical_Observations` and `13_Size_Volume_Metrics`; normalized one technical-rule table and three metric tables; separated invalid, unsupported, unavailable and NotAssessed outcomes; defined XML/PDF/file/path/platform coverage without unsupported validity claims; added canonical Count/Bytes/Percent calculations, populations, conditions, dimensions, dependencies, rounding, null/empty/zero-denominator and retention semantics; required metrics before dependent technical rules; added controlled values, deterministic configuration/result JSON, validation and acceptance tests; retained aggregate-only direct-copy evidence and DMS-to-DMS exclusion |
 | 4.11 MVP | 15 September 2026 | Approved `14_Source_DB_Archive_DMS` with six normalized source-profile, capability, field, relationship, archive-identity and lookup-safeguard tables; separated logical workbook mappings from proprietary extraction implementations; added product/version-qualified verified adapters, phase/scenario evidence depth, explicit source-to-canonical and source-to-target keys, database-record-to-archive-object identity chains, SHA/vendor-policy fixture requirements and mandatory false-missing safeguards; defined source-DMS-to-eCTDmanager document/version/rendition/metadata/relationship mappings while retaining the DMS-to-DMS exclusion; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
+| 4.12 MVP | 15 September 2026 | Approved `15_RAG_Severity` and `16_Confidence` with three normalized tables per sheet; separated severity, RAG, confidence, blocker, decision impact, evidence state and evaluation status; defined explicit Red/Unknown/Amber/Green aggregation and complete-coverage prerequisites for Green; prohibited Warning/Error and NotApplicable shortcuts; retained original interpretations under accepted exceptions; adopted rule-based confidence with separate classification, coverage, effort, readiness and reconciliation contexts, multiple independent strong indicators for High, heuristic-only cap at Low and conflict/no-evidence Unknown; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
