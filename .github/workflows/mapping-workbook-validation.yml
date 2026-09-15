@@ -1,0 +1,54 @@
+name: Mapping workbook validation
+
+on:
+  pull_request:
+    paths:
+      - "build/emas_mvp_*.py"
+      - "build/generate_emas_mapping_workbook.py"
+      - "build/validate_emas_mapping_workbook.py"
+      - "build/requirements-mvp-workbook.txt"
+      - "config/authoring/mvp/**"
+      - "docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md"
+      - "tests/workbook/**"
+      - ".github/workflows/mapping-workbook-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "build/emas_mvp_*.py"
+      - "build/generate_emas_mapping_workbook.py"
+      - "build/validate_emas_mapping_workbook.py"
+      - "build/requirements-mvp-workbook.txt"
+      - "config/authoring/mvp/**"
+      - "docs/configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md"
+      - "tests/workbook/**"
+      - ".github/workflows/mapping-workbook-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-mapping-workbook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: build/requirements-mvp-workbook.txt
+      - name: Install workbook build dependency
+        run: python -m pip install --disable-pip-version-check -r build/requirements-mvp-workbook.txt
+      - name: Confirm the JSON field map matches the declared contract
+        run: |
+          python build/emas_mvp_json_map.py --write
+          git diff --exit-code config/authoring/mvp/json-field-map.json
+      - name: Rebuild the workbook template deterministically
+        run: |
+          python build/generate_emas_mapping_workbook.py --force
+          git diff --exit-code --stat dist/eMAS_Mapping_Workbook_MVP_v0.2.xlsx
+      - name: Inspect the saved workbook
+        run: python build/validate_emas_mapping_workbook.py
+      - name: Load and validate the maintained workbook
+        run: python build/emas_mvp_loader.py dist/eMAS_Mapping_Workbook_MVP_v0.2.xlsx
+      - name: Run workbook tests
+        run: python -m unittest discover -s tests/workbook -p "test_*.py" -v
