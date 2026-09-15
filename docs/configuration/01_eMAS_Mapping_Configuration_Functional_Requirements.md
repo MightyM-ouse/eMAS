@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.7 MVP
+**Version:** 4.8 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
-**Prepared:** 14 September 2026
+**Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-019
+**Decision references:** DEC-2026-013 through DEC-2026-020
 
 ## 1. Purpose and MVP decision
 
@@ -1311,20 +1311,249 @@ The sheet shall support `index.xml` plus regional evidence, eCTD v3/v4 distincti
 
 ### 9.11 `10_Folder_File_Structure`
 
+This sheet defines profile- and scenario-appropriate structural discovery and expectation rules for physical folders, supported containers, logical hierarchies, candidate dossier roots, sequences/submission units, regional/module folders, structural artifacts, and content files. It answers **what should exist, where it should occur, how many occurrences are permitted, and what structural deviation was observed**. It shall not independently establish dossier identity, evaluate XML/file references, or assign an automatic RAG result.
+
+The worksheet shall contain two normalized Excel Tables:
+
+1. `tblStructureRules` for expected and unexpected node relationships; and
+2. `tblContainerDiscoveryPolicies` for safe, bounded folder/ZIP/container inspection.
+
+#### 9.11.1 Structural hierarchy
+
+| Structural concept | Meaning |
+|---|---|
+| `PhysicalRoot` | Customer-supplied top-level path |
+| `Container` | Folder, ZIP, nested ZIP, or supported logical container |
+| `WrapperFolder` | Packaging folder surrounding the candidate dossier |
+| `DossierRoot` | Candidate root containing one logical dossier/application |
+| `SequenceRoot` | eCTD v3 sequence-level structure |
+| `SubmissionUnitRoot` | eCTD v4 submission-unit structure |
+| `RegionalRoot` | Region-specific material, normally Module 1 context |
+| `ModuleFolder` | CTD or profile-specific module folder |
+| `LeafFolder` | Folder containing submission documents |
+| `StructuralArtifact` | Backbone/regional XML or other controlled structural file |
+| `ContentFile` | PDF, XML, dataset, image, or other document |
+| `TechnicalDebris` | Backup, temporary, system, log, or accidental item |
+
+A customer delivery folder shall not automatically become the dossier root. Wrapper folders and multiple branches shall be discovered within configured limits, their original paths preserved, and candidate roots passed to `09_Dossier_Sequence_ID` for identity resolution.
+
+#### 9.11.2 `tblStructureRules`
+
+The table follows the common rule/condition model. In addition to the common columns, include:
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| Common rule columns | Mixed | Yes | Scope, traceability, conditions, outputs, and source |
-| `TargetType` | Code | Yes | Container, DossierRoot, SequenceFolder, ModuleFolder, RegionalFolder, File |
-| `RelativePathPattern` | Text | Yes | Expected location relative to the assessed root |
-| `NamePattern` | Text | No | Exact name or approved pattern |
-| `RequirementLevel` | Code | Yes | Mandatory, Optional, Conditional, Prohibited, NotApplicable |
-| `MinimumOccurrences` | Integer | No | Lower allowed count |
-| `MaximumOccurrences` | Integer | No | Upper allowed count |
-| `AllowEmpty` | Boolean | Conditional | Controls empty-folder/file behavior |
-| `ContainerDepthLimit` | Integer | Conditional | Bounds nested container discovery |
-| `UnexpectedItemPolicy` | Code | Yes | Ignore, Observe, Warn, Error, ManualReview |
+| `StructureRuleType` | Code | Yes | ExpectNode, ProhibitNode, count/parent/depth validation, wrapper/nesting/mixed-root detection, unexpected classification, or empty-node observation |
+| `ProfileScope` | Code | Yes | AnySupported, SelectedProfile, or SpecificProfile |
+| `ProfileId` | Profile reference | Conditional | Required for SpecificProfile and references `08_Regulatory_Profiles` |
+| `HierarchyMode` | Code | Yes | PhysicalFolder, ArchiveEntry, or LogicalHierarchy |
+| `TargetType` | Code | Yes | Exact structural node type |
+| `NodeKind` | Code | Yes | Folder, File, Archive, XML, Document, LogicalNode, or Any |
+| `PathAnchor` | Code | Yes | Controlled base from which the relative path is evaluated |
+| `ParentRuleId` | Self-reference | Conditional | Connects an expected child to its structural parent |
+| `RelativePathPattern` | Text | Yes | Canonical path relative to the anchor |
+| `PatternSyntax` | Code | Yes | Literal, SegmentTemplate, Glob, or RestrictedRegex |
+| `NamePattern` | Text | Conditional | Expected node name or constrained pattern |
+| `TraversalScope` | Code | Yes | ExactPath, DirectChild, Descendant, or SameLevel |
+| `CaseSensitivity` | Code | Yes | Sensitive, Insensitive, or PlatformDefault |
+| `RequirementLevel` | Code | Yes | Required, Optional, Conditional, Prohibited, or NotApplicable |
+| `MinimumOccurrences` | Integer | Conditional | Minimum permitted count |
+| `MaximumOccurrences` | Integer | Conditional | Maximum permitted count |
+| `ExpectedDepth` | Integer | Conditional | Required depth relative to the anchor |
+| `AllowEmpty` | Boolean | Conditional | Whether an empty structural node is acceptable |
+| `EmptyNodePolicy` | Code | Yes | Controlled empty-node interpretation |
+| `UnexpectedItemPolicy` | Code | Yes | Explicit handling for unmatched content; silent loss is prohibited |
+| `ContainerPolicyId` | Policy reference | Conditional | Container policy used for ZIP/container inspection |
+| `ObservationTypeOnDeviation` | Code | Yes | Controlled structural observation emitted on deviation |
+| `OutputFieldCode` | Field reference | Yes | Canonical field from `07_Fields_Evidence` receiving the result |
+| `BusinessExample` | Text | Yes | Plain-language example so the rule remains understandable/filterable |
 
-The sheet shall cover ZIP and nested ZIP discovery, wrapper folders, folder-within-folder packaging, duplicate/nested sequences, non-consecutive sequences, multiple applications/products, add-promotional-material or similarly unexpected product branches, backup/temp/system files, unknown folders, eCTD sequence roots, module folders, regional Module 1 folders, backbone XML, regional XML, checksum/index files, leaf files, empty folders, and unrecognizable hierarchies.
+Structure-rule types shall include `ExpectNode`, `ProhibitNode`, `LimitOccurrences`, `ValidateParent`, `ValidateDepth`, `DetectWrapper`, `DetectNestedContainer`, `DetectNestedDossier`, `DetectNestedSequence`, `DetectMixedRoot`, `ClassifyUnexpected`, and `ObserveEmptyNode`.
+
+`Required` means expected only when all rule/applicability conditions hold. Module folders shall normally be Conditional rather than universally Required because one sequence or regulatory activity need not contain every CTD module.
+
+#### 9.11.3 Path and pattern contract
+
+Configuration paths shall be relative to a controlled anchor, use `/` as the canonical separator, and remain independent of customer drives, UNC shares, and operating-system path syntax. For example, `{SequenceRoot}/m1/{RegionalFolder}` is permitted; `D:\Customer\Export\ProductA\0003\m1` is not.
+
+Absolute paths, drive letters, UNC roots, `..` traversal, command substitution, and executable expressions are prohibited. PowerShell resolves the canonical relative path against the selected runtime root and retains the original physical/container path as evidence.
+
+#### 9.11.4 Wrapper, mixed-root, and unexpected-item behavior
+
+Wrapper detection shall inspect meaningful direct children only, advance through a single plausible wrapper within the configured limit, preserve each wrapper path, and stop when a candidate dossier/profile structure is found. Several plausible branches shall produce multiple candidates or ManualReview rather than an arbitrary root.
+
+Multiple products/applications/formats below one delivery root shall remain separate candidate branches. An `add-promotional-material`, promotional-material, or similarly unexpected branch shall be preserved and classified according to policy; it shall not be silently merged into a regulatory dossier or deleted.
+
+The `Ignore` policy is prohibited. Use:
+
+| Policy | Required behavior |
+|---|---|
+| `RecordAndExclude` | Record the item and controlled reason, then exclude it from dossier classification |
+| `IncludeAsCandidate` | Continue assessing it as possible migration content |
+| `Observe` | Record a neutral structural observation |
+| `Warn` | Produce the configured warning/finding |
+| `ManualReview` | Require human classification |
+| `BlockAssessment` | Stop when reliable/safe assessment cannot continue |
+
+Backup, temporary, system, log, copied-container, and accidental files may use `RecordAndExclude`, but shall remain visible in inventory/log evidence. The workbook controls the patterns; PowerShell shall not embed an undocumented ignore list.
+
+Empty folders and zero-byte files remain separate. Empty-folder structure is handled here; zero-byte or unreadable-file integrity is handled by `11_Missing_Refs_Integrity` or `12_Technical_Observations`. An empty folder is not automatically a regulatory failure.
+
+#### 9.11.5 `tblContainerDiscoveryPolicies`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ContainerPolicyId` | Identifier | Yes | Stable key -> `containerDiscoveryPolicies[].containerPolicyId` |
+| `ContainerType` | Code | Yes | Folder, ZIP, or another implemented container |
+| `DiscoveryMode` | Code | Yes | EnumerateOnly, InspectInPlace, or TemporaryExtract |
+| `MaximumContainerDepth` | Integer | Yes | Bounds nested containers |
+| `MaximumEntryCount` | Integer | Yes | Bounds enumerated entries |
+| `MaximumExpandedBytes` | Integer/Bytes | Yes | Bounds total expanded size |
+| `MaximumSingleEntryBytes` | Integer/Bytes | Yes | Bounds one expanded entry |
+| `MaximumCompressionRatio` | Decimal | Yes | Archive-bomb safeguard |
+| `EncryptedContainerAction` | Code | Yes | Controlled encrypted-container behavior |
+| `CorruptContainerAction` | Code | Yes | Controlled corrupt-container behavior |
+| `PathTraversalAction` | Code | Yes | Blocks entries escaping the working root |
+| `SymbolicLinkAction` | Code | Yes | Controls links and prevents external traversal |
+| `ExtractionMode` | Code | Yes | None or IsolatedTemporaryCopy |
+| `TemporaryCleanupRequired` | Boolean | Yes | Removes only eMAS-created temporary material |
+| `PreserveOriginalContext` | Boolean | Yes | Retains original container and internal path |
+| `IsActive` | Boolean | Yes | Runtime eligibility |
+| `SourceId` | Reference | Yes | Product/safety requirement source |
+| `Notes` | Text | No | Explanation and verified limitations |
+
+The source remains read-only. Any necessary extraction shall occur in an isolated eMAS-created working directory and shall never flatten, repair, rename, move, or modify customer content.
+
+Container failure behavior shall distinguish Encrypted, Corrupt, DepthExceeded, EntryLimitExceeded, ExpandedSizeExceeded, CompressionRatioExceeded, PathTraversal, ExternalSymbolicLink, UnsupportedContainer, and Inaccessible. A container that cannot be inspected is `Unavailable`/`NotAssessed`; its expected children shall not be reported as ConfirmedAbsent or structurally missing.
+
+#### 9.11.6 Controlled values in `22_Value_Lists`
+
+| List code | Minimum values |
+|---|---|
+| `STRUCTURE_RULE_TYPE` | ExpectNode, ProhibitNode, LimitOccurrences, ValidateParent, ValidateDepth, DetectWrapper, DetectNestedContainer, DetectNestedDossier, DetectNestedSequence, DetectMixedRoot, ClassifyUnexpected, ObserveEmptyNode |
+| `STRUCTURE_TARGET_TYPE` | PhysicalRoot, Container, WrapperFolder, DossierRoot, ApplicationRoot, SequenceRoot, SubmissionUnitRoot, RegionalRoot, ModuleFolder, LeafFolder, StructuralArtifact, ContentFile, TechnicalDebris, UnknownNode |
+| `STRUCTURE_NODE_KIND` | Folder, File, Archive, XML, Document, LogicalNode, Any |
+| `PATH_ANCHOR` | PhysicalRoot, ContainerRoot, DossierRoot, ApplicationRoot, SequenceRoot, SubmissionUnitRoot, ModuleRoot |
+| `PATTERN_SYNTAX` | Literal, SegmentTemplate, Glob, RestrictedRegex |
+| `TRAVERSAL_SCOPE` | ExactPath, DirectChild, Descendant, SameLevel |
+| `CASE_SENSITIVITY` | Sensitive, Insensitive, PlatformDefault |
+| `STRUCTURE_REQUIREMENT_LEVEL` | Required, Optional, Conditional, Prohibited, NotApplicable |
+| `EMPTY_NODE_POLICY` | Allow, Observe, Warn, ManualReview, Prohibit |
+| `UNEXPECTED_ITEM_POLICY` | RecordAndExclude, IncludeAsCandidate, Observe, Warn, ManualReview, BlockAssessment |
+| `STRUCTURE_OBSERVATION_TYPE` | ExpectedMissing, UnexpectedItem, DuplicateItem, MisplacedItem, WrapperDetected, NestedContainer, NestedDossier, NestedSequence, EmptyNode, DepthExceeded, MixedRoot, UnrecognizedHierarchy |
+| `HIERARCHY_MODE` | PhysicalFolder, ArchiveEntry, LogicalHierarchy |
+| `CONTAINER_TYPE` | Folder, ZIP, OtherSupportedArchive |
+| `CONTAINER_DISCOVERY_MODE` | EnumerateOnly, InspectInPlace, TemporaryExtract |
+| `CONTAINER_FAILURE_ACTION` | RecordNotAssessed, Warn, ManualReview, BlockBranch, BlockAssessment |
+| `PATH_TRAVERSAL_ACTION` | BlockEntry, BlockContainer |
+| `SYMBOLIC_LINK_ACTION` | DoNotFollow, FollowWithinRoot, BlockContainer |
+| `CONTAINER_EXTRACTION_MODE` | None, IsolatedTemporaryCopy |
+
+Adding a container or pattern code does not implement its reader/matcher. Runtime export remains blocked until the required engine capability and safety behavior exist.
+
+#### 9.11.7 Sheet relationships and ownership boundary
+
+The controlled flow is:
+
+`08/09 selected profile and subject -> 10 container/structure rules -> 07 structure observations -> 11/12/13 dependent integrity, technical, and metric rules -> 15/16/18/19 interpretation -> 24 Final Config Master -> scenario JSON`
+
+`09_Dossier_Sequence_ID` owns dossier/application/sequence/submission-unit identity and sequence continuity. `10` supplies physical structure evidence, including duplicate/nested candidates. `11_Missing_Refs_Integrity` owns missing referenced leaf files, broken links, checksums, and reference integrity. `12_Technical_Observations` owns malformed XML, unsupported file properties, and similar content-level technical observations. `13_Size_Volume_Metrics` owns counts and sizes.
+
+#### 9.11.8 Runtime configuration JSON
+
+```json
+{
+  "containerDiscoveryPolicies": [
+    {
+      "containerPolicyId": "CP-ZIP-STANDARD",
+      "containerType": "ZIP",
+      "discoveryMode": "TemporaryExtract",
+      "limits": {
+        "maximumContainerDepth": "<approved-integer>",
+        "maximumEntryCount": "<approved-integer>",
+        "maximumExpandedBytes": "<approved-bytes>",
+        "maximumSingleEntryBytes": "<approved-bytes>",
+        "maximumCompressionRatio": "<approved-decimal>"
+      },
+      "encryptedContainerAction": "ManualReview",
+      "corruptContainerAction": "BlockBranch",
+      "pathTraversalAction": "BlockEntry",
+      "symbolicLinkAction": "DoNotFollow",
+      "extractionMode": "IsolatedTemporaryCopy",
+      "temporaryCleanupRequired": true,
+      "preserveOriginalContext": true
+    }
+  ],
+  "structureRules": [
+    {
+      "ruleId": "STR-ECTD3-INDEX-001",
+      "requirementId": "REQ-STRUCT-001",
+      "moduleId": "MOD-REPOSITORY-DISCOVERY",
+      "profileScope": "SpecificProfile",
+      "profileIds": ["RP-EU-ECTD3-M1-VERIFIED"],
+      "target": {
+        "hierarchyMode": "PhysicalFolder",
+        "targetType": "StructuralArtifact",
+        "nodeKind": "XML",
+        "pathAnchor": "SequenceRoot",
+        "relativePathPattern": "index.xml",
+        "patternSyntax": "Literal",
+        "traversalScope": "DirectChild"
+      },
+      "expectation": {
+        "requirementLevel": "Required",
+        "minimumOccurrences": 1,
+        "maximumOccurrences": 1,
+        "allowEmpty": false
+      },
+      "deviation": {
+        "observationType": "ExpectedMissing",
+        "findingCode": "FIND-STRUCT-INDEX-MISSING"
+      }
+    }
+  ]
+}
+```
+
+Angle-bracket values illustrate the JSON shape and shall fail active-row validation until replaced by approved, performance-tested limits. Structure-rule ordering shall be deterministic by phase/module/profile, Priority, RuleId, ConditionGroup, and ConditionSequence.
+
+Assessment-result JSON shall preserve container identity, candidate roots, original and normalized relative paths, rule/observation identifiers, evidence/evaluation states, and evidence references. Structural observations shall not automatically contain RAG; downstream rules assign risk only where applicable.
+
+#### 9.11.9 Scenario-specific applicability
+
+| Scenario/source context | Structural scope |
+|---|---|
+| Third-party regulatory export | Full container, dossier, sequence/unit, module, and artifact assessment |
+| Existing eCTDmanager export | Full assessment where export evidence is supplied |
+| SQL/Access database plus archive | Archive/source physical structure; regulatory hierarchy only when dossier/export evidence exists |
+| DMS into eCTDmanager | Supported logical DMS hierarchy and exported content |
+| Hybrid/multiple sources | Separate hierarchy context per source mechanism |
+| Partial evidence | Assess supplied containers and record unavailable branches |
+| DMS-to-DMS | Out of scope; route to `MS-07 / NeedsReview` and consultant discussion |
+
+DMS logical nodes shall not be converted into invented filesystem paths, and DMS-related values shall not create DMS-to-DMS support.
+
+#### 9.11.10 Mandatory validation and safeguards
+
+Generation shall be blocked when:
+
+1. a path is absolute, contains `..`, escapes its anchor, or contains executable syntax;
+2. a Required rule permits zero minimum occurrences, or a Prohibited rule permits positive occurrences;
+3. minimum occurrences exceed maximum occurrences;
+4. a child references an absent parent rule or parent relationships contain a cycle;
+5. SpecificProfile lacks a valid profile, or one rule spans incompatible versions;
+6. pattern syntax is unimplemented, unrestricted, or incompatible with the field/node type;
+7. recursive/container discovery lacks an active bounded policy;
+8. a ZIP policy lacks depth, entry, expanded-size, single-entry, or compression-ratio limits;
+9. a logical hierarchy rule is treated as a physical path rule;
+10. expected children can be marked missing when the parent/container is inaccessible;
+11. an unexpected item can disappear through an undocumented Ignore policy;
+12. a rule would delete, move, rename, flatten, repair, or overwrite source content;
+13. an active numeric limit, profile, rule, path, pattern, capability, or source remains unverified or contains a placeholder; or
+14. a required container/pattern/normalization capability is absent or unimplemented.
+
+Exact profile folder structures, artifacts, patterns, case rules, and occurrence expectations shall resolve to an applicable official ICH/regional source or approved internal product/migration requirement. The Regulatory, Technical & Migration Assessment Guide may be used as a controlled ReviewedInterpretation source but shall not by itself activate unsupported regulatory behavior.
+
 
 ### 9.12 `11_Missing_Refs_Integrity`
 
@@ -2303,6 +2532,28 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-058` | Assess a repository containing independently evidenced EU and US dossiers | Classification is resolved separately per dossier/application subject, not globally for the repository |
 | `MVP-AT-059` | Make required identification evidence inaccessible | Result is InsufficientEvidence/Unknown or configured follow-up; it never becomes Identified, Pass, or Green |
 | `MVP-AT-060` | Generate the same scenario JSON twice | Identification rules, grouped conditions, profiles and dependencies are byte-stable and deterministically ordered |
+| `MVP-AT-061` | Assess a valid dossier directly below the selected root | The dossier root is proposed without inventing a wrapper |
+| `MVP-AT-062` | Place one packaging folder around a valid dossier | The wrapper and original path are recorded and the inner candidate root is proposed |
+| `MVP-AT-063` | Provide wrappers deeper than the approved limit | Traversal stops at the configured limit and records DepthExceeded/ManualReview |
+| `MVP-AT-064` | Inspect a ZIP containing a valid dossier | Internal entries are assessed while original container and entry paths remain traceable |
+| `MVP-AT-065` | Place a ZIP inside another ZIP | The nested-container policy and depth/resource limits are applied |
+| `MVP-AT-066` | Provide a corrupt ZIP | The branch is Invalid/NotAssessed and its unseen children are not reported missing |
+| `MVP-AT-067` | Provide an encrypted ZIP | The configured inaccessible/manual-review action is produced |
+| `MVP-AT-068` | Include an archive entry using `../outside.txt` or an absolute path | Unsafe extraction is blocked and a path-traversal observation is recorded |
+| `MVP-AT-069` | Exceed expanded-size, entry-count, single-entry, or compression-ratio limit | Inspection stops safely with the exact limit outcome and no source modification |
+| `MVP-AT-070` | Place two products/applications under one delivery root | Separate candidate roots and original paths are preserved |
+| `MVP-AT-071` | Include an add-promotional-material or similarly unexpected branch | The branch is recorded and routed by explicit unexpected-item policy |
+| `MVP-AT-072` | Include backup, temporary, log, or system files | Each item is recorded and controlled; no undocumented silent ignore occurs |
+| `MVP-AT-073` | Nest one sequence candidate below another | NestedSequence structural evidence is recorded and passed to identification rules |
+| `MVP-AT-074` | Provide duplicate normalized sequence folders | All physical paths are retained and duplicate evidence is passed to `09` |
+| `MVP-AT-075` | Omit modules not required by the activity/profile | Conditional/optional modules do not create false ExpectedMissing findings |
+| `MVP-AT-076` | Omit a profile-required backbone/regional structural artifact | ExpectedMissing is recorded only when the parent/root was successfully inspected |
+| `MVP-AT-077` | Make the required container inaccessible | Evidence is Unavailable/NotAssessed; expected descendants are not ConfirmedAbsent |
+| `MVP-AT-078` | Provide an empty optional folder | The configured Allow/Observe behavior is used without automatic regulatory failure |
+| `MVP-AT-079` | Run a DB/archive scenario without regulatory export evidence | Regulatory dossier-tree rules are excluded or NotAssessed according to module policy |
+| `MVP-AT-080` | Assess a supported DMS logical hierarchy | Logical nodes retain source identifiers and are not converted to invented filesystem paths |
+| `MVP-AT-081` | Evaluate identical source/configuration twice | Candidate-root and structure-observation ordering is deterministic |
+| `MVP-AT-082` | Complete discovery and structural assessment | Source files, folders, containers, and DMS objects remain unchanged |
 
 ## 17. MVP definition of done
 
@@ -2316,14 +2567,15 @@ The MVP is complete when:
 6. actual customer/project evidence remains separate from reusable field definitions and every material observation can retain the required provenance and independent evidence/evaluation states;
 7. every runtime-supported regulatory profile has a version-specific profile record, normalized evidence locators, verified source references, compatible implemented parser capabilities, and deterministic field/JSON projections;
 8. every active dossier/sequence identification rule separates extraction from interpretation, resolves per subject with explicit acceptance/conflict behavior, preserves leading-zero sequence IDs and eCTD v3/v4 distinctions, and has deterministic configuration/result JSON projections;
-9. every supported scenario has complete phase-by-phase module applicability;
-10. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
-11. scenario-specific JSON can be generated for all scenarios in Section 5;
-12. every JSON object is traceable to workbook records;
-13. invalid or incomplete workbook content blocks generation with actionable messages;
-14. unchanged input and scenario selection produce identical canonical JSON;
-15. the PowerShell runtime consumes JSON without reading Excel;
-16. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
+9. every active structure rule and container policy uses profile/scenario-appropriate relative paths, bounded safe discovery, explicit unexpected/empty/failure behavior, immutable-source handling, deterministic JSON projection, and preserves original container/path context;
+10. every supported scenario has complete phase-by-phase module applicability;
+11. a reviewer can filter `24_Final_Config_Master` and understand why each record is included or excluded;
+12. scenario-specific JSON can be generated for all scenarios in Section 5;
+13. every JSON object is traceable to workbook records;
+14. invalid or incomplete workbook content blocks generation with actionable messages;
+15. unchanged input and scenario selection produce identical canonical JSON;
+16. the PowerShell runtime consumes JSON without reading Excel;
+17. SharePoint, formal release governance, and GxP controls remain clearly deferred rather than being falsely represented as complete.
 
 ## 18. Planned review sequence
 
@@ -2369,3 +2621,4 @@ Each review step shall answer four questions:
 | 4.5 MVP | 13 September 2026 | Approved `07_Fields_Evidence` as the semantic dictionary for reusable field definitions and `22_Value_Lists` as the controlled-code authority; separated configuration definitions from execution observations and evidence state from evaluation status; added type/cardinality/domain, provenance, operator/phase lists, baseline/reconciliation and safe report/log handling; excluded assumed evidence and executable extraction content; defined deterministic transitive JSON inclusion, controlled-value families, validation and acceptance tests; retained the DMS-to-DMS scope prohibition |
 | 4.6 MVP | 14 September 2026 | Approved the normalized `08_Regulatory_Profiles` design with separate profile and evidence-locator tables on one worksheet; kept format, application type, dossier context and procedure context independent; added version/namespace/parser/lifecycle boundaries, support status, controlled locator vocabulary, source verification, JSON nesting and transitive inclusion; prohibited weak-evidence overrides, cross-version generic selectors, placeholders and unsupported profile export; clarified the extraction boundary with `09_Dossier_Sequence_ID` |
 | 4.7 MVP | 14 September 2026 | Approved `09_Dossier_Sequence_ID` as the evidence-interpretation layer; removed duplicated extraction-location columns; separated regulatory dimensions and application/dossier/sequence/submission-unit/lifecycle identities; added profile-neutral bootstrap and profile-specific stages, per-subject candidate resolution, candidate-value/acceptance/conflict controls, sequence-gap/duplicate/mismatch observations, eCTD v3/v4 safeguards, controlled values, configuration/result JSON projections, validation and acceptance tests |
+| 4.8 MVP | 15 September 2026 | Approved `10_Folder_File_Structure` with normalized structure-rule and container-discovery-policy tables; separated physical roots, containers, wrappers, dossier roots and sequence/submission-unit roots; added profile/version-specific relative-path expectations, conditional module behavior, wrapper/mixed-root/unexpected-item handling, ZIP/nested-ZIP resource and traversal safeguards, read-only temporary extraction, DMS logical-hierarchy boundaries, controlled values, deterministic JSON, validation and acceptance tests |
