@@ -3459,7 +3459,6 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-131` | Produce reconciliation measures | Expected, observed, difference and match percent remain distinct/traceable |
 | `MVP-AT-132` | Configure MS-08 source-DMS and DMS-to-DMS metrics | Supported source-DMS metrics export; DMS-to-DMS remains `MS-07 / NeedsReview` |
 | `MVP-AT-133` | Generate metric configuration/results twice | Deterministic typed results; canonical Bytes and non-scientific integers |
-
 | `MVP-AT-134` | Validate `14_Source_DB_Archive_DMS` structure | All six named tables and approved columns exist with unique stable keys |
 | `MVP-AT-135` | Resolve supported SQL Server, Access and Oracle source versions | Each version selects exactly one verified source profile and adapter |
 | `MVP-AT-136` | Provide an overlapping or unsupported source version | Generation blocks or returns the configured unsupported/follow-up outcome; no closest profile is guessed |
