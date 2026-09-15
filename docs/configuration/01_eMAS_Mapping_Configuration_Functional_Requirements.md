@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.12 MVP
+**Version:** 4.13 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-024
+**Decision references:** DEC-2026-013 through DEC-2026-025
 
 ## 1. Purpose and MVP decision
 
@@ -2852,25 +2852,351 @@ Generation shall be blocked when an active confidence rule/policy lacks a contex
 
 ### 9.18 `17_Effort_Drivers`
 
+#### 9.18.1 Purpose and MVP boundary
+
+This sheet shall convert evidence-backed metrics, findings, qualifiers, mappings and evidence limitations into understandable migration, remediation or reconciliation complexity bands.
+
+The MVP shall report the applicable complexity band, contributing and suppressed drivers, assumptions, missing information, recommended planning actions and a separately calculated effort-estimate confidence. It shall not report person-hours, calendar duration, cost, required team size or promised migration dates unless a separate calibrated and approved estimation model is introduced later.
+
+Approved MVP complexity bands are `VeryLow`, `Low`, `Medium`, `High` and `VeryHigh`. Confidence remains governed by `16_Confidence` and shall not be derived from the complexity score.
+
+The worksheet shall contain six normalized Excel Tables:
+
+1. `tblEffortModels`;
+2. `tblEffortDriverDefinitions`;
+3. `tblEffortImpactRules`;
+4. `tblEffortDriverConditions`;
+5. `tblEffortDoubleCountPolicies`; and
+6. `tblComplexityBands`.
+
+The calculation flow is:
+
+~~~mermaid
+flowchart TD
+    A["Metrics, findings, qualifiers"] --> B["Match driver conditions"]
+    B --> C["Apply score or floor"]
+    C --> D["Resolve double counting"]
+    D --> E["Calculate complexity band"]
+    E --> F["Report drivers + separate confidence"]
+~~~
+
+#### 9.18.2 `tblEffortModels`
+
+One row defines one overall complexity model.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `EffortDriverId` | Identifier | Yes | Stable driver -> `interpretation.effortDrivers[]` |
-| `DriverName` | Text | Yes | Human-readable driver |
-| `ScenarioId` | Code | Yes | Scenario scope |
-| `ModuleId` | Reference | Yes | Owning assessment area |
-| `MetricCode` | Reference | Yes | Measured value |
-| `Operator` | Code | Yes | Threshold comparison |
-| `LowerBound` | Decimal | No | Inclusive lower boundary |
-| `UpperBound` | Decimal | No | Exclusive upper boundary by default |
-| `Unit` | Code | Yes | Same unit as the metric |
-| `ScoreImpact` | Decimal | Yes | Internal weighted contribution |
-| `MinimumBand` | Code | No | Mandatory complexity floor |
-| `DoubleCountGroup` | Text | No | Prevents duplicate scoring of one cause |
-| `CustomerExplanation` | Text | Yes | Explains the driver without exposing arbitrary maths |
-| `RecommendationCode` | Reference | No | Suggested planning action |
+| `EffortModelId` | Identifier | Yes | Primary key -> `interpretation.effortModels[].effortModelId` |
+| `ModelName` | Text | Yes | Human-readable model name |
+| `ModelVersion` | Version/text | Yes | Versioned scoring semantics |
+| `EffortContext` | Code | Yes | MigrationEstimate, Remediation, or Reconciliation |
+| `Phase` | Code | Yes | Applicable phase |
+| `BaseScore` | Decimal | Yes | Initial internal score; normally zero |
+| `ScoreUnit` | Code | Yes | Controlled Points unit |
+| `MinimumRequiredCoveragePercent` | Decimal | Yes | Evidence coverage required for a calculated result |
+| `IncompleteEvidenceBehavior` | Code | Yes | Provisional, NotAssessed, or Error |
+| `NoUsableEvidenceBehavior` | Code | Yes | Shall be NotAssessed |
+| `RawScoreVisibility` | Code | Yes | Normally InternalOnly |
+| `SupportsHourEstimate` | Boolean | Yes | Shall be false for the MVP |
+| `OutputFieldCode` | Reference | Yes | Canonical complexity-band result |
+| `ConfidenceContext` | Code | Yes | Shall reference EffortEstimate confidence |
+| `SourceId` | Reference | Yes | Approved model source |
+| `SourceSection` | Text | Yes | Exact source/decision section |
 | `IsActive` | Boolean | Yes | Runtime inclusion |
 
-Effort shall report validated complexity bands and drivers unless an approved hours model exists. Thresholds shall reject overlaps, gaps where complete coverage is intended, inverted ranges, and unit mismatches.
+A model with no usable evidence shall not produce VeryLow. Absence of evidence is not evidence of low complexity.
+
+#### 9.18.3 `tblEffortDriverDefinitions`
+
+One row defines one reusable business driver; it does not contain thresholds or scores.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `EffortDriverId` | Identifier | Yes | Stable primary key -> `interpretation.effortDrivers[].effortDriverId` |
+| `DriverCode` | Identifier/code | Yes | Stable machine-readable code |
+| `DriverName` | Text | Yes | Human-readable name |
+| `DriverDescription` | Text | Yes | Exact business meaning |
+| `DriverCategory` | Code | Yes | Controlled effort-driver category |
+| `ModuleId` | Reference | Yes | Owning assessment module |
+| `ScopeLevel` | Code | Yes | Entity/population level |
+| `EffortContext` | Code | Yes | MigrationEstimate, Remediation, or Reconciliation |
+| `ConfidenceEvidenceRole` | Code | Yes | Required, Supporting, or None |
+| `DoubleCountGroup` | Code | No | Groups drivers representing one underlying workload |
+| `DoubleCountPolicyId` | Reference | Conditional | Required when DoubleCountGroup is present |
+| `RecommendationCode` | Reference | No | Planning/follow-up action |
+| `CustomerExplanation` | Text | Yes | Understandable explanation without arbitrary mathematics |
+| `ConsultantExplanation` | Text | Yes | Detailed internal interpretation |
+| `SourceId` | Reference | Yes | Driver basis |
+| `SourceSection` | Text | Yes | Exact source/decision section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Required categories and examples include:
+
+| Category | Required coverage |
+|---|---|
+| SourceSystem | Legacy Access/Oracle source, source version, upgrade path, adapter complexity |
+| SourceMechanism | Database, archive, export, DMS and hybrid/multiple-source coordination |
+| Volume | Application, dossier, sequence, submission-unit, document, file, archive-object and rendition counts |
+| Storage | Database, archive, export and DMS/rendition bytes |
+| Structure | ZIP depth, wrappers, nested sequences, repository depth and mixed roots |
+| RegulatoryDiversity | Region, authority, format, version, application type and dossier-context diversity |
+| ClassificationUncertainty | Unknown, unsupported or conflicting classifications |
+| Integrity | Missing objects/references, malformed XML, zero-byte/unreadable files, checksum mismatch and path risks |
+| Mapping | Metadata transformations, comparison keys, identifier normalization and relationship complexity |
+| Dependency | eSUBmanager, DMS, integrations, transfer and storage dependencies |
+| EvidenceGap | Missing customer information, inaccessible sources and incomplete inventories |
+| Remediation | Expected correction, manual review and exception handling |
+| Reconciliation | Missing, extra, duplicate or mismatched target evidence |
+
+A RAG value shall not automatically become an effort contribution. Risk seriousness and work complexity remain separate.
+
+#### 9.18.4 `tblEffortImpactRules`
+
+One row represents one atomic impact of a driver.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `EffortImpactRuleId` | Identifier | Yes | Primary key -> `effortImpactRules[].effortImpactRuleId` |
+| `RequirementId` | Reference | Yes | Requirement traceability |
+| `EffortModelId` | Reference | Yes | Parent model |
+| `EffortDriverId` | Reference | Yes | Parent driver |
+| `ScenarioId` | Code | Yes | `ALL` or scenario override |
+| `Phase` | Code | Yes | Phase applicability |
+| `Priority` | Integer | Yes | Deterministic rule selection |
+| `ImpactMode` | Code | Yes | AddScore or MinimumComplexity |
+| `ScoreImpact` | Decimal | Conditional | Nonnegative points for AddScore |
+| `ComplexityFloor` | Code | Conditional | Minimum band for MinimumComplexity |
+| `ContributionCap` | Decimal | No | Optional maximum contribution |
+| `MissingInputBehavior` | Code | Yes | NoContribution, Provisional, NotAssessed, or Error |
+| `ResultReasonCode` | Code | Yes | Stable explanation |
+| `RecommendationCode` | Reference | No | Associated planning action |
+| `SourceId` | Reference | Yes | Score/floor basis |
+| `SourceSection` | Text | Yes | Exact approved source section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Exactly one impact mode shall be used per row:
+
+- `AddScore` adds a nonnegative internal point contribution;
+- `MinimumComplexity` establishes a minimum final band.
+
+When the same condition needs both effects, two linked atomic impact rules shall be used. A complexity floor may raise the result but shall never lower a score-derived band.
+
+#### 9.18.5 `tblEffortDriverConditions`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `EffortConditionId` | Identifier | Yes | Stable key -> `effortImpactRules[].conditions[].effortConditionId` |
+| `EffortImpactRuleId` | Reference | Yes | Parent impact rule |
+| `ConditionGroup` | Text | Yes | AND within groups; OR between groups |
+| `ConditionSequence` | Integer | Yes | Stable evaluation order |
+| `ConditionSubjectType` | Code | Yes | Metric, Finding, Field, Qualifier, Scenario, Module, RAG, or Count |
+| `ReferenceCode` | Reference/code | Yes | Metric, finding, field, qualifier or other controlled input |
+| `Operator` | Code | Yes | Data-type-compatible controlled comparison |
+| `ValueDataType` | Code | Yes | Typed operands |
+| `Value1` | Typed scalar | Conditional | First value |
+| `Value2` | Typed scalar | Conditional | Second/range value |
+| `UnitCode` | Code | Conditional | Shall match the referenced metric/field |
+| `MissingInputBehavior` | Code | Yes | NoMatch, Provisional, NotAssessed, or Error |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+Metric thresholds shall reference `13_Size_Volume_Metrics` outputs and shall not recalculate them.
+
+Threshold ranges shall default to inclusive lower and exclusive upper boundaries. An open lower boundary is allowed only for the first range and an open upper boundary only for the final range. Complete band sets shall contain no overlaps or unintended gaps.
+
+#### 9.18.6 `tblEffortDoubleCountPolicies`
+
+Correlated measures shall not exaggerate effort.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `DoubleCountPolicyId` | Identifier | Yes | Primary key -> `interpretation.effortDoubleCountPolicies[].doubleCountPolicyId` |
+| `DoubleCountGroup` | Code | Yes | Governed group |
+| `ResolutionStrategy` | Code | Yes | HighestContribution, HighestFloor, HighestOverallImpact, or SumCapped |
+| `GroupScoreCap` | Decimal | Conditional | Required for SumCapped |
+| `FloorBehavior` | Code | Yes | HighestFloor or PreserveAll |
+| `PriorityBehavior` | Code | Yes | Deterministic tie handling |
+| `RetainSuppressedDrivers` | Boolean | Yes | Shall normally be true |
+| `CustomerExplanation` | Text | Yes | Explains suppression |
+| `SourceId` | Reference | Yes | Policy basis |
+| `SourceSection` | Text | Yes | Exact policy section |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+The recommended default is `HighestOverallImpact`. Suppressed drivers remain traceable with `evaluated=true`, `contributionApplied=false`, a suppression reason and the selected driver.
+
+Double-count review is required for document/file/archive-object counts representing one population; broken-reference and missing-target counts derived from the same objects; a finding and its underlying metric; and multiple hybrid-source indicators representing one additional mechanism.
+
+#### 9.18.7 `tblComplexityBands`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ComplexityBandThresholdId` | Identifier | Yes | Stable threshold key -> `effortModels[].bands[]` |
+| `EffortModelId` | Reference | Yes | Parent model |
+| `BandCode` | Code | Yes | VeryLow, Low, Medium, High, or VeryHigh |
+| `BandSequence` | Integer | Yes | Increasing deterministic order |
+| `LowerBound` | Decimal | Conditional | First band may have open lower boundary |
+| `UpperBound` | Decimal | Conditional | Final band may have open upper boundary |
+| `LowerInclusive` | Boolean | Yes | Normally true |
+| `UpperInclusive` | Boolean | Yes | Normally false |
+| `ScoreUnit` | Code | Yes | Points |
+| `CustomerDefinition` | Text | Yes | Plain-language meaning |
+| `ConsultantInterpretation` | Text | Yes | Internal planning meaning |
+| `SourceId` | Reference | Yes | Approved threshold basis |
+| `SourceSection` | Text | Yes | Exact basis/decision |
+| `IsActive` | Boolean | Yes | Runtime inclusion |
+
+An active model shall contain one complete, ordered and non-overlapping set of all five bands. Exact score boundaries, weights and floors require traceable Migration/Product Owner or SME evidence and shall not be invented to populate the workbook.
+
+#### 9.18.8 Calculation sequence
+
+For one scenario, phase and effort context, the engine shall:
+
+1. resolve exactly one applicable active model;
+2. resolve applicable driver definitions and impact rules;
+3. evaluate conditions using existing metrics, findings, fields and qualifiers;
+4. retain NotApplicable and missing-input states;
+5. select matched impact rules deterministically;
+6. apply double-count policies;
+7. add permitted AddScore contributions to BaseScore;
+8. identify the highest applicable MinimumComplexity floor;
+9. map the score to one complexity band;
+10. raise, but never lower, the band to the applicable floor;
+11. determine Calculated, Provisional or NotAssessed status;
+12. obtain effort-estimate confidence from `16_Confidence`; and
+13. retain applied/suppressed drivers, assumptions, limitations and actions.
+
+The final band is the higher of the score-derived band and the highest applicable floor.
+
+#### 9.18.9 Missing-evidence and phase/scenario behavior
+
+| Situation | Required behavior |
+|---|---|
+| Optional metric unavailable | Driver is NotAssessed or contributes nothing according to policy |
+| Required metric unavailable | Overall status becomes Provisional or NotAssessed |
+| Customer-provided approximate volume | May support Provisional output with provenance retained |
+| No usable evidence | No complexity band; status NotAssessed |
+| Required evidence incomplete | Never produce a confident VeryLow result |
+| Weak evidence available | Band may be calculated/provisional; confidence is reduced separately |
+| Conflicting volume evidence | Preserve values and use controlled conflict handling |
+| Driver NotApplicable | No contribution and no penalty |
+
+Missing information may be an EvidenceGap driver, but shall not invent missing volume or technical workload.
+
+| Scenario | Principal drivers |
+|---|---|
+| `MS-01` | SQL DB/archive size, objects, source version, upgrade path and archive integrity |
+| `MS-02` | Access conversion, legacy extraction, archive correlation and volume |
+| `MS-03` | Oracle mapping/conversion, archive correlation and volume |
+| `MS-04` | Applications, dossiers, sequences, files, bytes, formats, regions, structure and integrity |
+| `MS-05` | Each included mechanism plus hybrid coordination/mapping |
+| `MS-06` | Archive bytes/objects, accessibility, identity uncertainty and missing business relationships |
+| `MS-07` | Normally NotAssessed with follow-up; never misleading VeryLow |
+| `MS-08` | DMS/third-party documents, versions, renditions, metadata, relationships and transformations |
+
+Pre-Sales produces a proportionate/provisional migration-complexity estimate. Pre-Migration updates migration/remediation complexity using detailed evidence. Post-Migration calculates reconciliation/remediation complexity and does not retrospectively replace the approved earlier estimate. DMS-to-DMS remains outside scope.
+
+#### 9.18.10 Connections and controlled values
+
+`13_Size_Volume_Metrics` supplies typed measurements. Sheets `09`–`15` supply observations, findings and interpretations. `16_Confidence` calculates EffortEstimate confidence separately. `18`/`19` provide reusable findings/actions. `20`/`21` may consume effort context without treating complexity as readiness or reconciliation outcome. `22` controls codes; `24`/`25` expose inclusion and JSON mapping.
+
+`22_Value_Lists` shall include:
+
+- `COMPLEXITY_BAND`: `VeryLow`, `Low`, `Medium`, `High`, `VeryHigh`;
+- `EFFORT_CONTEXT`: `MigrationEstimate`, `Remediation`, `Reconciliation`;
+- `EFFORT_DRIVER_CATEGORY`: `SourceSystem`, `SourceMechanism`, `Volume`, `Storage`, `Structure`, `RegulatoryDiversity`, `ClassificationUncertainty`, `Integrity`, `Mapping`, `Dependency`, `EvidenceGap`, `Remediation`, `Reconciliation`;
+- `EFFORT_IMPACT_MODE`: `AddScore`, `MinimumComplexity`;
+- `EFFORT_RESULT_STATUS`: `Calculated`, `Provisional`, `NotAssessed`;
+- `INCOMPLETE_EVIDENCE_BEHAVIOR`: `Provisional`, `NotAssessed`, `Error`;
+- `EFFORT_MISSING_INPUT_BEHAVIOR`: `NoContribution`, `NoMatch`, `Provisional`, `NotAssessed`, `Error`;
+- `DOUBLE_COUNT_STRATEGY`: `HighestContribution`, `HighestFloor`, `HighestOverallImpact`, `SumCapped`;
+- `CONFIDENCE_EVIDENCE_ROLE`: `Required`, `Supporting`, `None`;
+- `RAW_SCORE_VISIBILITY`: `InternalOnly`, `ConsultantOnly`, `Report`; and
+- `SCORE_UNIT`: `Points`.
+
+RawScoreVisibility shall default to InternalOnly. NotAssessed is a result status, not a complexity band.
+
+#### 9.18.11 Configuration and result JSON
+
+~~~json
+{
+  "interpretation": {
+    "effortModels": [{
+      "effortModelId": "EFF-MODEL-MIGRATION-001",
+      "effortContext": "MigrationEstimate",
+      "phase": ["PreSales", "PreMigration"],
+      "baseScore": 0,
+      "scoreUnit": "Points",
+      "minimumRequiredCoveragePercent": 70,
+      "incompleteEvidenceBehavior": "Provisional",
+      "noUsableEvidenceBehavior": "NotAssessed",
+      "rawScoreVisibility": "InternalOnly",
+      "supportsHourEstimate": false
+    }],
+    "effortDrivers": [{
+      "effortDriverId": "EFF-VOLUME-FILES",
+      "driverCode": "FILE_VOLUME",
+      "category": "Volume",
+      "moduleId": "MOD-VOLUME",
+      "doubleCountGroup": "CONTENT_POPULATION",
+      "doubleCountPolicyId": "EFF-DC-CONTENT"
+    }],
+    "effortImpactRules": [{
+      "effortImpactRuleId": "EFF-FILES-HIGH",
+      "effortDriverId": "EFF-VOLUME-FILES",
+      "scenarioIds": ["MS-04", "MS-05"],
+      "phase": ["PreSales", "PreMigration"],
+      "impactMode": "AddScore",
+      "scoreImpact": 4,
+      "conditions": [{
+        "effortConditionId": "EFFCOND-FILES-HIGH-001",
+        "conditionSubjectType": "Metric",
+        "referenceCode": "MET-FILE-COUNT",
+        "operator": "GreaterThanOrEqual",
+        "valueType": "Integer",
+        "value1": 100000,
+        "unitCode": "Count"
+      }]
+    }]
+  }
+}
+~~~
+
+~~~json
+{
+  "effortAssessment": {
+    "effortModelId": "EFF-MODEL-MIGRATION-001",
+    "context": "MigrationEstimate",
+    "status": "Provisional",
+    "complexityBand": "High",
+    "internalScore": 11,
+    "minimumComplexityFloor": "Medium",
+    "confidenceReference": {"context": "EffortEstimate", "level": "Medium"},
+    "appliedDrivers": [{
+      "effortDriverId": "EFF-VOLUME-FILES",
+      "observedValue": 148350,
+      "unitCode": "Count",
+      "impactMode": "AddScore",
+      "scoreApplied": 4,
+      "contributionApplied": true
+    }],
+    "suppressedDrivers": [{
+      "effortDriverId": "EFF-DOCUMENT-COUNT",
+      "contributionApplied": false,
+      "suppressionReason": "DOUBLE_COUNT_POLICY",
+      "selectedDriverId": "EFF-VOLUME-FILES"
+    }],
+    "limitations": ["Archive object count was unavailable."]
+  }
+}
+~~~
+
+Runtime JSON may carry the internal score because the engine requires it. Customer-facing reports shall hide it unless RawScoreVisibility explicitly permits display.
+
+Configuration and result arrays shall use deterministic dependency, priority and identifier ordering.
+
+#### 9.18.12 Blocking validation
+
+Generation shall be blocked when a required table/column is missing; an active model lacks complete evidence-status, confidence, source or visibility semantics; SupportsHourEstimate is true without a separately approved model; a driver lacks meaning, owner, explanation or source; AddScore lacks a nonnegative ScoreImpact; MinimumComplexity lacks a valid floor; one rule contains both impact outputs; referenced metrics/findings/fields/qualifiers/models/actions are missing or inactive; units conflict; threshold ranges overlap, invert or contain unintended gaps; boundary inclusivity produces ambiguous matches; matching rules lack deterministic priority; a DoubleCountGroup lacks one consistent policy; suppressed drivers disappear; the five-band set is incomplete or unordered; a floor lowers a higher score-derived band; missing/no evidence produces VeryLow; raw score visibility is violated; effort logic overwrites RAG/severity/confidence/readiness/reconciliation; or DMS-to-DMS content is runtime eligible.
+
 
 ### 9.19 `18_Findings`
 
@@ -3653,6 +3979,16 @@ JSON generation shall be blocked when any of the following is true:
 - classification, coverage, effort, readiness and reconciliation confidence are collapsed into one uncontrolled value;
 - RAG/confidence conditions or thresholds overlap, invert, leave unintended gaps, recalculate metrics or evaluate nondeterministically;
 
+- a `17_Effort_Drivers` model/driver/impact/condition/double-count/band record lacks required identity, semantics, source, applicability, evidence behavior or deterministic ordering;
+- SupportsHourEstimate is true, or hours, cost, duration or team size are emitted without a separately calibrated and approved estimation model;
+- AddScore has negative/missing ScoreImpact, MinimumComplexity lacks a floor, or one impact row mixes both modes;
+- effort conditions recalculate metrics, use incompatible units, or contain overlapping/inverted/gapped/ambiguous thresholds;
+- a DoubleCountGroup lacks one consistent policy, correlated contributions are counted repeatedly, or suppressed drivers are not retained;
+- an active model lacks one complete ordered non-overlapping five-band set, or a complexity floor lowers the score-derived band;
+- missing/no usable evidence produces VeryLow or Calculated rather than the configured Provisional/NotAssessed outcome;
+- raw internal score is exposed contrary to visibility policy, effort confidence is not obtained separately, or effort logic overwrites RAG/severity/readiness/reconciliation;
+- exact scores, weights, caps, floors or thresholds lack traceable owner/SME evidence, or DMS-to-DMS effort content is runtime eligible;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -3858,6 +4194,34 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-183` | Let readiness/reconciliation consume RAG and confidence | Sheets 20/21 use the results but do not redefine or overwrite them |
 | `MVP-AT-184` | Generate unchanged interpretation configuration twice | Rules, criteria, policies and dependencies have identical order and canonical bytes |
 
+| `MVP-AT-185` | Validate `17_Effort_Drivers` structure | All six approved named tables and columns exist with unique stable keys |
+| `MVP-AT-186` | Validate one active model | It contains a complete ordered set of VeryLow through VeryHigh bands |
+| `MVP-AT-187` | Evaluate a value exactly at a shared threshold | Inclusive lower/exclusive upper semantics select exactly one range |
+| `MVP-AT-188` | Validate first and final open-ended bands | Only the first lower and final upper boundary may be open |
+| `MVP-AT-189` | Configure overlapping, inverted or unintended-gapped ranges | Generation blocks and identifies affected model/rules |
+| `MVP-AT-190` | Match an AddScore rule | Nonnegative points are applied once and the driver remains traceable |
+| `MVP-AT-191` | Match a MinimumComplexity rule | The configured minimum band is retained without adding points |
+| `MVP-AT-192` | Apply a floor below the score-derived band | The higher score-derived band remains unchanged |
+| `MVP-AT-193` | Apply a floor above the score-derived band | Final band is raised to the floor |
+| `MVP-AT-194` | Configure negative ScoreImpact or both impact outputs | Generation blocks |
+| `MVP-AT-195` | Reference a metric using a mismatched unit | Generation blocks with the condition and expected unit |
+| `MVP-AT-196` | Evaluate metric-based driver conditions | Existing metric results are consumed without recalculation |
+| `MVP-AT-197` | Make several impact rules match without deterministic priority | Generation blocks; no arbitrary rule wins |
+| `MVP-AT-198` | Match correlated file/document/archive-object drivers | The configured double-count policy applies only the selected contribution |
+| `MVP-AT-199` | Inspect a suppressed driver | It remains evaluated and traceable with suppression reason/selected driver |
+| `MVP-AT-200` | Omit required evidence while sufficient partial evidence remains | Result status is Provisional with limitation and separate confidence |
+| `MVP-AT-201` | Provide no usable effort evidence | Result is NotAssessed with no complexity band |
+| `MVP-AT-202` | Attempt to produce VeryLow from missing evidence | Validation/evaluation prohibits it |
+| `MVP-AT-203` | Compare identical complexity with different evidence strengths | Complexity band is unchanged while EffortEstimate confidence differs |
+| `MVP-AT-204` | Generate customer-facing report under InternalOnly visibility | Raw score is omitted; band, drivers, assumptions and confidence remain |
+| `MVP-AT-205` | Run Pre-Sales then detailed Pre-Migration | Separate phase results and provenance are retained; later result does not silently overwrite earlier estimate |
+| `MVP-AT-206` | Run Post-Migration effort assessment | Reconciliation/remediation context is used, not retrospective MigrationEstimate replacement |
+| `MVP-AT-207` | Activate MS-05 with multiple source mechanisms | Mechanism-specific and hybrid-coordination drivers activate without uncontrolled double counting |
+| `MVP-AT-208` | Assess MS-06 with archive-only identity limitations | Evidence-gap/identity drivers and reduced confidence are retained without invented business linkage |
+| `MVP-AT-209` | Assess MS-08 source-DMS documents/renditions/relationships | Supported DMS-to-eCTDmanager drivers activate; DMS-to-DMS remains blocked |
+| `MVP-AT-210` | Inspect workbook/JSON/report outputs | No unsupported hours, cost, duration, team-size or committed-date estimate exists |
+| `MVP-AT-211` | Generate unchanged effort configuration twice | Models, drivers, rules, conditions, policies and bands have identical order and canonical bytes |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -3877,14 +4241,15 @@ The MVP is complete when:
 13. every runtime-supported source profile is product/version qualified and verified; its capabilities, fields, relationships and archive policies are normalized and traceable; false-missing safeguards are mandatory; DB/archive/DMS evidence boundaries are phase appropriate; unsupported semantics remain Unknown/NotAssessed; and DMS-to-DMS remains blocked;
 14. every severity/RAG rule is finding-, scenario-, phase- and scope-specific; keeps severity, RAG, blocker, decision impact and evaluation status independent; applies explicit Red/Unknown/Amber/Green aggregation; requires complete mandatory coverage for Green; and preserves original interpretations under accepted exceptions;
 15. every confidence rule identifies its context, evidence criteria, independence, coverage, conflict and aggregation behavior; multiple independent strong indicators are required for High under the default policy; heuristic-only evidence is capped at Low; conflicting/no evidence remains Unknown; and separate confidence contexts remain reportable;
-16. every scenario has complete phase/module applicability;
-17. `24_Final_Config_Master` explains every inclusion/exclusion;
-18. scenario JSON generates for all Section 5 scenarios;
-19. every JSON object traces to workbook records;
-20. invalid/incomplete content blocks with actionable messages;
-21. unchanged input/selection produces identical canonical JSON;
-22. PowerShell consumes JSON without reading Excel;
-23. deferred SharePoint, release governance and GxP controls are not represented as complete.
+16. every active effort model has traceable bands, drivers, atomic impacts, typed conditions and double-count controls; no evidence never becomes VeryLow; incomplete evidence remains Provisional/NotAssessed; the final band is the higher of score-derived band and floor; effort confidence remains separate; raw scores are internal by default; and unsupported hours/cost/duration/team-size estimates are absent;
+17. every scenario has complete phase/module applicability;
+18. `24_Final_Config_Master` explains every inclusion/exclusion;
+19. scenario JSON generates for all Section 5 scenarios;
+20. every JSON object traces to workbook records;
+21. invalid/incomplete content blocks with actionable messages;
+22. unchanged input/selection produces identical canonical JSON;
+23. PowerShell consumes JSON without reading Excel;
+24. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -3935,3 +4300,4 @@ Each review step shall answer four questions:
 | 4.10 MVP | 15 September 2026 | Approved `12_Technical_Observations` and `13_Size_Volume_Metrics`; normalized one technical-rule table and three metric tables; separated invalid, unsupported, unavailable and NotAssessed outcomes; defined XML/PDF/file/path/platform coverage without unsupported validity claims; added canonical Count/Bytes/Percent calculations, populations, conditions, dimensions, dependencies, rounding, null/empty/zero-denominator and retention semantics; required metrics before dependent technical rules; added controlled values, deterministic configuration/result JSON, validation and acceptance tests; retained aggregate-only direct-copy evidence and DMS-to-DMS exclusion |
 | 4.11 MVP | 15 September 2026 | Approved `14_Source_DB_Archive_DMS` with six normalized source-profile, capability, field, relationship, archive-identity and lookup-safeguard tables; separated logical workbook mappings from proprietary extraction implementations; added product/version-qualified verified adapters, phase/scenario evidence depth, explicit source-to-canonical and source-to-target keys, database-record-to-archive-object identity chains, SHA/vendor-policy fixture requirements and mandatory false-missing safeguards; defined source-DMS-to-eCTDmanager document/version/rendition/metadata/relationship mappings while retaining the DMS-to-DMS exclusion; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
 | 4.12 MVP | 15 September 2026 | Approved `15_RAG_Severity` and `16_Confidence` with three normalized tables per sheet; separated severity, RAG, confidence, blocker, decision impact, evidence state and evaluation status; defined explicit Red/Unknown/Amber/Green aggregation and complete-coverage prerequisites for Green; prohibited Warning/Error and NotApplicable shortcuts; retained original interpretations under accepted exceptions; adopted rule-based confidence with separate classification, coverage, effort, readiness and reconciliation contexts, multiple independent strong indicators for High, heuristic-only cap at Low and conflict/no-evidence Unknown; added controlled values, deterministic configuration/result JSON, validation and acceptance tests |
+| 4.13 MVP | 15 September 2026 | Approved `17_Effort_Drivers` with six normalized model, driver, impact, condition, double-count and band tables; retained complexity bands instead of unsupported hours/cost/duration/team-size estimates; defined AddScore and MinimumComplexity as separate atomic modes, inclusive-lower/exclusive-upper thresholds, complete five-band models, deterministic score/floor calculation and mandatory correlated-driver suppression; added Calculated/Provisional/NotAssessed evidence behavior, prohibited VeryLow from missing evidence, kept EffortEstimate confidence separate and raw score internal by default; required traceable owner/SME evidence for weights and thresholds; added controlled values, deterministic JSON, validation and acceptance tests |
