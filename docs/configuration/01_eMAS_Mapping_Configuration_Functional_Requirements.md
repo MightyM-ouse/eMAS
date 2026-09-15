@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.15 MVP
+**Version:** 4.16 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-027
+**Decision references:** DEC-2026-013 through DEC-2026-028
 
 ## 1. Purpose and MVP decision
 
@@ -3786,26 +3786,383 @@ Generation shall be blocked when a required table/column is missing; a supported
 
 ### 9.22 `21_PostMigration_Reconciliation`
 
+#### 9.22.1 Purpose and decision boundary
+
+This sheet defines scenario-aware comparison of the attributable Pre-Migration baseline (`Expected`) with migrated/import/target evidence (`Observed`). It configures matching, field/relationship/aggregate comparison, discrepancy interpretation and final reconciliation outcomes. It does not contain project comparison results, accepted-difference decisions, target records, customer values or migration execution logic.
+
+The approved reconciliation outcomes are `Reconciled`, `ReconciledWithAcceptedExceptions`, `ReviewRequired` and `NotReconciled`. Decision status remains separate as `Determined`, `NotDetermined` or `NotApplicable`.
+
+`Reconciled` means the configured required migration population, attributes and relationships were reconciled for the assessed scope. It does not constitute formal regulatory validation, customer acceptance, electronic approval or proof that every business use case succeeded.
+
+The sheet shall contain nine Excel Tables:
+
+1. `tblReconciliationModels`;
+2. `tblReconciliationEvidenceRequirements`;
+3. `tblReconciliationEntityRules`;
+4. `tblReconciliationKeyMappings`;
+5. `tblReconciliationFieldComparisons`;
+6. `tblReconciliationAggregateComparisons`;
+7. `tblReconciliationRelationshipComparisons`;
+8. `tblReconciliationDecisionRules`; and
+9. `tblReconciliationDecisionConditions`.
+
+#### 9.22.2 `tblReconciliationModels`
+
+Exactly one active model shall exist for each scenario that supports `MOD-RECONCILE`. `MS-07` and DMS-to-DMS shall not have an active model.
+
 | Column | Type | Required | Why / JSON mapping |
 |---|---|---:|---|
-| `ReconciliationRuleId` | Identifier | Yes | Stable comparison rule -> `phaseRules.postMigration[]` |
-| `ScenarioId` | Code | Yes | Scenario scope |
-| `SourceEntity` | Code | Yes | DB record, archive object, dossier, sequence, metadata, file, relationship, count |
-| `TargetEntity` | Code | Yes | Target object being compared |
-| `ComparisonKey` | Code | Yes | Identity used for matching |
-| `SourceFieldCode` | Reference | Yes | Expected/baseline value |
-| `TargetFieldCode` | Reference | Yes | Observed target value |
-| `ComparisonType` | Code | Yes | Exists, Equals, SetEquals, CountEquals, HashEquals, RelationshipEquals, Tolerance |
-| `ToleranceValue` | Decimal | No | Permitted difference when justified |
-| `ToleranceUnit` | Code | No | Count, Percent, Bytes, Days |
-| `ApprovedExceptionTreatment` | Code | Yes | Preserve, ExcludeFromDecision, AcceptDifference, NotAllowed |
-| `MissingOutcome` | Code | Yes | ReviewRequired or NotReconciled |
-| `DifferenceOutcome` | Code | Yes | ReconciledWithAcceptedExceptions, ReviewRequired, NotReconciled |
-| `FindingCode` | Reference | Yes | Difference result |
-| `RecommendationCode` | Reference | Yes | Investigation/remediation |
-| `Priority` | Integer | Yes | Deterministic evaluation |
+| `ReconciliationModelId` | Identifier | Yes | Stable model -> `phaseRules.postMigration.reconciliationModels[].reconciliationModelId` |
+| `ScenarioId` | Reference | Yes | Supported base scenario -> `scenarioId` |
+| `ModelName` | Text | Yes | Human-readable name -> `name` |
+| `BusinessMeaning` | Text | Yes | Explains the scenario-specific reconciliation claim -> `businessMeaning` |
+| `ReadinessModelId` | Reference | Yes | Links the expected baseline definition from sheet 20 -> `readinessModelId` |
+| `DecisionStrategy` | Code | Yes | Discrepancy-first complete-coverage aggregation -> `decisionStrategy` |
+| `MinimumMandatoryCoveragePercent` | Decimal | Yes | Required comparison coverage -> `minimumMandatoryCoveragePercent` |
+| `BaselineCompatibilityPolicy` | Code | Yes | Requires exact or explicitly approved compatibility -> `baselineCompatibilityPolicy` |
+| `AcceptedDifferencesPermitted` | Boolean | Yes | Whether approved policies may affect outcome -> `acceptedDifferencesPermitted` |
+| `NoMatchBehavior` | Code | Yes | Shall never default to Reconciled -> `noMatchBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Model basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Human explanation -> `rationale` |
 
-Rules shall support DB record to target object, archive object to migrated document, dossier/application identity, sequence/submission unit, metadata, files, checksums, relationships/lifecycle, counts/volume, and approved exceptions. The approved outcomes are Reconciled, Reconciled with Accepted Exceptions, Review Required, and Not Reconciled.
+The MVP strategy is `DiscrepancyFirstCompleteCoverage`. Minimum applicable mandatory coverage shall normally be 100 percent. Matching counts or one successful comparison shall never establish Reconciled.
+
+#### 9.22.3 `tblReconciliationEvidenceRequirements`
+
+One row defines one target/import evidence source required for the scenario. Target evidence adapters and logical field mappings shall reference verified profiles/capabilities in `14_Source_DB_Archive_DMS`; they shall not be redefined here.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationEvidenceRequirementId` | Identifier | Yes | Stable requirement -> `evidenceRequirements[].id` |
+| `ReconciliationModelId` | Reference | Yes | Parent model -> `reconciliationModelId` |
+| `EvidenceRole` | Code | Yes | Approved baseline, target inventory, import summary, target DB/archive, manifest or supporting log -> `evidenceRole` |
+| `SourceProfileId` | Reference | Yes | Verified TargetEvidence profile from sheet 14 -> `sourceProfileId` |
+| `RequiredCapabilityCode` | Code | Yes | Required reader capability -> `requiredCapabilityCode` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ActivationQualifierCode` | Reference | Conditional | Qualifier controlling conditional applicability -> `activation.qualifierCode` |
+| `ActivationOperator` | Code | Conditional | Controlled activation comparison -> `activation.operator` |
+| `ActivationValue` | Typed scalar | Conditional | Activation operand -> `activation.value` |
+| `AuthorityRank` | Integer | Yes | Precedence when evidence sources conflict -> `authorityRank` |
+| `MinimumCoveragePercent` | Decimal | Yes | Required readable population -> `minimumCoveragePercent` |
+| `MissingBehavior` | Code | Yes | NotReconciled, ReviewRequired or FailExecution -> `missingBehavior` |
+| `UnsupportedVersionBehavior` | Code | Yes | Behavior for unsupported evidence format -> `unsupportedVersionBehavior` |
+| `ConflictBehavior` | Code | Yes | Behavior when sources disagree -> `conflictBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Requirement basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why this evidence is needed -> `rationale` |
+
+`MigrationSummary.xlsx` may be one controlled TargetEvidence profile. It shall not be hard-coded as the only evidence source for every scenario or target version. Target import warnings/errors are observations and require configured interpretation; they are not themselves reconciliation outcomes.
+
+#### 9.22.4 `tblReconciliationEntityRules`
+
+One row defines comparison of one expected baseline population with one observed target population.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationEntityRuleId` | Identifier | Yes | Stable entity rule -> `entityRules[].entityRuleId` |
+| `ReconciliationModelId` | Reference | Yes | Parent model -> `reconciliationModelId` |
+| `BaselineEntityRequirementId` | Reference | Yes | Expected entity definition from sheet 20 -> `baselineEntityRequirementId` |
+| `TargetSourceProfileId` | Reference | Yes | Target evidence profile -> `targetSourceProfileId` |
+| `ExpectedEntityType` | Code | Yes | Baseline entity type -> `expectedEntityType` |
+| `ObservedEntityType` | Code | Yes | Target entity type -> `observedEntityType` |
+| `ComparisonMode` | Code | Yes | Existence, one-to-one match, set equality or aggregate-only -> `comparisonMode` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `ExpectedCardinality` | Code | Yes | Required match shape -> `expectedCardinality` |
+| `MissingTargetBehavior` | Code | Yes | Interpretation of expected item absent from target -> `missingTargetBehavior` |
+| `ExtraTargetBehavior` | Code | Yes | Interpretation of unexpected target item -> `extraTargetBehavior` |
+| `DuplicateKeyBehavior` | Code | Yes | Duplicate-key handling -> `duplicateKeyBehavior` |
+| `AmbiguousMatchBehavior` | Code | Yes | Ambiguous-candidate handling -> `ambiguousMatchBehavior` |
+| `Priority` | Integer | Yes | Deterministic execution order -> `priority` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Rule basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why this comparison is required -> `rationale` |
+
+`MissingInTarget`, `ExtraInTarget`, `DuplicateKey` and `AmbiguousMatch` are distinct results. An ambiguous/duplicate match shall not be forced into one target object.
+
+#### 9.22.5 `tblReconciliationKeyMappings`
+
+One row maps one component of a composite comparison key. Primary key groups are attempted first. Alternate keys may be used only when explicitly configured; their use and confidence implications shall remain visible. Fuzzy or closest-match behavior is outside the MVP.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationKeyMappingId` | Identifier | Yes | Stable key mapping -> `entityRules[].keyMappings[].id` |
+| `ReconciliationEntityRuleId` | Reference | Yes | Parent entity rule -> derived nesting/reference |
+| `ComparisonKeyGroup` | Identifier | Yes | Composite-key identity -> `comparisonKeyGroup` |
+| `KeySequence` | Integer | Yes | Component order -> `keySequence` |
+| `KeyStrength` | Code | Yes | Primary, Alternate or Supporting -> `keyStrength` |
+| `BaselineFieldCode` | Reference | Yes | Expected-side canonical field -> `baselineFieldCode` |
+| `TargetFieldCode` | Reference | Yes | Observed-side canonical field -> `targetFieldCode` |
+| `NormalizationPolicyCode` | Code | Yes | Approved shared normalization -> `normalizationPolicyCode` |
+| `MatchMode` | Code | Yes | Exact or NormalizedExact -> `matchMode` |
+| `CaseSensitivityPolicy` | Code | Yes | Controlled case behavior -> `caseSensitivityPolicy` |
+| `NullKeyBehavior` | Code | Yes | Error, NotComparable or ReviewRequired -> `nullKeyBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Mapping basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the key is reliable -> `rationale` |
+
+The same approved, source/version-qualified normalization semantics shall be applied to both expected and observed values. A filename, display label or folder path shall not silently replace the configured business/technical key.
+
+#### 9.22.6 `tblReconciliationFieldComparisons`
+
+One row defines one attribute comparison after an entity match.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationFieldRuleId` | Identifier | Yes | Stable comparison -> `fieldComparisons[].id` |
+| `ReconciliationEntityRuleId` | Reference | Yes | Parent entity rule -> `entityRuleId` |
+| `BaselineFieldCode` | Reference | Yes | Expected value -> `baselineFieldCode` |
+| `TargetFieldCode` | Reference | Yes | Observed value -> `targetFieldCode` |
+| `ComparisonType` | Code | Yes | Equals, set/order equality, hash, date or numeric difference -> `comparisonType` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `NormalizationPolicyCode` | Code | Yes | Approved comparison normalization -> `normalizationPolicyCode` |
+| `NullComparisonBehavior` | Code | Yes | Missing expected/observed handling -> `nullComparisonBehavior` |
+| `TolerancePolicyCode` | Code | No | Named approved tolerance policy -> `tolerancePolicyCode` |
+| `ToleranceValue` | Decimal | Conditional | Typed limit -> `toleranceValue` |
+| `ToleranceUnit` | Code | Conditional | Count, Percent, Bytes, Days or approved unit -> `toleranceUnit` |
+| `Priority` | Integer | Yes | Deterministic order -> `priority` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Rule/tolerance basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why comparison/tolerance is appropriate -> `rationale` |
+
+Checksums/hashes and identity fields require exact approved comparison and shall not use numeric/percentage tolerance. `WithinTolerance` retains the observed difference and policy; it is not rewritten to `Equal`.
+
+#### 9.22.7 `tblReconciliationAggregateComparisons`
+
+Aggregate evidence supports population reconciliation but shall not hide item-level differences.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `AggregateComparisonRuleId` | Identifier | Yes | Stable aggregate rule -> `aggregateComparisons[].id` |
+| `ReconciliationModelId` | Reference | Yes | Parent model -> `reconciliationModelId` |
+| `PopulationEntityType` | Code | Yes | Population measured -> `populationEntityType` |
+| `DimensionSetCode` | Reference | No | Optional grouping dimensions -> `dimensionSetCode` |
+| `BaselineMetricCode` | Reference | Yes | Expected metric -> `baselineMetricCode` |
+| `TargetMetricCode` | Reference | Yes | Observed metric -> `targetMetricCode` |
+| `ComparisonType` | Code | Yes | CountEquals, SizeEquals, Difference or Tolerance -> `comparisonType` |
+| `TolerancePolicyCode` | Code | No | Named approved tolerance -> `tolerancePolicyCode` |
+| `ToleranceValue` | Decimal | Conditional | Limit -> `toleranceValue` |
+| `ToleranceUnit` | Code | Conditional | Unit -> `toleranceUnit` |
+| `DecisionRole` | Code | Yes | DecisionDriving or Supporting -> `decisionRole` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `FindingCode` | Reference | Yes | Aggregate discrepancy finding -> `findingCode` |
+| `Priority` | Integer | Yes | Deterministic order -> `priority` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the aggregate is relevant -> `rationale` |
+
+Equal counts do not prove set equality. For example, 100 expected files and 100 observed files may still contain one missing and one extra file. Aggregate equality shall not override such discrepancies.
+
+#### 9.22.8 `tblReconciliationRelationshipComparisons`
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `RelationshipComparisonRuleId` | Identifier | Yes | Stable relationship comparison -> `relationshipComparisons[].id` |
+| `ReconciliationModelId` | Reference | Yes | Parent model -> `reconciliationModelId` |
+| `BaselineRelationshipRequirementId` | Reference | Yes | Expected relationship from sheet 20 -> `baselineRelationshipRequirementId` |
+| `TargetRelationshipMappingId` | Reference | Yes | Target relationship mapping from sheet 14 -> `targetRelationshipMappingId` |
+| `ComparisonType` | Code | Yes | Exists, RelationshipEquals or SetEquals -> `comparisonType` |
+| `RequirementLevel` | Code | Yes | Mandatory, Conditional or Supporting -> `requirementLevel` |
+| `MissingRelationshipBehavior` | Code | Yes | Missing target relationship handling -> `missingRelationshipBehavior` |
+| `ExtraRelationshipBehavior` | Code | Yes | Unexpected relationship handling -> `extraRelationshipBehavior` |
+| `AmbiguousRelationshipBehavior` | Code | Yes | Ambiguity handling -> `ambiguousRelationshipBehavior` |
+| `Priority` | Integer | Yes | Deterministic order -> `priority` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why preservation matters -> `rationale` |
+
+Applicable relationships include DB record -> migrated object, archive object -> migrated document, application/dossier -> sequence/submission unit, document -> version -> rendition, XML leaf -> target file and lifecycle source -> lifecycle target.
+
+#### 9.22.9 `tblReconciliationDecisionRules`
+
+A rule interprets comparison results and contributes to the final outcome. No single successful rule may declare the whole scope Reconciled.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationDecisionRuleId` | Identifier | Yes | Stable decision rule -> `decisionRules[].id` |
+| `ReconciliationModelId` | Reference | Yes | Parent model -> `reconciliationModelId` |
+| `RuleTitle` | Text | Yes | Human-readable rule -> `title` |
+| `DecisionEffect` | Code | Yes | SupportsReconciled, RequiresReview, NotReconciled, RequiresAcceptedDifference or AddsLimitation -> `decisionEffect` |
+| `ConditionGroupOperator` | Code | Yes | AND/OR across groups -> `conditionGroupOperator` |
+| `ExceptionHandling` | Code | Yes | NotPermitted or PolicyControlled -> `exceptionHandling` |
+| `FindingCode` | Reference | Yes | Discrepancy finding -> `findingCode` |
+| `Priority` | Integer | Yes | Deterministic precedence -> `priority` |
+| `StopProcessing` | Boolean | Yes | Terminal critical failure only -> `stopProcessing` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+| `SourceId` | Reference | Yes | Rule basis -> `sourceReference.sourceId` |
+| `Rationale` | Text | Yes | Why the effect applies -> `rationale` |
+
+Recommendations/actions resolve through sheets 18/19. Accepted differences require both this rule's `PolicyControlled` setting and an applicable `tblFindingExceptionPolicies` policy.
+
+#### 9.22.10 `tblReconciliationDecisionConditions`
+
+One row represents one atomic condition.
+
+| Column | Type | Required | Why / JSON mapping |
+|---|---|---:|---|
+| `ReconciliationConditionId` | Identifier | Yes | Stable condition -> nested `conditions[].conditionId` |
+| `ReconciliationDecisionRuleId` | Reference | Yes | Parent rule -> derived nesting/reference |
+| `ConditionGroupId` | Identifier | Yes | AND-group identity -> `conditionGroupId` |
+| `GroupSequence` | Integer | Yes | Group order -> `groupSequence` |
+| `ConditionSequence` | Integer | Yes | Condition order -> `sequence` |
+| `ConditionSubjectType` | Code | Yes | Entity/field/relationship/aggregate result, evidence, confidence, exception, baseline or import status -> `subjectType` |
+| `ReferenceCode` | Reference | Yes | Compared rule/result -> `referenceCode` |
+| `Operator` | Code | Yes | Controlled operator -> `operator` |
+| `ValueType` | Code | Yes | Typed operand -> `valueType` |
+| `Value1` | Typed scalar | Conditional | First operand -> `value1` |
+| `Value2` | Typed scalar | Conditional | Range operand -> `value2` |
+| `Negate` | Boolean | Yes | Controlled inversion -> `negate` |
+| `MissingInputBehavior` | Code | Yes | NotReconciled, ReviewRequired, NoMatch or FailExecution -> `missingInputBehavior` |
+| `IsActive` | Boolean | Yes | Runtime eligibility -> `isActive` |
+
+Conditions consume comparison/evidence results and shall not modify the baseline, recalculate source metrics, or reinterpret target evidence outside configured mappings.
+
+#### 9.22.11 Baseline compatibility and matching rules
+
+Post-Migration shall use the baseline created under sheet 20. Baseline identity/integrity, ScenarioId, required entity/key/relationship definitions and configuration compatibility shall be verifiable. `RequireExactConfiguration` is the default MVP policy. `ApprovedCompatibilityMap` may be used only after a separate controlled compatibility mapping is defined, reviewed and tested.
+
+An integrity/schema/identity failure that prevents trusted baseline use produces `NotDetermined`, not ReviewRequired or NotReconciled. A compatible baseline with incomplete, ambiguous or conflicting comparison evidence may produce ReviewRequired.
+
+Only exclusions already attributable in the selected baseline may reduce the expected population. Post-hoc exclusions are prohibited. Unexpected target entities remain visible even when no expected baseline counterpart exists.
+
+#### 9.22.12 Deterministic algorithm and outcome precedence
+
+The runtime shall:
+
+1. validate execution, configuration and baseline compatibility;
+2. resolve required target-evidence profiles and capabilities;
+3. match expected and observed entities using primary composite keys;
+4. use an alternate key only where explicitly permitted and retain its use;
+5. preserve duplicate and ambiguous matches;
+6. compare applicable fields and relationships;
+7. calculate aggregate comparisons without overriding item discrepancies;
+8. interpret results through findings, RAG and confidence;
+9. validate carried exceptions/new accepted differences;
+10. calculate applicable mandatory comparison coverage; and
+11. determine decision status and, only when determined, the outcome.
+
+| Situation | DecisionStatus | Outcome |
+|---|---|---|
+| Configuration/execution/baseline integrity prevents reliable comparison | NotDetermined | Omitted |
+| `MS-07`, DMS-to-DMS or unsupported route | NotApplicable | Omitted |
+| Unresolved critical missing/extra/error, failed mandatory integrity or prohibited discrepancy | Determined | NotReconciled |
+| Ambiguous/conflicting/insufficient evidence prevents defensible conclusion | Determined | ReviewRequired |
+| Mandatory comparisons satisfy policy only through valid outcome-changing accepted differences | Determined | ReconciledWithAcceptedExceptions |
+| Complete acceptable mandatory comparisons, no unresolved discrepancy and no relied-upon outcome-changing exception | Determined | Reconciled |
+
+A minor accepted difference not required to achieve reconciliation remains reportable but does not itself force `ReconciledWithAcceptedExceptions`.
+
+#### 9.22.13 Accepted exception/difference behavior
+
+`BaselineCarriedForward` and `PostMigrationAcceptedDifference` shall remain distinguishable project-record origins. A carried exception applies only when its policy permits carry-forward, it remains valid/unexpired, its scope and baseline match, and its approved effect is applicable. A new accepted difference is approved against the observed discrepancy and shall not modify the baseline.
+
+In every case the original expected/observed values, comparison result, finding, RAG/severity/confidence, evidence references, approver/evidence/validity details and allowed effect remain traceable. Project exception/difference records are not reusable workbook configuration.
+
+#### 9.22.14 Scenario behavior
+
+| Scenario | Principal reconciliation |
+|---|---|
+| `MS-01` | SQL records, archive objects, migrated objects, metadata and relationships |
+| `MS-02` | Access baseline versus SQL target, including converted identity and archive population |
+| `MS-03` | Oracle baseline versus SQL target, including mapped identifiers and relationships |
+| `MS-04` | Export baseline versus eCTDmanager applications/dossiers, sequences/submission units, documents/files and metadata |
+| `MS-05` | Each included population independently plus cross-source duplication and relationship preservation |
+| `MS-06` | Physical archive/storage objects, identity, paths, counts and bytes within defined archive scope |
+| `MS-07` | No formal reconciliation |
+| `MS-08` | DMS documents, versions, renditions, metadata and relationships versus eCTDmanager target |
+
+DMS-to-DMS is outside scope and requires consultant review.
+
+#### 9.22.15 Controlled values in `22_Value_Lists`
+
+`22_Value_Lists` shall include:
+
+- `RECONCILIATION_OUTCOME`: `Reconciled`, `ReconciledWithAcceptedExceptions`, `ReviewRequired`, `NotReconciled`;
+- `RECONCILIATION_DECISION_STATUS`: `Determined`, `NotDetermined`, `NotApplicable`;
+- `RECONCILIATION_DECISION_STRATEGY`: `DiscrepancyFirstCompleteCoverage`;
+- `RECONCILIATION_DECISION_EFFECT`: `SupportsReconciled`, `RequiresReview`, `NotReconciled`, `RequiresAcceptedDifference`, `AddsLimitation`;
+- `RECONCILIATION_REQUIREMENT_LEVEL`: `Mandatory`, `Conditional`, `Supporting`;
+- `RECONCILIATION_EVIDENCE_ROLE`: `ApprovedBaseline`, `TargetInventory`, `ImportSummary`, `TargetDatabase`, `TargetArchive`, `MigrationManifest`, `SupportingLog`;
+- `ENTITY_COMPARISON_RESULT`: `Matched`, `MissingInTarget`, `ExtraInTarget`, `DuplicateKey`, `AmbiguousMatch`, `NotComparable`, `NotAssessed`, `Error`;
+- `VALUE_COMPARISON_RESULT`: `Equal`, `Different`, `WithinTolerance`, `MissingExpected`, `MissingObserved`, `NotComparable`, `NotAssessed`, `Error`;
+- `RELATIONSHIP_COMPARISON_RESULT`: `Matched`, `MissingRelationship`, `ExtraRelationship`, `AmbiguousRelationship`, `NotComparable`, `NotAssessed`, `Error`;
+- `MATCH_MODE`: `Exact`, `NormalizedExact`;
+- `COMPARISON_MODE`: `Existence`, `OneToOneMatch`, `SetEquality`, `FieldComparison`, `RelationshipComparison`, `AggregateComparison`;
+- `EXCEPTION_ORIGIN`: `BaselineCarriedForward`, `PostMigrationAcceptedDifference`;
+- `BASELINE_COMPATIBILITY_POLICY`: `RequireExactConfiguration`, `ApprovedCompatibilityMap`; and
+- `RECONCILIATION_MISSING_BEHAVIOR`: `NotReconciled`, `ReviewRequired`, `NoMatch`, `FailExecution`.
+
+Existing lists provide types, operators, units, cardinality, key strength, case/normalization, evidence/evaluation, finding/RAG/severity/confidence and exception values.
+
+#### 9.22.16 Configuration and result JSON
+
+~~~json
+{
+  "phaseRules": {
+    "postMigration": {
+      "reconciliationModels": [{
+        "reconciliationModelId": "REC-MS04-001",
+        "scenarioId": "MS-04",
+        "readinessModelId": "RDY-MS04-001",
+        "decisionStrategy": "DiscrepancyFirstCompleteCoverage",
+        "baselineCompatibilityPolicy": "RequireExactConfiguration",
+        "minimumMandatoryCoveragePercent": 100
+      }],
+      "evidenceRequirements": [],
+      "entityRules": [{
+        "entityRuleId": "REC-MS04-FILE-001",
+        "baselineEntityRequirementId": "BASE-MS04-FILE",
+        "observedEntityType": "TargetObject",
+        "comparisonMode": "OneToOneMatch",
+        "keyMappings": [{
+          "keySequence": 100,
+          "baselineFieldCode": "FILE.RELATIVE_PATH",
+          "targetFieldCode": "TARGET.RELATIVE_PATH",
+          "matchMode": "NormalizedExact"
+        }]
+      }],
+      "fieldComparisons": [],
+      "aggregateComparisons": [],
+      "relationshipComparisons": [],
+      "decisionRules": []
+    }
+  }
+}
+~~~
+
+~~~json
+{
+  "postMigrationReconciliation": {
+    "decisionStatus": "Determined",
+    "outcome": "ReviewRequired",
+    "scenarioId": "MS-04",
+    "baselineId": "BASE-EXEC-20260915-001",
+    "mandatoryCoveragePercent": 100,
+    "summary": {
+      "matched": 4819,
+      "missingInTarget": 1,
+      "extraInTarget": 1,
+      "ambiguous": 0,
+      "different": 0
+    },
+    "discrepancies": [{
+      "comparisonRuleId": "REC-MS04-FILE-001",
+      "result": "MissingInTarget",
+      "findingCode": "FND-REC-MISSING-TARGET-001",
+      "baselineEntityId": "FILE-00017",
+      "targetEntityId": null,
+      "acceptedDifferenceReference": null
+    }],
+    "limitations": []
+  }
+}
+~~~
+
+Configuration contains comparison definitions. Execution results retain baseline/target provenance, match method, observed differences, findings, interpretations, contributing evidence and project exception/difference references. Arrays shall use deterministic dependency, priority, sequence and identifier ordering.
+
+#### 9.22.17 Blocking validation
+
+Generation shall be blocked when a required table/column is missing; a supported scenario lacks exactly one active model; `MS-07`/DMS-to-DMS has a model; a model lacks a compatible readiness/baseline definition or can default to Reconciled; target evidence profile/capability/version is inactive, unsupported or unverified; a required baseline entity is not comparison-enabled; a composite key is incomplete, duplicated, inconsistently normalized or uses fuzzy/silent fallback; duplicate/ambiguous matches are forced; tolerance applies to identity/hash or lacks source justification; aggregate equality/counts can override item discrepancies or independently prove Reconciled; decision rules conflict or allow Reconciled without complete mandatory coverage; baseline exclusion is added post hoc; an exception/difference exceeds scope, validity or permitted effect or rewrites evidence; target warning/error is treated as an outcome without a rule; project results/approvals are stored as reusable configuration; wording overclaims validation/acceptance; or deterministic ordering/traceability is incomplete.
 
 ### 9.23 `22_Value_Lists`
 
@@ -4538,6 +4895,15 @@ JSON generation shall be blocked when any of the following is true:
 - a required baseline entity lacks identity/count semantics, a composite key is empty/duplicated/ambiguously ordered, or a required relationship has missing endpoints/mapping/cardinality;
 - project baseline values/exclusions/exceptions appear in reusable configuration, readiness wording overclaims validation/success, or output ordering/traceability is incomplete;
 
+- a `21_PostMigration_Reconciliation` model/evidence/entity/key/field/aggregate/relationship/decision/condition record lacks identity, source, semantics, applicability or deterministic order;
+- a supported Post-Migration scenario lacks exactly one active model, `MS-07`/DMS-to-DMS has a model, or a model lacks a compatible sheet-20 baseline definition;
+- a required target-evidence profile/capability/version is inactive, unsupported or unverified, or evidence precedence/conflict behavior is ambiguous;
+- a composite key is incomplete, duplicated, inconsistently normalized, silently replaced by filename/path, or uses unapproved fuzzy/closest matching;
+- duplicate/ambiguous matches are forced, a tolerance applies to identity/hash or lacks source justification, or WithinTolerance erases the observed difference;
+- aggregate equality/counts override entity discrepancies or independently produce Reconciled, or mandatory field/relationship comparison coverage is incomplete;
+- a baseline exclusion is introduced post hoc, or an exception/difference exceeds scope/validity/effect, changes the baseline, or erases original discrepancy evidence;
+- Reconciled can be produced by default/one success/incomplete coverage, project results/approvals appear in reusable configuration, or wording/ordering/traceability is unsafe;
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -4829,6 +5195,46 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-269` | Put customer values, exclusions or accepted-exception decisions in configuration tables | Generation blocks as project/execution evidence |
 | `MVP-AT-270` | Inspect readiness report terminology | It does not claim regulatory validity, customer acceptance or guaranteed migration success |
 | `MVP-AT-271` | Generate unchanged readiness/baseline configuration twice | Models, requirements, rules, conditions, entities, fields and relationships have identical order and canonical bytes |
+| `MVP-AT-272` | Validate `21_PostMigration_Reconciliation` structure | All nine approved named tables and required columns exist with unique stable keys |
+| `MVP-AT-273` | Inspect supported Post-Migration scenarios | Each has exactly one active reconciliation model |
+| `MVP-AT-274` | Activate a reconciliation model for MS-07 | Generation blocks; unresolved scenario cannot be reconciled |
+| `MVP-AT-275` | Activate a DMS-to-DMS reconciliation model | Generation blocks and routes scope to consultant review |
+| `MVP-AT-276` | Link a model to readiness/baseline definitions | Required entity, field, key and relationship references resolve |
+| `MVP-AT-277` | Supply baseline with failed identity/integrity/schema compatibility | DecisionStatus is NotDetermined and no outcome is emitted |
+| `MVP-AT-278` | Use different configuration than the baseline under RequireExactConfiguration | Reconciliation stops; baseline is not silently reinterpreted |
+| `MVP-AT-279` | Select ApprovedCompatibilityMap without an approved tested map | Generation/execution blocks |
+| `MVP-AT-280` | Reference target-evidence profile/capability | It is active, supported, version-qualified and verified in sheet 14 |
+| `MVP-AT-281` | Supply unsupported MigrationSummary/target-evidence version | Configured review/failure behavior occurs without nearest-version guessing |
+| `MVP-AT-282` | Provide conflicting target evidence at different authority ranks | Precedence/conflict policy is applied and both sources remain traceable |
+| `MVP-AT-283` | Expected entity has no target match | Result is MissingInTarget with expected provenance |
+| `MVP-AT-284` | Target entity has no baseline counterpart | Result is ExtraInTarget and is not hidden by exclusions |
+| `MVP-AT-285` | Duplicate primary keys exist | Result is DuplicateKey; no arbitrary one-to-one match occurs |
+| `MVP-AT-286` | Several target candidates satisfy a key | Result is AmbiguousMatch and remains reviewable |
+| `MVP-AT-287` | Match a complete composite primary key | Ordered components and normalization produce one deterministic match |
+| `MVP-AT-288` | Use configured alternate key after primary unavailable | Alternate-key use, reason and confidence impact remain visible |
+| `MVP-AT-289` | Enable fuzzy/closest or silent filename/path fallback | Generation blocks |
+| `MVP-AT-290` | Encounter null mandatory key component | Configured Error/NotComparable/ReviewRequired behavior occurs |
+| `MVP-AT-291` | Compare equal normalized field values | Result is Equal with baseline/target provenance |
+| `MVP-AT-292` | Compare different required field values | Result is Different and configured finding/decision logic executes |
+| `MVP-AT-293` | Configure tolerance for identity or checksum/hash comparison | Generation blocks |
+| `MVP-AT-294` | Numeric/date/size difference falls within approved tolerance | Result is WithinTolerance and observed difference/policy remain visible |
+| `MVP-AT-295` | Compare equal aggregate counts only | Count equality cannot independently produce Reconciled |
+| `MVP-AT-296` | Counts are equal with one missing and one extra entity | Both item discrepancies remain and aggregate equality does not override them |
+| `MVP-AT-297` | Compare required relationship sets | Expected and observed endpoints/cardinality remain attributable |
+| `MVP-AT-298` | Required target relationship is absent | MissingRelationship result and configured decision effect occur |
+| `MVP-AT-299` | Compare lifecycle source-to-target relationships | Broken/extra/ambiguous lifecycle links remain separate discrepancies |
+| `MVP-AT-300` | Technical failure prevents reliable comparison | DecisionStatus is NotDetermined, not a completed reconciliation outcome |
+| `MVP-AT-301` | Comparison is compatible but evidence is ambiguous/incomplete | Determined outcome is ReviewRequired when configured criteria are met |
+| `MVP-AT-302` | Unresolved critical missing/error/prohibited discrepancy exists | Outcome is NotReconciled |
+| `MVP-AT-303` | All mandatory entities/fields/relationships/aggregates reconcile | Outcome may be Reconciled only at complete required coverage |
+| `MVP-AT-304` | Apply valid outcome-changing accepted difference | ReconciledWithAcceptedExceptions is possible only when both policies permit it |
+| `MVP-AT-305` | Carry expired/out-of-scope/non-carry-forward baseline exception | Exception has no allowed outcome effect and discrepancy remains unresolved |
+| `MVP-AT-306` | Approve a Post-Migration accepted difference | Original baseline, observed target value and discrepancy remain unchanged |
+| `MVP-AT-307` | Record accepted minor difference not relied upon for reconciliation | It remains reportable without forcing ReconciledWithAcceptedExceptions |
+| `MVP-AT-308` | Add post-hoc baseline exclusion or project approval to configuration | Generation blocks as project/execution data |
+| `MVP-AT-309` | Reconcile MS-05 hybrid populations | Each source mechanism and cross-source duplicate/relationship checks remain distinct |
+| `MVP-AT-310` | Reconcile MS-08 source DMS to eCTDmanager | Documents, versions, renditions, metadata, relationships and keys are compared |
+| `MVP-AT-311` | Generate unchanged reconciliation configuration twice | Models, evidence, comparisons, keys, relationships and decisions have identical order and canonical bytes |
 
 
 ## 17. MVP definition of done
@@ -4853,14 +5259,15 @@ The MVP is complete when:
 16. every active effort model has traceable bands, drivers, atomic impacts, typed conditions and double-count controls; no evidence never becomes VeryLow; incomplete evidence remains Provisional/NotAssessed; the final band is the higher of score-derived band and floor; effort confidence remains separate; raw scores are internal by default; and unsupported hours/cost/duration/team-size estimates are absent;
 17. every finding is a reusable sourced semantic definition separate from occurrences and contextual severity/RAG/confidence; exception policies cannot rewrite evidence/original interpretation; every recommendation is separate from findings, has ordered atomic owned actions, and is connected through deterministic scenario/phase links; occurrence grouping retains all evidence; project-specific workflow data is excluded; and DMS-to-DMS routes yield consultant review rather than migration instructions;
 18. every supported Pre-Migration scenario has exactly one blocker-first complete-coverage readiness model; missing applicable mandatory evidence, unresolved blockers/conflicts and invalid minimum baselines prevent Ready; technical failures remain NotDetermined; outcome-changing exceptions require both policies and preserve original interpretation; and attributable scenario-specific baseline entities, composite keys, fields and relationships are defined without storing project values in reusable configuration;
-19. every scenario has complete phase/module applicability;
-20. `24_Final_Config_Master` explains every inclusion/exclusion;
-21. scenario JSON generates for all Section 5 scenarios;
-22. every JSON object traces to workbook records;
-23. invalid/incomplete content blocks with actionable messages;
-24. unchanged input/selection produces identical canonical JSON;
-25. PowerShell consumes JSON without reading Excel;
-26. deferred SharePoint, release governance and GxP controls are not represented as complete.
+19. every supported Post-Migration scenario has exactly one discrepancy-first complete-coverage reconciliation model linked to a compatible baseline; target evidence is verified/version-qualified; entities use atomic exact/normalized composite keys without silent fallback; field, relationship and aggregate comparisons preserve expected/observed provenance and do not let counts hide item discrepancies; technical failure remains NotDetermined; exceptions never rewrite baseline/discrepancies; and Reconciled requires complete applicable mandatory coverage;
+20. every scenario has complete phase/module applicability;
+21. `24_Final_Config_Master` explains every inclusion/exclusion;
+22. scenario JSON generates for all Section 5 scenarios;
+23. every JSON object traces to workbook records;
+24. invalid/incomplete content blocks with actionable messages;
+25. unchanged input/selection produces identical canonical JSON;
+26. PowerShell consumes JSON without reading Excel;
+27. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -4914,3 +5321,4 @@ Each review step shall answer four questions:
 | 4.13 MVP | 15 September 2026 | Approved `17_Effort_Drivers` with six normalized model, driver, impact, condition, double-count and band tables; retained complexity bands instead of unsupported hours/cost/duration/team-size estimates; defined AddScore and MinimumComplexity as separate atomic modes, inclusive-lower/exclusive-upper thresholds, complete five-band models, deterministic score/floor calculation and mandatory correlated-driver suppression; added Calculated/Provisional/NotAssessed evidence behavior, prohibited VeryLow from missing evidence, kept EffortEstimate confidence separate and raw score internal by default; required traceable owner/SME evidence for weights and thresholds; added controlled values, deterministic JSON, validation and acceptance tests |
 | 4.14 MVP | 15 September 2026 | Approved `18_Findings` and `19_Recommendations_Actions` with five normalized finding-definition, exception-policy, recommendation-definition, atomic-action and finding-recommendation-link tables; separated reusable definitions from execution occurrences and removed default severity/RAG/confidence from finding ownership; added controlled customer/consultant wording, source/basis classification, template-token safety, deterministic occurrence identity, occurrence-preserving grouping and recommendation de-duplication; defined scenario/phase-qualified many-to-many links, ordered owned actions and accepted-exception effects that never rewrite evidence or original interpretation; retained project assignees/dates/status/approvals outside reusable configuration and routed DMS-to-DMS requests to consultant review; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
 | 4.15 MVP | 15 September 2026 | Approved `20_PreMigration_Readiness` with seven normalized readiness-model, evidence-requirement, decision-rule, atomic-condition, baseline-entity, baseline-field and baseline-relationship tables; separated decision status from the three approved outcomes and defined blocker-first complete-coverage evaluation, missing mandatory evidence behavior, technical failure, conditional activation and dual-policy accepted-exception handling; prohibited Ready by default or from a single supporting rule; required a valid attributable scenario-specific baseline with atomic composite keys, fields, relationships, exclusions/limitations boundaries and source provenance for later reconciliation; excluded MS-07 and DMS-to-DMS readiness models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
+| 4.16 MVP | 15 September 2026 | Approved `21_PostMigration_Reconciliation` with nine normalized reconciliation-model, evidence-requirement, entity-rule, composite-key, field-comparison, aggregate-comparison, relationship-comparison, decision-rule and atomic-condition tables; defined Expected baseline versus Observed target semantics, exact/normalized composite matching without fuzzy/silent fallback, separate missing/extra/duplicate/ambiguous/value/relationship results and scenario-specific target-evidence profiles; required baseline/configuration compatibility, complete mandatory comparison coverage and discrepancy-first outcome precedence; prohibited tolerance for identity/hash, counts hiding item discrepancies and post-hoc baseline exclusions; preserved carried/new accepted differences without rewriting baseline or evidence; excluded MS-07 and DMS-to-DMS models; added controlled values, deterministic configuration/result JSON, blocking validation and acceptance tests |
