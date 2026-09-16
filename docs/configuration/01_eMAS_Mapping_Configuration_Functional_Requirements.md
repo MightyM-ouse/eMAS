@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.20 MVP
+**Version:** 4.21 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-032
+**Decision references:** DEC-2026-013 through DEC-2026-033
 
 ## 1. Purpose and MVP decision
 
@@ -188,7 +188,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 23 | `23_Source_References` | Maintained | Regulatory, vendor, product, and internal sources |
 | 24 | `24_Final_Config_Master` | Generated | Filterable flattened view of everything included/excluded for a selected scenario |
 | 25 | `25_JSON_Field_Map` | Maintained | Explicit workbook-column to JSON-property transformation contract |
-| 26 | `26_JSON_Preview` | Generated | Scenario JSON preview and section counts |
+| 26 | `26_JSON_Preview` | Generated | Exact candidate Runtime JSON preview, counts, object traceability, validation summary, and reconstructable chunks |
 | 27 | `27_Validation_Results` | Generated | Blocking errors, warnings, affected record, reason, and correction |
 
 ## 8. Common workbook conventions
@@ -5077,16 +5077,183 @@ Unchanged canonical workbook content, active schema and confirmed scenario/conte
 
 ### 9.27 `26_JSON_Preview`
 
-| Column or area | Required behavior |
-|---|---|
-| Scenario header | Shows `ScenarioId`, scenario name, mapping version, and schema version |
-| Section counts | Shows modules, requirements, rules by family, findings, recommendations, sources, and value lists |
-| JSON text | Shows the complete candidate JSON or a clearly linked generated file |
-| Traceability links | Opens matching `24_Final_Config_Master` rows |
-| Stale indicator | Becomes stale whenever an included source table changes |
-| Validation state | Shows Eligible or Blocked with the related validation run |
+#### 9.27.1 Purpose and authority boundary
 
-Preview and exported JSON shall use the same transformation logic.
+`26_JSON_Preview` shall be the generated, read-only representation of the exact candidate Runtime JSON bytes for one confirmed scenario/context. It shall show whether the candidate is current, schema-valid, count-reconciled, safe and export-eligible; provide searchable object-level traceability; and make the complete JSON inspectable without exceeding Excel cell limits.
+
+The preview shall not be maintained manually, used as configuration input or transformed separately from export. The transformer shall build one in-memory JSON object, validate it, serialize one canonical byte array, and use those same bytes for preview chunks and the downloadable candidate file. Manual edits shall be discarded on regeneration.
+
+The sheet shall contain five generated Excel tables. Display-only timestamps, links and formatting shall not enter canonical Runtime JSON or its checksum.
+
+#### 9.27.2 `tblJsonPreviewHeader`
+
+Exactly one row identifies the current candidate preview.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `PreviewId` | Yes | Deterministic identifier derived from canonical preview identity. |
+| `SelectedScenarioId` | Yes | Confirmed scenario associated with the candidate. |
+| `ScenarioName` | Yes | Human-readable scenario. |
+| `MappingVersion` | Yes | Workbook mapping/configuration version. |
+| `SchemaId` | Yes | Active schema from sheet 25. |
+| `SchemaVersion` | Yes | Active schema version. |
+| `TransformerVersion` | Yes | Transformer implementation/capability version. |
+| `RuntimeCompatibilityStatus` | Yes | Compatible or incompatible runtime contract result. |
+| `GeneratedInputFingerprint` | Conditional | SHA-256 of canonical relevant inputs used to generate the preview; blank only when no preview was generated. |
+| `CurrentInputFingerprint` | Yes | SHA-256 of current canonical relevant inputs. |
+| `StaleStatus` | Yes | References `JSON_PREVIEW_STATUS`. |
+| `StaleReasonCode` | Conditional | References `JSON_STALE_REASON` when not Current. |
+| `ExportEligibility` | Yes | References `JSON_EXPORT_ELIGIBILITY`. |
+| `ValidationRunId` | Conditional | Related sheet-27 validation run. |
+| `ErrorCount` | Yes | Blocking validation-result count. |
+| `WarningCount` | Yes | Non-blocking warning count. |
+| `ExpectedObjectCount` | Yes | Expected distinct objects from sheet 24. |
+| `ActualObjectCount` | Conditional | Actual object count; blank when no JSON was generated. |
+| `CanonicalByteLength` | Conditional | UTF-8 canonical JSON byte length. |
+| `CanonicalSHA256` | Conditional | Fingerprint of exact candidate bytes; functional comparison only, not release approval. |
+| `OutputFileName` | Conditional | `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`. |
+| `OutputFileReference` | No | Display-only link to the exact generated candidate file; local/sensitive paths are not exported. |
+| `PreviewFileStatus` | Yes | References `JSON_PREVIEW_FILE_STATUS`. |
+| `GeneratedOn` | No | Display-only timestamp excluded from canonical content/fingerprints. |
+| `GenerationStatusReason` | Yes | Human-readable eligibility/stale/failure explanation. |
+
+`GeneratedInputFingerprint` shall cover confirmed scenario/context, all maintained sheets `01`–`23`, sheet 25, the active schema artifact and transformer capability/version relevant to resolution or serialization. A change to a previously excluded row may change future inclusion and therefore shall also make the preview stale. Generated sheets `24`, `26` and `27` are excluded from the input fingerprint.
+
+If `GeneratedInputFingerprint != CurrentInputFingerprint`, the preview shall be Stale and export shall be Blocked. Recalculation shall identify whether scenario context, source configuration, value lists, source references, mapping, schema or transformer changed.
+
+#### 9.27.3 `tblJsonPreviewSectionCounts`
+
+One row represents one JSON section or meaningful nested collection and reconciles actual JSON objects to `tblFinalConfigSummary`.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SectionCountId` | Yes | Deterministic generated identifier. |
+| `PreviewId` | Yes | Parent preview. |
+| `SectionCode` | Yes | Section defined by sheet 25. |
+| `JsonSectionPointer` | Yes | Exact JSON container. |
+| `ContainerType` | Yes | Object, Array, Scalar or KeyedObject. |
+| `Required` | Yes | Schema-required indicator. |
+| `EmptyBehavior` | Yes | EmitEmpty, Omit or Error. |
+| `ExpectedCount` | Yes | Expected count from sheet 24. |
+| `ActualCount` | Conditional | Count from actual candidate object graph. |
+| `Difference` | Conditional | Actual minus expected. |
+| `CountStatus` | Yes | Match, Mismatch or NotApplicable. |
+| `SchemaValidationStatus` | Yes | Pass, Warning or Error. |
+| `FinalConfigSummaryRowId` | Conditional | Trace to sheet-24 summary grouping. |
+| `Explanation` | Yes | Human-readable reconciliation result. |
+
+Counts shall be calculated from the actual in-memory JSON object graph, never text-line counts. Required empty sections shall follow their sheet-25 EmptyBehavior. Any unexplained mismatch blocks export.
+
+#### 9.27.4 `tblJsonPreviewObjects`
+
+One row indexes one actual generated JSON object so reviewers can filter and trace output without searching the raw JSON text.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `PreviewObjectId` | Yes | Deterministic index-row identifier. |
+| `PreviewId` | Yes | Parent preview. |
+| `SectionCode` | Yes | Owning JSON section. |
+| `ObjectOrdinal` | Yes | Deterministic position in its collection. |
+| `JsonObjectPointer` | Yes | Exact pointer including array index/key. |
+| `StableObjectId` | Yes | RequirementId, RuleId, FieldCode or other stable runtime identity. |
+| `ObjectType` | Yes | Canonical record/object type. |
+| `ObjectSummary` | Yes | Concise human-readable meaning. |
+| `SourceSheet` | Yes | Authoritative workbook source. |
+| `SourceTable` | Yes | Authoritative table. |
+| `SourceRecordId` | Yes | Stable source record. |
+| `FinalConfigRowId` | Yes | Trace to sheet 24 projection. |
+| `ObjectMappingId` | Yes | Trace to sheet 25. |
+| `PrimarySourceId` | Yes | Primary regulatory/product/internal provenance. |
+| `ValidationStatus` | Yes | Pass, Warning or Error. |
+| `ObjectByteLength` | Yes | Canonical UTF-8 size of the serialized object. |
+| `ObjectSHA256` | Yes | Deterministic object fingerprint. |
+| `TraceabilityLink` | No | Display-only navigation to matching sheet-24 row. |
+
+An object referenced by several dependency parents shall not be duplicated solely for that reason. Dependency edges remain in `tblFinalConfigDependencies`. The index count and pointers shall agree with the actual JSON graph.
+
+#### 9.27.5 `tblJsonPreviewValidationSummary`
+
+One row summarizes one validation severity/control grouping. Detailed results and corrective actions remain exclusively in sheet 27.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValidationSummaryId` | Yes | Deterministic summary identifier. |
+| `PreviewId` | Yes | Parent preview. |
+| `ValidationRunId` | Yes | Related validation run. |
+| `Severity` | Yes | Error, Warning or Info. |
+| `ControlCode` | Yes | Validation control identifier. |
+| `ResultCount` | Yes | Number of results. |
+| `BlockingCount` | Yes | Number preventing export. |
+| `SummaryStatus` | Yes | Pass, Warning or Error. |
+| `ValidationResultsLink` | No | Display-only filter/navigation link to sheet 27. |
+| `SummaryMessage` | Yes | Concise non-duplicative explanation. |
+
+Sheet 26 shall not copy detailed result messages, affected columns, evidence or corrective-action text from sheet 27.
+
+#### 9.27.6 `tblJsonPreviewChunks`
+
+A complete JSON document may exceed Excel's single-cell text limit. One row shall store one ordered chunk of the exact canonical JSON character stream.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `PreviewChunkId` | Yes | Deterministic chunk identifier. |
+| `PreviewId` | Yes | Parent preview. |
+| `ChunkSequence` | Yes | Continuous one-based reconstruction order. |
+| `StartCharacter` | Yes | Zero-based start offset in the canonical character stream. |
+| `EndCharacterExclusive` | Yes | Exclusive end offset. |
+| `CharacterCount` | Yes | Exact chunk length. |
+| `ChunkText` | Yes | Exact canonical JSON characters. |
+| `ChunkSHA256` | Yes | SHA-256 of the chunk's UTF-8 bytes. |
+| `IsFinalChunk` | Yes | True on exactly one final row. |
+| `ValidationStatus` | Yes | Valid or Error. |
+
+Each chunk shall contain at most 30,000 characters, split at LF boundaries where practical and never inside a Unicode surrogate pair. Concatenating `ChunkText` in `ChunkSequence` order shall reproduce the exact canonical character stream and UTF-8 bytes. Missing, overlapping, duplicated or gapped offsets block export. Chunks are a display mechanism, not another serializer.
+
+#### 9.27.7 Single-object/single-byte-stream rule
+
+The preview and exported file shall use the same resolved record set, in-memory object, active schema, serializer and canonical byte array:
+
+```mermaid
+flowchart TD
+    A["Resolved included records"] --> B["Build one JSON object"]
+    B --> C["Validate against schema"]
+    C --> D["Serialize canonical bytes"]
+    D --> E["Preview tables and chunks"]
+    D --> F["Candidate JSON file"]
+```
+
+The transformer shall not rebuild JSON for download/export. The candidate file byte length and SHA-256 shall equal `CanonicalByteLength` and `CanonicalSHA256`. Preview/export mismatch blocks eligibility.
+
+#### 9.27.8 Eligibility decisions
+
+`Eligible` requires Current fingerprint, runtime-eligible scenario, compatible schema/runtime, zero blocking validation results, implemented required transformations, resolved mappings/references, successful schema validation, matching sheet-24 counts, valid chunk reconstruction and matching candidate-file bytes.
+
+`EligibleWithWarnings` requires the same conditions but permits explicitly non-blocking warnings, including truthfully labelled draft/unverified source content. Warnings shall remain visible and detailed in sheet 27.
+
+`Blocked` is required for Stale/Failed/NotGenerated output, blocking validation errors, schema/count/reference/dependency/transformation failures, runtime-ineligible scenario, chunk/file mismatch or detected customer/project/execution-data leakage.
+
+#### 9.27.9 MS-07 and unsupported DMS route
+
+A deliberately confirmed, runtime-eligible `MS-07` may produce only safe follow-up and limited-assessment configuration with limitations visible. An attempted DMS-to-DMS migration remains `runtimeJsonEligible=false`, `StaleStatus=NotGenerated`, `ExportEligibility=Blocked`, reason `DMS_TO_DMS_OUT_OF_SCOPE`, and produces no Runtime JSON chunks or downloadable migration configuration. The scenario-selection result may still be displayed for consultant review.
+
+#### 9.27.10 Data and presentation boundary
+
+The preview shall contain only reusable configuration. Questionnaire answers, customer/project identifiers, credentials, connection strings, customer DB/archive/DMS paths, actual dossier/application/file identities, customer content, assessment observations/results, local workbook paths, usernames and reviewer notes are prohibited.
+
+The sheet should display a prominent scenario/eligibility banner, red stale/blocked, amber warning and green current/eligible formatting, frozen/filterable headers, navigation links and a wrapped monospace ChunkText column. Colours and formatting are presentation only and shall never determine status.
+
+#### 9.27.11 Controlled values in `22_Value_Lists`
+
+Equivalent canonical status lists shall be reused where available. At minimum:
+
+| ListCode | Required active codes |
+|---|---|
+| `JSON_PREVIEW_STATUS` | `NotGenerated`, `Current`, `Stale`, `Failed` |
+| `JSON_EXPORT_ELIGIBILITY` | `Eligible`, `EligibleWithWarnings`, `Blocked` |
+| `JSON_STALE_REASON` | `ScenarioContextChanged`, `SourceConfigurationChanged`, `ValueListsChanged`, `SourceReferencesChanged`, `MappingChanged`, `SchemaChanged`, `TransformerChanged` |
+| `JSON_COUNT_STATUS` | `Match`, `Mismatch`, `NotApplicable` |
+| `JSON_VALIDATION_SUMMARY_STATUS` | `Pass`, `Warning`, `Error` |
+| `JSON_PREVIEW_FILE_STATUS` | `NotCreated`, `Created`, `Missing`, `FingerprintMismatch` |
 
 ### 9.28 `27_Validation_Results`
 
@@ -5650,6 +5817,19 @@ JSON generation shall be blocked when any of the following is true:
 - expected objects/counts disagreeing with `24_Final_Config_Master`, preview differing from export, schema validation failure for a supported scenario, or DMS-to-DMS producing supported Runtime JSON; and
 - unchanged canonical workbook/schema/scenario producing different bytes, property order, array order or section shape.
 
+- missing/duplicate preview header, section-count, object-index, validation-summary or chunk identifiers, or more/less than one active preview header;
+- preview scenario/context, mapping/schema/transformer version or runtime eligibility inconsistent with the current confirmed generation context;
+- missing/uncomputable fingerprint, GeneratedInputFingerprint differing from CurrentInputFingerprint, or Stale/Failed/NotGenerated preview marked export-eligible;
+- expected/actual section or distinct-object counts that do not reconcile, or required sections violating their EmptyBehavior;
+- preview-object indexes/pointers/counts that disagree with the actual JSON graph, or source/Final Config/mapping/source-reference traceability that does not resolve;
+- schema validation failure, incompatible runtime/schema contract, unresolved mapping/reference/dependency, unsupported transformation or blocking sheet-27 validation result;
+- missing/duplicate/gapped/overlapping/out-of-order/oversized chunks, invalid offsets/lengths/final marker, unsafe Unicode split or chunk reconstruction differing from canonical JSON;
+- chunk/file/full-preview byte length or SHA-256 mismatch, candidate file missing when eligible, or preview/export built from different objects/serializers/bytes;
+- a runtime-ineligible or DMS-to-DMS request producing Runtime JSON chunks/file, or a limited MS-07 preview containing unsupported migration instructions;
+- questionnaire answers, customer/project identity, credentials, connection strings, customer paths/content/identifiers, execution evidence/results, local workbook paths, usernames or reviewer notes present in preview JSON;
+- detailed validation results/corrective actions duplicated in sheet 26 instead of linked to sheet 27; and
+- unchanged canonical inputs producing different preview rows, pointers, counts, chunks, fingerprints or candidate-file bytes.
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -6127,6 +6307,39 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-450` | Preview/export parity | Preview and file export run for same canonical input | Same in-memory object and byte-equivalent JSON |
 | `MVP-AT-451` | Deterministic bytes | Generate twice with unchanged workbook/schema/context | Byte-identical UTF-8 no-BOM LF two-space-indented final-newline JSON |
 
+| `MVP-AT-452` | Sheet 26 structure | Five required generated tables exist with all mandatory columns | Pass |
+| `MVP-AT-453` | Generated-only boundary | Manually edit preview tables and regenerate | Manual edits discarded; maintained configuration unchanged |
+| `MVP-AT-454` | Single preview header | Zero or multiple active header rows exist | Preview invalid and export blocked |
+| `MVP-AT-455` | Preview identity/filename | Eligible preview is generated | Deterministic PreviewId and `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json` filename |
+| `MVP-AT-456` | Input fingerprint | Generate preview from canonical inputs | Generated and current SHA-256 fingerprints match |
+| `MVP-AT-457` | Scenario stale detection | Confirmed scenario/qualifier changes | Stale with ScenarioContextChanged; export blocked |
+| `MVP-AT-458` | Source stale detection | Maintained source record changes, including previously excluded candidate | Stale with SourceConfigurationChanged |
+| `MVP-AT-459` | Catalogue stale detection | Value-list or source-reference configuration changes | Correct ValueListsChanged/SourceReferencesChanged reason |
+| `MVP-AT-460` | Mapping/schema stale detection | Sheet-25 mapping or schema artifact changes | Correct MappingChanged/SchemaChanged reason |
+| `MVP-AT-461` | Transformer stale detection | Transformer capability/version changes | Stale with TransformerChanged |
+| `MVP-AT-462` | Generated-sheet isolation | Only sheets 24, 26 or 27 display rows change | Canonical input fingerprint unchanged |
+| `MVP-AT-463` | Eligible state | Current schema-valid/count-matched preview has no errors/warnings | Eligible |
+| `MVP-AT-464` | Eligible warnings | Only approved non-blocking warnings exist | EligibleWithWarnings and warnings remain linked/visible |
+| `MVP-AT-465` | Blocking error | Any blocking result exists | Blocked; no export |
+| `MVP-AT-466` | Limited MS-07 | Confirm runtime-eligible MS-07 | Safe limited/follow-up preview only, with limitations visible |
+| `MVP-AT-467` | DMS-to-DMS | Supply unsupported DMS-to-DMS route | NotGenerated/Blocked, reason DMS_TO_DMS_OUT_OF_SCOPE, no chunks/file |
+| `MVP-AT-468` | Section counts | Generate eligible scenario | Expected and actual counts match by section/group |
+| `MVP-AT-469` | Count mismatch | Alter expected/actual count relationship | Mismatch and export blocked |
+| `MVP-AT-470` | Required empty section | Required section contains zero objects | Declared EmptyBehavior applied and validated |
+| `MVP-AT-471` | Object index | Inspect every generated object | Exact pointer, stable identity, ordinal and type recorded |
+| `MVP-AT-472` | Workbook traceability | Select preview object | Resolves to sheet-24 FinalConfigRow and sheet-25 ObjectMapping |
+| `MVP-AT-473` | Multi-parent object | Several parents reference one dependency object | One object-index row; multiple dependency edges remain in sheet 24 |
+| `MVP-AT-474` | Object fingerprint | Regenerate unchanged object | Object byte length/SHA-256 unchanged |
+| `MVP-AT-475` | Validation summary | Sheet 27 contains grouped errors/warnings/info | Accurate counts/links without duplicating detailed messages |
+| `MVP-AT-476` | Chunk size/order | Generate JSON larger than one Excel cell | Continuous one-based chunks, each <=30,000 characters |
+| `MVP-AT-477` | Unicode-safe chunking | JSON contains non-ASCII characters near a chunk boundary | No surrogate split; exact reconstruction |
+| `MVP-AT-478` | Chunk reconstruction | Concatenate chunks by sequence | Exact canonical character stream and UTF-8 bytes recovered |
+| `MVP-AT-479` | File fingerprint | Candidate file is created | Byte length/SHA-256 match header and reconstructed chunks |
+| `MVP-AT-480` | Schema validation | Candidate preview is eligible | Complete JSON passes active JSON Schema |
+| `MVP-AT-481` | Data-leakage boundary | Customer/project/execution/sensitive values are introduced | Validation error and export blocked |
+| `MVP-AT-482` | Preview/export parity | Preview and download candidate for same generation | Same in-memory object and byte-identical output |
+| `MVP-AT-483` | Deterministic regeneration | Generate twice with unchanged canonical inputs | Identical rows, pointers, counts, chunks, fingerprints and file bytes |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -6154,14 +6367,15 @@ The MVP is complete when:
 21. every active executable/configuration record has normalized source provenance from document through exact location and atomic claim to workbook-object link; regulatory requirements, reviewed interpretations, vendor/product constraints, internal decisions, assumptions and examples remain distinguishable; convenience citations agree with primary links; conflicts, limitations, lifecycle, translation and verification states remain explicit; historical sources require version-bounded applicability; project evidence and substantial copied publications stay outside reusable configuration; and scenario JSON contains only complete, deterministic, non-sensitive, transitively referenced source metadata without an internet dependency;
 22. `24_Final_Config_Master` is a generated, non-authoritative, filterable audit manifest with deterministic context, master-projection, dependency and summary tables; it separately resolves scenario/module/profile/phase applicability, activation, inclusion, validation and export; shows every candidate inclusion/exclusion/defer/error with controlled reasons; exposes regulatory and assessment filter dimensions, interpretation and source lineage; computes complete non-duplicating dependency closure and expected JSON counts; excludes raw customer data and unsupported DMS-to-DMS instructions; reconciles with sheet 26; never becomes transformation input; and regenerates identically from unchanged canonical workbook/context;
 23. `25_JSON_Field_Map` provides one explicit, sourced and schema-compatible disposition for every maintained table/column through normalized schema, section, object, property, reference and transformation contracts; uses the shared scenario resolver without reading generated sheets; maps stable identities to exact schema pointers and native JSON types; distinguishes null/omit/empty/default behavior; resolves exact cardinality-checked references; permits only implemented verified declarative transformations; reconciles value/source structures with the canonical Section 12 contract; excludes authoring-only, sensitive, customer/project and execution data; validates all eligible scenarios against one compatible schema; and produces byte-identical preview/export JSON from unchanged canonical inputs;
-24. every scenario has complete phase/module applicability;
-25. `24_Final_Config_Master` explains every inclusion/exclusion;
-26. scenario JSON generates for all Section 5 scenarios;
-27. every JSON object traces to workbook records;
-28. invalid/incomplete content blocks with actionable messages;
-29. unchanged input/selection produces identical canonical JSON;
-30. PowerShell consumes JSON without reading Excel;
-31. deferred SharePoint, release governance and GxP controls are not represented as complete.
+24. `26_JSON_Preview` is a generated, read-only view of the exact candidate Runtime JSON byte stream with deterministic header, expected/actual section counts, object index, validation summary and Excel-safe chunks; fingerprints all relevant scenario/config/value/source/mapping/schema/transformer inputs; blocks stale, invalid, incompatible, count-mismatched, reference/transform/chunk/file-mismatched or data-leaking output; traces each JSON object to sheets 24/25 and source provenance; distinguishes Eligible, EligibleWithWarnings and Blocked; permits only safe runtime-eligible MS-07 previews and never emits DMS-to-DMS runtime configuration; uses the same in-memory object, serializer and bytes for preview and candidate file; and regenerates identically from unchanged canonical inputs;
+25. every scenario has complete phase/module applicability;
+26. `24_Final_Config_Master` explains every inclusion/exclusion;
+27. scenario JSON generates for all Section 5 scenarios;
+28. every JSON object traces to workbook records;
+29. invalid/incomplete content blocks with actionable messages;
+30. unchanged input/selection produces identical canonical JSON;
+31. PowerShell consumes JSON without reading Excel;
+32. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -6220,3 +6434,4 @@ Each review step shall answer four questions:
 | 4.18 MVP | 15 September 2026 | Approved `23_Source_References` with six normalized source-document, precise-location, atomic-claim, claim-evidence, workbook-object-link and source-relationship tables; retained existing `SourceId`/`SourceSection` as validated primary-citation convenience fields while making normalized links authoritative; distinguished regulatory authority, standards, guidance, vendor/product constraints, reviewed interpretations, internal requirements/decisions, assumptions and examples; classified the eMAS Regulatory Technical Migration Assessment Guide as a secondary reviewed guide whose underlying primary sources remain separate; defined truthful lifecycle, verification, translation, conflict and historical-version handling; prohibited examples/internal decisions from masquerading as regulatory authority and excluded project evidence, substantial publication copies and sensitive metadata from reusable/runtime configuration; added transitive offline deterministic JSON, blocking validation and acceptance tests |
 | 4.19 MVP | 15 September 2026 | Approved `24_Final_Config_Master` as a generated, read-only audit manifest with four deterministic context, master-projection, dependency-edge and summary tables; separated scenario/module/profile/phase applicability, conditional activation, final inclusion, validation and export statuses; defined stable row identity, filterable regulatory/assessment dimensions, human condition/evidence/outcome interpretation, source verification and engine/mapping visibility; replaced free-text `ReferencedBy` with atomic transitive dependency lineage; required visibility and controlled reasons for included, excluded, deferred and error candidates; defined safe MS-07 and DMS-to-DMS handling, candidate-universe boundaries, deterministic resolution order, stale/regeneration behavior and expected-count reconciliation with JSON Preview; prohibited generated sheets as configuration inputs and raw customer data/volatile metadata from canonical output; added controlled values, blocking validation and acceptance tests |
 | 4.20 MVP | 16 September 2026 | Approved `25_JSON_Field_Map` with six normalized schema, section, object-mapping, property-mapping, reference-mapping and transformation tables; required explicit dispositions for every maintained table/column, stable object identity, exact schema/property pointers, native JSON types, explicit null/default behavior, controlled-code mapping, deterministic grouping/sorting and exact cardinality-checked references; limited transformations to implemented verified declarative capabilities and prohibited executable/hidden logic or independent applicability decisions; standardized UTF-8 no-BOM LF two-space final-newline serialization and preview/export parity; reconciled Section 11 and the canonical Section 12 JSON/value-list structures with approved value aliases/dependencies and normalized source provenance; excluded generated sheets, authoring-only/sensitive/customer/execution data; added blocking validation and acceptance tests |
+| 4.21 MVP | 16 September 2026 | Approved `26_JSON_Preview` as a generated read-only view of the exact candidate Runtime JSON with five deterministic header, section-count, object-index, validation-summary and chunk tables; added comprehensive input fingerprints and controlled stale reasons across scenario/context, sheets 01–23, value/source catalogues, sheet 25, schema and transformer while excluding generated sheets; defined expected-versus-actual count reconciliation, object-level workbook/mapping/source traceability and fingerprints, Excel-safe Unicode-aware chunks that reconstruct exact UTF-8 bytes, one-object/one-serializer/one-byte-stream preview/export parity and file fingerprint checks; separated Current/Stale/NotGenerated/Failed from Eligible/EligibleWithWarnings/Blocked, safe limited MS-07 from unsupported DMS-to-DMS non-generation, detailed validation ownership in sheet 27 and reusable-configuration data boundaries; added controlled values, blocking validation and acceptance tests |
