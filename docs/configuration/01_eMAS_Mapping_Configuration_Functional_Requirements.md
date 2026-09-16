@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.21 MVP
+**Version:** 4.22 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-033
+**Decision references:** DEC-2026-013 through DEC-2026-034
 
 ## 1. Purpose and MVP decision
 
@@ -189,7 +189,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 24 | `24_Final_Config_Master` | Generated | Filterable flattened view of everything included/excluded for a selected scenario |
 | 25 | `25_JSON_Field_Map` | Maintained | Explicit workbook-column to JSON-property transformation contract |
 | 26 | `26_JSON_Preview` | Generated | Exact candidate Runtime JSON preview, counts, object traceability, validation summary, and reconstructable chunks |
-| 27 | `27_Validation_Results` | Generated | Blocking errors, warnings, affected record, reason, and correction |
+| 27 | `27_Validation_Results` | Generated | Registered validation controls, applicability, prerequisites, positive control coverage, detailed results/targets, correction and export decision |
 
 ## 8. Common workbook conventions
 
@@ -5098,6 +5098,8 @@ Exactly one row identifies the current candidate preview.
 | `SchemaId` | Yes | Active schema from sheet 25. |
 | `SchemaVersion` | Yes | Active schema version. |
 | `TransformerVersion` | Yes | Transformer implementation/capability version. |
+| `ValidatorVersion` | Yes | Validator implementation version associated with the current validation run. |
+| `ValidationControlSetFingerprint` | Yes | SHA-256 of the registered validation controls, applicability and dependencies used by the current run. |
 | `RuntimeCompatibilityStatus` | Yes | Compatible or incompatible runtime contract result. |
 | `GeneratedInputFingerprint` | Conditional | SHA-256 of canonical relevant inputs used to generate the preview; blank only when no preview was generated. |
 | `CurrentInputFingerprint` | Yes | SHA-256 of current canonical relevant inputs. |
@@ -5120,6 +5122,8 @@ Exactly one row identifies the current candidate preview.
 `GeneratedInputFingerprint` shall cover confirmed scenario/context, all maintained sheets `01`–`23`, sheet 25, the active schema artifact and transformer capability/version relevant to resolution or serialization. A change to a previously excluded row may change future inclusion and therefore shall also make the preview stale. Generated sheets `24`, `26` and `27` are excluded from the input fingerprint.
 
 If `GeneratedInputFingerprint != CurrentInputFingerprint`, the preview shall be Stale and export shall be Blocked. Recalculation shall identify whether scenario context, source configuration, value lists, source references, mapping, schema or transformer changed.
+
+The referenced sheet-27 validation run shall also match `ValidatorVersion` and `ValidationControlSetFingerprint`. A stale/failed validation run or changed control set blocks export without changing the candidate JSON input fingerprint unless the corresponding schema/transformer/configuration input also changed.
 
 #### 9.27.3 `tblJsonPreviewSectionCounts`
 
@@ -5226,7 +5230,7 @@ The transformer shall not rebuild JSON for download/export. The candidate file b
 
 #### 9.27.8 Eligibility decisions
 
-`Eligible` requires Current fingerprint, runtime-eligible scenario, compatible schema/runtime, zero blocking validation results, implemented required transformations, resolved mappings/references, successful schema validation, matching sheet-24 counts, valid chunk reconstruction and matching candidate-file bytes.
+`Eligible` requires Current input fingerprint, a current Completed sheet-27 run with matching validator/control-set fingerprint and all mandatory applicable controls evaluated, runtime-eligible scenario, compatible schema/runtime, zero blocking validation results, implemented required transformations, resolved mappings/references, successful schema validation, matching sheet-24 counts, valid chunk reconstruction and matching candidate-file bytes.
 
 `EligibleWithWarnings` requires the same conditions but permits explicitly non-blocking warnings, including truthfully labelled draft/unverified source content. Warnings shall remain visible and detailed in sheet 27.
 
@@ -5257,18 +5261,237 @@ Equivalent canonical status lists shall be reused where available. At minimum:
 
 ### 9.28 `27_Validation_Results`
 
-| Column | Why |
+#### 9.28.1 Purpose and authority boundary
+
+`27_Validation_Results` shall be the generated, read-only explanation of whether the current workbook, selected scenario, resolved configuration, JSON mapping, preview and candidate file satisfy the registered MVP validation controls. It shall prove which controls were applicable, which executed, which passed or failed, which could not execute, which prerequisite caused a skip, which records/properties are affected, and why the final export decision was reached.
+
+The sheet shall not be a manually maintained control switch, an exception/waiver register or Runtime JSON input. Validation controls are registered by the implemented validator and rendered here so reviewers can inspect them. A workbook user shall not be able to disable, downgrade, suppress or rewrite a blocking control/result by editing generated cells. Manual changes shall be discarded on regeneration.
+
+The sheet shall contain seven generated Excel tables: three control-registry views and four run/result views. All functional identifiers and rows shall be deterministic; display-only timestamps, navigation links and formatting may vary and shall not affect canonical Runtime JSON.
+
+#### 9.28.2 `tblValidationRuns`
+
+Exactly one current row summarizes the validation run used for the export decision.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValidationRunId` | Yes | Deterministic identity derived from scenario, input fingerprint, control-set fingerprint, schema and validator version. |
+| `SelectedScenarioId` | Yes | Confirmed scenario validated. |
+| `PreviewId` | Conditional | Sheet-26 preview validated; blank only when preview generation was legitimately not attempted. |
+| `MappingVersion` | Yes | Workbook configuration version. |
+| `SchemaId` | Yes | Active JSON schema. |
+| `SchemaVersion` | Yes | Active schema version. |
+| `TransformerVersion` | Yes | Transformer implementation/capability version. |
+| `ValidatorVersion` | Yes | Validator implementation version. |
+| `GeneratedInputFingerprint` | Yes | Canonical input fingerprint used by the run. |
+| `CurrentInputFingerprint` | Yes | Current canonical input fingerprint. |
+| `GeneratedControlSetFingerprint` | Yes | SHA-256 of the registered controls, applicability and dependencies used by the run. |
+| `CurrentControlSetFingerprint` | Yes | Current registered-control fingerprint. |
+| `StaleStatus` | Yes | Current, Stale, Failed or NotRun. |
+| `RunStatus` | Yes | NotRun, Running, Completed or Failed. |
+| `ValidationDecision` | Yes | Pass, PassWithWarnings or Fail. |
+| `ExportEligibility` | Yes | Reuses `JSON_EXPORT_ELIGIBILITY`. |
+| `ApplicableControlCount` | Yes | Controls required for this run. |
+| `PassedControlCount` | Yes | Applicable controls with Pass outcome. |
+| `WarningControlCount` | Yes | Applicable controls with Warning outcome. |
+| `FailedControlCount` | Yes | Applicable controls with Fail outcome. |
+| `NotApplicableCount` | Yes | Controls legitimately not applicable. |
+| `NotEvaluatedCount` | Yes | Applicable controls not completed. |
+| `ErrorCount` | Yes | Error result count. |
+| `WarningCount` | Yes | Warning result count. |
+| `InfoCount` | Yes | Informational result count. |
+| `BlockingCount` | Yes | Results/mandatory non-evaluations preventing export. |
+| `GeneratedOn` | No | Display-only timestamp excluded from deterministic identity/fingerprints. |
+| `SummaryReason` | Yes | Human-readable overall result and next action. |
+
+Repeated validation of unchanged canonical inputs and the same control set shall reproduce the same `ValidationRunId` and functional rows. Sheet 27 is a current generated view, not an MVP audit-history store.
+
+#### 9.28.3 `tblValidationControls`
+
+One row describes one registered validation control.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ControlCode` | Yes | Stable control identity, never reused for different meaning. |
+| `ControlVersion` | Yes | Changes when validation meaning changes. |
+| `ControlName` | Yes | Human-readable title. |
+| `Description` | Yes | Exact condition protected. |
+| `ValidationLayer` | Yes | References `VALIDATION_LAYER`. |
+| `DefaultSeverity` | Yes | Error, Warning or Info. |
+| `Blocking` | Yes | Explicit export effect; Error=true and Warning/Info=false for MVP. |
+| `ScopeType` | Yes | Global, Scenario, Preview or Export. |
+| `ValidatorCapabilityCode` | Yes | Implemented validator capability. |
+| `RequirementId` | Yes | Requirement protected by the control. |
+| `WhyItMatters` | Yes | JSON/runtime consequence. |
+| `CorrectiveActionTemplate` | Yes | Standard actionable remediation. |
+| `Priority` | Yes | Deterministic layer/order priority. |
+| `SourceId` | Yes | Requirement/design source. |
+| `SourceSection` | Yes | Exact source/decision location. |
+| `ControlStatus` | Yes | Implemented, Deferred, Retired or Unsupported. |
+
+An active applicable MVP control shall be Implemented. Registering a control row does not implement its capability. Scenario-dependent meaning that materially changes severity/blocking shall use a distinct control code rather than a hidden run-time override.
+
+#### 9.28.4 `tblValidationControlApplicability`
+
+One row defines one atomic control-scope assignment.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ControlApplicabilityId` | Yes | Stable relationship identity. |
+| `ControlCode` | Yes | Parent control. |
+| `ScopeType` | Yes | Global, Scenario, Preview or Export. |
+| `ScenarioId` | Yes | Specific scenario or `ALL`. |
+| `Phase` | Yes | Specific phase or `ALL`. |
+| `TargetSheet` | Conditional | Target sheet or `ALL`. |
+| `TargetTable` | Conditional | Exact Excel Table or `ALL`. |
+| `TargetColumn` | Conditional | Exact column or `ALL`. |
+| `RequiredWhenApplicable` | Yes | Whether NotEvaluated/Indeterminate blocks export. |
+| `ApplicabilityReasonCode` | Yes | Controlled explanation. |
+| `Priority` | Yes | Deterministic applicability order. |
+
+Packed scenario, sheet, table or column lists are prohibited. Applicability shall be visible and atomic; it shall not be reconstructed from free text.
+
+#### 9.28.5 `tblValidationControlDependencies`
+
+One row represents one prerequisite relationship.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ControlDependencyId` | Yes | Stable dependency identity. |
+| `ControlCode` | Yes | Dependent control. |
+| `PrerequisiteControlCode` | Yes | Control that must execute first. |
+| `DependencyBehavior` | Yes | Stop, Skip or Continue. |
+| `Sequence` | Yes | Deterministic prerequisite order. |
+| `Reason` | Yes | Human-readable dependency rationale. |
+
+Dependencies shall resolve and be acyclic. A root structural failure shall produce its primary result while downstream controls record `NotEvaluated`/`SkippedPrerequisite`; validators shall not flood the sheet with misleading cascade errors.
+
+#### 9.28.6 `tblValidationControlEvaluations`
+
+One row records execution of one applicable control assignment.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `EvaluationId` | Yes | Deterministic run/control/applicability identity. |
+| `ValidationRunId` | Yes | Parent run. |
+| `ControlCode` | Yes | Evaluated control. |
+| `ControlApplicabilityId` | Yes | Scope assignment used. |
+| `ApplicabilityStatus` | Yes | Applicable, NotApplicable or Indeterminate. |
+| `ExecutionStatus` | Yes | Completed, SkippedPrerequisite or TechnicalFailure. |
+| `Outcome` | Yes | Pass, Warning, Fail, NotApplicable or NotEvaluated. |
+| `EvaluatedRecordCount` | Yes | Number of records/properties inspected. |
+| `ResultCount` | Yes | Detailed results produced. |
+| `BlockingResultCount` | Yes | Blocking results. |
+| `SkippedReasonCode` | Conditional | Required for skipped/not-evaluated controls. |
+| `EvaluationSequence` | Yes | Deterministic execution order. |
+
+This table supplies positive coverage evidence. Absence of a result row shall not be interpreted as proof that a control passed.
+
+#### 9.28.7 `tblValidationResults`
+
+One row represents one distinct validation issue.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValidationResultId` | Yes | Deterministic identity based on run, control, message code and stable target/occurrence key. |
+| `ValidationRunId` | Yes | Parent run. |
+| `EvaluationId` | Yes | Producing evaluation. |
+| `ControlCode` | Yes | Producing control. |
+| `Severity` | Yes | Error, Warning or Info. |
+| `Blocking` | Yes | Export effect consistent with severity/control. |
+| `MessageCode` | Yes | Stable message-template identity. |
+| `Message` | Yes | Concise issue description. |
+| `ExpectedCondition` | Yes | Required state. |
+| `ObservedSummary` | Yes | Safe, concise observed state; sensitive/raw content prohibited. |
+| `WhyItMatters` | Yes | JSON/runtime impact. |
+| `CorrectiveAction` | Yes | Specific action a maintainer can perform. |
+| `RootCauseGroupId` | Conditional | Groups related symptoms without hiding occurrences. |
+| `OccurrenceSequence` | Yes | Stable order within a control/target group. |
+| `DeduplicationKey` | Yes | Prevents duplicate issue rows while preserving distinct targets. |
+
+The validator shall not copy credentials, connection strings, customer content, project answers, actual dossier/file identities, sensitive local paths, usernames or reviewer personal data into messages or observed summaries.
+
+#### 9.28.8 `tblValidationResultTargets`
+
+One row links one result to one affected workbook/JSON object. Multiple targets use multiple rows, never packed text.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ValidationTargetId` | Yes | Deterministic target-link identity. |
+| `ValidationResultId` | Yes | Parent result. |
+| `TargetRole` | Yes | Primary, Related, Dependency, Schema or Preview. |
+| `SheetName` | Conditional | Affected sheet. |
+| `TableName` | Conditional | Affected Excel Table. |
+| `RecordId` | Conditional | Stable workbook record identifier, never row number. |
+| `ColumnName` | Conditional | Affected column. |
+| `JsonPointer` | Conditional | Exact affected JSON location. |
+| `FinalConfigRowId` | Conditional | Link to sheet 24. |
+| `ObjectMappingId` | Conditional | Link to sheet 25. |
+| `PreviewObjectId` | Conditional | Link to sheet 26. |
+| `SourceObjectLinkId` | Conditional | Link to sheet-23 provenance. |
+| `NavigationLink` | No | Display-only workbook navigation. |
+
+At least one resolvable target or a legitimate workbook/schema/run-level target shall exist for every result.
+
+#### 9.28.9 Validation layers and execution order
+
+Controls shall execute in dependency-safe order:
+
+1. workbook sheets, tables and required columns;
+2. required values, data types and controlled codes;
+3. stable identifiers and foreign keys;
+4. business/regulatory semantics;
+5. source/provenance completeness;
+6. scenario applicability and dependency closure;
+7. JSON mapping, reference and transformation capabilities;
+8. schema validation;
+9. preview counts, chunks and candidate-file parity; and
+10. security, data-leakage and deterministic-regeneration checks.
+
+`Global` controls always apply. `Scenario` controls use the confirmed scenario and resolved record set. `Preview` controls apply when a candidate object/preview exists. `Export` controls determine whether a candidate file may be produced. An Indeterminate applicability or NotEvaluated outcome for a required applicable control blocks export.
+
+#### 9.28.10 Decision rules
+
+`Eligible` requires matching input/control-set fingerprints, a Completed run, every mandatory applicable control completed, no TechnicalFailure/Indeterminate mandatory scope, zero blocking results, current schema/preview/file parity and no warnings.
+
+`EligibleWithWarnings` requires the same conditions and permits only explicitly non-blocking warnings. Warnings remain visible and do not become successful evidence.
+
+`Blocked` is required for any Error, required control not evaluated, validator technical failure, stale input/control set, unresolved applicability, schema/mapping/reference/dependency failure, preview/file mismatch, unsafe data leakage, unsupported route or nondeterministic output.
+
+No manual override, waiver or suppression is permitted in sheet 27. Project exceptions are execution evidence and shall not alter workbook/configuration validation. `MS-07` may pass only its approved limited/follow-up contract. A DMS-to-DMS or other unsupported target route shall produce a blocking result, NotGenerated preview and no Runtime JSON.
+
+#### 9.28.11 Connections to sheets 22, 24, 25 and 26
+
+- sheet 22 owns the controlled validation/status codes;
+- sheet 24 supplies resolved inclusion/exclusion/dependency/count evidence;
+- sheet 25 supplies mapping, schema and transformation evidence and retains generated sheet 27 as `NotApplicable` transformation input;
+- sheet 26 displays only the current run identity and grouped summary, never detailed results; and
+- sheet 27 is validation evidence and is not exported in Runtime JSON.
+
+The sheet-26 header shall expose `ValidatorVersion` and `ValidationControlSetFingerprint`. A sheet-27 run whose input or control-set fingerprints are no longer current makes export Blocked even when the candidate JSON bytes themselves have not changed. Control-registry views are validation-only metadata and do not change Runtime JSON unless their corresponding transformer/schema behavior also changes.
+
+#### 9.28.12 Determinism and presentation
+
+Controls shall be ordered by validation layer, priority and `ControlCode`; applicability/dependencies by their declared sequence and stable identifiers; evaluations by execution sequence; results by Blocking descending, severity, layer/priority, target identity, message code and occurrence sequence; and targets by result, role and stable target key.
+
+The sheet should show a prominent run/scenario/eligibility banner, counts by outcome/severity/layer, frozen/filterable headers, navigation links and red/amber/green formatting. Formatting is presentation only. Unchanged canonical inputs and control registry shall reproduce identical functional tables and identifiers.
+
+#### 9.28.13 Controlled values in `22_Value_Lists`
+
+| ListCode | Required active codes |
 |---|---|
-| `ValidationId` | Stable result identity |
-| `Severity` | Error, Warning, Info |
-| `ControlCode` | Identifies the failed validation |
-| `SheetName` and `RecordId` | Locates the issue |
-| `ColumnName` | Identifies the field to correct |
-| `Message` | Explains the problem |
-| `WhyItMatters` | Explains the JSON/runtime impact |
-| `CorrectiveAction` | Tells the maintainer what to change |
-| `Blocking` | Controls export eligibility |
-| `SelectedScenarioId` | Distinguishes global from scenario-specific validation |
+| `VALIDATION_LAYER` | `Structure`, `DataType`, `ControlledValue`, `ReferentialIntegrity`, `BusinessSemantic`, `SourceProvenance`, `ScenarioResolution`, `JSONMapping`, `Schema`, `PreviewParity`, `Security`, `Determinism` |
+| `VALIDATION_SCOPE` | `Global`, `Scenario`, `Preview`, `Export` |
+| `VALIDATION_SEVERITY` | `Error`, `Warning`, `Info` |
+| `VALIDATION_APPLICABILITY_STATUS` | `Applicable`, `NotApplicable`, `Indeterminate` |
+| `VALIDATION_EXECUTION_STATUS` | `Completed`, `SkippedPrerequisite`, `TechnicalFailure` |
+| `VALIDATION_OUTCOME` | `Pass`, `Warning`, `Fail`, `NotApplicable`, `NotEvaluated` |
+| `VALIDATION_RUN_STATUS` | `NotRun`, `Running`, `Completed`, `Failed`, `Stale` |
+| `VALIDATION_DECISION` | `Pass`, `PassWithWarnings`, `Fail` |
+| `VALIDATION_TARGET_ROLE` | `Primary`, `Related`, `Dependency`, `Schema`, `Preview` |
+| `VALIDATION_DEPENDENCY_BEHAVIOR` | `Stop`, `Skip`, `Continue` |
+
+`JSON_EXPORT_ELIGIBILITY` shall be reused rather than duplicated.
 
 ## 10. Minimum configurable requirement coverage
 
@@ -5830,6 +6053,23 @@ JSON generation shall be blocked when any of the following is true:
 - detailed validation results/corrective actions duplicated in sheet 26 instead of linked to sheet 27; and
 - unchanged canonical inputs producing different preview rows, pointers, counts, chunks, fingerprints or candidate-file bytes.
 
+- a required sheet-27 table/column is missing, generated rows are manually treated as authority, or sheet 27 is used as transformation/runtime input;
+- a registered control lacks a unique stable code/version, implemented validator capability, requirement, source, severity/blocking contract, scope, explanation or corrective-action template;
+- an active applicable control is Deferred/Retired/Unsupported, or Error/Warning/Info is inconsistent with the MVP blocking policy;
+- a control-set fingerprint is missing, cannot be reproduced, or GeneratedControlSetFingerprint differs from CurrentControlSetFingerprint while export remains eligible;
+- control applicability uses packed/free-text scope, has unresolved scenario/phase/sheet/table/column targets, duplicates an assignment, or leaves a required scope Indeterminate;
+- a control dependency is missing, unresolved, cyclic or ordered inconsistently, or a failed prerequisite lets a dependent control report Pass without completing its required evaluation;
+- structural/root-cause failure produces uncontrolled cascade errors instead of prerequisite-based NotEvaluated evaluations;
+- a validation run lacks deterministic identity/current scenario/preview/mapping/schema/transformer/validator context, has mismatched input fingerprints, is stale/failed/incomplete, or is not the run referenced by sheet 26;
+- applicable controls, outcomes, results, blocking results or severity totals do not reconcile between run, evaluation, result and sheet-26 summary tables;
+- a mandatory applicable control is NotEvaluated, SkippedPrerequisite, Indeterminate or TechnicalFailure while export is Eligible/EligibleWithWarnings;
+- a result lacks a deterministic identifier, control/evaluation/message/expected condition/reason/corrective action, has an inconsistent severity/blocking value, or silently deduplicates distinct occurrences;
+- a result lacks a resolvable target, uses row number as identity, packs several targets in one cell, or has a broken sheet/table/record/column/JSON/sheet-24/sheet-25/sheet-26/source link;
+- messages or observed summaries expose credentials, connection strings, customer/project answers or content, actual dossier/file identities, sensitive paths, usernames or reviewer personal data;
+- detailed sheet-27 results/targets are copied into sheet 26 or Runtime JSON rather than represented by the linked grouped validation summary;
+- a safe limited MS-07 configuration is checked against unsupported full-migration controls, or a DMS-to-DMS/unsupported target route is not blocked from preview/file generation; and
+- unchanged canonical inputs/control registry produce different run/control/applicability/dependency/evaluation/result/target identifiers, functional rows, counts, ordering or export decision.
+
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
 ## 15. Engine capability boundary
@@ -6340,6 +6580,49 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-482` | Preview/export parity | Preview and download candidate for same generation | Same in-memory object and byte-identical output |
 | `MVP-AT-483` | Deterministic regeneration | Generate twice with unchanged canonical inputs | Identical rows, pointers, counts, chunks, fingerprints and file bytes |
 
+| `MVP-AT-484` | Sheet 27 structure | Seven required generated tables exist with all mandatory columns | Pass |
+| `MVP-AT-485` | Generated-only boundary | Manually edit sheet-27 rows and regenerate | Edits discarded; no configuration input changed |
+| `MVP-AT-486` | Control registry completeness | Enumerate registered controls | Every control has required metadata, requirement, source and capability |
+| `MVP-AT-487` | Stable control identity | Change display label only, then change validation meaning | Code remains stable for label change; meaning change requires version/new code |
+| `MVP-AT-488` | Control-set fingerprint | Fingerprint controls, applicability and dependencies twice | Identical SHA-256 for unchanged registry |
+| `MVP-AT-489` | Deterministic run identity | Validate same scenario/input/control set twice | Same ValidationRunId and functional run row |
+| `MVP-AT-490` | Input stale detection | Change canonical workbook/scenario/schema input after validation | Run Stale and export Blocked |
+| `MVP-AT-491` | Control-set stale detection | Change registered control/applicability/dependency after validation | Run Stale and export Blocked |
+| `MVP-AT-492` | Global scope | Validate any scenario | Every active Global control evaluated |
+| `MVP-AT-493` | Scenario scope | Validate two scenarios with different controls | Only matching scenario assignments applicable |
+| `MVP-AT-494` | Preview scope | Validate before and after candidate preview exists | Legitimate NotApplicable first; evaluated when preview exists |
+| `MVP-AT-495` | Export scope | Candidate reaches export decision | All active Export controls evaluated |
+| `MVP-AT-496` | Atomic applicability | Enter packed/multiple scenario or target values | Validation error |
+| `MVP-AT-497` | Indeterminate required scope | Required applicability cannot be resolved | NotEvaluated/Blocked, never Pass |
+| `MVP-AT-498` | Dependency cycle | Create cyclic control prerequisites in registry fixture | Registry invalid and run Blocked |
+| `MVP-AT-499` | Stop cascade | Required table control fails | Root error plus dependent SkippedPrerequisite/NotEvaluated, no error flood |
+| `MVP-AT-500` | Continue dependency | Non-blocking prerequisite warning uses Continue | Dependent control executes and warning remains visible |
+| `MVP-AT-501` | Positive control evidence | Applicable control finds no issue | Completed/Pass evaluation with evaluated count |
+| `MVP-AT-502` | Legitimate not applicable | Control does not apply to selected scenario | NotApplicable with reason, not Pass |
+| `MVP-AT-503` | Validator technical failure | Validator capability throws/fails | TechnicalFailure, Fail decision and export Blocked |
+| `MVP-AT-504` | Mandatory not evaluated | Applicable required control cannot execute | Blocking count increases and export Blocked |
+| `MVP-AT-505` | Error behavior | Produce one Error result | Blocking=true, decision Fail, export Blocked |
+| `MVP-AT-506` | Warning behavior | Produce only approved non-blocking warnings | PassWithWarnings and EligibleWithWarnings |
+| `MVP-AT-507` | Info behavior | Produce only informational results | Non-blocking; eligibility unaffected |
+| `MVP-AT-508` | Severity/blocking consistency | Configure Error non-blocking or Warning/Info blocking | Registry invalid and export Blocked |
+| `MVP-AT-509` | Result identity | Regenerate same issue against same stable target | Same ValidationResultId |
+| `MVP-AT-510` | Result deduplication | Same issue is detected twice by one control/target/message | One result with deterministic deduplication key |
+| `MVP-AT-511` | Root-cause grouping | Several symptoms share one root cause | Occurrences retained and grouped without deletion |
+| `MVP-AT-512` | Atomic result targets | One result affects three records/properties | Three target rows, no packed target text |
+| `MVP-AT-513` | Workbook traceability | Select workbook-targeted result | Resolves to exact sheet/table/stable record/column |
+| `MVP-AT-514` | JSON traceability | Select JSON-targeted result | Resolves to exact JSON pointer and relevant mapping/preview object |
+| `MVP-AT-515` | Safe observed summary | Sensitive/customer values appear in invalid input fixture | Result uses safe summary; sensitive value not copied |
+| `MVP-AT-516` | Actionable correction | Produce representative failures for every layer | Each result explains why and gives specific corrective action |
+| `MVP-AT-517` | Run count reconciliation | Recalculate evaluations/results by outcome/severity/blocking | All run totals agree |
+| `MVP-AT-518` | Sheet-26 summary reconciliation | Compare grouped sheet-27 results with preview summary | Same run, controls, result and blocking counts |
+| `MVP-AT-519` | Preview validator metadata | Generate current eligible preview | Header shows matching ValidatorVersion/control-set fingerprint/run |
+| `MVP-AT-520` | Runtime JSON boundary | Inspect schema, mappings, preview and candidate file | No sheet-27 control/result/target objects exported |
+| `MVP-AT-521` | Limited MS-07 validation | Validate runtime-eligible limited MS-07 | Only approved limited/follow-up controls apply; limitations visible |
+| `MVP-AT-522` | DMS-to-DMS validation | Validate source DMS to target DMS request | Blocking result, Fail/Blocked/NotGenerated, no JSON chunks/file |
+| `MVP-AT-523` | Deterministic ordering | Shuffle registry/source worksheet rows | Canonical controls/evaluations/results/targets keep defined order |
+| `MVP-AT-524` | Deterministic regeneration | Validate twice with unchanged inputs/control set | Identical functional tables, identifiers, counts and decision |
+| `MVP-AT-525` | Changed control meaning | Change validation meaning without version/fingerprint change | Registry/control-set validation error and export Blocked |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -6368,14 +6651,15 @@ The MVP is complete when:
 22. `24_Final_Config_Master` is a generated, non-authoritative, filterable audit manifest with deterministic context, master-projection, dependency and summary tables; it separately resolves scenario/module/profile/phase applicability, activation, inclusion, validation and export; shows every candidate inclusion/exclusion/defer/error with controlled reasons; exposes regulatory and assessment filter dimensions, interpretation and source lineage; computes complete non-duplicating dependency closure and expected JSON counts; excludes raw customer data and unsupported DMS-to-DMS instructions; reconciles with sheet 26; never becomes transformation input; and regenerates identically from unchanged canonical workbook/context;
 23. `25_JSON_Field_Map` provides one explicit, sourced and schema-compatible disposition for every maintained table/column through normalized schema, section, object, property, reference and transformation contracts; uses the shared scenario resolver without reading generated sheets; maps stable identities to exact schema pointers and native JSON types; distinguishes null/omit/empty/default behavior; resolves exact cardinality-checked references; permits only implemented verified declarative transformations; reconciles value/source structures with the canonical Section 12 contract; excludes authoring-only, sensitive, customer/project and execution data; validates all eligible scenarios against one compatible schema; and produces byte-identical preview/export JSON from unchanged canonical inputs;
 24. `26_JSON_Preview` is a generated, read-only view of the exact candidate Runtime JSON byte stream with deterministic header, expected/actual section counts, object index, validation summary and Excel-safe chunks; fingerprints all relevant scenario/config/value/source/mapping/schema/transformer inputs; blocks stale, invalid, incompatible, count-mismatched, reference/transform/chunk/file-mismatched or data-leaking output; traces each JSON object to sheets 24/25 and source provenance; distinguishes Eligible, EligibleWithWarnings and Blocked; permits only safe runtime-eligible MS-07 previews and never emits DMS-to-DMS runtime configuration; uses the same in-memory object, serializer and bytes for preview and candidate file; and regenerates identically from unchanged canonical inputs;
-25. every scenario has complete phase/module applicability;
-26. `24_Final_Config_Master` explains every inclusion/exclusion;
-27. scenario JSON generates for all Section 5 scenarios;
-28. every JSON object traces to workbook records;
-29. invalid/incomplete content blocks with actionable messages;
-30. unchanged input/selection produces identical canonical JSON;
-31. PowerShell consumes JSON without reading Excel;
-32. deferred SharePoint, release governance and GxP controls are not represented as complete.
+25. `27_Validation_Results` is a generated, read-only validation explanation with deterministic run, control-registry, applicability, prerequisite, evaluation, result and target tables; proves positive control coverage as well as failures; fingerprints the active validator control set; prevents cascade-error flooding through explicit prerequisites; blocks stale, failed, indeterminate, technically failed or mandatory NotEvaluated validation; reconciles all counts and grouped summaries with sheet 26; provides actionable, safe, atomic workbook/JSON/source targets without row-number identity or sensitive data; permits only the approved limited MS-07 contract, blocks DMS-to-DMS Runtime JSON, never becomes transformation input or Runtime JSON, and regenerates identically from unchanged inputs/control registry;
+26. every scenario has complete phase/module applicability;
+27. `24_Final_Config_Master` explains every inclusion/exclusion;
+28. scenario JSON generates for all Section 5 scenarios;
+29. every JSON object traces to workbook records;
+30. invalid/incomplete content blocks with actionable messages;
+31. unchanged input/selection produces identical canonical JSON;
+32. PowerShell consumes JSON without reading Excel;
+33. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -6435,3 +6719,4 @@ Each review step shall answer four questions:
 | 4.19 MVP | 15 September 2026 | Approved `24_Final_Config_Master` as a generated, read-only audit manifest with four deterministic context, master-projection, dependency-edge and summary tables; separated scenario/module/profile/phase applicability, conditional activation, final inclusion, validation and export statuses; defined stable row identity, filterable regulatory/assessment dimensions, human condition/evidence/outcome interpretation, source verification and engine/mapping visibility; replaced free-text `ReferencedBy` with atomic transitive dependency lineage; required visibility and controlled reasons for included, excluded, deferred and error candidates; defined safe MS-07 and DMS-to-DMS handling, candidate-universe boundaries, deterministic resolution order, stale/regeneration behavior and expected-count reconciliation with JSON Preview; prohibited generated sheets as configuration inputs and raw customer data/volatile metadata from canonical output; added controlled values, blocking validation and acceptance tests |
 | 4.20 MVP | 16 September 2026 | Approved `25_JSON_Field_Map` with six normalized schema, section, object-mapping, property-mapping, reference-mapping and transformation tables; required explicit dispositions for every maintained table/column, stable object identity, exact schema/property pointers, native JSON types, explicit null/default behavior, controlled-code mapping, deterministic grouping/sorting and exact cardinality-checked references; limited transformations to implemented verified declarative capabilities and prohibited executable/hidden logic or independent applicability decisions; standardized UTF-8 no-BOM LF two-space final-newline serialization and preview/export parity; reconciled Section 11 and the canonical Section 12 JSON/value-list structures with approved value aliases/dependencies and normalized source provenance; excluded generated sheets, authoring-only/sensitive/customer/execution data; added blocking validation and acceptance tests |
 | 4.21 MVP | 16 September 2026 | Approved `26_JSON_Preview` as a generated read-only view of the exact candidate Runtime JSON with five deterministic header, section-count, object-index, validation-summary and chunk tables; added comprehensive input fingerprints and controlled stale reasons across scenario/context, sheets 01–23, value/source catalogues, sheet 25, schema and transformer while excluding generated sheets; defined expected-versus-actual count reconciliation, object-level workbook/mapping/source traceability and fingerprints, Excel-safe Unicode-aware chunks that reconstruct exact UTF-8 bytes, one-object/one-serializer/one-byte-stream preview/export parity and file fingerprint checks; separated Current/Stale/NotGenerated/Failed from Eligible/EligibleWithWarnings/Blocked, safe limited MS-07 from unsupported DMS-to-DMS non-generation, detailed validation ownership in sheet 27 and reusable-configuration data boundaries; added controlled values, blocking validation and acceptance tests |
+| 4.22 MVP | 16 September 2026 | Approved `27_Validation_Results` as a generated read-only validation explanation with seven run, control-registry, applicability, prerequisite, evaluation, result and atomic-target tables; kept control execution authority in implemented validator capabilities while making every control, scope, dependency, outcome and correction visible; added deterministic validation/run/result/target identities, input and control-set fingerprints, positive Pass/NotApplicable/NotEvaluated coverage, prerequisite-based cascade suppression, strict Error/Warning/Info blocking semantics, normalized workbook/JSON/source targets, safe observed summaries and count reconciliation with sheet 26; added validator/control-set metadata to the JSON Preview without making validation results Runtime JSON inputs; defined Current/Pass/PassWithWarnings/Fail and Eligible/EligibleWithWarnings/Blocked behavior, limited MS-07 and DMS-to-DMS safeguards, controlled values, blocking validation and acceptance tests |
