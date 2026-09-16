@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.22 MVP
+**Version:** 4.23 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-034
+**Decision references:** DEC-2026-013 through DEC-2026-035
 
 ## 1. Purpose and MVP decision
 
@@ -167,7 +167,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 2 | `02_Scenario_Questionnaire` | Maintained | Non-technical questions used to identify a scenario and missing information |
 | 3 | `03_Scenario_Derivation_Rules` | Maintained | Structured rules that convert questionnaire answers into one base scenario, qualifiers, and follow-up status |
 | 4 | `04_Assessment_Modules` | Maintained | Reusable assessment capabilities |
-| 5 | `05_Scenario_Module_Map` | Maintained | Required/conditional/optional modules for every scenario |
+| 5 | `05_Scenario_Module_Map` | Maintained | Required/conditional/optional modules plus object-level scenario/phase coverage declarations |
 | 6 | `06_Requirement_Catalogue` | Maintained | Complete human-readable inventory of migration-script requirements |
 | 7 | `07_Fields_Evidence` | Maintained | Canonical reusable field meaning, type/cardinality, producer, provenance, permitted use, and JSON contract |
 | 8 | `08_Regulatory_Profiles` | Maintained | Region/authority/format/version/dossier dimensions and evidence locations |
@@ -186,7 +186,7 @@ The MVP workbook shall contain the following sheets in this order. Sheet names a
 | 21 | `21_PostMigration_Reconciliation` | Maintained | Scenario-aware comparison rules, keys, tolerances, and outcomes |
 | 22 | `22_Value_Lists` | Maintained | Controlled machine codes, human labels, meanings, sources, and runtime eligibility |
 | 23 | `23_Source_References` | Maintained | Regulatory, vendor, product, and internal sources |
-| 24 | `24_Final_Config_Master` | Generated | Filterable flattened view of everything included/excluded for a selected scenario |
+| 24 | `24_Final_Config_Master` | Generated | Selected-scenario inclusion/dependency audit plus complete all-scenario object coverage matrix |
 | 25 | `25_JSON_Field_Map` | Maintained | Explicit workbook-column to JSON-property transformation contract |
 | 26 | `26_JSON_Preview` | Generated | Exact candidate Runtime JSON preview, counts, object traceability, validation summary, and reconstructable chunks |
 | 27 | `27_Validation_Results` | Generated | Registered validation controls, applicability, prerequisites, positive control coverage, detailed results/targets, correction and export decision |
@@ -210,7 +210,8 @@ The workbook shall use these stable identifiers where relevant:
 - `FindingCode`;
 - `RecommendationCode`;
 - `SourceId`;
-- `MappingId`.
+- `MappingId`;
+- `ScenarioObjectMapId`.
 
 Identifiers shall be unique, shall not depend on row number, and shall not be reused for a different meaning. Display labels may change without changing identifiers.
 
@@ -676,6 +677,66 @@ Illustrative JSON emitted from two atomic `MS-01 / PreSales` mappings:
   }
 ]
 ```
+
+#### 9.6.1 `tblScenarioObjectMap`
+
+Module applicability alone does not prove that every individual requirement, rule, condition, field, metric, finding, recommendation, policy, value/source dependency or phase decision reaches every intended scenario JSON. This second maintained table shall declare how each runtime-eligible workbook object obtains scenario and phase coverage.
+
+One row represents one stable source object and one coverage declaration. Every active Runtime/Both candidate from maintained sheets `01` through `23` shall have exactly one complete, non-conflicting coverage declaration for each applicable phase scope before JSON generation.
+
+| Column | Type | Required | Purpose and validation |
+|---|---|---:|---|
+| `ScenarioObjectMapId` | Identifier | Yes | Stable declaration identity. |
+| `SourceSheet` | Code | Yes | Exact authoritative sheet. |
+| `SourceTable` | Text | Yes | Exact Excel Table. |
+| `ObjectType` | Code | Yes | Canonical runtime candidate type. |
+| `ObjectId` | Reference | Yes | Stable source-record identity, never row number. |
+| `CoverageMode` | Code | Yes | DirectScenarioKey, ExplicitScenario, AllScenarios, ModuleDriven or DependencyDriven. |
+| `ScenarioId` | Reference | Conditional | Required for DirectScenarioKey/ExplicitScenario; `ALL` for AllScenarios; blank for Module/DependencyDriven. |
+| `Phase` | Code | Yes | PreSales, PreMigration, PostMigration, All or Shared. |
+| `ModuleId` | Reference | Conditional | Required for ModuleDriven and executable module-owned objects. |
+| `RequirementId` | Reference | Conditional | Requirement implemented/protected by the object. |
+| `Applicability` | Code | Yes | Required, Conditional, Optional, NotApplicable or Inherited. |
+| `JsonInclusionPolicy` | Code | Yes | AlwaysInclude, IncludeDefinition, IncludeWhenSelected, DependencyOnly or Exclude. |
+| `ConditionSetId` | Reference | Conditional | Named structured condition set for Conditional/IncludeWhenSelected behavior. |
+| `ExpectedJsonSection` | Reference | Conditional | Sheet-25 section expected for exported objects. |
+| `ReasonCode` | Code | Yes | Stable mapping reason. |
+| `BusinessReason` | Text | Yes | Plain-language explanation. |
+| `IsActive` | Boolean | Yes | Coverage declaration lifecycle. |
+| `SourceId` | Reference | Yes | Requirement/design basis. |
+| `SourceSection` | Text | Yes | Exact basis. |
+| `Notes` | Text | No | Non-executable maintenance guidance. |
+
+`CoverageMode` shall resolve as follows:
+
+| CoverageMode | Resolution |
+|---|---|
+| `DirectScenarioKey` | The source record already owns one ScenarioId/phase and shall map only to that scenario/phase; other scenarios are explicitly generated as NotApplicable. |
+| `ExplicitScenario` | The declaration directly assigns a scenario/phase independently of a source scenario column. |
+| `AllScenarios` | The declaration expands to all eight active scenarios; `ScenarioId` shall be `ALL`. |
+| `ModuleDriven` | Applicability is inherited from the exact `ScenarioId × Phase × ModuleId` record in `tblScenarioModuleMap`. |
+| `DependencyDriven` | The object is included only through complete transitive dependency closure from an included parent; it shall never disappear merely because it has no independent module. |
+
+`Phase=All` expands to PreSales, PreMigration and PostMigration. `Phase=Shared` represents reusable configuration outside one phase and shall remain one shared projection per scenario.
+
+For JSON generation:
+
+- Required objects use AlwaysInclude;
+- Conditional objects use IncludeDefinition so the condition and all required operands enter scenario JSON even when project evidence is not yet available;
+- Optional objects use IncludeDefinition by default, or IncludeWhenSelected only when an explicit controlled selection policy exists;
+- DependencyDriven objects use DependencyOnly and are included whenever reached by an included parent;
+- NotApplicable objects use Exclude; and
+- missing declarations shall never be interpreted as NotApplicable.
+
+The declaration shall agree with the source row's ScenarioId/Phase/ModuleId, `tblScenarioModuleMap`, requirement ownership, dependency graph and sheet-25 mapping. Any mismatch, duplicate resolution, unsupported JSON section or missing condition/dependency blocks export.
+
+#### 9.6.2 Controlled values for object coverage
+
+| ListCode | Required active codes |
+|---|---|
+| `SCENARIO_COVERAGE_MODE` | `DirectScenarioKey`, `ExplicitScenario`, `AllScenarios`, `ModuleDriven`, `DependencyDriven` |
+| `SCENARIO_OBJECT_APPLICABILITY` | `Required`, `Conditional`, `Optional`, `NotApplicable`, `Inherited` |
+| `JSON_OBJECT_INCLUSION_POLICY` | `AlwaysInclude`, `IncludeDefinition`, `IncludeWhenSelected`, `DependencyOnly`, `Exclude` |
 
 ### 9.7 `06_Requirement_Catalogue`
 
@@ -4594,7 +4655,7 @@ Canonical ordering shall be `SourceId`, `SourceLocationId`, `ClaimId`, claim-evi
 
 The sheet shall never be manually maintained, treated as configuration authority or read as an input to transformation. The transformer shall generate sheet 24 and Runtime JSON independently from the same authoritative maintained sheets. Manual edits shall be discarded on regeneration. Sheets `24`, `26` and `27` are generated outputs and shall never become sources for one another's business meaning.
 
-The sheet shall contain four generated Excel tables. Generated rows shall contain values rather than formulas that can silently recalculate differently between Excel clients. Navigation hyperlinks and display-only metadata may be added outside the canonical tables, but timestamps, usernames, workbook paths and other volatile metadata shall not affect canonical comparison.
+The sheet shall contain five generated Excel tables. Generated rows shall contain values rather than formulas that can silently recalculate differently between Excel clients. Navigation hyperlinks and display-only metadata may be added outside the canonical tables, but timestamps, usernames, workbook paths and other volatile metadata shall not affect canonical comparison.
 
 #### 9.25.2 `tblFinalConfigContext`
 
@@ -4742,34 +4803,69 @@ One row summarizes one selected scenario + phase/shared + optional module + reco
 
 Counts shall reconcile mathematically and shall be based on stable record identities rather than worksheet row counts.
 
-#### 9.25.6 Candidate universe and exclusion visibility
+#### 9.25.6 `tblScenarioCoverageMatrix`
+
+This fifth generated table proves complete object-level coverage before a selected scenario JSON is produced. It shall contain one deterministic row for every active runtime candidate × every active scenario × expanded phase/Shared combination. It is generated independently from the same maintained sources and shall never become transformation input.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `CoverageRowId` | Yes | Deterministic candidate/scenario/phase identity. |
+| `ScenarioId` | Yes | One of the eight active base scenarios. |
+| `Phase` | Yes | PreSales, PreMigration, PostMigration or Shared. |
+| `SourceSheet` | Yes | Authoritative source sheet. |
+| `SourceTable` | Yes | Authoritative Excel Table. |
+| `ObjectType` | Yes | Canonical candidate type. |
+| `ObjectId` | Yes | Stable source record. |
+| `CoverageMode` | Yes | Resolved coverage mode from sheet 05. |
+| `ResolvedModuleId` | Conditional | Module used for ModuleDriven coverage. |
+| `ResolvedRequirementId` | Conditional | Requirement traced to the object. |
+| `ResolvedApplicability` | Yes | Required, Conditional, Optional, NotApplicable or DependencyOnly. |
+| `JsonInclusionPolicy` | Yes | Resolved inclusion policy. |
+| `ConditionSetId` | Conditional | Structured condition exported/evaluated when required. |
+| `ExpectedJsonSection` | Conditional | Expected sheet-25 section. |
+| `ResolutionSourceId` | Yes | Scenario-object, direct-scope, module-map or dependency declaration used. |
+| `CoverageStatus` | Yes | Mapped, NotApplicable, Missing, Ambiguous or Conflict. |
+| `ReasonCode` | Yes | Controlled coverage result reason. |
+| `Explanation` | Yes | Human-readable resolution path. |
+| `ExpectedInJson` | Yes | Yes, Conditional, Dependency or No. |
+| `ResolvedDependencyCount` | Yes | Dependency edges supporting inclusion. |
+| `ValidationStatus` | Yes | Valid, Warning or Error. |
+
+`Mapped` and `NotApplicable` are the only non-error terminal coverage states. Missing means no valid declaration/resolution exists. Ambiguous means more than one valid resolution exists. Conflict means source scope, module map, object declaration, dependency closure or JSON mapping disagree.
+
+For a selected scenario, every row with ExpectedInJson Yes/Conditional/Dependency shall reconcile to `tblFinalConfigMaster`, its dependencies, sheet-25 mapping, sheet-26 object index and actual JSON section counts. Every Required and Conditional definition, including its atomic conditions, fields, value lists, findings, recommendations and sources, shall be present. Counts shall be by distinct stable object/projection and shall not use worksheet row count.
+
+#### 9.25.7 Candidate universe and exclusion visibility
 
 The generated master shall evaluate maintained configuration from sheets `01` through `23` plus mappings from `25_JSON_Field_Map`. It shall include active and inactive candidate records, directly included records, records rejected by scenario/phase/module/profile/activation, transitively referenced dependencies, and deferred/error records. Generated sheets `24`, `26` and `27` are never candidates.
 
 Excluded records shall remain visible with controlled reason codes. This is required to distinguish intentional exclusion from a missing join or broken dependency. Unreferenced value/source catalogue rows may be summarized as unreachable/excluded rather than expanded per phase, but every value/source dependency used by included configuration shall have a master row and dependency lineage.
 
-#### 9.25.7 Deterministic resolution sequence
+#### 9.25.8 Deterministic resolution sequence
 
 The transformer shall:
 
 1. confirm one selected base scenario;
 2. resolve qualifiers and `NeedsReview` conditions;
 3. establish the maintained candidate-record universe;
-4. resolve phase and scenario-module applicability;
-5. resolve regulatory-profile applicability;
-6. evaluate structured activation conditions;
-7. calculate complete transitive dependency closure;
-8. validate controlled values and source references;
-9. validate required transformer/engine capabilities;
-10. resolve mappings from `25_JSON_Field_Map`;
-11. generate master and dependency rows;
-12. generate expected summary counts;
-13. reconcile expected counts with `26_JSON_Preview`; and
-14. block export when any blocking error remains.
+4. validate one complete `tblScenarioObjectMap` declaration for every active Runtime/Both candidate;
+5. expand deterministic coverage across all eight scenarios and applicable phases/Shared;
+6. block Missing, Ambiguous or Conflict coverage before selected-scenario generation;
+7. resolve selected-scenario phase and scenario-module applicability;
+8. resolve regulatory-profile applicability;
+9. evaluate structured activation/selection conditions while retaining complete Conditional definitions;
+10. calculate complete transitive dependency closure;
+11. validate controlled values and source references;
+12. validate required transformer/engine capabilities;
+13. resolve mappings from `25_JSON_Field_Map`;
+14. generate coverage, master and dependency rows;
+15. generate expected summary counts;
+16. reconcile expected counts with `26_JSON_Preview`; and
+17. block export when any blocking error remains.
 
 Repeated generation from unchanged canonical inputs and selection context shall produce identical canonical rows and ordering. Any relevant maintained-table change shall mark sheets 24 and 26 stale until both are regenerated with the same transformation logic.
 
-#### 9.25.8 Required controlled values in `22_Value_Lists`
+#### 9.25.9 Required controlled values in `22_Value_Lists`
 
 Existing semantic masters shall be reused where applicable. The following generated-view lists shall be added only when an equivalent canonical list does not already exist:
 
@@ -4786,11 +4882,11 @@ Existing semantic masters shall be reused where applicable. The following genera
 
 `FINAL_CONFIG_REASON_CODE` shall include at least `ScenarioRoot`, `RequiredModule`, `ConditionalActivated`, `OptionalSelected`, `ReferencedDependency`, `AlwaysExported`, `ScenarioNotApplicable`, `PhaseNotApplicable`, `ModuleNotApplicable`, `ProfileNotApplicable`, `ConditionNotMet`, `ConditionUnknown`, `OptionalNotSelected`, `Inactive`, `Deferred`, `MissingDependency`, `UnsupportedCapability` and `ValidationError`.
 
-#### 9.25.9 Boundary with sheets 25 through 27
+#### 9.25.10 Boundary with sheets 25 through 27
 
 | Sheet | Exclusive responsibility |
 |---|---|
-| `24_Final_Config_Master` | Resolved inclusion/exclusion, human explanation and dependency lineage |
+| `24_Final_Config_Master` | All-scenario object coverage plus selected-scenario inclusion/exclusion, human explanation and dependency lineage |
 | `25_JSON_Field_Map` | Typed workbook-column-to-JSON-property mapping and grouping contract |
 | `26_JSON_Preview` | Actual candidate JSON, actual section counts and stale/eligibility state |
 | `27_Validation_Results` | Individual errors, warnings, affected records and corrective actions |
@@ -5683,17 +5779,22 @@ For a selected `ScenarioId`, the transformer shall:
 
 1. validate that the selected `ScenarioId` identifies exactly one active base scenario, whether selected directly or produced by the approved derivation rules;
 2. load exactly 45 scenario-module mappings for the selected scenario: fifteen modules for each of the three phases;
-3. serialize every mapping, including `NotApplicable` records with their reason; the runtime executes Required/Optional mappings and evaluates Conditional activation, but skips `NotApplicable` mappings;
-4. include active Global requirements with `RuntimeExport=True`, include active ModuleDriven requirements when the associated module is Required, Optional or Conditional for at least one phase, and include active ScenarioSpecific requirements only when `ScenarioId` matches the selection;
-5. exclude Authoring-only, Transformer-only and Report-only requirements unless their row explicitly sets `RuntimeExport=True` and the JSON contract defines their runtime purpose;
-6. include active rules that implement the included requirements and match the scenario/module/phase scope by reverse lookup of `RequirementId`;
-7. include every active referenced evidence field, metric, regulatory profile, finding, recommendation, source, and runtime/Both value-list entry by transitive dependency closure;
-8. include scenario-specific Pre-Migration and Post-Migration rules;
-9. reject unresolved or inactive references;
-10. sort objects and condition groups by defined keys rather than worksheet row position;
-11. serialize using UTF-8, invariant numbers, JSON booleans, explicit arrays, and stable property order;
-12. validate section counts against `24_Final_Config_Master`;
-13. write one file named `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`.
+3. establish every active Runtime/Both candidate from sheets `01`–`23` by stable object type and identity;
+4. validate its `tblScenarioObjectMap` declaration and expand DirectScenarioKey, ExplicitScenario, AllScenarios, ModuleDriven and DependencyDriven coverage;
+5. require zero Missing, Ambiguous or Conflict rows in `tblScenarioCoverageMatrix` for every active scenario before claiming complete scenario support;
+6. select the coverage rows for the confirmed scenario and expand Phase=All while retaining phase-neutral Shared configuration once;
+7. serialize every module mapping, including `NotApplicable` records with their reason;
+8. include every Required object, every complete Conditional definition and its atomic condition operands, Optional definitions according to their explicit policy, and every reached DependencyDriven object;
+9. exclude only objects resolved as NotApplicable/Exclude, inactive, unsupported, deferred or explicitly unselected by an approved policy; absence of mapping shall never mean exclusion;
+10. include active Global requirements with `RuntimeExport=True`, ModuleDriven requirements according to selected-scenario module applicability, and ScenarioSpecific requirements only when their explicit coverage matches;
+11. include active rules that implement included requirements and preserve their scenario/module/phase/profile scope;
+12. include every active referenced field, metric, profile, finding, recommendation, action, value/list/alias/dependency, source/location/claim/link/relationship, readiness/reconciliation object and JSON mapping by complete transitive dependency closure;
+13. reject unresolved, inactive, conflicting or circular required references and any source-scope/module-map/object-map mismatch;
+14. sort objects and conditions by declared stable keys rather than worksheet row position;
+15. serialize using the active sheet-25 mappings, UTF-8, invariant numbers, JSON booleans, explicit arrays and stable property order;
+16. reconcile coverage, Final Config, dependency, expected-section and actual Preview object/count totals;
+17. validate the complete candidate against the active JSON Schema; and
+18. write one file named `eMAS_Runtime_<ScenarioId>_<MappingVersion>.json`.
 
 Questionnaire answers and actual qualifier values are project evidence and shall not be embedded in the reusable scenario configuration. The JSON contains the question catalogue, derivation rules, qualifier vocabulary, and output contract so the consuming application can collect context and produce a traceable scenario-selection result. Conditional activation with an unknown or missing context value shall produce the configured missing-evidence behavior; it shall not be treated as a false condition.
 
@@ -6069,6 +6170,20 @@ JSON generation shall be blocked when any of the following is true:
 - detailed sheet-27 results/targets are copied into sheet 26 or Runtime JSON rather than represented by the linked grouped validation summary;
 - a safe limited MS-07 configuration is checked against unsupported full-migration controls, or a DMS-to-DMS/unsupported target route is not blocked from preview/file generation; and
 - unchanged canonical inputs/control registry produce different run/control/applicability/dependency/evaluation/result/target identifiers, functional rows, counts, ordering or export decision.
+
+- a required `tblScenarioObjectMap` or `tblScenarioCoverageMatrix` table/column is missing;
+- an active Runtime/Both candidate from sheets `01`–`23` lacks an active object-level coverage declaration;
+- a declaration uses an invalid CoverageMode/ScenarioId/Phase combination, packed scenario/phase values, row number identity, unresolved object, requirement, module, condition set, source or JSON section;
+- more than one active declaration resolves the same object/scenario/phase without an approved non-conflicting purpose;
+- DirectScenarioKey/ExplicitScenario/AllScenarios coverage disagrees with the source row, ModuleDriven coverage disagrees with `tblScenarioModuleMap`, or DependencyDriven coverage has no valid included parent;
+- Phase=All does not expand to all three phases, Shared is duplicated per phase, or ALL does not expand to all eight active scenarios;
+- Required does not resolve to AlwaysInclude, Conditional does not include its complete definition/condition operands, Optional lacks a declared inclusion policy, DependencyDriven is omitted after being reached, or NotApplicable is exported;
+- a missing mapping is interpreted as NotApplicable, an unknown condition is treated as false, or an unselected optional object disappears without an explicit policy/result;
+- the generated coverage matrix has missing, duplicate, ambiguous or conflicting candidate/scenario/phase rows, or is read as configuration input;
+- ExpectedInJson Yes/Conditional/Dependency does not reconcile to Final Config, dependency closure, JSON mapping, preview object and actual section counts;
+- any scenario JSON omits an applicable requirement, rule condition, field, value list, finding, recommendation, policy, source or phase rule required to interpret an included object;
+- limited MS-07 includes unsupported migration instructions, or a DMS-to-DMS/unsupported target row becomes runtime eligible; and
+- unchanged canonical sources produce different coverage rows, statuses, reasons, ordering, expected counts or scenario JSON inclusion.
 
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
@@ -6623,6 +6738,42 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-524` | Deterministic regeneration | Validate twice with unchanged inputs/control set | Identical functional tables, identifiers, counts and decision |
 | `MVP-AT-525` | Changed control meaning | Change validation meaning without version/fingerprint change | Registry/control-set validation error and export Blocked |
 
+| `MVP-AT-526` | Sheet-05 coverage structure | Scenario-module and scenario-object tables contain all mandatory columns | Pass |
+| `MVP-AT-527` | Coverage modes | Validate every controlled coverage mode | Exact approved semantics applied |
+| `MVP-AT-528` | Candidate declaration completeness | Enumerate all active Runtime/Both candidates in sheets 01–23 | Exactly one complete coverage declaration per stable object/phase scope |
+| `MVP-AT-529` | Direct scenario key | Resolve a source row with ScenarioId/phase | Own scenario/phase mapped; other scenarios explicitly NotApplicable |
+| `MVP-AT-530` | All-scenario expansion | Resolve ScenarioId=ALL/AllScenarios | Eight scenario coverage rows |
+| `MVP-AT-531` | Module-driven expansion | Resolve object owned by a module | Applicability matches all scenario-phase-module mappings |
+| `MVP-AT-532` | Dependency-driven inclusion | Included parent references a field/finding/source | Dependency object covered and included once |
+| `MVP-AT-533` | Phase=All expansion | Resolve one All-phase executable object | PreSales, PreMigration and PostMigration rows |
+| `MVP-AT-534` | Shared phase | Resolve reusable shared catalogue object | One Shared row per scenario, no phase duplication |
+| `MVP-AT-535` | Required inclusion | Resolve Required object for selected scenario | AlwaysInclude and present in Final Config/JSON |
+| `MVP-AT-536` | Conditional definition | Resolve Conditional object with unknown project evidence | Definition and structured condition included, not silently excluded |
+| `MVP-AT-537` | Conditional dependencies | Inspect Conditional condition operands | Fields, lists and sources included through dependency closure |
+| `MVP-AT-538` | Optional default | Resolve Optional object with IncludeDefinition | Definition present; execution remains optional |
+| `MVP-AT-539` | Optional selection | Resolve IncludeWhenSelected with explicit false selection | Excluded with controlled reason and visible coverage |
+| `MVP-AT-540` | Not applicable | Resolve NotApplicable/Exclude | Visible NotApplicable row and no JSON object |
+| `MVP-AT-541` | Conflicting declarations | Create two incompatible declarations for one object/scenario/phase | Conflict/Error and export blocked |
+| `MVP-AT-542` | Source-scope mismatch | Object map disagrees with source ScenarioId/Phase | Conflict/Error and export blocked |
+| `MVP-AT-543` | Module-map mismatch | ModuleDriven declaration disagrees with sheet-05 module map | Conflict/Error and export blocked |
+| `MVP-AT-544` | JSON-section mapping | ExpectedJsonSection is missing/incompatible | Error and export blocked |
+| `MVP-AT-545` | Full coverage matrix | Generate all candidates across eight scenarios/phases | Complete deterministic matrix with no silent gaps |
+| `MVP-AT-546` | Missing coverage | Delete one candidate declaration | Missing/Error and export blocked |
+| `MVP-AT-547` | Ambiguous coverage | Two resolution paths remain valid and inconsistent | Ambiguous/Error and export blocked |
+| `MVP-AT-548` | Coverage determinism | Shuffle source/table rows | Same coverage IDs, statuses, reasons and order |
+| `MVP-AT-549` | Final Config reconciliation | Compare selected-scenario coverage to sheet 24 master | Expected inclusions/exclusions and counts match |
+| `MVP-AT-550` | JSON completeness | Traverse every ExpectedInJson object and dependency | Every required object/condition/dependency exists in candidate JSON |
+| `MVP-AT-551` | Limited MS-07 coverage | Generate confirmed runtime-eligible MS-07 | Only safe follow-up/limited objects mapped and included |
+| `MVP-AT-552` | DMS-to-DMS coverage | Resolve DMS source to DMS target | NeedsReview/Blocked/NotGenerated; no runtime objects |
+| `MVP-AT-553` | MS-01 scenario sample | Generate SQL/database-archive scenario JSON | All required DB/archive/mapping/readiness/reconciliation conditions present by phase |
+| `MVP-AT-554` | MS-04 scenario sample | Generate regulatory-export scenario JSON | Repository/profile/sequence/reference/file conditions present; DB/archive excluded |
+| `MVP-AT-555` | MS-05 Hybrid sample | Generate Hybrid with DB/archive + DMS inputs | Required shared objects plus activated source mechanisms and dependencies present |
+| `MVP-AT-556` | All-scenario dry run | Generate candidate JSON for MS-01 through MS-08 | Zero Missing/Ambiguous/Conflict coverage and schema-valid output for eligible routes |
+| `MVP-AT-557` | Candidate-change staleness | Add/change runtime candidate or coverage declaration | Sheets 24/26/27 stale until regenerated |
+| `MVP-AT-558` | Generated-input prohibition | Alter coverage matrix only | Maintained resolution and canonical JSON unchanged |
+| `MVP-AT-559` | End-to-end traceability | Select any JSON object/condition | Trace to coverage row, object map, source row, requirement, mapping and source reference |
+| `MVP-AT-560` | Scenario JSON determinism | Generate same scenario twice with unchanged canonical sources | Byte-identical complete JSON and identical coverage/counts |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -6652,14 +6803,15 @@ The MVP is complete when:
 23. `25_JSON_Field_Map` provides one explicit, sourced and schema-compatible disposition for every maintained table/column through normalized schema, section, object, property, reference and transformation contracts; uses the shared scenario resolver without reading generated sheets; maps stable identities to exact schema pointers and native JSON types; distinguishes null/omit/empty/default behavior; resolves exact cardinality-checked references; permits only implemented verified declarative transformations; reconciles value/source structures with the canonical Section 12 contract; excludes authoring-only, sensitive, customer/project and execution data; validates all eligible scenarios against one compatible schema; and produces byte-identical preview/export JSON from unchanged canonical inputs;
 24. `26_JSON_Preview` is a generated, read-only view of the exact candidate Runtime JSON byte stream with deterministic header, expected/actual section counts, object index, validation summary and Excel-safe chunks; fingerprints all relevant scenario/config/value/source/mapping/schema/transformer inputs; blocks stale, invalid, incompatible, count-mismatched, reference/transform/chunk/file-mismatched or data-leaking output; traces each JSON object to sheets 24/25 and source provenance; distinguishes Eligible, EligibleWithWarnings and Blocked; permits only safe runtime-eligible MS-07 previews and never emits DMS-to-DMS runtime configuration; uses the same in-memory object, serializer and bytes for preview and candidate file; and regenerates identically from unchanged canonical inputs;
 25. `27_Validation_Results` is a generated, read-only validation explanation with deterministic run, control-registry, applicability, prerequisite, evaluation, result and target tables; proves positive control coverage as well as failures; fingerprints the active validator control set; prevents cascade-error flooding through explicit prerequisites; blocks stale, failed, indeterminate, technically failed or mandatory NotEvaluated validation; reconciles all counts and grouped summaries with sheet 26; provides actionable, safe, atomic workbook/JSON/source targets without row-number identity or sensitive data; permits only the approved limited MS-07 contract, blocks DMS-to-DMS Runtime JSON, never becomes transformation input or Runtime JSON, and regenerates identically from unchanged inputs/control registry;
-26. every scenario has complete phase/module applicability;
-27. `24_Final_Config_Master` explains every inclusion/exclusion;
-28. scenario JSON generates for all Section 5 scenarios;
-29. every JSON object traces to workbook records;
-30. invalid/incomplete content blocks with actionable messages;
-31. unchanged input/selection produces identical canonical JSON;
-32. PowerShell consumes JSON without reading Excel;
-33. deferred SharePoint, release governance and GxP controls are not represented as complete.
+26. every active Runtime/Both candidate has one complete, non-conflicting scenario-object coverage declaration; Direct, Explicit, All, ModuleDriven and DependencyDriven modes expand deterministically across all eight scenarios and applicable phases/Shared; Missing/Ambiguous/Conflict coverage blocks export; Required, Conditional and dependency objects plus all condition operands and transitive fields/lists/findings/actions/sources/mappings are included; Optional and NotApplicable behavior is explicit; the generated all-scenario coverage matrix reconciles to selected Final Config and actual JSON without becoming input; and MS-07/DMS-to-DMS boundaries remain safe;
+27. every scenario has complete phase/module applicability;
+28. `24_Final_Config_Master` explains every inclusion/exclusion;
+29. scenario JSON generates for all Section 5 scenarios;
+30. every JSON object traces to workbook records;
+31. invalid/incomplete content blocks with actionable messages;
+32. unchanged input/selection produces identical canonical JSON;
+33. PowerShell consumes JSON without reading Excel;
+34. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -6683,7 +6835,7 @@ The workbook shall be reviewed and populated in this order:
 16. Post-Migration Reconciliation;
 17. Source References;
 18. Final Config Master and JSON Field Map;
-19. scenario-by-scenario JSON preview, validation, and acceptance testing.
+19. all-scenario object-coverage audit, scenario-by-scenario JSON preview, validation, and acceptance testing.
 
 Each review step shall answer four questions:
 
@@ -6720,3 +6872,4 @@ Each review step shall answer four questions:
 | 4.20 MVP | 16 September 2026 | Approved `25_JSON_Field_Map` with six normalized schema, section, object-mapping, property-mapping, reference-mapping and transformation tables; required explicit dispositions for every maintained table/column, stable object identity, exact schema/property pointers, native JSON types, explicit null/default behavior, controlled-code mapping, deterministic grouping/sorting and exact cardinality-checked references; limited transformations to implemented verified declarative capabilities and prohibited executable/hidden logic or independent applicability decisions; standardized UTF-8 no-BOM LF two-space final-newline serialization and preview/export parity; reconciled Section 11 and the canonical Section 12 JSON/value-list structures with approved value aliases/dependencies and normalized source provenance; excluded generated sheets, authoring-only/sensitive/customer/execution data; added blocking validation and acceptance tests |
 | 4.21 MVP | 16 September 2026 | Approved `26_JSON_Preview` as a generated read-only view of the exact candidate Runtime JSON with five deterministic header, section-count, object-index, validation-summary and chunk tables; added comprehensive input fingerprints and controlled stale reasons across scenario/context, sheets 01–23, value/source catalogues, sheet 25, schema and transformer while excluding generated sheets; defined expected-versus-actual count reconciliation, object-level workbook/mapping/source traceability and fingerprints, Excel-safe Unicode-aware chunks that reconstruct exact UTF-8 bytes, one-object/one-serializer/one-byte-stream preview/export parity and file fingerprint checks; separated Current/Stale/NotGenerated/Failed from Eligible/EligibleWithWarnings/Blocked, safe limited MS-07 from unsupported DMS-to-DMS non-generation, detailed validation ownership in sheet 27 and reusable-configuration data boundaries; added controlled values, blocking validation and acceptance tests |
 | 4.22 MVP | 16 September 2026 | Approved `27_Validation_Results` as a generated read-only validation explanation with seven run, control-registry, applicability, prerequisite, evaluation, result and atomic-target tables; kept control execution authority in implemented validator capabilities while making every control, scope, dependency, outcome and correction visible; added deterministic validation/run/result/target identities, input and control-set fingerprints, positive Pass/NotApplicable/NotEvaluated coverage, prerequisite-based cascade suppression, strict Error/Warning/Info blocking semantics, normalized workbook/JSON/source targets, safe observed summaries and count reconciliation with sheet 26; added validator/control-set metadata to the JSON Preview without making validation results Runtime JSON inputs; defined Current/Pass/PassWithWarnings/Fail and Eligible/EligibleWithWarnings/Blocked behavior, limited MS-07 and DMS-to-DMS safeguards, controlled values, blocking validation and acceptance tests |
+| 4.23 MVP | 16 September 2026 | Completed the end-to-end consistency audit across sheets 01–27 and closed the individual-object scenario coverage gap; added maintained `tblScenarioObjectMap` to sheet 05 with DirectScenarioKey, ExplicitScenario, AllScenarios, ModuleDriven and DependencyDriven coverage modes, explicit phase expansion and Required/Conditional/Optional/NotApplicable JSON inclusion semantics; added generated `tblScenarioCoverageMatrix` to sheet 24 with one candidate/scenario/phase row and Mapped/NotApplicable/Missing/Ambiguous/Conflict outcomes; required complete Conditional definitions and dependency operands in scenario JSON, prevented absence from meaning NotApplicable, reconciled coverage to Final Config, sheet-25 mappings, sheet-26 preview and sheet-27 validation, retained safe MS-07 and DMS-to-DMS blocking, and added blocking controls and acceptance tests through MVP-AT-560 |
