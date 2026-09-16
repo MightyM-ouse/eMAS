@@ -2,13 +2,13 @@
 
 **Project:** eMAS - eCTD Migration Assessment Script
 **Document type:** Detailed Mapping Workbook and Runtime JSON requirements
-**Version:** 4.19 MVP
+**Version:** 4.20 MVP
 **Status:** Approved MVP design baseline; implementation and verification pending
 **Scope:** One human-readable master workbook and deterministic scenario-specific Runtime JSON
 **Classification:** Internal
 **Prepared:** 15 September 2026
 **Parent requirement:** eMAS Enterprise Requirements v5.0
-**Decision references:** DEC-2026-013 through DEC-2026-031
+**Decision references:** DEC-2026-013 through DEC-2026-032
 
 ## 1. Purpose and MVP decision
 
@@ -4800,26 +4800,280 @@ Sheet 24 may display summarized validation status but shall not duplicate detail
 
 ### 9.26 `25_JSON_Field_Map`
 
-| Column | Type | Required | Why |
-|---|---|---:|---|
-| `MappingId` | Identifier | Yes | Stable mapping record |
-| `SourceSheet` | Text | Yes | Workbook origin |
-| `SourceTable` | Text | Yes | Exact Excel Table |
-| `SourceColumn` | Text | Yes | Exact column header |
-| `SourceRecordKey` | Text | Yes | Stable primary key, never row number |
-| `JSONPath` | Text | Yes | Root-relative target path |
-| `JSONProperty` | Text | Yes | Exact property name |
-| `DataType` | Code | Yes | Required JSON type |
-| `Transformation` | Code | Yes | Named transform such as Trim, ToBoolean, ToNumber, GroupConditions, ResolveReference |
-| `NullPolicy` | Code | Yes | Error, Omit, Null, EmptyArray |
-| `InclusionRule` | Code | Yes | ActiveAndApplicable, ReferencedDependency, AuthoringOnly |
-| `SortKey` | Text | Yes | Deterministic array order |
-| `SchemaVersion` | Text | Yes | Contract compatibility |
-| `ExampleInput` | Text | No | Review example |
-| `ExampleOutput` | Text | No | Review example |
-| `Notes` | Text | No | Join/grouping explanation |
+#### 9.26.1 Purpose and authority boundary
 
-The mapping sheet documents a controlled transformation. It shall not contain executable JavaScript or PowerShell. A mapping row without a matching source column or JSON property is a blocking error.
+`25_JSON_Field_Map` shall be the maintained declarative transformation contract between authoritative workbook tables and the schema-validated scenario Runtime JSON. It shall define schema identity, structural sections, object construction, typed property mapping, references and supported serialization transformations without embedding executable JavaScript, PowerShell, SQL, XPath evaluation code, arbitrary expressions or hidden Excel formulas.
+
+The sheet controls structure and serialization. It shall not independently decide scenario, phase, module, regulatory-profile or rule applicability. The transformer shall use the same shared resolver that generates `24_Final_Config_Master`, then apply sheet 25 mappings to the resolved included-record set; it shall not read sheet 24 as configuration input.
+
+The sheet shall contain six maintained Excel tables. Every mapped workbook table and column shall have an explicit disposition. Missing mapping is not equivalent to intentional exclusion.
+
+#### 9.26.2 `tblJsonSchemas`
+
+One row defines one supported Runtime JSON schema version.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `SchemaId` | Yes | Stable schema identifier. |
+| `SchemaVersion` | Yes | Semantic schema version used in Runtime JSON. |
+| `SchemaArtifactReference` | Yes | Stable repository/file reference to the machine-readable JSON Schema artifact. |
+| `SchemaUri` | Conditional | Canonical schema URI when defined. |
+| `RootType` | Yes | Shall be `Object` for the MVP Runtime JSON. |
+| `Encoding` | Yes | Shall be `UTF-8`. |
+| `ByteOrderMark` | Yes | Shall be `None`. |
+| `LineEnding` | Yes | Shall be `LF`. |
+| `IndentationSpaces` | Yes | Shall be `2`. |
+| `FinalNewline` | Yes | Shall be true. |
+| `MinimumRuntimeVersion` | Yes | Oldest compatible PowerShell/runtime contract version. |
+| `MaximumRuntimeVersion` | No | Optional upper compatibility boundary. |
+| `CompatibilityStatus` | Yes | References `JSON_SCHEMA_COMPATIBILITY_STATUS`. |
+| `DefinitionStatus` | Yes | References `DEFINITION_STATUS`. |
+| `SourceId` | Yes | Requirement/design source. |
+| `SourceSection` | Yes | Exact source/decision location. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+Exactly one active Approved schema shall apply to a generation. Schema/runtime incompatibility is a blocking error. Schema versioning is an MVP functional compatibility requirement and does not imply a formal GxP release workflow.
+
+#### 9.26.3 `tblJsonSections`
+
+One row defines one top-level or nested JSON container.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `JsonSectionId` | Yes | Stable section identifier. |
+| `SchemaId` | Yes | Parent schema. |
+| `SectionCode` | Yes | Stable human-readable section code. |
+| `ParentSectionId` | Conditional | Parent for nested sections; blank only for root-level sections. |
+| `JsonPropertyName` | Yes | Exact JSON property name. |
+| `JsonSectionPointer` | Yes | Exact root-relative container pointer, for example `/rules/folderFileStructure`. |
+| `ContainerType` | Yes | References `JSON_CONTAINER_TYPE`. |
+| `Required` | Yes | Boolean schema requirement. |
+| `EmptyBehavior` | Yes | References `JSON_EMPTY_BEHAVIOR`. |
+| `SectionOrder` | Yes | Integer canonical property order. |
+| `InclusionPolicyCode` | Yes | Structural inclusion policy only; it shall not reproduce scenario/rule applicability. |
+| `SortPolicyCode` | Conditional | Required for arrays/keyed collections. |
+| `SourceId` | Yes | Section-contract source. |
+| `SourceSection` | Yes | Exact basis. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+Section pointers shall be unique within one schema. Parent relationships shall resolve and be acyclic. Required sections shall follow the declared empty behavior rather than disappearing silently.
+
+#### 9.26.4 `tblJsonObjectMappings`
+
+One row defines how one workbook table/record type becomes a JSON object collection or declares why it is not exported.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ObjectMappingId` | Yes | Stable object-mapping identifier. |
+| `SchemaId` | Yes | Applicable schema. |
+| `JsonSectionId` | Conditional | Target section; required for Exported/Derived mappings. |
+| `SourceSheet` | Yes | Exact maintained source sheet. |
+| `SourceTable` | Yes | Exact Excel table. |
+| `SourceRecordKeyColumn` | Yes | Stable source identifier column, never row number. |
+| `ParentObjectMappingId` | No | Parent for a nested object/collection. |
+| `OutputObjectType` | Yes | References `JSON_OUTPUT_OBJECT_TYPE`. |
+| `ObjectIdProperty` | Conditional | JSON property carrying stable identity for exported objects. |
+| `MappingDisposition` | Yes | References `JSON_MAPPING_DISPOSITION`. |
+| `InclusionPolicyCode` | Yes | References `JSON_INCLUSION_POLICY`; consumes shared-resolver results rather than replacing them. |
+| `GroupingPolicyCode` | Conditional | Named implemented grouping behavior. |
+| `SortPolicyCode` | Conditional | Required for arrays/collections; row order is prohibited. |
+| `DuplicateKeyBehavior` | Yes | Shall normally be `Error`. |
+| `RequirementId` | Yes | Transformation requirement implemented. |
+| `SourceId` | Yes | Mapping-design source. |
+| `SourceSection` | Yes | Exact basis. |
+| `DefinitionStatus` | Yes | Lifecycle status. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+Every maintained table in sheets `01` through `23` shall have at least one object-level disposition. Generated sheets `24`, `26` and `27` shall be explicitly `NotApplicable` as transformation inputs.
+
+#### 9.26.5 `tblJsonPropertyMappings`
+
+One row maps one source column or declared constant/derived/reference/child value to one JSON property, or records an explicit non-export disposition.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `MappingId` | Yes | Stable property-mapping identifier. |
+| `ObjectMappingId` | Yes | Parent object mapping. |
+| `SourceColumn` | Conditional | Exact workbook column; required for Column source and explicit column disposition. |
+| `ValueSourceType` | Yes | References `JSON_VALUE_SOURCE_TYPE`. |
+| `ConstantValue` | Conditional | Allowed only for a declared Constant and validated against target type/list. |
+| `JsonPropertyName` | Conditional | Exact property name; required when exported. |
+| `RelativePropertyPointer` | Conditional | Nested path inside the target object; required when exported. |
+| `SchemaPropertyPointer` | Conditional | Exact property definition in the active JSON Schema; required when exported. |
+| `JsonDataType` | Conditional | References `JSON_DATA_TYPE`; required when exported. |
+| `Required` | Yes | Boolean reflecting schema requirement for exported properties. |
+| `NullPolicy` | Yes | References `JSON_NULL_POLICY`. |
+| `DeclaredDefaultValue` | Conditional | Required only for `UseDeclaredDefault`; shall be typed and sourced. |
+| `TransformationCode` | Yes | Active implemented transformation in `tblJsonTransformations`; use `Identity` when no change is required. |
+| `FormatCode` | No | Approved invariant schema format such as date/date-time/URI/identifier. |
+| `ValueListCode` | Conditional | Required for a controlled-code target property. |
+| `PropertyOrder` | Conditional | Integer canonical order; required for exported properties. |
+| `MappingDisposition` | Yes | Exported, AuthoringOnly, ValidationOnly, Derived or NotApplicable. |
+| `SensitivityClass` | Yes | Prevents sensitive/customer/project data from entering reusable configuration. |
+| `ExampleSourceValue` | No | Authoring-only example; never transformation input. |
+| `ExampleJsonValue` | No | Valid typed JSON-literal example; never transformation input. |
+| `RequirementId` | Yes | Transformation requirement. |
+| `SourceId` | Yes | Mapping source. |
+| `SourceSection` | Yes | Exact basis. |
+| `DefinitionStatus` | Yes | Lifecycle status. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+Every column in every mapped maintained table shall have an explicit disposition. Boolean values shall serialize as JSON booleans; integers/decimals as JSON numbers; arrays as arrays rather than delimited text; and controlled values as canonical codes rather than labels. Blank, null, omitted, empty array and empty object remain distinct. Defaults are prohibited unless declared, typed and sourced.
+
+#### 9.26.6 `tblJsonReferenceMappings`
+
+One row represents one atomic join-key component between object mappings. Composite joins use multiple rows with one `ReferenceGroupId`; packed column lists are prohibited.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `ReferenceMappingId` | Yes | Stable component identifier. |
+| `ReferenceGroupId` | Yes | Groups components of one reference relationship. |
+| `ComponentSequence` | Yes | Deterministic composite-key order. |
+| `FromObjectMappingId` | Yes | Referencing object. |
+| `FromSourceColumn` | Yes | Source foreign-key component. |
+| `ToObjectMappingId` | Yes | Referenced object. |
+| `ToSourceKeyColumn` | Yes | Target key component. |
+| `OutputPropertyPointer` | Yes | Property receiving identifier/object/array/lookup result. |
+| `Cardinality` | Yes | References canonical `CARDINALITY`. |
+| `EmbedMode` | Yes | References `JSON_REFERENCE_EMBED_MODE`. |
+| `MissingReferenceBehavior` | Yes | References `JSON_MISSING_REFERENCE_BEHAVIOR`. |
+| `CaseSensitivityPolicy` | Yes | Explicit matching policy. |
+| `NormalizationCode` | Yes | Approved normalization or `None`; no fuzzy matching. |
+| `SortPolicyCode` | Conditional | Required for embedded collections. |
+| `CircularReferenceBehavior` | Yes | Shall be `Block` unless a future approved schema explicitly permits another behavior. |
+| `SourceId` | Yes | Relationship source. |
+| `SourceSection` | Yes | Exact basis. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+References shall resolve through exact stable identifiers after only declared normalization. Missing, ambiguous, duplicate-cardinality and circular references shall follow explicit policy and normally block export.
+
+#### 9.26.7 `tblJsonTransformations`
+
+One row defines one named serialization transformation actually supported by the transformer.
+
+| Column | Required | Purpose and validation |
+|---|---:|---|
+| `TransformationCode` | Yes | Stable transformation identifier. |
+| `TransformationName` | Yes | Human-readable name. |
+| `TransformationKind` | Yes | References `JSON_TRANSFORMATION_KIND`. |
+| `Description` | Yes | Exact deterministic behavior; executable code is prohibited. |
+| `InputDataType` | Yes | Permitted source type. |
+| `OutputJsonDataType` | Yes | Resulting JSON type. |
+| `FormatCode` | No | Optional invariant output format. |
+| `TransformerCapabilityCode` | Yes | Implemented exporter capability. |
+| `ImplementationStatus` | Yes | Planned, Implemented, Deferred or Unsupported. |
+| `VerificationStatus` | Yes | NotTested, Passed, Failed or NotApplicable. |
+| `FailureBehavior` | Yes | Error, OmitOptional or EmitNull, consistent with property null policy. |
+| `SourceId` | Yes | Transformation basis. |
+| `SourceSection` | Yes | Exact source/decision. |
+| `IsActive` | Yes | Boolean lifecycle flag. |
+
+Adding a transformation code does not implement it. Runtime generation shall block until the named transformer capability is Implemented and its required verification state is satisfied. Domain/business normalization remains defined by its owning configuration sheet; sheet 25 may reference it but shall not invent or silently apply it.
+
+#### 9.26.8 Canonical JSON structure
+
+The active schema and mapping tables shall define one unambiguous top-level structure. `valueLists` shall be an array of list objects, not an alternative keyed-object shape. Runtime-relevant aliases/dependencies and normalized source provenance shall be first-class sections.
+
+~~~json
+{
+  "configuration": {},
+  "scenario": {},
+  "questionnaire": {},
+  "modules": [],
+  "requirements": [],
+  "catalogues": {
+    "fields": [],
+    "regulatoryProfiles": []
+  },
+  "rules": {
+    "repositoryDiscovery": [],
+    "regulatoryClassification": [],
+    "dossierSequenceIdentification": [],
+    "folderFileStructure": [],
+    "referenceIntegrity": [],
+    "technicalObservations": [],
+    "sizeVolumeMetrics": []
+  },
+  "sourceMappings": [],
+  "interpretation": {
+    "ragSeverityRules": [],
+    "confidenceRules": [],
+    "effortDrivers": []
+  },
+  "findings": [],
+  "recommendations": [],
+  "phaseRules": {
+    "preSales": [],
+    "preMigration": [],
+    "postMigration": []
+  },
+  "policies": {},
+  "valueLists": [],
+  "valueAliases": [],
+  "valueDependencies": [],
+  "sources": [],
+  "sourceLocations": [],
+  "sourceClaims": [],
+  "sourceLinks": [],
+  "sourceRelationships": []
+}
+~~~
+
+`sourceClaims[].evidence[]` shall contain ordered active claim-evidence relationships. Only transitively referenced, runtime-eligible source/value objects shall be exported. Sheet 25 and generated sheets are not exported.
+
+#### 9.26.9 Example property projection
+
+| Workbook source | JSON destination | JSON type |
+|---|---|---|
+| `tblFolderFileStructureRules.RuleId` | `/rules/folderFileStructure[]/ruleId` | String |
+| `tblFolderFileStructureRules.RequirementId` | `/rules/folderFileStructure[]/requirementId` | String |
+| `tblFolderFileStructureRules.ExpectedItemName` | `/rules/folderFileStructure[]/expectedItemName` | String |
+| `tblFolderFileStructureRules.MinimumCount` | `/rules/folderFileStructure[]/minimumCount` | Integer |
+| `tblFolderFileStructureRules.IsRequired` | `/rules/folderFileStructure[]/isRequired` | Boolean |
+| `tblFolderFileStructureRules.FindingCode` | `/rules/folderFileStructure[]/findingCode` | String |
+| `tblFolderFileStructureRules.SourceId` | `/rules/folderFileStructure[]/sourceReference/sourceId` | String |
+| `tblFolderFileStructureRules.SourceSection` | `/rules/folderFileStructure[]/sourceReference/sourceSection` | String |
+
+~~~json
+{
+  "ruleId": "FFS-EU-M1-001",
+  "requirementId": "REQ-FOLDER-001",
+  "expectedItemName": "m1",
+  "minimumCount": 1,
+  "isRequired": true,
+  "findingCode": "FND-MISSING-M1",
+  "sourceReference": {
+    "sourceId": "SRC-EU-SPEC-001",
+    "sourceSection": "Module 1 folder structure"
+  }
+}
+~~~
+
+This example demonstrates serialization only. The shared resolver determines whether the source rule is included.
+
+#### 9.26.10 Canonical serialization
+
+The exporter shall use UTF-8 without BOM, LF line endings, two-space indentation, one final newline, explicit schema/mapping property order, deterministic array sort policies, invariant number formatting, lowercase JSON booleans and valid JSON escaping. It shall emit no comments, trailing commas, locale-specific numbers, `NaN`, Infinity, generation timestamp, workbook path, user identity, raw customer answers or execution evidence inside canonical Runtime JSON.
+
+Unchanged canonical workbook content, active schema and confirmed scenario/context shall produce byte-identical JSON. Preview and exported JSON shall use the same in-memory object and serializer; separate preview/export transformation implementations are prohibited.
+
+#### 9.26.11 Controlled values in `22_Value_Lists`
+
+| ListCode | Required active codes |
+|---|---|
+| `JSON_SCHEMA_COMPATIBILITY_STATUS` | `Current`, `BackwardCompatible`, `Breaking`, `Experimental`, `Deprecated` |
+| `JSON_CONTAINER_TYPE` | `Object`, `Array`, `Scalar`, `KeyedObject` |
+| `JSON_EMPTY_BEHAVIOR` | `EmitEmpty`, `Omit`, `Error` |
+| `JSON_OUTPUT_OBJECT_TYPE` | `Object`, `ArrayItem`, `KeyedObjectMember` |
+| `JSON_MAPPING_DISPOSITION` | `Exported`, `AuthoringOnly`, `ValidationOnly`, `Derived`, `NotApplicable` |
+| `JSON_INCLUSION_POLICY` | `IncludedRecord`, `ReferencedDependency`, `AlwaysConfigurationMetadata`, `Never` |
+| `JSON_VALUE_SOURCE_TYPE` | `Column`, `Constant`, `Derived`, `Reference`, `ChildCollection` |
+| `JSON_DATA_TYPE` | `String`, `Integer`, `Number`, `Boolean`, `Object`, `Array`, `Null` |
+| `JSON_NULL_POLICY` | `Error`, `Omit`, `Null`, `EmptyArray`, `EmptyObject`, `UseDeclaredDefault` |
+| `JSON_REFERENCE_EMBED_MODE` | `IdentifierOnly`, `InlineObject`, `InlineArray`, `LookupValue` |
+| `JSON_MISSING_REFERENCE_BEHAVIOR` | `Error`, `OmitOptional`, `EmitNull` |
+| `JSON_TRANSFORMATION_KIND` | `Identity`, `TypeConversion`, `Formatting`, `Grouping`, `ReferenceResolution`, `Constant`, `Derived` |
+
 
 ### 9.27 `26_JSON_Preview`
 
@@ -4892,8 +5146,8 @@ The following coverage is mandatory before the workbook can claim to contain all
 | `19_Recommendations_Actions` | Referenced by included findings/rules | `recommendations[]` |
 | `20_PreMigration_Readiness` | Selected scenario | `phaseRules.preMigration[]` |
 | `21_PostMigration_Reconciliation` | Selected scenario | `phaseRules.postMigration[]` |
-| `22_Value_Lists` | Active Runtime/Both entries in every referenced value-domain, operator, phase, provenance, normalization, status/reason or other required list | `valueLists` |
-| `23_Source_References` | Referenced by included objects | `sources[]` |
+| `22_Value_Lists` | Active Runtime/Both definitions, values, aliases and genuine dependencies reached from included configuration | `valueLists[]`, `valueAliases[]`, `valueDependencies[]` |
+| `23_Source_References` | Transitively referenced documents, locations, claims/evidence, object links and source relationships | `sources[]`, `sourceLocations[]`, `sourceClaims[]`, `sourceLinks[]`, `sourceRelationships[]` |
 | `24_Final_Config_Master` | Generated lineage view | Not exported |
 | `25_JSON_Field_Map` | Transformation contract | Not exported |
 | `26_JSON_Preview` | Generated representation | Same structure as exported JSON |
@@ -4908,81 +5162,22 @@ The following coverage is mandatory before the workbook can claim to contain all
   "configuration": {
     "configurationId": "EMAS-MVP",
     "mappingVersion": "0.1.0",
+    "schemaId": "EMAS-RUNTIME-CONFIG",
     "schemaVersion": "0.1.0-mvp",
     "scenarioId": "MS-04"
   },
   "scenario": {},
-  "modules": [
-    {
-      "scenarioModuleMapId": "String",
-      "scenarioId": "String",
-      "phase": "PreSales|PreMigration|PostMigration",
-      "moduleId": "String",
-      "applicability": "Required|Conditional|Optional|NotApplicable",
-      "assessmentDepth": "AvailabilityOnly|Summary|Detailed|Reconciliation|NotApplicable",
-      "activation": null,
-      "defaultMissingEvidenceOutcome": "NotAssessed|InsufficientEvidence|FollowUp|Blocked",
-      "phaseOutcomeImpact": "None|ConfidenceDown|FollowUp|ReadinessBlocker|ReconciliationBlocker",
-      "baselineContribution": "None|Candidate|Required|Supporting",
-      "reconciliationRole": "None|BaselineSource|TargetEvidence|Comparison|Outcome",
-      "reasonCode": "String",
-      "businessReason": "String"
-    }
-  ],
-  "evidenceRequirements": [],
   "questionnaire": {
     "questions": [],
     "derivationRules": [],
-    "outputContract": {
-      "derivedScenarioId": "String",
-      "confirmedScenarioId": "String",
-      "derivationStatus": "Derived|DerivedWithFollowUp|Pending|NeedsReview|ConfirmedOverride",
-      "scenarioSelectionConfidence": "High|Medium|Low|Unknown",
-      "matchedDerivationRuleIds": [],
-      "candidateScenarioIds": [],
-      "qualifiers": {},
-      "missingQuestionIds": [],
-      "followUpQuestionIds": [],
-      "reasonCodes": [],
-      "nextAction": "String",
-      "runtimeJsonEligible": "Boolean"
-    }
+    "outputContract": {}
   },
+  "modules": [],
+  "requirements": [],
   "catalogues": {
     "fields": [],
     "regulatoryProfiles": []
   },
-  "requirements": [
-    {
-      "requirementId": "String",
-      "title": "String",
-      "statement": "String",
-      "domain": "String",
-      "type": "Functional|Data|Validation|Interface|Constraint|NonFunctional|Safety",
-      "obligationLevel": "Must|Should|May",
-      "owner": {
-        "component": "AssessmentModule|Workbook|Transformer|Runtime|Reporting|Logging",
-        "moduleId": "String|null"
-      },
-      "scope": {
-        "phaseScope": "AllPhases|PreSales|PreMigration|PostMigration|PreAndPostMigration|NotApplicable",
-        "applicabilityBasis": "Global|ModuleDriven|ScenarioSpecific",
-        "scenarioId": "String|null"
-      },
-      "missingEvidenceBehavior": "NotAssessed|InsufficientEvidence|FollowUp|Blocked|NotApplicable",
-      "phaseOutcomeImpact": "None|ConfidenceDown|FollowUp|ReadinessBlocker|ReconciliationBlocker",
-      "implementation": {
-        "disposition": "WorkbookRule|EngineCapability|Hybrid|TransformerOnly|ValidationOnly|ReportOnly|Deferred",
-        "sheet": "String|null",
-        "engineCapability": "String|null"
-      },
-      "source": {
-        "sourceId": "String",
-        "sourceSection": "String|null",
-        "basis": "AuthorityRequirement|ReviewedInterpretation|ProductRequirement|eMASDesign"
-      }
-    }
-  ],
   "rules": {
     "repositoryDiscovery": [],
     "regulatoryClassification": [],
@@ -5005,13 +5200,15 @@ The following coverage is mandatory before the workbook can claim to contain all
     "preMigration": [],
     "postMigration": []
   },
-  "policies": {
-    "missingEvidence": {},
-    "conflict": {},
-    "falseMissingSafeguards": []
-  },
-  "valueLists": {},
-  "sources": []
+  "policies": {},
+  "valueLists": [],
+  "valueAliases": [],
+  "valueDependencies": [],
+  "sources": [],
+  "sourceLocations": [],
+  "sourceClaims": [],
+  "sourceLinks": [],
+  "sourceRelationships": []
 }
 ```
 
@@ -5055,15 +5252,18 @@ Referenced controlled values are serialized by stable code and deterministic ord
 
 ```json
 {
-  "valueLists": {
-    "ARCHIVE_LOOKUP_STATUS": [
-      {"code": "Found", "label": "Found", "description": "Exactly one physical object resolved."},
-      {"code": "Missing", "label": "Missing", "description": "A complete lookup found no matching physical object."},
-      {"code": "Multiple", "label": "Multiple", "description": "More than one candidate physical object resolved."},
-      {"code": "Invalid", "label": "Invalid", "description": "The supplied archive identifier could not be normalized or evaluated."},
-      {"code": "Inaccessible", "label": "Inaccessible", "description": "The lookup target could not be accessed."}
-    ]
-  }
+  "valueLists": [
+    {
+      "listCode": "ARCHIVE_LOOKUP_STATUS",
+      "values": [
+        {"code": "Found", "label": "Found", "description": "Exactly one physical object resolved."},
+        {"code": "Missing", "label": "Missing", "description": "A complete lookup found no matching physical object."},
+        {"code": "Multiple", "label": "Multiple", "description": "More than one candidate physical object resolved."},
+        {"code": "Invalid", "label": "Invalid", "description": "The supplied archive identifier could not be normalized or evaluated."},
+        {"code": "Inaccessible", "label": "Inaccessible", "description": "The lookup target could not be accessed."}
+      ]
+    }
+  ]
 }
 ```
 
@@ -5433,6 +5633,22 @@ JSON generation shall be blocked when any of the following is true:
 - customer raw answers, identifiers or free text copied into reusable/runtime configuration, or DMS-to-DMS instructions included for `MS-07`;
 - generated sheet content used as configuration input, manual changes preserved as authority, or volatile metadata changing canonical output; and
 - unchanged canonical workbook/context producing different rows, inclusion decisions, dependency closure, counts or ordering.
+
+- no single active Approved schema, missing/unreadable schema artifact, or transformer/runtime version incompatible with the selected schema;
+- duplicate/cyclic/unresolved sections, invalid container/property/schema pointers, or section/property ordering that is incomplete or nondeterministic;
+- a maintained table in sheets `01`–`23` or a maintained column with no explicit object/property mapping disposition;
+- a mapping that names a missing/renamed sheet, table, record-key column or source column, or uses worksheet row position as identity/order;
+- an Exported/Derived object or property lacking an active section/schema target, stable identity, exact property pointer, JSON type, null policy, transformation or canonical order;
+- a property mapping whose type, format, controlled list, requiredness, null/default behavior or example conflicts with the active schema;
+- duplicate mappings writing the same object property without an explicit valid grouping policy, duplicate object keys or an array without deterministic sorting;
+- delimited text exported as an array, labels exported instead of canonical codes, quoted booleans/numbers, locale-dependent numbers or ambiguous blank/null/omit/empty semantics;
+- a default value not explicitly declared, typed and sourced, or a transformation that silently trims/normalizes/changes business meaning;
+- an inactive, missing, unimplemented, deferred, unsupported or failed transformation capability used by an exported property;
+- missing, ambiguous, cardinality-invalid, fuzzy, unresolved or circular references, or composite reference components with gaps/duplicates;
+- AuthoringOnly, ValidationOnly, NotApplicable, sensitive/customer/project data, generated-sheet content or execution evidence exported into reusable Runtime JSON;
+- a mapping/serializer shape inconsistent with the canonical value-list, alias, dependency, source-location, claim, link or relationship structure;
+- expected objects/counts disagreeing with `24_Final_Config_Master`, preview differing from export, schema validation failure for a supported scenario, or DMS-to-DMS producing supported Runtime JSON; and
+- unchanged canonical workbook/schema/scenario producing different bytes, property order, array order or section shape.
 
 Warnings may identify draft/unverified source content, example values, optional missing descriptions, or conditional modules without available project evidence. Warnings shall remain visible and shall not be silently converted into successful evidence.
 
@@ -5870,6 +6086,47 @@ The workbook configures parameters and interpretation for these capabilities. It
 | `MVP-AT-410` | Preview reconciliation | Compare expected sheet-24 objects with actual sheet-26 JSON section counts | Match required; mismatch blocks export |
 | `MVP-AT-411` | Deterministic regeneration | Generate twice with unchanged canonical workbook and context | Byte-equivalent canonical context/master/dependency/summary rows and order |
 
+| `MVP-AT-412` | Sheet 25 structure | Six required maintained tables exist with all mandatory columns | Pass |
+| `MVP-AT-413` | Active schema | Zero or multiple active Approved schemas apply | Export blocked |
+| `MVP-AT-414` | Schema artifact | Referenced JSON Schema file is missing or unparsable | Export blocked |
+| `MVP-AT-415` | Runtime compatibility | Runtime version is outside schema compatibility bounds | Export blocked |
+| `MVP-AT-416` | Section identity | Duplicate section pointer or unresolved/cyclic parent section exists | Export blocked |
+| `MVP-AT-417` | Required empty section | Required section has no objects | Declared EmptyBehavior applied deterministically |
+| `MVP-AT-418` | Table disposition | Maintained table in sheets 01–23 has no object-level disposition | Export blocked |
+| `MVP-AT-419` | Generated inputs | Sheets 24, 26 or 27 are configured as transformation input | Export blocked |
+| `MVP-AT-420` | Source table contract | Mapping names a missing/renamed sheet or table | Export blocked |
+| `MVP-AT-421` | Stable object identity | Exported object mapping lacks valid stable key or has duplicate keys | Export blocked |
+| `MVP-AT-422` | Column disposition | Source column in mapped maintained table has no explicit disposition | Export blocked |
+| `MVP-AT-423` | Source column contract | Mapping names a missing/renamed source column | Export blocked |
+| `MVP-AT-424` | Schema property | Exported property pointer is absent from active schema | Export blocked |
+| `MVP-AT-425` | Duplicate property | Two mappings write the same property without approved grouping | Export blocked |
+| `MVP-AT-426` | String serialization | String/code/path property is mapped | JSON string emitted with valid escaping and canonical code where applicable |
+| `MVP-AT-427` | Boolean serialization | Workbook boolean is mapped | JSON true/false emitted, never quoted text |
+| `MVP-AT-428` | Integer/number serialization | Numeric property is mapped | Invariant JSON number emitted, never locale-formatted or quoted |
+| `MVP-AT-429` | Date serialization | Date/date-time property is mapped | Declared invariant schema format emitted |
+| `MVP-AT-430` | Array serialization | Multi-row/collection property is mapped | JSON array emitted; delimited cell text rejected |
+| `MVP-AT-431` | Null Error | Required value is absent with NullPolicy=Error | Export blocked |
+| `MVP-AT-432` | Null Omit | Optional value is absent with NullPolicy=Omit | Property omitted deterministically |
+| `MVP-AT-433` | Empty collections | Missing collection uses EmptyArray/EmptyObject | Correct typed empty collection emitted |
+| `MVP-AT-434` | Declared default | UseDeclaredDefault has typed sourced default | Default emitted; undeclared default blocks |
+| `MVP-AT-435` | No silent normalization | Identity mapping contains whitespace/case variation | Value preserved; no trim/case/normalization inferred |
+| `MVP-AT-436` | Supported transformation | Mapping references active Implemented verified transformation | Deterministic typed result emitted |
+| `MVP-AT-437` | Unsupported transformation | Mapping references planned/deferred/unsupported/failed transformation | Export blocked |
+| `MVP-AT-438` | Exact reference | Stable foreign key resolves one permitted target | Reference emitted according to EmbedMode |
+| `MVP-AT-439` | Composite reference | Multi-component reference group resolves | Components evaluated atomically in sequence |
+| `MVP-AT-440` | Missing reference | Required target does not resolve | Explicit missing behavior applied; normally export blocked |
+| `MVP-AT-441` | Cardinality violation | Reference resolves too many/few targets | Export blocked |
+| `MVP-AT-442` | Circular reference | Object references form prohibited cycle | Export blocked |
+| `MVP-AT-443` | Canonical ordering | Workbook rows are reordered | Section/property/array order remains unchanged |
+| `MVP-AT-444` | Value-list shape | Runtime value lists/aliases/dependencies are generated | Approved array/object structures and canonical codes used |
+| `MVP-AT-445` | Source-provenance shape | Referenced sources, locations, claims, evidence, links and relationships are generated | Approved normalized structure and transitive closure used |
+| `MVP-AT-446` | Data boundary | Customer answer, execution evidence, sensitive field, note/path/user metadata is encountered | Excluded according to disposition/sensitivity; no leakage |
+| `MVP-AT-447` | Master count reconciliation | Generated objects compared with sheet 24 expected counts | Exact match required |
+| `MVP-AT-448` | All supported scenarios | Generate and schema-validate MS-01 through MS-08 where eligibility permits | Each eligible file conforms to the same active schema |
+| `MVP-AT-449` | Unsupported DMS route | DMS-to-DMS context is supplied | NeedsReview result; no supported scenario Runtime JSON generated |
+| `MVP-AT-450` | Preview/export parity | Preview and file export run for same canonical input | Same in-memory object and byte-equivalent JSON |
+| `MVP-AT-451` | Deterministic bytes | Generate twice with unchanged workbook/schema/context | Byte-identical UTF-8 no-BOM LF two-space-indented final-newline JSON |
+
 ## 17. MVP definition of done
 
 The MVP is complete when:
@@ -5896,14 +6153,15 @@ The MVP is complete when:
 20. every controlled-code column has exactly one active value-list usage contract; list definitions, values, aliases and genuine dependencies are normalized and sourced; stable codes are never reused; `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank remain distinct; canonical `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters avoid duplication; authoring-only or unimplemented values never enter Runtime JSON; and exported lists/codes are complete, deterministic and traceable;
 21. every active executable/configuration record has normalized source provenance from document through exact location and atomic claim to workbook-object link; regulatory requirements, reviewed interpretations, vendor/product constraints, internal decisions, assumptions and examples remain distinguishable; convenience citations agree with primary links; conflicts, limitations, lifecycle, translation and verification states remain explicit; historical sources require version-bounded applicability; project evidence and substantial copied publications stay outside reusable configuration; and scenario JSON contains only complete, deterministic, non-sensitive, transitively referenced source metadata without an internet dependency;
 22. `24_Final_Config_Master` is a generated, non-authoritative, filterable audit manifest with deterministic context, master-projection, dependency and summary tables; it separately resolves scenario/module/profile/phase applicability, activation, inclusion, validation and export; shows every candidate inclusion/exclusion/defer/error with controlled reasons; exposes regulatory and assessment filter dimensions, interpretation and source lineage; computes complete non-duplicating dependency closure and expected JSON counts; excludes raw customer data and unsupported DMS-to-DMS instructions; reconciles with sheet 26; never becomes transformation input; and regenerates identically from unchanged canonical workbook/context;
-23. every scenario has complete phase/module applicability;
-24. `24_Final_Config_Master` explains every inclusion/exclusion;
-25. scenario JSON generates for all Section 5 scenarios;
-26. every JSON object traces to workbook records;
-27. invalid/incomplete content blocks with actionable messages;
-28. unchanged input/selection produces identical canonical JSON;
-29. PowerShell consumes JSON without reading Excel;
-30. deferred SharePoint, release governance and GxP controls are not represented as complete.
+23. `25_JSON_Field_Map` provides one explicit, sourced and schema-compatible disposition for every maintained table/column through normalized schema, section, object, property, reference and transformation contracts; uses the shared scenario resolver without reading generated sheets; maps stable identities to exact schema pointers and native JSON types; distinguishes null/omit/empty/default behavior; resolves exact cardinality-checked references; permits only implemented verified declarative transformations; reconciles value/source structures with the canonical Section 12 contract; excludes authoring-only, sensitive, customer/project and execution data; validates all eligible scenarios against one compatible schema; and produces byte-identical preview/export JSON from unchanged canonical inputs;
+24. every scenario has complete phase/module applicability;
+25. `24_Final_Config_Master` explains every inclusion/exclusion;
+26. scenario JSON generates for all Section 5 scenarios;
+27. every JSON object traces to workbook records;
+28. invalid/incomplete content blocks with actionable messages;
+29. unchanged input/selection produces identical canonical JSON;
+30. PowerShell consumes JSON without reading Excel;
+31. deferred SharePoint, release governance and GxP controls are not represented as complete.
 
 ## 18. Planned review sequence
 
@@ -5961,3 +6219,4 @@ Each review step shall answer four questions:
 | 4.17 MVP | 15 September 2026 | Approved `22_Value_Lists` with five normalized list-definition, value, usage-map, alias and dependency tables; made sheet 22 the single authority for reusable machine codes across sheets 01–21; defined immutable code identity, explicit code format/status/runtime eligibility/export mode, complete usage mapping, controlled aliases preserving raw values and genuine acyclic dependencies; separated `Unknown`, `NotApplicable`, `NotAssessed`, `ALL` and blank semantics; consolidated `UNIT`, `ENTITY_TYPE`, `CARDINALITY`, `RAG`, `SEVERITY` and `CONFIDENCE` masters while retaining semantically distinct domain lists; prohibited code addition from implying transformer/engine support; added deterministic scenario JSON, cross-sheet audit, blocking validation and acceptance tests |
 | 4.18 MVP | 15 September 2026 | Approved `23_Source_References` with six normalized source-document, precise-location, atomic-claim, claim-evidence, workbook-object-link and source-relationship tables; retained existing `SourceId`/`SourceSection` as validated primary-citation convenience fields while making normalized links authoritative; distinguished regulatory authority, standards, guidance, vendor/product constraints, reviewed interpretations, internal requirements/decisions, assumptions and examples; classified the eMAS Regulatory Technical Migration Assessment Guide as a secondary reviewed guide whose underlying primary sources remain separate; defined truthful lifecycle, verification, translation, conflict and historical-version handling; prohibited examples/internal decisions from masquerading as regulatory authority and excluded project evidence, substantial publication copies and sensitive metadata from reusable/runtime configuration; added transitive offline deterministic JSON, blocking validation and acceptance tests |
 | 4.19 MVP | 15 September 2026 | Approved `24_Final_Config_Master` as a generated, read-only audit manifest with four deterministic context, master-projection, dependency-edge and summary tables; separated scenario/module/profile/phase applicability, conditional activation, final inclusion, validation and export statuses; defined stable row identity, filterable regulatory/assessment dimensions, human condition/evidence/outcome interpretation, source verification and engine/mapping visibility; replaced free-text `ReferencedBy` with atomic transitive dependency lineage; required visibility and controlled reasons for included, excluded, deferred and error candidates; defined safe MS-07 and DMS-to-DMS handling, candidate-universe boundaries, deterministic resolution order, stale/regeneration behavior and expected-count reconciliation with JSON Preview; prohibited generated sheets as configuration inputs and raw customer data/volatile metadata from canonical output; added controlled values, blocking validation and acceptance tests |
+| 4.20 MVP | 16 September 2026 | Approved `25_JSON_Field_Map` with six normalized schema, section, object-mapping, property-mapping, reference-mapping and transformation tables; required explicit dispositions for every maintained table/column, stable object identity, exact schema/property pointers, native JSON types, explicit null/default behavior, controlled-code mapping, deterministic grouping/sorting and exact cardinality-checked references; limited transformations to implemented verified declarative capabilities and prohibited executable/hidden logic or independent applicability decisions; standardized UTF-8 no-BOM LF two-space final-newline serialization and preview/export parity; reconciled Section 11 and the canonical Section 12 JSON/value-list structures with approved value aliases/dependencies and normalized source provenance; excluded generated sheets, authoring-only/sensitive/customer/execution data; added blocking validation and acceptance tests |
