@@ -1,120 +1,95 @@
 # EMAS-MS04-ROOT-LEVEL-DOSSIER
 
 **Task ID:** `EMAS-MS04-ROOT-LEVEL-DOSSIER`  
-**Authoritative base commit:** `f2e1dc754e2ee6e1fcd52d5dcdf674fbbcc83aa7`  
+**Authoritative baseline commit:** `dac1664fee652f701a41204e2527f602077bb42f`  
 **Base branch:** `demo/end-to-end-mvp`  
-**Phase:** Bounded defect resolution, regression, review, and qualification  
-**Purpose:** Correct root-level dossier handling in `ReferenceResolution` and `ClassificationEvidenceCollection` without changing `FormatDetection`, `RegionDetection`, discovery semantics, or the frozen Wave 1 baseline.
+**Phase:** Bounded defect resolution with Mac-first validation  
+**Purpose:** Correct root-level dossier handling in `ReferenceResolution` and `ClassificationEvidenceCollection` without changing `FormatDetection`, `RegionDetection`, `RepositoryDiscovery`, or the frozen Wave 1 baseline.
 
-## Source decision
+## Baseline
 
-This task implements only the next action approved in `EMAS-MS04-WAVE2-PLANNING`:
+PR #29 materialized the exact previously qualified MS-04 RC1 runtime/test baseline into Git and was merged at `dac1664fee652f701a41204e2527f602077bb42f`.
 
-- `ReferenceResolution` mishandles an empty dossier path and can drop the first character of a repository-relative XML path, producing false missing-reference findings.
-- `ClassificationEvidenceCollection` rejects the empty root path in mandatory string parameters, can emit no evidence for a valid root-level dossier, and can still report `Collected`.
-- The two defects must be reproduced independently, fixed narrowly, covered by focused regression tests, and requalified before the blocked root-level dossier fixture can enter a later SD-044+ wave.
+Before editing, Codex must verify:
+1. the branch is based on that commit or a descendant containing it;
+2. the eight accepted capability modules, entry script, `eMAS.SafeXml.ps1`, eight harnesses, and eight expectation files are present;
+3. package/manifest identities match the recorded RC1 qualification evidence;
+4. all eight existing suites pass on Mac before the fix.
 
-The merged planning artifacts and `reports/CONSOLIDATED.md` remain the decision record. This task does not reopen Wave 2 planning.
-
-## Baseline gate
-
-Before editing:
-
-1. Verify the work is based on commit `f2e1dc754e2ee6e1fcd52d5dcdf674fbbcc83aa7`.
-2. Verify the complete accepted eight-capability RC1 package is present: modules, entry script, `eMAS.SafeXml.ps1`, eight regression harnesses, eight expectation files, and the 19 frozen Wave 1 ZIP fixtures.
-3. Verify those accepted inputs against the internal Windows qualification-package manifest and record the manifest identity and hashes used.
-4. Run the existing eight automated suites before modification and record the result.
-
-The accepted capability files were not all tracked at the planning baseline. Do not reconstruct missing files from reports, silently import a different package, or broaden this task into baseline materialization. If the complete qualified package cannot be proven, stop with `BLOCKED_BASELINE_NOT_REPRODUCIBLE` and publish the evidence in the assigned report.
+If the baseline still cannot be reproduced, stop and report the evidence. Do not import or reconstruct anything else.
 
 ## Correct root semantics
 
-For this task, a dossier with `RelativePath = ''` means the dossier is the repository/archive root.
+A dossier with `RelativePath = ''` means the dossier is the repository/archive root.
 
-- A non-empty repository-relative path such as `0000/index.xml` is inside the root dossier.
-- Removing a root dossier prefix removes zero characters and no separator; `0000/index.xml` must remain `0000/index.xml`.
+- `0000/index.xml` must remain `0000/index.xml`; removing an empty root prefix removes zero characters and no separator.
 - Joining the root dossier with a normalized target returns the normalized target unchanged.
-- Existing normalization and safety rules remain in force. Absolute paths, traversal, and paths that escape the repository/dossier remain unsafe.
-- A valid root-level dossier must produce the same dossier-relative reference and classification evidence as the equivalent wrapped dossier, except for fields that intentionally identify the dossier root.
-- `ClassificationEvidenceCollection` may legitimately report zero evidence for unrelated/non-dossier content such as the existing SD-020 case. It must not report zero evidence merely because a valid dossier path is empty.
-- Coverage status and `RecordsProduced` must reflect the records actually collected. No non-terminating parameter-binding failure may be hidden behind `Collected`.
+- Existing safety rules for traversal, absolute paths, and repository escape remain unchanged.
+- A valid root-level dossier must produce the same dossier-relative reference/classification evidence as an equivalent wrapped dossier, except for intentional root-identifying fields.
+- A valid root-level dossier must not produce zero classification evidence merely because its root path is empty.
+- Legitimate zero-evidence unrelated content remains valid.
+- Coverage and `RecordsProduced` must reflect actual collection results.
 
-## Scope
+## In scope
 
-### In scope
-
-- Reproduce each root-level defect independently on the accepted pre-fix baseline.
-- Add focused synthetic regression coverage for a valid root-level dossier without modifying frozen Wave 1 fixtures or expectations.
+- Reproduce both root-level defects against the accepted pre-fix baseline.
+- Add focused synthetic root-level regression coverage without changing frozen Wave 1 fixtures or expectations.
 - Apply the smallest compatible fixes to:
   - `engine/powershell51/eMAS.ReferenceResolution.psm1`
   - `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1`
-- Update only the directly relevant existing harnesses or add a single focused root-level-dossier harness and new synthetic fixture/expectation files.
-- Prove wrapped-dossier behavior is unchanged.
-- Run the two focused suites, all eight existing automated suites, freeze-integrity checks, and the composed accepted chain.
-- Perform native 64-bit Windows PowerShell 5.1 qualification at the reviewed implementation commit.
-- Persist implementation, review, and qualification evidence in this task's report directory.
+- Update only directly relevant harnesses, or add task-specific files under `tests/root-level-dossier/` and `tests/fixtures/root-level-dossier/` if needed.
+- Prove wrapped-dossier behavior remains unchanged.
+- Run focused tests, all eight existing suites, freeze-integrity checks, and the composed accepted chain on Mac.
+- Publish implementation and test evidence in `reports/CODEX.md`.
 
-### Out of scope
+## Out of scope
 
-- `FormatDetection` or `RegionDetection` implementation, tests, contracts, or capability declarations.
-- `RepositoryDiscovery` changes, including the separate `Archive/2019` discovery-semantics question.
-- Any SD-044+ dossier-diversity wave build, catalogue update, or fixture freeze, including accepting SD-050.
-- Changes to frozen Wave 1 ZIPs, manifests, or any of the eight Wave 1 expectation files.
-- Changes to the other six accepted capability modules, `scripts/eMAS-PreSalesAssessment.ps1`, `eMAS.SafeXml.ps1`, reporting, packaging, UI, schemas, or product contracts.
-- Migration execution, migration readiness, post-migration verification, DMS-to-DMS, database migration, or archive migration.
-- Opportunistic refactoring, renaming, formatting churn, or dependency installation.
+- `FormatDetection` or `RegionDetection`.
+- `RepositoryDiscovery` changes, including the separate `Archive/2019` question.
+- SD-044+ fixture-wave construction or freeze.
+- Changes to frozen Wave 1 ZIPs, manifests, or Wave 1 expectation files.
+- Changes to the other six accepted capability modules, entry script, SafeXml, reporting, packaging, schemas, or product contracts.
+- Opportunistic refactoring or formatting churn.
+- Native Windows PowerShell 5.1 qualification during this Mac implementation stage.
 
-## Ownership and allowed files
-
-Only the implementation owner may modify runtime/test files. Review and qualification agents are read-only except for their own reports.
+## Ownership
 
 ### Codex — implementation owner
 
-**Branch:** `implementation/emas-ms04-root-level-dossier`  
-**Deliverable:** `reports/CODEX.md` plus the bounded implementation and focused regression changes.
+**Branch:** `implementation/emas-ms04-root-level-dossier-v2`
 
 Allowed runtime/test files:
-
 - `engine/powershell51/eMAS.ReferenceResolution.psm1`
 - `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1`
 - `tests/reference-resolution/Test-eMASReferenceResolution.ps1`
 - `tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1`
-- New task-specific files under `tests/root-level-dossier/` and `tests/fixtures/root-level-dossier/`, only if needed for focused synthetic coverage
+- task-specific files under `tests/root-level-dossier/` and `tests/fixtures/root-level-dossier/`, only if needed
 - `docs/internal/agent-tasks/EMAS-MS04-ROOT-LEVEL-DOSSIER/reports/CODEX.md`
 
-Codex must first commit a failing characterization or otherwise preserve deterministic pre-fix evidence in the report, then implement the minimal fix and record post-fix results. Do not edit task coordination files or another agent's report. Push the dedicated branch and open a PR into the task coordination branch when authorized by the repository workflow. Do not merge.
+Codex must preserve deterministic pre-fix evidence, implement the minimal fix, run Mac regression, push the dedicated branch, and open a draft PR into `demo/end-to-end-mvp`. Do not merge.
 
-### Claude — fixed-SHA reviewer
+### ChatGPT — central review/coordinator
 
-**Input:** The exact Codex implementation commit SHA  
-**Deliverable:** `reports/CLAUDE.md`
+After Codex publishes the implementation PR, ChatGPT reviews the exact GitHub diff, report, test evidence, scope, safety behavior, and baseline integrity. Additional Claude/Hermes review is optional and used only when a specific independent question needs it.
 
-Review the two defect reproductions, empty-root semantics, changed code, focused tests, safety behavior, compatibility with Windows PowerShell 5.1, and scope compliance. Confirm that the new regression would fail on the accepted pre-fix code and pass on the reviewed commit. Confirm that frozen inputs were not changed and that `FormatDetection`, `RegionDetection`, and `RepositoryDiscovery` were untouched. Remain read-only except for your report. Do not fix code or merge.
+### Windows qualification — deferred stage
 
-### Hermes — independent qualification
+Native 64-bit Windows PowerShell 5.1 qualification is intentionally deferred until the Mac implementation baseline is accepted. It remains required before the updated runtime is declared Windows-qualified, but it is not a blocker for completing this Mac defect-resolution stage.
 
-**Input:** The exact Codex implementation commit SHA after Claude review  
-**Deliverable:** `reports/HERMES.md`
+## Mac-stage acceptance criteria
 
-Independently rerun the focused tests, all eight automated suites, freeze-integrity verification, and composed-chain checks. Perform native 64-bit Windows PowerShell 5.1 qualification and record OS/runtime, commands, fixture/suite counts, hashes, exit status, and result paths. Include adversarial checks for empty root, wrapped-root parity, traversal/absolute-path rejection, and valid zero-evidence unrelated content. Remain read-only except for your report. If native Windows PowerShell 5.1 is unavailable, report `BLOCKED_WINDOWS_QUALIFICATION` rather than substituting another runtime or claiming qualification. Do not merge.
-
-## Acceptance criteria
-
-The task is ready for user review only when all of the following are true:
-
-1. Both defects are reproduced independently against the accepted pre-fix package.
-2. A valid root-level dossier preserves repository-relative XML paths and resolves present reference targets without false missing-reference findings.
-3. `ClassificationEvidenceCollection` accepts the empty root path, emits the expected non-zero evidence for the valid dossier, and reports accurate coverage and record counts.
-4. Wrapped-dossier and root-dossier projections are equivalent except for intentional root-identifying fields.
-5. Absolute paths, traversal, and escape attempts remain rejected.
-6. Existing legitimate zero-evidence behavior remains intact.
-7. The two focused suites pass.
-8. All eight existing automated suites pass against all 19 frozen Wave 1 fixtures.
-9. Frozen Wave 1 fixture and expectation hashes are identical before and after testing.
-10. Native 64-bit Windows PowerShell 5.1 qualification passes at the exact reviewed commit.
-11. Claude reports no unresolved correctness, regression, security, compatibility, or scope blocker.
-12. The implementation diff contains no changes to forbidden files or capabilities.
+1. Both defects reproduced independently on the pre-fix baseline.
+2. Root-level reference paths no longer lose characters or produce false missing-reference findings.
+3. Classification evidence collection accepts the empty root and emits the expected non-zero evidence.
+4. Wrapped/root projections are equivalent except for intentional root-identifying fields.
+5. Traversal, absolute-path, and escape protections remain intact.
+6. Legitimate zero-evidence unrelated content remains intact.
+7. Focused root-level regression tests pass.
+8. All eight existing suites pass against all 19 frozen Wave 1 fixtures on Mac.
+9. Frozen Wave 1 fixture and expectation hashes remain unchanged.
+10. No forbidden capability or file is changed.
+11. ChatGPT review finds no unresolved blocker.
 
 ## Decision gate
 
-No agent may approve or merge on the user's behalf. After Codex, Claude, and Hermes reports are persisted, the coordinator reconciles them and updates `STATUS.md`. The user decides whether the implementation PR is accepted into `demo/end-to-end-mvp`. Only after acceptance may a separate task build and freeze the SD-044+ dossier-diversity wave.
+After the Mac stage passes, the user decides whether to accept the implementation baseline and proceed to native Windows PowerShell 5.1 qualification. Only after Windows qualification is complete should the runtime be called requalified for Windows.
