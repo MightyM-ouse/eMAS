@@ -3,7 +3,7 @@
 **Roadmap ID:** `T4`  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Coordination branch:** `coordination/emas-ms04-identification-interpretation`  
-**Overall status:** `FINAL_REVIEW_PASS_READY_FOR_USER_MERGE_DECISION`  
+**Overall status:** `ACCEPTED_FOR_DEMO_MERGE`  
 **Coordination PR:** #54
 
 ## Execution model
@@ -137,3 +137,8 @@ Parent PR #54 is ready for explicit user merge decision.
 
 
 Final post-review documentation head CI completed with the same accepted result profile. No T4-specific failure remains.
+
+
+## User decision
+
+Accepted. Parent PR #54 is approved for merge into `demo/end-to-end-mvp` as the integrated T4 IdentificationInterpretation baseline.
