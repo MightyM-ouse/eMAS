@@ -1,0 +1,91 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "Execution": {
+    "Capability": "IdentificationInterpretation",
+    "ExecutionId": "EXE-ORACLE-IDO-19",
+    "EngineVersion": null,
+    "StartedAtUtc": null,
+    "CompletedAtUtc": null,
+    "CompletionStatus": "Completed"
+  },
+  "EvidenceSource": {
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "ExecutionId": "EXE-ORACLE-IDO-19",
+    "DocumentSha256": "bf7920767a6b86c596b77f952d80051f86d2d8d03be283b65539ae7ec09030c0"
+  },
+  "RuntimeConfig": {
+    "ConfigurationId": "ORACLE_IDO_19",
+    "SchemaVersion": "1.1.0",
+    "MappingVersion": "1.0.0",
+    "ExportType": "DEV",
+    "Sha256": "9d1c9ccfe9c536a5c5c777d7150da703d756f51e38ee09e6d0bac2076283b4aa"
+  },
+  "Normalization": {
+    "PolicyId": "EVIDENCE-STRENGTH-NORMALIZATION",
+    "Version": "1",
+    "Mapping": {
+      "Strong": "STRONG",
+      "Supporting": "MEDIUM",
+      "Weak": "WEAK"
+    }
+  },
+  "FieldProjection": {
+    "PolicyId": "CEC-FIELD-PROJECTION",
+    "Version": "1"
+  },
+  "Results": [
+    {
+      "IdentificationId": "IDR-0001",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "Evaluated",
+      "Value": "ECTD_4_0",
+      "ValueSet": null,
+      "Confidence": "LOW",
+      "ReviewRequired": true,
+      "ValueSource": "Derived",
+      "Candidates": [
+        {
+          "Value": "ECTD_4_0",
+          "BestSupportStrength": "MEDIUM",
+          "BestContradictionStrength": null,
+          "SupportingRuleIds": [
+            "ID-TS-V4-MARKER"
+          ],
+          "ContradictingRuleIds": [],
+          "SupportingEvidence": [
+            {
+              "EvidenceId": "EVD-0003",
+              "RawStrength": "Supporting",
+              "NormalizedStrength": "MEDIUM",
+              "SourceTier": "OfficialPhysicalPath"
+            }
+          ],
+          "ContradictingEvidence": []
+        }
+      ],
+      "SupportingEvidenceIds": [
+        "EVD-0003"
+      ],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [],
+      "FiredRuleIds": [
+        "ID-TS-V4-MARKER"
+      ],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": "MEDIUM",
+        "TierRank": 2,
+        "CountByStrength": {
+          "STRONG": 0,
+          "MEDIUM": 1,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": 1
+      },
+      "LimitingFactors": []
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "Execution": {
+    "Capability": "IdentificationInterpretation",
+    "ExecutionId": "EXE-ORACLE-IDO-13",
+    "EngineVersion": null,
+    "StartedAtUtc": null,
+    "CompletedAtUtc": null,
+    "CompletionStatus": "CompletedWithEvidenceGaps"
+  },
+  "EvidenceSource": {
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "ExecutionId": "EXE-ORACLE-IDO-13",
+    "DocumentSha256": "949c7a8689e7b5825576a2047e8e4c55537f9874a0071e4664535b2c22e49615"
+  },
+  "RuntimeConfig": {
+    "ConfigurationId": "ORACLE_IDO_13",
+    "SchemaVersion": "1.1.0",
+    "MappingVersion": "1.0.0",
+    "ExportType": "DEV",
+    "Sha256": "769c880fd7db46335bf1c8e0c21c4afdf5e3bfbb3c40623a53a6897e375c2e92"
+  },
+  "Normalization": {
+    "PolicyId": "EVIDENCE-STRENGTH-NORMALIZATION",
+    "Version": "1",
+    "Mapping": {
+      "Strong": "STRONG",
+      "Supporting": "MEDIUM",
+      "Weak": "WEAK"
+    }
+  },
+  "FieldProjection": {
+    "PolicyId": "CEC-FIELD-PROJECTION",
+    "Version": "1"
+  },
+  "Results": [
+    {
+      "IdentificationId": "IDR-0001",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "Evaluated",
+      "Value": "SYN_COMMON_ONLY",
+      "ValueSet": null,
+      "Confidence": "LOW",
+      "ReviewRequired": true,
+      "ValueSource": "Derived",
+      "Candidates": [
+        {
+          "Value": "SYN_COMMON_ONLY",
+          "BestSupportStrength": "MEDIUM",
+          "BestContradictionStrength": null,
+          "SupportingRuleIds": [
+            "ID-TS-COMMON-ONLY"
+          ],
+          "ContradictingRuleIds": [],
+          "SupportingEvidence": [
+            {
+              "EvidenceId": "EVD-0003",
+              "RawStrength": "Strong",
+              "NormalizedStrength": "STRONG",
+              "SourceTier": "StructuredXml"
+            }
+          ],
+          "ContradictingEvidence": []
+        }
+      ],
+      "SupportingEvidenceIds": [
+        "EVD-0003"
+      ],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [],
+      "FiredRuleIds": [
+        "ID-TS-COMMON-ONLY"
+      ],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": "MEDIUM",
+        "TierRank": 2,
+        "CountByStrength": {
+          "STRONG": 0,
+          "MEDIUM": 1,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": 1
+      },
+      "LimitingFactors": []
+    },
+    {
+      "IdentificationId": "IDR-0002",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0002",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "NotAssessed",
+      "Value": null,
+      "ValueSet": null,
+      "Confidence": "UNKNOWN",
+      "ReviewRequired": true,
+      "ValueSource": null,
+      "Candidates": [],
+      "SupportingEvidenceIds": [],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [
+        {
+          "FieldCode": "CEC_XML_ROOT_ELEMENT_REGIONAL",
+          "EvidenceId": null,
+          "Reason": "ParseFailed"
+        }
+      ],
+      "FiredRuleIds": [],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": null,
+        "TierRank": null,
+        "CountByStrength": {
+          "STRONG": 0,
+          "MEDIUM": 0,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": null
+      },
+      "LimitingFactors": [
+        "RuleNotEvaluable"
+      ]
+    }
+  ]
+}

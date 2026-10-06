@@ -1,0 +1,98 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "Execution": {
+    "Capability": "IdentificationInterpretation",
+    "ExecutionId": "EXE-ORACLE-IDO-10",
+    "EngineVersion": null,
+    "StartedAtUtc": null,
+    "CompletedAtUtc": null,
+    "CompletionStatus": "Completed"
+  },
+  "EvidenceSource": {
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "ExecutionId": "EXE-ORACLE-IDO-10",
+    "DocumentSha256": "085a53e1c198666064e56a0a21d1180c3bdd49904921d475dcc42216f44ea515"
+  },
+  "RuntimeConfig": {
+    "ConfigurationId": "ORACLE_IDO_10",
+    "SchemaVersion": "1.1.0",
+    "MappingVersion": "1.0.0",
+    "ExportType": "DEV",
+    "Sha256": "a61c995a829784964ef657290928fb8472c225af6e40318b2c6b8f152880011a"
+  },
+  "Normalization": {
+    "PolicyId": "EVIDENCE-STRENGTH-NORMALIZATION",
+    "Version": "1",
+    "Mapping": {
+      "Strong": "STRONG",
+      "Supporting": "MEDIUM",
+      "Weak": "WEAK"
+    }
+  },
+  "FieldProjection": {
+    "PolicyId": "CEC-FIELD-PROJECTION",
+    "Version": "1"
+  },
+  "Results": [
+    {
+      "IdentificationId": "IDR-0001",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "Evaluated",
+      "Value": "ICH_ECTD_3_2_2",
+      "ValueSet": null,
+      "Confidence": "LOW",
+      "ReviewRequired": false,
+      "ValueSource": "Derived",
+      "Candidates": [
+        {
+          "Value": "ICH_ECTD_3_2_2",
+          "BestSupportStrength": "STRONG",
+          "BestContradictionStrength": null,
+          "SupportingRuleIds": [
+            "ID-TS-ROOT"
+          ],
+          "ContradictingRuleIds": [],
+          "SupportingEvidence": [
+            {
+              "EvidenceId": "EVD-0003",
+              "RawStrength": "Strong",
+              "NormalizedStrength": "STRONG",
+              "SourceTier": "StructuredXml"
+            },
+            {
+              "EvidenceId": "EVD-0004",
+              "RawStrength": "Strong",
+              "NormalizedStrength": "STRONG",
+              "SourceTier": "StructuredXml"
+            }
+          ],
+          "ContradictingEvidence": []
+        }
+      ],
+      "SupportingEvidenceIds": [
+        "EVD-0003",
+        "EVD-0004"
+      ],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [],
+      "FiredRuleIds": [
+        "ID-TS-ROOT"
+      ],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": "STRONG",
+        "TierRank": 1,
+        "CountByStrength": {
+          "STRONG": 1,
+          "MEDIUM": 0,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": 1
+      },
+      "LimitingFactors": []
+    }
+  ]
+}

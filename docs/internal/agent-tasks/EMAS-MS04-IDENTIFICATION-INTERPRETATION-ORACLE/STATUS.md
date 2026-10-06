@@ -3,7 +3,7 @@
 **Task ID:** `EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE`  
 **Roadmap ID:** T4a  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
-**Overall status:** `READY_FOR_CLAUDE`
+**Overall status:** `ACCEPTED_FOR_MERGE`
 
 | Gate | Status |
 |---|---|
@@ -11,12 +11,19 @@
 | T3 design | ACCEPTED |
 | T3a Schema 1.1 | ACCEPTED / MERGED |
 | T3b workbook/export | ACCEPTED / MERGED |
-| behavioral contract | NOT_STARTED |
-| Identification/1.0 exact shape | NOT_STARTED |
-| independent oracle fixtures | NOT_STARTED |
-| static oracle validation | NOT_STARTED |
-| engine files touched | MUST_REMAIN_NO |
-| ChatGPT central review | BLOCKED_ON_CLAUDE |
-| merge to T4 coordination | NOT_READY |
+| behavioral contract | ACCEPTED — REVISION 1.1 |
+| Identification/1.0 exact shape | ACCEPTED |
+| independent oracle fixtures | ACCEPTED — 23 CASES |
+| output cases | 22 |
+| failure cases | 1 |
+| static oracle validation | PASS — 23/23 |
+| static/mutation tests | PASS — 14/14 |
+| B-1 through B-6 | CLOSED / ACCEPTED |
+| B-7 relationship-derived Region | CLOSED AS DEFERRED FROM BOUNDED T4 |
+| MATCHES_PATTERN contract | ACCEPTED |
+| engine files touched | PASS — NONE |
+| ChatGPT central review | ACCEPTED |
+| merge to T4 coordination | USER_ACCEPTED |
+| Windows PS5.1 engine conformance | T4B GATE AFTER MERGE |
 
 Single worker: Claude.

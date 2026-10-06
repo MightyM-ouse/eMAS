@@ -1,0 +1,81 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "Execution": {
+    "Capability": "IdentificationInterpretation",
+    "ExecutionId": "EXE-ORACLE-IDO-12",
+    "EngineVersion": null,
+    "StartedAtUtc": null,
+    "CompletedAtUtc": null,
+    "CompletionStatus": "CompletedWithEvidenceGaps"
+  },
+  "EvidenceSource": {
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "ExecutionId": "EXE-ORACLE-IDO-12",
+    "DocumentSha256": "ef68c99bc6d2c935dd0b1f2b3ea9dbbf64642cf7710c5bb527ac78fd6cf2db6b"
+  },
+  "RuntimeConfig": {
+    "ConfigurationId": "ORACLE_IDO_12",
+    "SchemaVersion": "1.1.0",
+    "MappingVersion": "1.0.0",
+    "ExportType": "DEV",
+    "Sha256": "b408b8cf68a818f0bcf147941bdec430cbb83186e9a1e88cd8574525322746f6"
+  },
+  "Normalization": {
+    "PolicyId": "EVIDENCE-STRENGTH-NORMALIZATION",
+    "Version": "1",
+    "Mapping": {
+      "Strong": "STRONG",
+      "Supporting": "MEDIUM",
+      "Weak": "WEAK"
+    }
+  },
+  "FieldProjection": {
+    "PolicyId": "CEC-FIELD-PROJECTION",
+    "Version": "1"
+  },
+  "Results": [
+    {
+      "IdentificationId": "IDR-0001",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "NotAssessed",
+      "Value": null,
+      "ValueSet": null,
+      "Confidence": "UNKNOWN",
+      "ReviewRequired": true,
+      "ValueSource": null,
+      "Candidates": [],
+      "SupportingEvidenceIds": [],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [
+        {
+          "FieldCode": "CEC_XML_NAMESPACE_COMMON",
+          "EvidenceId": null,
+          "Reason": "AccessDenied"
+        },
+        {
+          "FieldCode": "CEC_XML_ROOT_ELEMENT_COMMON",
+          "EvidenceId": null,
+          "Reason": "AccessDenied"
+        }
+      ],
+      "FiredRuleIds": [],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": null,
+        "TierRank": null,
+        "CountByStrength": {
+          "STRONG": 0,
+          "MEDIUM": 0,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": null
+      },
+      "LimitingFactors": [
+        "RuleNotEvaluable"
+      ]
+    }
+  ]
+}

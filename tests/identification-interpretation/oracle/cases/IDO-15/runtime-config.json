@@ -1,0 +1,1465 @@
+{
+  "configuration": {
+    "configurationId": "ORACLE_IDO_15",
+    "schemaVersion": "1.1.0",
+    "mappingVersion": "1.0.0",
+    "sourceWorkbookVersion": "1.0.0",
+    "minimumEngineVersion": "1.1.0",
+    "maximumTestedEngineVersion": "1.1.0",
+    "exportType": "DEV",
+    "exportedAtUtc": "2026-07-13T10:00:00Z",
+    "exportedBy": "SYNTHETIC_TEST",
+    "status": "Reviewed",
+    "validationRunId": "VAL-ORACLE-IDO-15"
+  },
+  "valueLists": {
+    "DOCUMENT_STATUS": [
+      {
+        "code": "EFFECTIVE",
+        "displayValue": "Effective",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RULE_LIFECYCLE_STATUS": [
+      {
+        "code": "EFFECTIVE",
+        "displayValue": "Effective",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "PHASE": [
+      {
+        "code": "PRE_SALES",
+        "displayValue": "Pre-Sales Assessment",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "PRE_MIGRATION",
+        "displayValue": "Pre-Migration Readiness",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "POST_MIGRATION",
+        "displayValue": "Post-Migration Verification",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "MIGRATION_SCENARIO": [
+      {
+        "code": "HYBRID_MIGRATION",
+        "displayValue": "Hybrid Migration",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "DATA_TYPE": [
+      {
+        "code": "STRING",
+        "displayValue": "String",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CODE",
+        "displayValue": "Code",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "INTEGER",
+        "displayValue": "Integer",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DECIMAL",
+        "displayValue": "Decimal",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "BOOLEAN",
+        "displayValue": "Boolean",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DATE",
+        "displayValue": "Date",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DATETIME",
+        "displayValue": "DateTime",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "PATH",
+        "displayValue": "Path",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "OPERATOR": [
+      {
+        "code": "EQUALS",
+        "displayValue": "EQUALS",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "NOT_EQUALS",
+        "displayValue": "NOT_EQUALS",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "IN_LIST",
+        "displayValue": "IN_LIST",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CONTAINS",
+        "displayValue": "CONTAINS",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "STARTS_WITH",
+        "displayValue": "STARTS_WITH",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "ENDS_WITH",
+        "displayValue": "ENDS_WITH",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MATCHES_PATTERN",
+        "displayValue": "MATCHES_PATTERN",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "EXISTS",
+        "displayValue": "EXISTS",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MISSING",
+        "displayValue": "MISSING",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "GT",
+        "displayValue": "GT",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "GTE",
+        "displayValue": "GTE",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "LT",
+        "displayValue": "LT",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "LTE",
+        "displayValue": "LTE",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "BETWEEN",
+        "displayValue": "BETWEEN",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "LOGICAL_OPERATOR": [
+      {
+        "code": "AND",
+        "displayValue": "AND",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "CONFLICT_STRATEGY": [
+      {
+        "code": "FIRSTMATCH",
+        "displayValue": "FirstMatch",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MOSTSPECIFIC",
+        "displayValue": "MostSpecific",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MOSTSEVERE",
+        "displayValue": "MostSevere",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "AGGREGATE",
+        "displayValue": "Aggregate",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "ERRORONMULTIPLEMATCH",
+        "displayValue": "ErrorOnMultipleMatch",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "HIGHESTEVIDENCESCORE",
+        "displayValue": "HighestEvidenceScore",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MANUALREVIEW",
+        "displayValue": "ManualReview",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "EVIDENCE_STRENGTH": [
+      {
+        "code": "STRONG",
+        "displayValue": "Strong",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 1
+      },
+      {
+        "code": "MEDIUM",
+        "displayValue": "Medium",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 2
+      },
+      {
+        "code": "WEAK",
+        "displayValue": "Weak",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 3
+      }
+    ],
+    "EVALUATION_STATUS": [
+      {
+        "code": "EVALUATED",
+        "displayValue": "Evaluated",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "NOTASSESSED",
+        "displayValue": "NotAssessed",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "NOTAPPLICABLE",
+        "displayValue": "NotApplicable",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "SKIPPED",
+        "displayValue": "Skipped",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "WARNING",
+        "displayValue": "Warning",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "ERROR",
+        "displayValue": "Error",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "INSUFFICIENTEVIDENCE",
+        "displayValue": "InsufficientEvidence",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CONFLICT",
+        "displayValue": "Conflict",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RAG": [
+      {
+        "code": "GREEN",
+        "displayValue": "Green",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "AMBER",
+        "displayValue": "Amber",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "RED",
+        "displayValue": "Red",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "UNKNOWN",
+        "displayValue": "Unknown",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "SEVERITY": [
+      {
+        "code": "MEDIUM",
+        "displayValue": "Medium",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "CONFIDENCE": [
+      {
+        "code": "HIGH",
+        "displayValue": "High",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 1
+      },
+      {
+        "code": "MEDIUM",
+        "displayValue": "Medium",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 2
+      },
+      {
+        "code": "LOW",
+        "displayValue": "Low",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 3
+      },
+      {
+        "code": "UNKNOWN",
+        "displayValue": "Unknown",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 4
+      }
+    ],
+    "VALUE_SOURCE": [
+      {
+        "code": "OBSERVED",
+        "displayValue": "Observed",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CUSTOMERPROVIDED",
+        "displayValue": "CustomerProvided",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "IMPORTED",
+        "displayValue": "Imported",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DERIVED",
+        "displayValue": "Derived",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "ASSUMED",
+        "displayValue": "Assumed",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "REQUIREMENT_LEVEL": [
+      {
+        "code": "MUST",
+        "displayValue": "Must",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "EFFORT_BAND": [
+      {
+        "code": "VERY_LOW",
+        "displayValue": "Very_Low",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "LOW",
+        "displayValue": "Low",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "MEDIUM",
+        "displayValue": "Medium",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "HIGH",
+        "displayValue": "High",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "VERY_HIGH",
+        "displayValue": "Very_High",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "EXCEPTION_EFFECT": [
+      {
+        "code": "ACKNOWLEDGEONLY",
+        "displayValue": "AcknowledgeOnly",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "REMOVEBLOCK",
+        "displayValue": "RemoveBlock",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "EXCLUDEFROMSCOPE",
+        "displayValue": "ExcludeFromScope",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "ACCEPTDIFFERENCE",
+        "displayValue": "AcceptDifference",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DOWNGRADEDECISIONIMPACT",
+        "displayValue": "DowngradeDecisionImpact",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "LINK_TYPE": [
+      {
+        "code": "PRIMARY",
+        "displayValue": "Primary",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RULE_TYPE": [
+      {
+        "code": "CLASSIFICATION",
+        "displayValue": "Classification",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "IDENTIFICATION",
+        "displayValue": "Identification",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      }
+    ],
+    "OUTPUT_TYPE": [
+      {
+        "code": "CLASSIFICATIONCANDIDATE",
+        "displayValue": "ClassificationCandidate",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "FINDING",
+        "displayValue": "Finding",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "RAG",
+        "displayValue": "RAG",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CONFIDENCEIMPACT",
+        "displayValue": "ConfidenceImpact",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "EFFORTIMPACT",
+        "displayValue": "EffortImpact",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "DECISIONIMPACT",
+        "displayValue": "DecisionImpact",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CLARIFICATIONTRIGGER",
+        "displayValue": "ClarificationTrigger",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "FINDING_CATEGORY": [
+      {
+        "code": "STRUCTURE",
+        "displayValue": "Structure",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "UNIT": [
+      {
+        "code": "COUNT",
+        "displayValue": "Count",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "SCORE",
+        "displayValue": "Score",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RELATIONSHIP_TYPE": [
+      {
+        "code": "AUTHORITYTOREGION",
+        "displayValue": "AuthorityToRegion",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "AUTHORITYTOTECHNICALSTANDARD",
+        "displayValue": "AuthorityToTechnicalStandard",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "TECHNICALSTANDARDTOREGIONALIMPLEMENTATION",
+        "displayValue": "TechnicalStandardToRegionalImplementation",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "PROCEDURECONTEXTTOTECHNICALSTANDARD",
+        "displayValue": "ProcedureContextToTechnicalStandard",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "EXPORT_TYPE": [
+      {
+        "code": "DEV",
+        "displayValue": "Development",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      },
+      {
+        "code": "CONTROLLED",
+        "displayValue": "Controlled",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RESULT_PRE_SALES": [
+      {
+        "code": "MEDIUM",
+        "displayValue": "Medium",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RESULT_PRE_MIGRATION": [
+      {
+        "code": "READY",
+        "displayValue": "Ready",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "RESULT_POST_MIGRATION": [
+      {
+        "code": "RECONCILED",
+        "displayValue": "Reconciled",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13"
+      }
+    ],
+    "IDENTIFICATION_DIMENSION": [
+      {
+        "code": "TECHNICAL_STANDARD",
+        "displayValue": "TechnicalStandard",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sortOrder": 1
+      }
+    ],
+    "EVIDENCE_POLARITY": [
+      {
+        "code": "SUPPORTS",
+        "displayValue": "Supports",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      },
+      {
+        "code": "CONTRADICTS",
+        "displayValue": "Contradicts",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      }
+    ],
+    "TIE_BEHAVIOR": [
+      {
+        "code": "UNKNOWN",
+        "displayValue": "Unknown",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      },
+      {
+        "code": "MANUAL_REVIEW",
+        "displayValue": "ManualReview",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      }
+    ],
+    "CORROBORATION_RULE": [
+      {
+        "code": "NONE_REQUIRED",
+        "displayValue": "NoneRequired",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      },
+      {
+        "code": "INDEPENDENT_SOURCE_CLASS",
+        "displayValue": "IndependentSourceClass",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06"
+      }
+    ]
+  },
+  "fieldCatalogue": [
+    {
+      "fieldCode": "INDEX_XML_EXISTS",
+      "displayName": "index.xml exists",
+      "dataType": "Boolean",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS",
+        "EXISTS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES",
+        "PRE_MIGRATION",
+        "POST_MIGRATION"
+      ],
+      "producingComponent": "STRUCTURE_SCANNER",
+      "evaluationOrder": 0,
+      "isSensitive": false
+    },
+    {
+      "fieldCode": "FILE_COUNT",
+      "displayName": "File count",
+      "dataType": "Integer",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "GTE",
+        "GT",
+        "LT",
+        "LTE",
+        "BETWEEN"
+      ],
+      "supportedPhases": [
+        "PRE_SALES",
+        "PRE_MIGRATION",
+        "POST_MIGRATION"
+      ],
+      "producingComponent": "INVENTORY_SCANNER",
+      "evaluationOrder": 100,
+      "isSensitive": false
+    },
+    {
+      "fieldCode": "CEC_XML_ROOT_ELEMENT_COMMON",
+      "displayName": "Synthetic CEC projection CEC_XML_ROOT_ELEMENT_COMMON",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS",
+        "NOT_EQUALS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 100,
+      "isSensitive": false,
+      "maxEvidenceStrength": "STRONG",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_XML_NAMESPACE_COMMON",
+      "displayName": "Synthetic CEC projection CEC_XML_NAMESPACE_COMMON",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS",
+        "NOT_EQUALS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 101,
+      "isSensitive": false,
+      "maxEvidenceStrength": "STRONG",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_XML_ROOT_ELEMENT_REGIONAL",
+      "displayName": "Synthetic CEC projection CEC_XML_ROOT_ELEMENT_REGIONAL",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS",
+        "EXISTS",
+        "MISSING"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 102,
+      "isSensitive": false,
+      "maxEvidenceStrength": "STRONG",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_COMMON_BACKBONE_PRESENCE",
+      "displayName": "Synthetic CEC projection CEC_COMMON_BACKBONE_PRESENCE",
+      "dataType": "Boolean",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 103,
+      "isSensitive": false,
+      "maxEvidenceStrength": "MEDIUM",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_DOSSIER_ROOT_PATH",
+      "displayName": "Synthetic CEC projection CEC_DOSSIER_ROOT_PATH",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "CONTAINS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 104,
+      "isSensitive": false,
+      "maxEvidenceStrength": "WEAK",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_SUBMISSION_UNIT_MARKER",
+      "displayName": "Synthetic CEC projection CEC_SUBMISSION_UNIT_MARKER",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EXISTS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 105,
+      "isSensitive": false,
+      "maxEvidenceStrength": "MEDIUM",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    },
+    {
+      "fieldCode": "CEC_UNIT_KIND",
+      "displayName": "Synthetic CEC projection CEC_UNIT_KIND",
+      "dataType": "String",
+      "valueSource": "Observed",
+      "allowedOperators": [
+        "EQUALS"
+      ],
+      "supportedPhases": [
+        "PRE_SALES"
+      ],
+      "producingComponent": "CLASSIFICATION_EVIDENCE_COLLECTION",
+      "evaluationOrder": 106,
+      "isSensitive": false,
+      "maxEvidenceStrength": "WEAK",
+      "description": "Synthetic oracle field bound by CEC-FIELD-PROJECTION/1."
+    }
+  ],
+  "metricCatalogue": [
+    {
+      "metricCode": "TOTAL_FILES",
+      "displayName": "Total files",
+      "dataType": "Integer",
+      "unit": "COUNT",
+      "calculationSource": "INVENTORY_SCANNER",
+      "supportedPhases": [
+        "PRE_SALES",
+        "PRE_MIGRATION",
+        "POST_MIGRATION"
+      ],
+      "requiredForCompleteBanding": true,
+      "roundingRule": "NONE"
+    }
+  ],
+  "masterData": {
+    "regions": [
+      {
+        "regionCode": "EU",
+        "regionName": "European Union",
+        "regionType": "JURISDICTION_GROUP",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "authorities": [
+      {
+        "authorityCode": "EMA",
+        "authorityName": "European Medicines Agency",
+        "countryOrJurisdiction": "EU",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "technicalStandards": [
+      {
+        "technicalStandardCode": "ICH_ECTD_3_2_2",
+        "technicalStandardName": "ICH eCTD",
+        "standardVersion": "3.2.2",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      },
+      {
+        "technicalStandardCode": "ECTD_4_0",
+        "technicalStandardName": "eCTD v4.0 (synthetic)",
+        "standardVersion": "4.0",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      },
+      {
+        "technicalStandardCode": "OTHER",
+        "technicalStandardName": "Other technical standard (synthetic)",
+        "standardVersion": "NOT_APPLICABLE",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      },
+      {
+        "technicalStandardCode": "SYN_COMMON_ONLY",
+        "technicalStandardName": "Synthetic common-backbone-only standard",
+        "standardVersion": "NOT_APPLICABLE",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      }
+    ],
+    "regionalImplementations": [
+      {
+        "regionalImplementationCode": "EU_MODULE1",
+        "regionalImplementationName": "EU Module 1",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      },
+      {
+        "regionalImplementationCode": "OTHER",
+        "regionalImplementationName": "Other regional implementation (synthetic)",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      }
+    ],
+    "productDomains": [
+      {
+        "productDomainCode": "HUMAN",
+        "productDomainName": "Human",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "lifecycleContexts": [
+      {
+        "lifecycleContextCode": "POST_MARKETING",
+        "lifecycleContextName": "Post-marketing",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "productClasses": [
+      {
+        "productClassCode": "SMALL_MOLECULE",
+        "productClassName": "Small molecule",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "procedureContexts": [
+      {
+        "procedureContextCode": "ASMF",
+        "procedureContextName": "Active Substance Master File",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "sourcePresentations": [
+      {
+        "sourcePresentationCode": "ELECTRONIC_STRUCTURED",
+        "sourcePresentationName": "Electronic structured",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "relationshipId": "REL-001",
+      "relationshipType": "AUTHORITY_TO_REGION",
+      "sourceEntityType": "AUTHORITY",
+      "sourceEntityCode": "EMA",
+      "targetEntityType": "REGION",
+      "targetEntityCode": "EU",
+      "cardinality": "MANY_TO_MANY",
+      "isMandatory": true,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    },
+    {
+      "relationshipId": "REL-002",
+      "relationshipType": "AUTHORITY_TO_TECHNICAL_STANDARD",
+      "sourceEntityType": "AUTHORITY",
+      "sourceEntityCode": "EMA",
+      "targetEntityType": "TECHNICAL_STANDARD",
+      "targetEntityCode": "ICH_ECTD_3_2_2",
+      "cardinality": "MANY_TO_MANY",
+      "isMandatory": true,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    },
+    {
+      "relationshipId": "REL-003",
+      "relationshipType": "TECHNICAL_STANDARD_TO_REGIONAL_IMPLEMENTATION",
+      "sourceEntityType": "TECHNICAL_STANDARD",
+      "sourceEntityCode": "ICH_ECTD_3_2_2",
+      "targetEntityType": "REGIONAL_IMPLEMENTATION",
+      "targetEntityCode": "EU_MODULE1",
+      "cardinality": "ONE_TO_MANY",
+      "isMandatory": true,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    },
+    {
+      "relationshipId": "REL-004",
+      "relationshipType": "PROCEDURE_CONTEXT_TO_TECHNICAL_STANDARD",
+      "sourceEntityType": "PROCEDURE_CONTEXT",
+      "sourceEntityCode": "ASMF",
+      "targetEntityType": "TECHNICAL_STANDARD",
+      "targetEntityCode": "ICH_ECTD_3_2_2",
+      "cardinality": "MANY_TO_MANY",
+      "isMandatory": true,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "RULE-001",
+      "ruleRevision": 1,
+      "ruleType": "CLASSIFICATION",
+      "title": "Detect structured dossier",
+      "description": "Detects presence of the backbone index.",
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "priority": 0,
+      "conflictGroup": "DOSSIER_CLASSIFICATION",
+      "conflictStrategy": "HighestEvidenceScore",
+      "specificity": 100,
+      "stopProcessing": false,
+      "findingCode": "FND-001",
+      "requirementReference": "REQ-CLASS-001",
+      "sourceReference": "ILLUSTRATIVE"
+    },
+    {
+      "ruleId": "ID-TS-OR",
+      "ruleRevision": 1,
+      "ruleType": "IDENTIFICATION",
+      "title": "Synthetic oracle rule ID-TS-OR",
+      "description": "Synthetic oracle rule; not approved regulatory content.",
+      "status": "Effective",
+      "effectiveFrom": "2026-10-06",
+      "priority": 100,
+      "conflictGroup": "TECHNICAL_STANDARD",
+      "conflictStrategy": "HighestEvidenceScore",
+      "specificity": 100,
+      "stopProcessing": false,
+      "requirementReference": "FR-CLASS-005",
+      "sourceReference": "SYNTHETIC_ORACLE"
+    }
+  ],
+  "rulePhases": [
+    {
+      "rulePhaseId": "RPH-001",
+      "ruleId": "RULE-001",
+      "phase": "PRE_SALES",
+      "evaluationStatusOnMissingInput": "NotAssessed",
+      "rag": "Amber",
+      "severity": "MEDIUM",
+      "isBlocker": false,
+      "exceptionEligible": true,
+      "decisionImpact": "CLARIFY",
+      "sequence": 0
+    },
+    {
+      "rulePhaseId": "RPH-ID-TS-OR",
+      "ruleId": "ID-TS-OR",
+      "phase": "PRE_SALES",
+      "evaluationStatusOnMissingInput": "NotAssessed",
+      "isBlocker": false,
+      "exceptionEligible": false,
+      "sequence": 100
+    }
+  ],
+  "conditionGroups": [
+    {
+      "conditionGroupId": "CG-001",
+      "ruleId": "RULE-001",
+      "groupSequence": 0,
+      "groupOperator": "AND",
+      "description": "Backbone evidence"
+    },
+    {
+      "conditionGroupId": "CG-ID-TS-OR-1",
+      "ruleId": "ID-TS-OR",
+      "groupSequence": 0,
+      "groupOperator": "AND"
+    },
+    {
+      "conditionGroupId": "CG-ID-TS-OR-2",
+      "ruleId": "ID-TS-OR",
+      "groupSequence": 1,
+      "groupOperator": "AND"
+    }
+  ],
+  "ruleConditions": [
+    {
+      "conditionId": "COND-001",
+      "ruleId": "RULE-001",
+      "conditionGroupId": "CG-001",
+      "sequence": 0,
+      "fieldCode": "INDEX_XML_EXISTS",
+      "operator": "EQUALS",
+      "value1": true,
+      "valueDataType": "Boolean",
+      "caseSensitive": false,
+      "negate": false
+    },
+    {
+      "conditionId": "COND-ID-TS-OR-1-1",
+      "ruleId": "ID-TS-OR",
+      "conditionGroupId": "CG-ID-TS-OR-1",
+      "sequence": 0,
+      "fieldCode": "CEC_XML_ROOT_ELEMENT_COMMON",
+      "operator": "EQUALS",
+      "caseSensitive": true,
+      "negate": false,
+      "value1": "ectd",
+      "valueDataType": "String"
+    },
+    {
+      "conditionId": "COND-ID-TS-OR-2-1",
+      "ruleId": "ID-TS-OR",
+      "conditionGroupId": "CG-ID-TS-OR-2",
+      "sequence": 0,
+      "fieldCode": "CEC_XML_NAMESPACE_COMMON",
+      "operator": "EQUALS",
+      "caseSensitive": true,
+      "negate": false,
+      "value1": "http://www.ich.org/ectd",
+      "valueDataType": "String"
+    }
+  ],
+  "ruleOutputs": [
+    {
+      "ruleOutputId": "OUT-001",
+      "ruleId": "RULE-001",
+      "phase": "PRE_SALES",
+      "outputType": "Finding",
+      "outputCode": "FND-001",
+      "sequence": 0
+    },
+    {
+      "ruleOutputId": "OUT-002",
+      "ruleId": "RULE-001",
+      "phase": "PRE_SALES",
+      "outputType": "ClassificationCandidate",
+      "outputCode": "EU",
+      "outputValue": 100,
+      "sequence": 100
+    },
+    {
+      "ruleOutputId": "OUT-ID-TS-OR",
+      "ruleId": "ID-TS-OR",
+      "phase": "PRE_SALES",
+      "outputType": "ClassificationCandidate",
+      "outputCode": "ICH_ECTD_3_2_2",
+      "sequence": 0,
+      "targetEntityType": "TECHNICAL_STANDARD",
+      "evidenceStrength": "STRONG",
+      "evidencePolarity": "SUPPORTS"
+    }
+  ],
+  "findings": [
+    {
+      "findingCode": "FND-001",
+      "title": "Backbone detected",
+      "findingCategory": "STRUCTURE",
+      "description": "A structured backbone indicator was detected.",
+      "defaultEvaluationStatus": "Evaluated",
+      "defaultRag": "Green",
+      "defaultSeverity": "MEDIUM",
+      "exceptionEligible": true,
+      "customerVisible": true,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendationCode": "REC-001",
+      "title": "Confirm classification",
+      "customerFacingText": "Confirm the dossier classification with the project team.",
+      "consultantFacingText": "Review classification evidence and conflicts.",
+      "priority": 0,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "findingRecommendationLinks": [
+    {
+      "linkId": "FRL-001",
+      "findingCode": "FND-001",
+      "recommendationCode": "REC-001",
+      "phase": "PRE_SALES",
+      "linkType": "PRIMARY",
+      "sequence": 0,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13"
+    }
+  ],
+  "exceptionPolicies": [
+    {
+      "exceptionPolicyId": "EXC-001",
+      "eligibleFindingCode": "FND-001",
+      "allowedEffect": "AcknowledgeOnly",
+      "requiredApproverRole": "PRODUCT_OWNER",
+      "evidenceRequirement": "Documented project approval.",
+      "expiryRequired": false,
+      "carryForwardToPostMigration": false,
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "aliases": [
+    {
+      "aliasId": "ALIAS-001",
+      "aliasScope": "CLASSIFICATION",
+      "sourceSystem": "SYNTHETIC",
+      "sourceFieldOrValue": "European Union",
+      "canonicalEntityType": "REGION",
+      "canonicalCode": "EU",
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "policies": {
+    "conflictPolicies": [
+      {
+        "conflictPolicyId": "CP-001",
+        "ruleType": "CLASSIFICATION",
+        "conflictStrategy": "HighestEvidenceScore",
+        "tieBehavior": "MANUAL_REVIEW",
+        "stopBehavior": "CONTINUE",
+        "defaultPriorityIncrement": 100,
+        "status": "Effective",
+        "description": "Resolve classification by evidence score."
+      },
+      {
+        "conflictPolicyId": "CP-ID-001",
+        "ruleType": "IDENTIFICATION",
+        "conflictStrategy": "HighestEvidenceScore",
+        "tieBehavior": "MANUAL_REVIEW",
+        "stopBehavior": "CONTINUE",
+        "defaultPriorityIncrement": 100,
+        "status": "Effective",
+        "description": "Synthetic oracle Identification policy; not approved content.",
+        "minimumEvidenceStrengthForValue": "MEDIUM"
+      }
+    ],
+    "ragPolicies": [
+      {
+        "ragPolicyId": "RAGP-001",
+        "scope": "DOSSIER",
+        "aggregationStrategy": "MostSevere",
+        "greenDefinition": "No material issue.",
+        "amberDefinition": "Clarification required.",
+        "redDefinition": "Blocking issue.",
+        "unknownDefinition": "Insufficient evidence.",
+        "status": "Effective",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "confidencePolicies": [
+      {
+        "confidencePolicyId": "CONFP-001",
+        "scope": "CLASSIFICATION",
+        "evidenceStrength": "STRONG",
+        "weightOrScore": 100,
+        "agreementRequirement": "One high-strength indicator or two agreeing indicators.",
+        "missingEvidenceBehavior": "LOWER_CONFIDENCE",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      },
+      {
+        "confidencePolicyId": "CONFP-ID-S-IND",
+        "scope": "IDENTIFICATION",
+        "evidenceStrength": "STRONG",
+        "resultConfidence": "HIGH",
+        "corroborationRule": "INDEPENDENT_SOURCE_CLASS",
+        "agreementRequirement": "Synthetic oracle confidence row; not approved content.",
+        "missingEvidenceBehavior": "LOWER_CONFIDENCE",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      },
+      {
+        "confidencePolicyId": "CONFP-ID-S-ONE",
+        "scope": "IDENTIFICATION",
+        "evidenceStrength": "STRONG",
+        "resultConfidence": "MEDIUM",
+        "corroborationRule": "NONE_REQUIRED",
+        "agreementRequirement": "Synthetic oracle confidence row; not approved content.",
+        "missingEvidenceBehavior": "LOWER_CONFIDENCE",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      },
+      {
+        "confidencePolicyId": "CONFP-ID-M-ONE",
+        "scope": "IDENTIFICATION",
+        "evidenceStrength": "MEDIUM",
+        "resultConfidence": "LOW",
+        "corroborationRule": "NONE_REQUIRED",
+        "agreementRequirement": "Synthetic oracle confidence row; not approved content.",
+        "missingEvidenceBehavior": "LOWER_CONFIDENCE",
+        "status": "Effective",
+        "effectiveFrom": "2026-10-06",
+        "sourceReference": "SYNTHETIC_ORACLE"
+      }
+    ],
+    "effortDrivers": [
+      {
+        "effortDriverId": "EFF-001",
+        "driverCode": "FILE_VOLUME",
+        "driverName": "File volume",
+        "category": "VOLUME",
+        "metricCode": "TOTAL_FILES",
+        "weight": 1,
+        "minimumBandOverrideEligible": false,
+        "supportedPhases": [
+          "PRE_SALES"
+        ],
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "effortThresholds": [
+      {
+        "effortThresholdId": "THR-001",
+        "thresholdScopeType": "DRIVER",
+        "thresholdScopeCode": "FILE_VOLUME",
+        "bandCode": "LOW",
+        "lowerBound": 0,
+        "upperBound": 100,
+        "lowerInclusive": true,
+        "upperInclusive": false,
+        "unit": "COUNT",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      },
+      {
+        "effortThresholdId": "THR-002",
+        "thresholdScopeType": "DRIVER",
+        "thresholdScopeCode": "FILE_VOLUME",
+        "bandCode": "HIGH",
+        "lowerBound": 100,
+        "lowerInclusive": true,
+        "upperInclusive": false,
+        "unit": "COUNT",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "decisionPolicies": [
+      {
+        "decisionPolicyId": "DEC-PRE-001",
+        "phase": "PRE_SALES",
+        "resultCode": "MEDIUM",
+        "priority": 0,
+        "requiredConditionType": "CONDITION_GROUP",
+        "requiredConditionReference": "CG-001",
+        "mandatoryBlockerOverride": false,
+        "exceptionBehavior": "APPLY_POLICY",
+        "status": "Effective",
+        "effectiveFrom": "2026-07-13",
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ]
+  },
+  "questionnaireMap": [
+    {
+      "questionnaireMapId": "QM-001",
+      "triggerType": "FINDING",
+      "triggerCode": "FND-001",
+      "questionCode": "Q-CONFIRM-CLASSIFICATION",
+      "customerQuestion": "Can you confirm the dossier region and format?",
+      "reason": "Classification evidence requires confirmation.",
+      "priority": 0,
+      "supportedPhase": "PRE_SALES",
+      "status": "Effective",
+      "effectiveFrom": "2026-07-13",
+      "sourceReference": "ILLUSTRATIVE"
+    }
+  ],
+  "reportTerminology": {
+    "definitions": [
+      {
+        "reportDefinitionId": "RPT-001",
+        "phase": "PRE_SALES",
+        "reportCode": "PRE_SALES_REPORT",
+        "displayTitle": "Pre-Sales Assessment",
+        "sheetCode": "SUMMARY",
+        "sheetDisplayName": "Summary",
+        "columnCode": "RESULT",
+        "columnDisplayName": "Result",
+        "dataType": "Code",
+        "required": true,
+        "sequence": 0,
+        "sourceReference": "ILLUSTRATIVE"
+      }
+    ],
+    "phaseResults": {
+      "PRE_SALES": [
+        {
+          "code": "MEDIUM",
+          "displayValue": "Medium",
+          "status": "Effective",
+          "effectiveFrom": "2026-07-13"
+        }
+      ],
+      "PRE_MIGRATION": [
+        {
+          "code": "READY",
+          "displayValue": "Ready",
+          "status": "Effective",
+          "effectiveFrom": "2026-07-13"
+        }
+      ],
+      "POST_MIGRATION": [
+        {
+          "code": "RECONCILED",
+          "displayValue": "Reconciled",
+          "status": "Effective",
+          "effectiveFrom": "2026-07-13"
+        }
+      ]
+    }
+  }
+}
