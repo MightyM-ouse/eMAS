@@ -1,3 +1,13 @@
 # Codex launch
 
-Read `docs/internal/agent-workflow/AGENT_WORKFLOW.md` and this task's `TASK.md`. Own the bounded implementation on `implementation/emas-ms04-root-level-dossier`: prove the qualified baseline, reproduce both root-level defects, add focused synthetic regression coverage, minimally fix only `ReferenceResolution` and `ClassificationEvidenceCollection`, run focused plus all eight Wave 1 suites, and publish `reports/CODEX.md`. Do not touch frozen Wave 1 inputs, `RepositoryDiscovery`, `FormatDetection`, or `RegionDetection`; do not merge. If the qualified package cannot be proven, publish `BLOCKED_BASELINE_NOT_REPRODUCIBLE` and stop.
+Read `docs/internal/agent-workflow/AGENT_WORKFLOW.md` and this task's `TASK.md`.
+
+Restart the bounded root-level dossier implementation from the new repository-native RC1 baseline at `dac1664fee652f701a41204e2527f602077bb42f`.
+
+Use branch `implementation/emas-ms04-root-level-dossier-v2`.
+
+First prove the materialized baseline and run all eight existing suites on Mac. Then reproduce both root-level defects, add focused synthetic regression coverage, minimally fix only `ReferenceResolution` and `ClassificationEvidenceCollection`, and rerun focused plus all eight Wave 1 suites.
+
+Publish `reports/CODEX.md` and open a draft PR into `demo/end-to-end-mvp`.
+
+Do not touch frozen Wave 1 inputs, `RepositoryDiscovery`, `FormatDetection`, or `RegionDetection`. Do not perform or claim Windows PowerShell 5.1 qualification in this stage. Do not merge.
