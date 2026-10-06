@@ -1,0 +1,78 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "findingCode": "MissingReference",
+  "observationCode": "ReferenceTargetMissing",
+  "fixtures": [
+    { "sampleId": "SD-001", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-002", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-003", "resolvedAbsentCount": 1, "expectedFindingCount": 1 },
+    { "sampleId": "SD-004", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-005", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-006", "resolvedAbsentCount": 1, "expectedFindingCount": 1 },
+    { "sampleId": "SD-007", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-008", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-009", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-010", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-011", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-012", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-013", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-014", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-015", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-016", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-017", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-018", "resolvedAbsentCount": 0, "expectedFindingCount": 0 },
+    { "sampleId": "SD-020", "resolvedAbsentCount": 0, "expectedFindingCount": 0 }
+  ],
+  "expectedFindings": [
+    {
+      "sampleId": "SD-003",
+      "findingId": "FND-MISSINGREF-0001",
+      "referenceId": "REF-0094",
+      "dossierId": "DOS-0001",
+      "sequenceId": "SEQ-0005",
+      "xmlId": "XML-0010",
+      "sourceElementId": "ID00000731",
+      "rawHref": "responses/de/de-responses.pdf",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf"
+    },
+    {
+      "sampleId": "SD-006",
+      "findingId": "FND-MISSINGREF-0001",
+      "referenceId": "REF-0091",
+      "dossierId": "DOS-0001",
+      "sequenceId": "SEQ-0005",
+      "xmlId": "XML-0009",
+      "sourceElementId": "ID00000345",
+      "rawHref": "m1/eu/eu-regional.xml",
+      "normalizedTargetPath": "0004/m1/eu/eu-regional.xml"
+    }
+  ],
+  "notApplicableReference": {
+    "sampleId": "SD-002",
+    "referenceId": "REF-0073",
+    "expectedAssessmentStatus": "NotApplicable",
+    "expectedReasonCode": "NoPhysicalHref"
+  },
+  "syntheticStates": [
+    { "name": "Present target", "targetExists": true, "resolutionStatus": "ResolvedPresent", "captureStatus": "Available", "diagnosticCode": null, "expectedFindingCount": 0, "expectedAssessmentStatus": "Assessed" },
+    { "name": "Confirmed absent target", "targetExists": false, "resolutionStatus": "ResolvedAbsent", "captureStatus": "Available", "diagnosticCode": null, "expectedFindingCount": 1, "expectedAssessmentStatus": "Assessed" },
+    { "name": "Access denied", "targetExists": null, "resolutionStatus": "AccessDenied", "captureStatus": "AccessDenied", "diagnosticCode": "TargetInventoryAccessDenied", "expectedFindingCount": 0, "expectedAssessmentStatus": "NotAssessed" },
+    { "name": "Unsafe path", "targetExists": null, "resolutionStatus": "UnsafePath", "captureStatus": "NotApplicable", "diagnosticCode": "PathEscapesDossier", "expectedFindingCount": 0, "expectedAssessmentStatus": "NotAssessed" },
+    { "name": "Unsupported reference", "targetExists": null, "resolutionStatus": "UnsupportedUri", "captureStatus": "NotApplicable", "diagnosticCode": "UnsupportedUriScheme", "expectedFindingCount": 0, "expectedAssessmentStatus": "NotAssessed" },
+    { "name": "No physical href", "targetExists": null, "resolutionStatus": "NotApplicable", "captureStatus": "NotApplicable", "diagnosticCode": "NoPhysicalHref", "expectedFindingCount": 0, "expectedAssessmentStatus": "NotApplicable" },
+    { "name": "Input unavailable", "targetExists": null, "resolutionStatus": "InputUnavailable", "captureStatus": "InputUnavailable", "diagnosticCode": "TargetInventoryUnavailable", "expectedFindingCount": 0, "expectedAssessmentStatus": "NotAssessed" }
+  ],
+  "mustRemainNotCollectedCoverage": [
+    "DeclaredChecksumComparison",
+    "LifecycleLinkResolution",
+    "FileReferenceOrphanCorrelation"
+  ],
+  "prohibitedFindingFields": [
+    "RAG",
+    "Severity",
+    "Confidence",
+    "Recommendation",
+    "MigrationReady",
+    "Readiness"
+  ]
+}

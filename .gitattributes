@@ -24,3 +24,25 @@
 *.jpg binary
 *.jpeg binary
 *.pdf binary
+
+# Qualified MS-04 RC1 baseline: stored and checked out byte-identical to
+# eMAS_MS04_PreSales_WindowsQualification_Internal_v1 PACKAGE_MANIFEST.csv (LF).
+# Overrides the eol=crlf rule above for these exact paths only.
+engine/powershell51/eMAS.BackboneXmlInventory.psm1 -text
+engine/powershell51/eMAS.ChecksumMismatchInterpretation.psm1 -text
+engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1 -text
+engine/powershell51/eMAS.DeclaredChecksumComparison.psm1 -text
+engine/powershell51/eMAS.MissingReferenceInterpretation.psm1 -text
+engine/powershell51/eMAS.ReferenceInventory.psm1 -text
+engine/powershell51/eMAS.ReferenceResolution.psm1 -text
+engine/powershell51/eMAS.RepositoryDiscovery.psm1 -text
+engine/powershell51/private/eMAS.SafeXml.ps1 -text
+scripts/eMAS-PreSalesAssessment.ps1 -text
+tests/backbone-xml-inventory/Test-eMASBackboneXmlInventory.ps1 -text
+tests/checksum-mismatch-interpretation/Test-eMASChecksumMismatchInterpretation.ps1 -text
+tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1 -text
+tests/declared-checksum-comparison/Test-eMASDeclaredChecksumComparison.ps1 -text
+tests/missing-reference-interpretation/Test-eMASMissingReferenceInterpretation.ps1 -text
+tests/reference-inventory/Test-eMASReferenceInventory.ps1 -text
+tests/reference-resolution/Test-eMASReferenceResolution.ps1 -text
+tests/repository-discovery/Test-eMASRepositoryDiscovery.ps1 -text

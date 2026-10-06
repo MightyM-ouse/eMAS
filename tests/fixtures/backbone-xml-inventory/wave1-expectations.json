@@ -1,0 +1,170 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "baselineProfile": {
+    "candidateRootPath": "EXTEDORIN 50mg Tablets EU-FR",
+    "sequences": ["0000", "0001", "0002", "0003", "0004"],
+    "common": {
+      "relativePathTemplate": "{root}/{sequence}/index.xml",
+      "xmlKind": "CommonBackbone",
+      "exists": true,
+      "parseStatus": "Parsed",
+      "captureStatus": "Available",
+      "rootElement": "ectd",
+      "namespaceUri": "http://www.ich.org/ectd",
+      "declaredVersion": "3.2",
+      "documentTypeName": "ectd:ectd",
+      "publicId": null,
+      "systemId": "util/dtd/ich-ectd-3-2.dtd",
+      "declaredEncoding": "UTF-8"
+    },
+    "regional": {
+      "relativePathTemplate": "{root}/{sequence}/m1/eu/eu-regional.xml",
+      "xmlKind": "RegionalBackbone",
+      "exists": true,
+      "parseStatus": "Parsed",
+      "captureStatus": "Available",
+      "rootElement": "eu-backbone",
+      "namespaceUri": "http://europa.eu.int",
+      "declaredVersionBySequence": {
+        "0000": "2.0",
+        "0001": "3.0.1",
+        "0002": "3.0.1",
+        "0003": "3.0.1",
+        "0004": "3.1"
+      },
+      "documentTypeName": "eu:eu-backbone",
+      "publicId": null,
+      "systemId": "../../util/dtd/eu-regional.dtd",
+      "declaredEncoding": "UTF-8"
+    }
+  },
+  "fixtures": [
+    {
+      "sampleId": "SD-001",
+      "expectedDocumentCount": 11,
+      "overrides": [],
+      "additionalDocuments": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/RegulatoryActivities.xml",
+          "sequence": null,
+          "xmlKind": "Other",
+          "exists": true,
+          "parseStatus": "Parsed",
+          "captureStatus": "Available",
+          "rootElement": "RegulatoryActivities",
+          "namespaceUri": "",
+          "declaredVersion": null,
+          "documentTypeName": null,
+          "publicId": null,
+          "systemId": null,
+          "declaredEncoding": "utf-8"
+        }
+      ]
+    },
+    {
+      "sampleId": "SD-002",
+      "expectedDocumentCount": 10,
+      "overrides": [],
+      "additionalDocuments": []
+    },
+    {
+      "sampleId": "SD-005",
+      "expectedDocumentCount": 10,
+      "overrides": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004/index.xml",
+          "exists": false,
+          "parseStatus": "Missing",
+          "captureStatus": "Available",
+          "rootElement": null,
+          "namespaceUri": null,
+          "declaredVersion": null,
+          "documentTypeName": null,
+          "publicId": null,
+          "systemId": null,
+          "declaredEncoding": null
+        }
+      ],
+      "additionalDocuments": []
+    },
+    {
+      "sampleId": "SD-006",
+      "expectedDocumentCount": 10,
+      "overrides": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004/m1/eu/eu-regional.xml",
+          "exists": false,
+          "parseStatus": "Missing",
+          "captureStatus": "Available",
+          "rootElement": null,
+          "namespaceUri": null,
+          "declaredVersion": null,
+          "documentTypeName": null,
+          "publicId": null,
+          "systemId": null,
+          "declaredEncoding": null
+        }
+      ],
+      "additionalDocuments": []
+    },
+    {
+      "sampleId": "SD-007",
+      "expectedDocumentCount": 10,
+      "overrides": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004/index.xml",
+          "exists": true,
+          "parseStatus": "ParseFailed",
+          "captureStatus": "ParseFailed",
+          "rootElement": null,
+          "namespaceUri": null,
+          "declaredVersion": null,
+          "documentTypeName": null,
+          "publicId": null,
+          "systemId": null,
+          "declaredEncoding": null,
+          "parseErrorCode": "XML-WELLFORMEDNESS-001"
+        }
+      ],
+      "additionalDocuments": []
+    },
+    {
+      "sampleId": "SD-008",
+      "expectedDocumentCount": 10,
+      "overrides": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004/m1/eu/eu-regional.xml",
+          "exists": true,
+          "parseStatus": "ParseFailed",
+          "captureStatus": "ParseFailed",
+          "rootElement": null,
+          "namespaceUri": null,
+          "declaredVersion": null,
+          "documentTypeName": null,
+          "publicId": null,
+          "systemId": null,
+          "declaredEncoding": null,
+          "parseErrorCode": "XML-WELLFORMEDNESS-001"
+        }
+      ],
+      "additionalDocuments": []
+    }
+  ],
+  "mustNotReportProperties": [
+    "DetectedRegion",
+    "PrimaryRegion",
+    "DetectedFormat",
+    "FolderRAGStatus",
+    "DetectionConfidence",
+    "EffortImpact",
+    "RecommendedPreSalesAction",
+    "TargetExists",
+    "ChecksumMatch",
+    "LifecycleValidity"
+  ],
+  "mustRemainEmptyCollections": [
+    "References",
+    "LifecycleRelationships",
+    "ClassificationEvidence"
+  ]
+}

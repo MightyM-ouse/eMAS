@@ -1,0 +1,95 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "normalizationRule": "Resolve the physical path portion of rawHref relative to the containing XML directory, then express the result relative to the accepted dossier root.",
+  "fixtures": [
+    { "sampleId": "SD-001", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-002", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-003", "referenceCount": 94, "resolvedPresentCount": 92, "resolvedAbsentCount": 1, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-004", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-005", "referenceCount": 93, "resolvedPresentCount": 92, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-006", "referenceCount": 91, "resolvedPresentCount": 89, "resolvedAbsentCount": 1, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-007", "referenceCount": 93, "resolvedPresentCount": 92, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-008", "referenceCount": 91, "resolvedPresentCount": 90, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-009", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-010", "referenceCount": 87, "resolvedPresentCount": 87, "resolvedAbsentCount": 0, "notApplicableCount": 0, "unresolvedCount": 0 },
+    { "sampleId": "SD-011", "referenceCount": 90, "resolvedPresentCount": 89, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-012", "referenceCount": 90, "resolvedPresentCount": 89, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-013", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-014", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-015", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-016", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-017", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-018", "referenceCount": 94, "resolvedPresentCount": 93, "resolvedAbsentCount": 0, "notApplicableCount": 1, "unresolvedCount": 0 },
+    { "sampleId": "SD-020", "referenceCount": 0, "resolvedPresentCount": 0, "resolvedAbsentCount": 0, "notApplicableCount": 0, "unresolvedCount": 0 }
+  ],
+  "expectedAbsentTargets": [
+    {
+      "sampleId": "SD-003",
+      "referenceId": "REF-0094",
+      "rawHref": "responses/de/de-responses.pdf",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf"
+    },
+    {
+      "sampleId": "SD-006",
+      "referenceId": "REF-0091",
+      "rawHref": "m1/eu/eu-regional.xml",
+      "normalizedTargetPath": "0004/m1/eu/eu-regional.xml"
+    }
+  ],
+  "baselineRepresentativeTargets": [
+    {
+      "xmlPathSuffix": "/0000/index.xml",
+      "rawHref": "m2/23-qos/drug-substance.pdf",
+      "normalizedTargetPath": "0000/m2/23-qos/drug-substance.pdf"
+    },
+    {
+      "xmlPathSuffix": "/0003/m1/eu/eu-regional.xml",
+      "rawHref": "13-pi/131-spclabelpl/de/de/de-spc.pdf",
+      "normalizedTargetPath": "0003/m1/eu/13-pi/131-spclabelpl/de/de/de-spc.pdf"
+    }
+  ],
+  "notApplicableReference": {
+    "sampleId": "SD-002",
+    "referenceId": "REF-0073",
+    "operation": "delete",
+    "rawHref": null,
+    "resolutionStatus": "NotApplicable",
+    "captureStatus": "NotApplicable",
+    "diagnosticCode": "NoPhysicalHref"
+  },
+  "invariancePairs": [
+    { "baseline": "SD-002", "comparison": "SD-004", "reason": "Physical bytes changed without a path change" },
+    { "baseline": "SD-002", "comparison": "SD-009", "reason": "index-md5.txt removed" },
+    { "baseline": "SD-002", "comparison": "SD-017", "reason": "Unreferenced physical file added" },
+    { "baseline": "SD-002", "comparison": "SD-018", "reason": "Referenced physical file is zero bytes but remains present" }
+  ],
+  "syntheticSafetyCases": [
+    { "name": "Parent traversal escapes dossier", "rawHref": "../../../../outside.pdf", "resolutionStatus": "UnsafePath", "diagnosticCode": "PathEscapesDossier" },
+    { "name": "Absolute POSIX path", "rawHref": "/etc/passwd", "resolutionStatus": "UnsafePath", "diagnosticCode": "AbsolutePathNotAllowed" },
+    { "name": "Windows drive path", "rawHref": "C:\\Windows\\system.ini", "resolutionStatus": "UnsafePath", "diagnosticCode": "DriveQualifiedPathNotAllowed" },
+    { "name": "UNC path", "rawHref": "\\\\server\\share\\file.pdf", "resolutionStatus": "UnsafePath", "diagnosticCode": "UncPathNotAllowed" },
+    { "name": "HTTP URL", "rawHref": "http://example.invalid/file.pdf", "resolutionStatus": "UnsupportedUri", "diagnosticCode": "NetworkUriNotAllowed" },
+    { "name": "HTTPS URL", "rawHref": "https://example.invalid/file.pdf", "resolutionStatus": "UnsupportedUri", "diagnosticCode": "NetworkUriNotAllowed" },
+    { "name": "Unsupported URI scheme", "rawHref": "ftp://example.invalid/file.pdf", "resolutionStatus": "UnsupportedUri", "diagnosticCode": "UnsupportedUriScheme" }
+  ],
+  "mustRemainNullReferenceFields": [
+    "CalculatedChecksum",
+    "ChecksumMatch"
+  ],
+  "mustRemainNotCollectedCoverage": [
+    "DeclaredChecksumComparison",
+    "LifecycleLinkResolution",
+    "FileReferenceOrphanCorrelation",
+    "MissingReferenceInterpretation"
+  ],
+  "mustRemainEmptyCollections": [
+    "LifecycleRelationships",
+    "ClassificationEvidence"
+  ],
+  "prohibitedObservationCodes": [
+    "ReferenceTargetMissing",
+    "DeclaredChecksumMismatch",
+    "OrphanFileCandidate",
+    "ZeroByteFile"
+  ]
+}

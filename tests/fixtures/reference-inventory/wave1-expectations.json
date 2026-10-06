@@ -1,0 +1,164 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "xlinkNamespaceUri": "http://www.w3c.org/1999/xlink",
+  "supportedXmlKinds": [
+    "CommonBackbone",
+    "RegionalBackbone"
+  ],
+  "baseline": {
+    "referenceCount": 94,
+    "hrefCount": 93,
+    "commonReferenceCount": 72,
+    "regionalReferenceCount": 22,
+    "modifiedFileCount": 6,
+    "operationCounts": {
+      "new": 88,
+      "replace": 4,
+      "append": 1,
+      "delete": 1
+    },
+    "perXml": [
+      { "relativePathSuffix": "/0000/index.xml", "xmlKind": "CommonBackbone", "referenceCount": 63, "hrefCount": 63 },
+      { "relativePathSuffix": "/0000/m1/eu/eu-regional.xml", "xmlKind": "RegionalBackbone", "referenceCount": 7, "hrefCount": 7 },
+      { "relativePathSuffix": "/0001/index.xml", "xmlKind": "CommonBackbone", "referenceCount": 5, "hrefCount": 4 },
+      { "relativePathSuffix": "/0001/m1/eu/eu-regional.xml", "xmlKind": "RegionalBackbone", "referenceCount": 2, "hrefCount": 2 },
+      { "relativePathSuffix": "/0002/index.xml", "xmlKind": "CommonBackbone", "referenceCount": 1, "hrefCount": 1 },
+      { "relativePathSuffix": "/0002/m1/eu/eu-regional.xml", "xmlKind": "RegionalBackbone", "referenceCount": 7, "hrefCount": 7 },
+      { "relativePathSuffix": "/0003/index.xml", "xmlKind": "CommonBackbone", "referenceCount": 2, "hrefCount": 2 },
+      { "relativePathSuffix": "/0003/m1/eu/eu-regional.xml", "xmlKind": "RegionalBackbone", "referenceCount": 3, "hrefCount": 3 },
+      { "relativePathSuffix": "/0004/index.xml", "xmlKind": "CommonBackbone", "referenceCount": 1, "hrefCount": 1 },
+      { "relativePathSuffix": "/0004/m1/eu/eu-regional.xml", "xmlKind": "RegionalBackbone", "referenceCount": 3, "hrefCount": 3 }
+    ],
+    "rawLifecycleFacts": [
+      {
+        "relativePathSuffix": "/0001/index.xml",
+        "sourcePosition": 2,
+        "sourceElementId": "ID00000905",
+        "operation": "replace",
+        "modifiedFileRawPath": "../0000/index.xml#ID00001786",
+        "rawHref": "m2/23-qos/drug-substance.pdf"
+      },
+      {
+        "relativePathSuffix": "/0001/index.xml",
+        "sourcePosition": 3,
+        "sourceElementId": "ID00000318",
+        "operation": "delete",
+        "modifiedFileRawPath": "../0000/index.xml#ID00000318",
+        "rawHref": null,
+        "declaredChecksumAlgorithm": "",
+        "declaredChecksum": ""
+      },
+      {
+        "relativePathSuffix": "/0001/index.xml",
+        "sourcePosition": 4,
+        "sourceElementId": "ID00000901",
+        "operation": "replace",
+        "modifiedFileRawPath": "../0000/index.xml#ID00000319",
+        "rawHref": "m3/32-body-data/32s-drug-sub/extedofil-apiag/32s1-gen-info/structure.pdf"
+      },
+      {
+        "relativePathSuffix": "/0001/index.xml",
+        "sourcePosition": 5,
+        "sourceElementId": "ID00000902",
+        "operation": "append",
+        "modifiedFileRawPath": "../0000/index.xml#ID00000317",
+        "rawHref": "m3/32-body-data/32s-drug-sub/extedofil-apiag/32s1-gen-info/general-properties.pdf"
+      },
+      {
+        "relativePathSuffix": "/0003/index.xml",
+        "sourcePosition": 2,
+        "sourceElementId": "ID00000982",
+        "operation": "replace",
+        "modifiedFileRawPath": "../0000/index.xml#ID00000316",
+        "rawHref": "m2/23-qos/drug-product.pdf"
+      },
+      {
+        "relativePathSuffix": "/0003/m1/eu/eu-regional.xml",
+        "sourcePosition": 3,
+        "sourceElementId": "ID00000988",
+        "operation": "replace",
+        "modifiedFileRawPath": "../../../0002/m1/eu/eu-regional.xml#ID00000962",
+        "rawHref": "13-pi/131-spclabelpl/de/de/de-spc.pdf"
+      }
+    ]
+  },
+  "fixtures": [
+    { "sampleId": "SD-001", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    { "sampleId": "SD-002", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    { "sampleId": "SD-003", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    { "sampleId": "SD-004", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    {
+      "sampleId": "SD-005",
+      "referenceCount": 93,
+      "hrefCount": 92,
+      "commonReferenceCount": 71,
+      "regionalReferenceCount": 22,
+      "unavailableCoverage": [
+        { "relativePathSuffix": "/0004/index.xml", "captureStatus": "InputUnavailable", "reasonCode": "SourceXmlMissing" }
+      ]
+    },
+    {
+      "sampleId": "SD-006",
+      "referenceCount": 91,
+      "hrefCount": 90,
+      "commonReferenceCount": 72,
+      "regionalReferenceCount": 19,
+      "unavailableCoverage": [
+        { "relativePathSuffix": "/0004/m1/eu/eu-regional.xml", "captureStatus": "InputUnavailable", "reasonCode": "SourceXmlMissing" }
+      ]
+    },
+    {
+      "sampleId": "SD-007",
+      "referenceCount": 93,
+      "hrefCount": 92,
+      "commonReferenceCount": 71,
+      "regionalReferenceCount": 22,
+      "unavailableCoverage": [
+        { "relativePathSuffix": "/0004/index.xml", "captureStatus": "ParseFailed", "reasonCode": "SourceXmlParseFailed" }
+      ]
+    },
+    {
+      "sampleId": "SD-008",
+      "referenceCount": 91,
+      "hrefCount": 90,
+      "commonReferenceCount": 72,
+      "regionalReferenceCount": 19,
+      "unavailableCoverage": [
+        { "relativePathSuffix": "/0004/m1/eu/eu-regional.xml", "captureStatus": "ParseFailed", "reasonCode": "SourceXmlParseFailed" }
+      ]
+    },
+    { "sampleId": "SD-009", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    { "sampleId": "SD-017", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] },
+    { "sampleId": "SD-018", "referenceCount": 94, "hrefCount": 93, "commonReferenceCount": 72, "regionalReferenceCount": 22, "unavailableCoverage": [] }
+  ],
+  "invariancePairs": [
+    { "baseline": "SD-002", "comparison": "SD-003", "reason": "Physical referenced file deleted" },
+    { "baseline": "SD-002", "comparison": "SD-004", "reason": "Physical referenced file bytes modified" },
+    { "baseline": "SD-002", "comparison": "SD-009", "reason": "index-md5.txt removed" },
+    { "baseline": "SD-002", "comparison": "SD-017", "reason": "Unreferenced physical file added" },
+    { "baseline": "SD-002", "comparison": "SD-018", "reason": "Referenced physical file replaced by zero bytes" }
+  ],
+  "mustRemainNullReferenceFields": [
+    "NormalizedTargetPath",
+    "TargetFileId",
+    "TargetExists",
+    "CalculatedChecksum",
+    "ChecksumMatch"
+  ],
+  "mustRemainNotCollectedCoverage": [
+    "ReferenceResolution",
+    "DeclaredChecksumComparison",
+    "LifecycleLinkResolution",
+    "FileReferenceOrphanCorrelation"
+  ],
+  "mustRemainEmptyCollections": [
+    "LifecycleRelationships",
+    "ClassificationEvidence"
+  ],
+  "prohibitedObservationCodes": [
+    "ReferenceTargetMissing",
+    "DeclaredChecksumMismatch",
+    "OrphanFile",
+    "ZeroByteFile"
+  ]
+}
