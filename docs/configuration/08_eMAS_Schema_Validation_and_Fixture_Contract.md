@@ -1,15 +1,15 @@
 # eMAS Schema Validation and Fixture Contract
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Effective Verification Contract  
 **Effective date:** 2026-07-13  
 **Owner:** Technical Architect and QA Lead  
 **Decision references:** JSON-001–JSON-023; RM-001–RM-027; TEST-001–TEST-020  
-**Canonical references:** Runtime JSON Contract v1.2; Normalized Rule Model v1.1; Normalized Relationship Matrix v1.0; Logical Data Dictionary v1.0
+**Canonical references:** Runtime JSON Contract v1.3; Normalized Rule Model v1.2; Normalized Relationship Matrix v1.0; Logical Data Dictionary v1.1
 
 ## 1. Purpose
 
-This contract defines how eMAS Runtime JSON Schema 1.0.0 is independently verified.
+This contract defines how eMAS Runtime JSON Schema 1.0.0 and 1.1.0 are independently verified.
 
 It controls:
 
@@ -35,7 +35,7 @@ The validator is independent of the XLSM/VBA exporter and the PowerShell runtime
 | Invalid fixtures | `config/schema/examples/invalid/` | Negative structural and semantic cases |
 | Independent validator | `build/validate_emas_schema.py` | Schema plus cross-collection semantic validation |
 | Dependency lock | `build/requirements-schema-validation.txt` | Build-only validation dependency |
-| Unit tests | `tests/schema/test_schema_fixtures.py` | Manifest, encoding and schema-version tests |
+| Unit tests | `tests/schema/test_schema_fixtures.py`, `tests/schema/test_identification_schema_1_1.py` | Manifest, encoding, schema-version, version-gate and Identification-guard tests |
 | CI workflow | `.github/workflows/schema-validation.yml` | Pull-request and main-branch validation |
 
 ## 3. Fixture classifications
@@ -44,7 +44,7 @@ The validator is independent of the XLSM/VBA exporter and the PowerShell runtime
 
 A valid fixture must:
 
-- conform to JSON Schema 1.0.0;
+- conform to the JSON Schema for its declared `schemaVersion` (1.0.0 or 1.1.0);
 - satisfy all semantic relationship checks;
 - use synthetic data only;
 - produce no validation issue.
@@ -100,7 +100,12 @@ The Draft 2020-12 validator checks:
 - condition-operator value requirements;
 - nested policy and report-terminology structures.
 
-Structural failures use error code `SCHEMA_ERROR`.
+Structural failures use error code `SCHEMA_ERROR`, with two stable specializations:
+
+- `SCHEMA_VERSION_FEATURE`: a Schema 1.1.0 property appears in a document that declares `1.0.0` (root `VERSION-GATE-1.0.0` branch);
+- `SCHEMA_UNSUPPORTED_VERSION`: `configuration.schemaVersion` is not `1.0.0` or `1.1.0`.
+
+Version dispatch is enforced by JSON Schema itself, so a consumer that runs only JSON Schema also rejects 1.1.0 fields labelled as 1.0.0.
 
 ## 5. Semantic validation
 
@@ -112,7 +117,8 @@ The independent semantic validator checks requirements that JSON Schema cannot r
 - composite-key uniqueness;
 - master-data code uniqueness;
 - mandatory value-list categories;
-- mandatory phase, RAG, evaluation-status including `Warning`, provenance and export codes.
+- mandatory phase, RAG, evaluation-status including `Warning`, provenance and export codes;
+- for Schema 1.1.0: the exact `EVIDENCE_STRENGTH`, `CONFIDENCE`, `EVIDENCE_POLARITY`, `TIE_BEHAVIOR` and `CORROBORATION_RULE` code sets, `IDENTIFICATION_DIMENSION` codes limited to canonical master-data entity types, and `EVIDENCE_STRENGTH.sortOrder` reproducing STRONG > MEDIUM > WEAK.
 
 ### 5.2 Relationships
 
@@ -134,6 +140,20 @@ The independent semantic validator checks requirements that JSON Schema cannot r
 - one or more outputs per rule;
 - output phase assignment;
 - output target resolution by OutputType.
+
+### 5.3.1 Identification rules (Schema 1.1.0)
+
+- `ruleType = IDENTIFICATION` is rejected in a 1.0.0 document;
+- `IDENTIFICATION` resolves to `RULE_TYPE`; `conflictGroup` is required and must be an approved `IDENTIFICATION_DIMENSION`;
+- each Identification `ClassificationCandidate` requires `targetEntityType`, `evidenceStrength` and `evidencePolarity`; `targetEntityType` must be approved and equal `conflictGroup`;
+- `outputCode` must exist in the declared `targetEntityType` collection (dimension-scoped resolution; no global cross-dimension uniqueness);
+- `evidenceStrength` and `evidencePolarity` resolve to their lists;
+- `evidenceStrength` must not exceed the weakest `maxEvidenceStrength` of the fields used by the rule's non-negated conditions, and each such field must declare a ceiling;
+- Identification candidates carry no `outputValue`;
+- Identification metadata on any other output is rejected;
+- Identification conflict policies: `ruleType` resolves to `RULE_TYPE`, `tieBehavior` to `TIE_BEHAVIOR`, `minimumEvidenceStrengthForValue` to `EVIDENCE_STRENGTH`;
+- Identification confidence policies (`scope = IDENTIFICATION`): `evidenceStrength`, `resultConfidence` and `corroborationRule` resolve to their lists and `weightOrScore` is absent;
+- `minimumEvidenceStrengthForValue`, `resultConfidence` and `corroborationRule` outside Identification scope are rejected.
 
 ### 5.4 Findings, policies and reporting
 
@@ -175,6 +195,19 @@ The validator emits machine-readable codes before the path and message. Initial 
 | `SEM_THRESHOLD_OVERLAP` | Threshold bands overlap |
 | `SEM_THRESHOLD_GAP` | Complete threshold bands contain a gap |
 | `SEM_DECISION_RESULT` | Decision result is invalid for the selected phase |
+| `SCHEMA_VERSION_FEATURE` | Schema 1.1.0 property in a document that declares 1.0.0 |
+| `SCHEMA_UNSUPPORTED_VERSION` | `schemaVersion` is not a supported version |
+| `SEM_VERSION_FEATURE` | `ruleType = IDENTIFICATION` in a document that declares 1.0.0 |
+| `SEM_ORDINAL_ORDER` | `EVIDENCE_STRENGTH` sortOrder is missing, duplicated or not STRONG > MEDIUM > WEAK |
+| `SEM_CONTROLLED_REFERENCE` | An Identification-scoped value does not resolve to its governing list (path identifies the property) |
+| `SEM_IDENTIFICATION_METADATA_REQUIRED` | Required Identification metadata or field ceiling is missing |
+| `SEM_IDENTIFICATION_METADATA_SCOPE` | Identification-only property used outside Identification scope |
+| `SEM_IDENTIFICATION_DIMENSION` | `conflictGroup` or `targetEntityType` is not an approved `IDENTIFICATION_DIMENSION` |
+| `SEM_IDENTIFICATION_DIMENSION_MISMATCH` | `targetEntityType` differs from the rule's `conflictGroup` |
+| `SEM_EVIDENCE_STRENGTH_CEILING` | Output `evidenceStrength` exceeds the evidence-field ceiling, or the rule has no positive evidence field |
+| `SEM_IDENTIFICATION_NUMERIC_WEIGHT` | Numeric score or weight on an Identification candidate or confidence row |
+
+For Identification candidates, `SEM_OUTPUT_TARGET` means the code does not exist in the declared `targetEntityType`.
 
 New codes require test coverage and documentation. Existing code meaning must not be silently changed.
 
@@ -199,6 +232,8 @@ The validator fails when:
 - an invalid fixture unexpectedly passes;
 - an invalid fixture does not produce its expected error code;
 - a fixture is missing or cannot be parsed.
+
+Schema 1.1.0 fixtures assemble the four 1.0.0 base fragments plus `base/05-identification-1.1.json`. The manifest records `supportedSchemaVersions` `1.0.0` and `1.1.0`. The original 1.0.0 fixtures are unchanged and keep their expectations.
 
 ## 8. Execution
 
@@ -263,3 +298,4 @@ A change to schema structure, semantic validation or fixture expectations requir
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-07-13 | Established the independent schema, fixture and semantic-validation verification contract for Runtime JSON Schema 1.0.0 |
+| 1.1 | 2026-10-06 | Added Schema 1.1.0 version dispatch, Identification semantic guards, stable error codes and fixtures |

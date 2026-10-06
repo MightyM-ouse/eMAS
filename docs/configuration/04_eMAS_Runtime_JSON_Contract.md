@@ -1,16 +1,16 @@
 # eMAS Runtime JSON Contract
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Status:** Effective Runtime Contract  
 **Effective date:** 2026-07-13  
 **Owner:** Technical Architect  
 **Decision references:** JSON-001 through JSON-023, AP-002, RM-001, RM-017, RM-018  
 **Canonical logical-model references:** Normalized Relationship Matrix v1.0; Logical Data Dictionary v1.0  
-**Verification reference:** Schema Validation and Fixture Contract v1.0
+**Verification reference:** Schema Validation and Fixture Contract v1.1
 
 ## 1. Ownership
 
-The Technical Architect owns Runtime JSON Schema 1.0.0. Schema changes require Product Owner and PowerShell Lead approval. Regulatory content changes must not require schema changes unless the structure itself changes.
+The Technical Architect owns Runtime JSON Schema 1.0.0 and 1.1.0. Schema changes require Product Owner and PowerShell Lead approval. Regulatory content changes must not require schema changes unless the structure itself changes.
 
 The [Normalized Relationship Matrix](06_eMAS_Normalized_Relationship_Matrix.md) controls cross-entity semantics, endpoint pairs, cardinality and temporal validity. The [Logical Data Dictionary](07_eMAS_Data_Dictionary.md) controls fields, keys, logical types and requiredness. The JSON Schema controls exact serialization. The [Schema Validation and Fixture Contract](08_eMAS_Schema_Validation_and_Fixture_Contract.md) controls independent verification.
 
@@ -23,7 +23,7 @@ The [Normalized Relationship Matrix](06_eMAS_Normalized_Relationship_Matrix.md) 
 - Boundary fixtures: `config/schema/examples/boundary/`
 - Invalid fixtures: `config/schema/examples/invalid/`
 - Independent validator: `build/validate_emas_schema.py`
-- Unit tests: `tests/schema/test_schema_fixtures.py`
+- Unit tests: `tests/schema/test_schema_fixtures.py`, `tests/schema/test_identification_schema_1_1.py`
 - Controlled runtime file name: `eMAS_Runtime_Config.json`
 
 The schema uses JSON Schema Draft 2020-12.
@@ -47,6 +47,40 @@ Schema-version rules:
 Schema 1.0.0 was completed before the first controlled software release. The synchronization work therefore finalizes the 1.0.0 baseline rather than introducing a post-release breaking change.
 
 The approved `Warning` EvaluationStatus is an in-place Schema 1.0.0 compatibility amendment because the schema has not yet been used in a controlled release. It changes the accepted controlled-code set before release, requires synchronized fixtures and validators, and must not be treated as a silent runtime divergence.
+
+### 3.1 Schema 1.1.0 — Identification semantics (MINOR)
+
+Schema 1.1.0 is an additive, backward-compatible MINOR version accepted by the T3 runtime-design decision. Schema 1.0.0 was not amended in place.
+
+Supported `schemaVersion` values are exactly `1.0.0` and `1.1.0`. Any other value is unsupported and fails fast.
+
+Version dispatch uses one schema tree:
+
+- `configuration.schemaVersion` is the enum `1.0.0 | 1.1.0`;
+- the 1.1.0 properties are optional in the shared definitions;
+- a root `VERSION-GATE-1.0.0` branch rejects every 1.1.0 property when the document declares `1.0.0`, so 1.1.0 executable fields never validate silently as 1.0.0;
+- Schema 1.0.0 keeps `confidencePolicy.weightOrScore` mandatory for every scope;
+- the semantic validator applies the 1.1.0 code lists and Identification guards only to 1.1.0 documents, and rejects `ruleType = IDENTIFICATION` in a 1.0.0 document.
+
+1.1.0 additions:
+
+| Entity | Property | Meaning |
+|---|---|---|
+| `ruleOutput` | `targetEntityType` | Canonical master-data entity type (`IDENTIFICATION_DIMENSION`) in which an Identification candidate code resolves |
+| `ruleOutput` | `evidenceStrength` | Ordinal `EVIDENCE_STRENGTH` of an Identification candidate |
+| `ruleOutput` | `evidencePolarity` | `EVIDENCE_POLARITY` (`SUPPORTS`, `CONTRADICTS`) |
+| `conflictPolicy` | `minimumEvidenceStrengthForValue` | Weak-only floor capability; the floor value is governed content |
+| `confidencePolicy` | `resultConfidence`, `corroborationRule` | Ordinal Identification confidence without a numeric weight |
+| `confidencePolicy` | `weightOrScore` | Mandatory for non-IDENTIFICATION scopes; not permitted on IDENTIFICATION scope until numeric Identification weights are approved |
+| `fieldDefinition` | `maxEvidenceStrength` | Authoring ceiling for Identification outputs that rely on the field; never rewrites factual evidence |
+
+Governed 1.1.0 code lists (exact sets): `EVIDENCE_STRENGTH` = `STRONG`, `MEDIUM`, `WEAK`; `CONFIDENCE` = `HIGH`, `MEDIUM`, `LOW`, `UNKNOWN`; `EVIDENCE_POLARITY` = `SUPPORTS`, `CONTRADICTS`; `TIE_BEHAVIOR` = `UNKNOWN`, `MANUAL_REVIEW`; `CORROBORATION_RULE` = `NONE_REQUIRED`, `INDEPENDENT_SOURCE_CLASS`. `IDENTIFICATION_DIMENSION` is required; its codes must be canonical master-data entity types and select which dimensions Identification rules may target. `RULE_TYPE` must contain `IDENTIFICATION` when such rules exist.
+
+Ordinal precedence `STRONG > MEDIUM > WEAK` is carried by `EVIDENCE_STRENGTH.sortOrder` (ascending sortOrder = descending strength). It is precedence metadata, not a business score. Identification candidates carry no `outputValue` score and Identification confidence rows carry no `weightOrScore`.
+
+Candidate resolution is dimension-scoped: an Identification `ClassificationCandidate.outputCode` must exist in its declared `targetEntityType` collection, and `targetEntityType` must equal the rule's `conflictGroup`. The same code string may legitimately exist in several dimensions; no global cross-dimension code uniqueness is required.
+
+The `EVIDENCE-STRENGTH-NORMALIZATION/1` mapping (`Supporting → MEDIUM`) is engine-side (T4) and is not expressed through aliases. The future `eMAS.MS04.PreSales.Identification/1.0` result contract is separate from Runtime JSON and carries no `Outcome` or `SupportStatus` field.
 
 Mapping versions evolve independently. Relationship-matrix or data-dictionary changes require schema compatibility analysis even when top-level sections do not change.
 
@@ -85,7 +119,7 @@ Dedicated workbook link entities may be folded into runtime parent arrays where 
 The `configuration` object includes:
 
 - configuration ID;
-- schema version fixed to `1.0.0`;
+- schema version `1.0.0` or `1.1.0` (§3.1);
 - mapping, workbook and engine versions;
 - DEV or CONTROLLED export type;
 - UTC export timestamp and exporting identity;
@@ -147,7 +181,8 @@ Independent semantic validation covers every mandatory relationship in the froze
 - alias to approved canonical target;
 - threshold ranges, gaps and overlaps;
 - decision-policy and questionnaire references;
-- effective-date ranges and supersession cycles.
+- effective-date ranges and supersession cycles;
+- for Schema 1.1.0: governed Identification code lists and `EVIDENCE_STRENGTH` ordinal order, dimension-scoped candidate resolution, candidate evidence metadata, Identification-scoped rule type, tie behavior, floor, confidence evidence strength, result confidence and corroboration rule, the evidence-strength ceiling, and absence of numeric Identification weights.
 
 The independent validator emits stable machine-readable error codes documented in the verification contract.
 
@@ -157,6 +192,7 @@ The exporter, release validator and engine loader must reject:
 
 - invalid JSON syntax or schema structure;
 - unsupported schema version;
+- Schema 1.1.0 properties or `IDENTIFICATION` rules in a document that declares `1.0.0`;
 - missing mandatory sections;
 - duplicate identifiers or composite keys;
 - broken mandatory references;
@@ -219,7 +255,9 @@ Controlled releases record:
 
 ## 14. Synchronization state
 
-Runtime JSON Schema 1.0.0, the fixture manifest, valid/invalid/boundary fixtures and the independent semantic validator are synchronized with the frozen relationship matrix and data dictionary.
+Runtime JSON Schema 1.0.0 and 1.1.0, the fixture manifest, valid/invalid/boundary fixtures and the independent semantic validator are synchronized with the frozen relationship matrix and data dictionary.
+
+The PowerShell configuration loader contract supports `1.0.0` and `1.1.0` without a compatibility adapter, rejects other versions (`CFG-COMPAT-003`) and rejects 1.1.0 executable properties or `IDENTIFICATION` rules in a 1.0.0 document (`CFG-COMPAT-004`). The loader does not execute Identification rules; that is the IdentificationInterpretation capability (T4). Workbook authoring and export of 1.1.0 content is T3b.
 
 This completes schema-contract synchronization. It does not mean the XLSM/VBA exporter or PowerShell loader has implemented every validation rule; those remain separate delivery stages.
 
@@ -231,3 +269,4 @@ This completes schema-contract synchronization. It does not mean the XLSM/VBA ex
 | 1.1 | 2026-07-13 | Bound runtime serialization and semantic validation to the frozen relationship matrix and data dictionary |
 | 1.2 | 2026-07-13 | Finalized Schema 1.0.0 top-level serialization, fixture classes, independent semantic validation and verification boundaries |
 | 1.2a | 2026-07-13 | Applied approved in-place Schema 1.0.0 compatibility amendment for `Warning` EvaluationStatus before controlled release |
+| 1.3 | 2026-10-06 | Added Schema 1.1.0 (MINOR) Identification semantics, version dispatch, governed Identification code lists, dimension-scoped candidate resolution and loader 1.0.0/1.1.0 support |

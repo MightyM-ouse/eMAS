@@ -1,0 +1,1 @@
+{"policies":{"confidencePolicies":[{"confidencePolicyId":"CONFP-001","scope":"CLASSIFICATION","evidenceStrength":"HIGH","agreementRequirement":"One high-strength indicator or two agreeing indicators.","missingEvidenceBehavior":"LOWER_CONFIDENCE","status":"Effective","effectiveFrom":"2026-07-13","sourceReference":"ILLUSTRATIVE"}]}}

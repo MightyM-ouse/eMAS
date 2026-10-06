@@ -7,9 +7,19 @@ function Get-eMASConfigurationLoaderContract {
     param()
 
     [pscustomobject]@{
-        SchemaVersion = '1.0.0'
-        SupportedSchemaVersions = @('1.0.0')
+        SchemaVersion = '1.1.0'
+        SupportedSchemaVersions = @('1.0.0', '1.1.0')
         SchemaVersionAdapters = @{}
+        # Schema 1.1.0 is an additive MINOR version; no adapter rewrites 1.0.0 documents. A document that declares
+        # 1.0.0 must not carry 1.1.0 executable properties or IDENTIFICATION rules.
+        IdentificationSchemaVersion = '1.1.0'
+        IdentificationRuleType = 'IDENTIFICATION'
+        VersionFeatureContracts = @(
+            [pscustomobject]@{ Section = 'FieldCatalogue'; Collection = $null; Properties = @('maxEvidenceStrength') }
+            [pscustomobject]@{ Section = 'RuleOutputs'; Collection = $null; Properties = @('targetEntityType', 'evidenceStrength', 'evidencePolarity') }
+            [pscustomobject]@{ Section = 'Policies'; Collection = 'conflictPolicies'; Properties = @('minimumEvidenceStrengthForValue') }
+            [pscustomobject]@{ Section = 'Policies'; Collection = 'confidencePolicies'; Properties = @('resultConfidence', 'corroborationRule') }
+        )
         MinimumCoreCompatibility = 'WindowsPowerShell5.1'
         RuntimeJsonFileName = 'eMAS_Runtime_Config.json'
         MetadataSectionCandidates = @(

@@ -204,6 +204,56 @@ function Add-eMASTemporalValidationFindings {
     }
 }
 
+function Get-eMASSchemaVersionFeatureUse {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [object] $RawConfiguration,
+
+        [Parameter(Mandatory = $true)]
+        [object] $Contract
+    )
+
+    # Read-only detection of Schema 1.1.0 executable semantics inside a document that declares 1.0.0.
+    $uses = New-Object System.Collections.ArrayList
+    foreach ($featureContract in @($Contract.VersionFeatureContracts)) {
+        $sectionResult = Get-eMASCandidateValue -InputObject $RawConfiguration -Candidates (Get-eMASContractSectionCandidates -Contract $Contract -Name $featureContract.Section)
+        if (-not $sectionResult.Found -or $null -eq $sectionResult.Value) { continue }
+        $rows = $sectionResult.Value
+        $sectionName = $sectionResult.Name
+        if ($null -ne $featureContract.Collection) {
+            $collectionResult = Get-eMASCandidateValue -InputObject $sectionResult.Value -Candidates @($featureContract.Collection)
+            if (-not $collectionResult.Found -or $null -eq $collectionResult.Value) { continue }
+            $rows = $collectionResult.Value
+            $sectionName = '{0}.{1}' -f $sectionResult.Name, $collectionResult.Name
+        }
+        if (-not (Test-eMASCollectionValue -Container (,$rows))) { continue }
+        $index = 0
+        foreach ($row in $rows) {
+            if ($null -ne $row -and $null -ne $row.PSObject) {
+                foreach ($propertyName in @($featureContract.Properties)) {
+                    if ($null -ne $row.PSObject.Properties[$propertyName]) {
+                        [void]$uses.Add([pscustomobject]@{ Section = $sectionName; Property = $propertyName; Description = ('Property {0}' -f $propertyName); Evidence = $index })
+                    }
+                }
+            }
+            $index++
+        }
+    }
+    $rulesResult = Get-eMASCandidateValue -InputObject $RawConfiguration -Candidates (Get-eMASContractSectionCandidates -Contract $Contract -Name 'Rules')
+    if ($rulesResult.Found -and $null -ne $rulesResult.Value -and (Test-eMASCollectionValue -Container (,$rulesResult.Value))) {
+        $index = 0
+        foreach ($rule in $rulesResult.Value) {
+            if ($null -ne $rule -and $null -ne $rule.PSObject -and $null -ne $rule.PSObject.Properties['ruleType'] -and [string]$rule.ruleType -eq $Contract.IdentificationRuleType) {
+                [void]$uses.Add([pscustomobject]@{ Section = $rulesResult.Name; Property = 'ruleType'; Description = ('Rule type {0}' -f $Contract.IdentificationRuleType); Evidence = $index })
+            }
+            $index++
+        }
+    }
+    return $uses.ToArray()
+}
+
 function Test-eMASRuntimeConfigurationInternal {
     [CmdletBinding()]
     param(
@@ -250,6 +300,11 @@ function Test-eMASRuntimeConfigurationInternal {
         }
         else {
             Add-eMASConfigurationFinding -Findings $findings -Code 'CFG-COMPAT-003' -Severity 'Error' -Section 'metadata' -Property $schemaVersionResult.Name -Message ('Schema version {0} is unsupported. Supported versions: {1}.' -f $schemaVersion, ($Contract.SupportedSchemaVersions -join ', ')) -Evidence $schemaVersion -IsBlocking $true
+        }
+        if ($schemaVersion -eq '1.0.0') {
+            foreach ($feature in @(Get-eMASSchemaVersionFeatureUse -RawConfiguration $raw -Contract $Contract)) {
+                Add-eMASConfigurationFinding -Findings $findings -Code 'CFG-COMPAT-004' -Severity 'Error' -Section $feature.Section -Property $feature.Property -Message ('{0} requires schema version {1}; the document declares 1.0.0.' -f $feature.Description, $Contract.IdentificationSchemaVersion) -Evidence $feature.Evidence -IsBlocking $true
+            }
         }
     }
 

@@ -152,6 +152,60 @@ Invoke-eMASTest -Name 'unsupported schema version is blocking' -Action {
     Assert-eMASThrowsLike -Action { Import-eMASRuntimeConfiguration -Path $path } -Pattern '*CFG-VALIDATION-001*'
 }
 
+Invoke-eMASTest -Name 'schema version 1.0.0 remains supported' -Action {
+    $configuration = Import-eMASRuntimeConfiguration -Path $validPath
+    Assert-eMASFinding -Validation $configuration.Validation -Code 'CFG-COMPAT-001'
+    Assert-eMASEqual -Expected '1.0.0' -Actual $configuration.SchemaVersion -Message 'Schema version differs.'
+}
+
+Invoke-eMASTest -Name 'schema version 1.1.0 is supported' -Action {
+    $raw = [System.IO.File]::ReadAllText($validPath) | ConvertFrom-Json
+    $raw.configuration.schemaVersion = '1.1.0'
+    $raw.rules = @($raw.rules) + @([pscustomobject]@{ ruleId = 'ID-SYNTHETIC-001'; ruleType = 'IDENTIFICATION'; status = 'Effective'; priority = 0; conflictGroup = 'TECHNICAL_STANDARD' })
+    $raw.ruleOutputs = @([pscustomobject]@{ ruleOutputId = 'OUT-ID-SYNTHETIC-001'; ruleId = 'ID-SYNTHETIC-001'; outputType = 'ClassificationCandidate'; outputCode = 'ICH_ECTD_3_2_2'; targetEntityType = 'TECHNICAL_STANDARD'; evidenceStrength = 'STRONG'; evidencePolarity = 'SUPPORTS' })
+    $path = Write-eMASTemporaryConfiguration -Configuration $raw -Name 'valid-schema-1-1-0.json'
+    $configuration = Import-eMASRuntimeConfiguration -Path $path
+    Assert-eMASEqual -Expected 'Valid' -Actual $configuration.Validation.OverallStatus -Message 'Schema 1.1.0 document was not valid.'
+    Assert-eMASFinding -Validation $configuration.Validation -Code 'CFG-COMPAT-001'
+    Assert-eMASEqual -Expected '1.1.0' -Actual $configuration.SchemaVersion -Message 'Schema version differs.'
+}
+
+Invoke-eMASTest -Name 'unsupported schema version 1.2.0 is blocking' -Action {
+    $raw = [System.IO.File]::ReadAllText($validPath) | ConvertFrom-Json
+    $raw.configuration.schemaVersion = '1.2.0'
+    $path = Write-eMASTemporaryConfiguration -Configuration $raw -Name 'invalid-schema-1-2-0.json'
+    $configuration = Import-eMASRuntimeConfiguration -Path $path -AllowInvalid
+    Assert-eMASFinding -Validation $configuration.Validation -Code 'CFG-COMPAT-003'
+    Assert-eMASThrowsLike -Action { Import-eMASRuntimeConfiguration -Path $path } -Pattern '*CFG-VALIDATION-001*'
+}
+
+Invoke-eMASTest -Name 'schema version 1.0.0 with 1.1.0 identification properties is blocking' -Action {
+    $raw = [System.IO.File]::ReadAllText($validPath) | ConvertFrom-Json
+    $raw.ruleOutputs = @([pscustomobject]@{ ruleOutputId = 'OUT-SYNTHETIC-001'; ruleId = 'RULE-SYNTHETIC-001'; outputType = 'ClassificationCandidate'; outputCode = 'EU'; targetEntityType = 'REGION' })
+    $path = Write-eMASTemporaryConfiguration -Configuration $raw -Name 'invalid-schema-1-0-0-with-1-1-property.json'
+    $configuration = Import-eMASRuntimeConfiguration -Path $path -AllowInvalid
+    Assert-eMASFinding -Validation $configuration.Validation -Code 'CFG-COMPAT-004'
+    Assert-eMASThrowsLike -Action { Import-eMASRuntimeConfiguration -Path $path } -Pattern '*CFG-VALIDATION-001*'
+}
+
+Invoke-eMASTest -Name 'schema version 1.0.0 with IDENTIFICATION rule type is blocking' -Action {
+    $raw = [System.IO.File]::ReadAllText($validPath) | ConvertFrom-Json
+    $raw.rules = @([pscustomobject]@{ ruleId = 'RULE-SYNTHETIC-001'; ruleType = 'IDENTIFICATION'; status = 'Effective'; priority = 0 })
+    $path = Write-eMASTemporaryConfiguration -Configuration $raw -Name 'invalid-schema-1-0-0-identification-rule.json'
+    $configuration = Import-eMASRuntimeConfiguration -Path $path -AllowInvalid
+    Assert-eMASFinding -Validation $configuration.Validation -Code 'CFG-COMPAT-004'
+}
+
+Invoke-eMASTest -Name 'schema version 1.0.0 keeps relationship targetEntityType and confidence evidenceStrength' -Action {
+    $raw = [System.IO.File]::ReadAllText($validPath) | ConvertFrom-Json
+    $raw.relationships = @([pscustomobject]@{ relationshipId = 'REL-SYNTHETIC-001'; targetEntityType = 'REGION' })
+    $raw.policies | Add-Member -NotePropertyName 'confidencePolicies' -NotePropertyValue @([pscustomobject]@{ confidencePolicyId = 'CONFP-SYNTHETIC-001'; evidenceStrength = 'HIGH'; weightOrScore = 1 }) -Force
+    $path = Write-eMASTemporaryConfiguration -Configuration $raw -Name 'valid-schema-1-0-0-existing-properties.json'
+    $configuration = Import-eMASRuntimeConfiguration -Path $path -AllowInvalid
+    Assert-eMASTrue -Condition (@($configuration.Validation.Findings | Where-Object { $_.Code -eq 'CFG-COMPAT-004' }).Count -eq 0) -Message '1.0.0 properties were reported as 1.1.0 features.'
+    Assert-eMASEqual -Expected 0 -Actual $configuration.Validation.BlockingIssueCount -Message 'Existing 1.0.0 properties became blocking.'
+}
+
 Invoke-eMASTest -Name 'duplicate rule identifiers are rejected' -Action {
     $path = Join-Path $fixtureRoot 'invalid-duplicate-rule-id.json'
     $configuration = Import-eMASRuntimeConfiguration -Path $path -AllowInvalid

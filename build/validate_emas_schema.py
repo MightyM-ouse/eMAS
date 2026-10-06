@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the eMAS Runtime JSON 1.0.0 schema package and synthetic fixtures."""
+"""Validate the eMAS Runtime JSON schema package (1.0.0 and 1.1.0) and synthetic fixtures."""
 from __future__ import annotations
 
 import argparse
@@ -30,11 +30,26 @@ def build_schema_registry(schema_path: Path) -> Registry:
         registry = registry.with_resource(document['$id'], resource)
     return registry
 
+VERSION_GATE_SCHEMA_PATH = ('allOf', 0)
+
+def _schema_issue_code(error: Any) -> str:
+    """Return a stable code for a JSON Schema error.
+
+    Errors raised by the root VERSION-GATE-1.0.0 branch (allOf[0]) mean a Schema 1.1.0 property was used in a
+    document labelled 1.0.0. An enum failure on configuration.schemaVersion means an unsupported version.
+    Every other structural failure keeps the historical SCHEMA_ERROR code.
+    """
+    if tuple(error.absolute_schema_path)[:2] == VERSION_GATE_SCHEMA_PATH:
+        return 'SCHEMA_VERSION_FEATURE'
+    if list(error.absolute_path) == ['configuration', 'schemaVersion'] and error.validator == 'enum':
+        return 'SCHEMA_UNSUPPORTED_VERSION'
+    return 'SCHEMA_ERROR'
+
 def validate_instance(schema: dict[str, Any], instance: Any, registry: Registry | None=None) -> list[ValidationIssue]:
     validator = Draft202012Validator(schema, format_checker=FormatChecker(), registry=registry or Registry())
     schema_errors = sorted(validator.iter_errors(instance), key=lambda error: list(error.absolute_path))
     if schema_errors:
-        return [ValidationIssue('SCHEMA_ERROR', _json_path(error.absolute_path), error.message) for error in schema_errors]
+        return [ValidationIssue(_schema_issue_code(error), _json_path(error.absolute_path), error.message) for error in schema_errors]
     if not isinstance(instance, dict):
         return [ValidationIssue('SCHEMA_ERROR', '$', 'root must be an object')]
     return _semantic_issues(instance)

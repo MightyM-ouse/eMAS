@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/MightyM-ouse/eMAS/blob/main/config/schema/eMAS-runtime-config.schema.json",
   "title": "eMAS Runtime Configuration",
-  "description": "Effective JSON Schema 1.0.0 for the normalized eMAS runtime configuration exported by the internal XLSM mapping workbook.",
+  "description": "Effective JSON Schema for the normalized eMAS runtime configuration exported by the internal XLSM mapping workbook. Supported schemaVersion values: 1.0.0 and 1.1.0 (MINOR, additive Identification semantics). Properties introduced in 1.1.0 are rejected when configuration.schemaVersion is 1.0.0.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -137,5 +137,190 @@
     "reportTerminology": {
       "$ref": "defs/catalog.schema.json#/$defs/reportTerminology"
     }
-  }
+  },
+  "allOf": [
+    {
+      "$comment": "VERSION-GATE-1.0.0: Schema 1.1.0 properties must not appear in a document that declares schemaVersion 1.0.0.",
+      "if": {
+        "properties": {
+          "configuration": {
+            "properties": {
+              "schemaVersion": {
+                "const": "1.0.0"
+              }
+            },
+            "required": [
+              "schemaVersion"
+            ]
+          }
+        },
+        "required": [
+          "configuration"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fieldCatalogue": {
+            "items": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "maxEvidenceStrength"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "ruleOutputs": {
+            "items": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "targetEntityType"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "evidenceStrength"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "evidencePolarity"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "policies": {
+            "properties": {
+              "conflictPolicies": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "minimumEvidenceStrengthForValue"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "confidencePolicies": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "resultConfidence"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "corroborationRule"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Schema 1.0.0 keeps confidencePolicy.weightOrScore mandatory for every scope.",
+      "if": {
+        "properties": {
+          "configuration": {
+            "properties": {
+              "schemaVersion": {
+                "const": "1.0.0"
+              }
+            },
+            "required": [
+              "schemaVersion"
+            ]
+          }
+        },
+        "required": [
+          "configuration"
+        ]
+      },
+      "then": {
+        "properties": {
+          "policies": {
+            "properties": {
+              "confidencePolicies": {
+                "items": {
+                  "required": [
+                    "weightOrScore"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Schema 1.1.0 confidence-policy shape: IDENTIFICATION scope uses ordinal resultConfidence/corroborationRule; every other scope keeps the mandatory numeric weightOrScore.",
+      "if": {
+        "properties": {
+          "configuration": {
+            "properties": {
+              "schemaVersion": {
+                "const": "1.1.0"
+              }
+            },
+            "required": [
+              "schemaVersion"
+            ]
+          }
+        },
+        "required": [
+          "configuration"
+        ]
+      },
+      "then": {
+        "properties": {
+          "policies": {
+            "properties": {
+              "confidencePolicies": {
+                "items": {
+                  "if": {
+                    "properties": {
+                      "scope": {
+                        "const": "IDENTIFICATION"
+                      }
+                    },
+                    "required": [
+                      "scope"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "resultConfidence",
+                      "corroborationRule"
+                    ]
+                  },
+                  "else": {
+                    "required": [
+                      "weightOrScore"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

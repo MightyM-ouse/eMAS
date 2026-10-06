@@ -23,7 +23,10 @@
           "$ref": "common.schema.json#/$defs/identifier"
         },
         "schemaVersion": {
-          "const": "1.0.0"
+          "enum": [
+            "1.0.0",
+            "1.1.0"
+          ]
         },
         "mappingVersion": {
           "$ref": "common.schema.json#/$defs/semver"
@@ -183,6 +186,10 @@
         },
         "description": {
           "type": "string"
+        },
+        "maxEvidenceStrength": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: highest EVIDENCE_STRENGTH code an IDENTIFICATION rule output may claim when it relies on this field. Authoring ceiling only; never rewrites factual evidence."
         }
       }
     },
