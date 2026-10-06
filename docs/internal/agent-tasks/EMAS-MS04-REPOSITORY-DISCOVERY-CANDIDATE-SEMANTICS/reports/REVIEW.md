@@ -1,6 +1,6 @@
 # ChatGPT Review — EMAS-MS04-REPOSITORY-DISCOVERY-CANDIDATE-SEMANTICS
 
-**Status:** `REVIEW_COMPLETE — READY_FOR_USER_DECISION_WITH_AMENDMENTS`  
+**Status:** `DECISION_ACCEPTED — IMPLEMENTATION AUTHORIZED AS SEPARATE TASK`  
 **Reviewed Claude commit:** `2a5c7098e543d053e73ca61c3d7192995d35b72f`  
 **Reviewed PR:** #34
 
@@ -97,8 +97,6 @@ The implementation task should:
 
 A later explicit discovery-extension task must establish real eCTD v4 sequence-folder handling before v4 detection is implemented or claimed.
 
-## User decision requested
+## User decision
 
-Approve the B3 principle with the two amendments above, and authorize a separate bounded RepositoryDiscovery implementation task.
-
-No runtime implementation should start before that decision.
+Accepted. The B3 principle is approved with the two amendments above. A separate bounded RepositoryDiscovery implementation task is authorized. eCTD v4 sequence discovery is a separate required task before FormatDetection or RegionDetection may begin.
