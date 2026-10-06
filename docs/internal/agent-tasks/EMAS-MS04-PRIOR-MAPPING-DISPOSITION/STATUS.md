@@ -4,7 +4,7 @@
 **Roadmap ID:** T3c  
 **Authoritative base:** `9d622cfa12bb94464ad5f149aec581bedac12dbc`  
 **Current project baseline includes T1a:** `08f4d0d240aac5393cba97f65ce9803fb4fffaa4`  
-**Overall status:** `REVIEW_PASS_READY_FOR_USER_DECISION_WITH_AMENDMENTS`
+**Overall status:** `ACCEPTED_WITH_AMENDMENTS`
 
 | Gate | Status |
 |---|---|
@@ -19,7 +19,7 @@
 | Claude report | COMPLETE — PR #50 |
 | ChatGPT central review | PASS |
 | Weak-only floor | CLOSED — MEDIUM required for final value |
-| User decision | READY |
+| User decision | ACCEPTED WITH CENTRAL-REVIEW AMENDMENTS |
 | T3b workbook/export | BLOCKED_ON_T3A, NOT_ON_T3C |
 | production legacy-rule migration | BLOCKED_ON_T3C + SOURCE/EVIDENCE/APPROVAL GATES |
 | T4 test-engine implementation | NOT BLOCKED BY T3C |
