@@ -3,7 +3,7 @@
 **Task ID:** `EMAS-MS04-CEC-PHYSICAL-MARKER-EVIDENCE`  
 **Roadmap ID:** T1a  
 **Authoritative base:** `8a8c842b45e2cbf12025c15995cf99b0b8012b55`  
-**Overall status:** `MAC_REVIEW_PASS_READY_FOR_USER_DECISION`
+**Overall status:** `MAC_ACCEPTED_WINDOWS_PENDING`
 
 | Gate | Status |
 |---|---|
@@ -17,10 +17,14 @@
 | B3 | PASS — 12/12 |
 | frozen hashes | PASS — W1 19/19, W1D 8/8, W1E 22/22 |
 | ChatGPT central review | PASS |
-| User merge decision | READY |
+| User merge decision | ACCEPTED |
 | Windows PS5.1 | DEFERRED — unrelated RuntimeConfiguration UTF-8 issue |
 | T4 IdentificationInterpretation | BLOCKED_ON_T3A_AND_T3B |
 
-## Review conclusion
+## Accepted outcome
 
-PR #47 is recommended for acceptance and merge as the Mac T1a baseline.
+PR #47 is accepted as the Mac T1a factual physical-marker evidence baseline.
+
+The accepted implementation preserves the factual/interpretation boundary, keeps raw CEC strength values unchanged, adds the approved five physical-marker evidence types, and retains historical regression expectations through an explicit historical projection while validating the full additive result separately.
+
+Native Windows qualification remains deferred.
