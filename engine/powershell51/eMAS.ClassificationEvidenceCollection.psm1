@@ -66,8 +66,9 @@ function Write-eMASClassificationEvidenceResult {
 }
 
 function Get-eMASCecChildPath {
-    param([Parameter(Mandatory = $true)][string] $ParentPath, [Parameter(Mandatory = $true)][string] $ChildPath)
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string] $ParentPath, [Parameter(Mandatory = $true)][string] $ChildPath)
 
+    if ([string]::IsNullOrEmpty($ParentPath)) { return $ChildPath }
     if ($ChildPath.Length -le $ParentPath.Length + 1) { return $null }
     if (-not $ChildPath.StartsWith($ParentPath + '/', [System.StringComparison]::Ordinal)) { return $null }
     return $ChildPath.Substring($ParentPath.Length + 1)
@@ -88,7 +89,7 @@ function Get-eMASCecChildDirectoryNames {
 function New-eMASCecDraft {
     param(
         [Parameter(Mandatory = $true)][string] $EvidenceType,
-        [Parameter(Mandatory = $true)][string] $DossierPath,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string] $DossierPath,
         [AllowNull()][string] $SequenceFolder,
         [AllowNull()][string] $SequenceRelativePath,
         [AllowNull()][string] $XmlKind,
