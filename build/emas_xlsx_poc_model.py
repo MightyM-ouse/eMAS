@@ -39,26 +39,26 @@ class PocIssue:
 
 REQUIRED_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "tblConfiguration": ("ConfigurationId", "SchemaVersion", "MappingVersion", "SourceWorkbookVersion", "MinimumEngineVersion", "ExportType", "ExportedAtUtc", "ExportedBy", "Status", "ValidationRunId"),
-    "tblValueLists": ("ListName", "Code", "DisplayValue", "Status", "EffectiveFrom"),
-    "tblFieldCatalogue": ("FieldCode", "DisplayName", "DataType", "ValueSource", "ProducingComponent", "EvaluationOrder", "IsSensitive"),
+    "tblValueLists": ("ListName", "Code", "DisplayValue", "Status", "EffectiveFrom", "SortOrder"),
+    "tblFieldCatalogue": ("FieldCode", "DisplayName", "DataType", "ValueSource", "ProducingComponent", "EvaluationOrder", "IsSensitive", "MaxEvidenceStrength"),
     "tblFieldAllowedOperators": ("FieldCode", "Operator"),
     "tblFieldPhases": ("FieldCode", "Phase"),
     "tblMetricCatalogue": ("MetricCode", "DisplayName", "DataType", "Unit", "CalculationSource", "RequiredForCompleteBanding", "RoundingRule"),
     "tblMetricPhases": ("MetricCode", "Phase"),
     "tblMasterDataRelationships": ("RelationshipId", "RelationshipType", "SourceEntityType", "SourceEntityCode", "TargetEntityType", "TargetEntityCode", "Cardinality", "IsMandatory", "Status", "EffectiveFrom", "SourceReference"),
-    "tblRules": ("RuleId", "RuleRevision", "RuleType", "Title", "Description", "Status", "EffectiveFrom", "Priority", "ConflictStrategy", "Specificity", "StopProcessing", "RequirementReference"),
+    "tblRules": ("RuleId", "RuleRevision", "RuleType", "Title", "Description", "Status", "EffectiveFrom", "Priority", "ConflictStrategy", "Specificity", "StopProcessing", "RequirementReference", "LegacyRuleId"),
     "tblRulePhaseAssignments": ("RulePhaseId", "RuleId", "Phase", "EvaluationStatusOnMissingInput", "IsBlocker", "ExceptionEligible", "Sequence"),
     "tblConditionGroups": ("ConditionGroupId", "RuleId", "GroupSequence", "GroupOperator"),
     "tblRuleConditions": ("ConditionId", "RuleId", "ConditionGroupId", "Sequence", "FieldCode", "Operator", "CaseSensitive", "Negate"),
-    "tblRuleOutputs": ("RuleOutputId", "RuleId", "Phase", "OutputType", "OutputCode", "Sequence"),
+    "tblRuleOutputs": ("RuleOutputId", "RuleId", "Phase", "OutputType", "OutputCode", "Sequence", "TargetEntityType", "EvidenceStrength", "EvidencePolarity"),
     "tblFindings": ("FindingCode", "Title", "FindingCategory", "Description", "DefaultEvaluationStatus", "ExceptionEligible", "CustomerVisible", "Status", "EffectiveFrom", "SourceReference"),
     "tblRecommendations": ("RecommendationCode", "Title", "CustomerFacingText", "ConsultantFacingText", "Priority", "Status", "EffectiveFrom", "SourceReference"),
     "tblFindingRecommendationLinks": ("LinkId", "FindingCode", "RecommendationCode", "Phase", "LinkType", "Sequence", "Status", "EffectiveFrom"),
     "tblExceptionPolicies": ("ExceptionPolicyId", "EligibleFindingCode", "AllowedEffect", "RequiredApproverRole", "EvidenceRequirement", "ExpiryRequired", "CarryForwardToPostMigration", "Status", "EffectiveFrom", "SourceReference"),
     "tblAliases": ("AliasId", "AliasScope", "SourceSystem", "SourceFieldOrValue", "CanonicalEntityType", "CanonicalCode", "Status", "EffectiveFrom", "SourceReference"),
-    "tblConflictPolicies": ("ConflictPolicyId", "RuleType", "ConflictStrategy", "TieBehavior", "StopBehavior", "DefaultPriorityIncrement", "Status", "Description"),
+    "tblConflictPolicies": ("ConflictPolicyId", "RuleType", "ConflictStrategy", "TieBehavior", "MinimumEvidenceStrengthForValue", "StopBehavior", "DefaultPriorityIncrement", "Status", "Description"),
     "tblRagPolicies": ("RagPolicyId", "Scope", "AggregationStrategy", "GreenDefinition", "AmberDefinition", "RedDefinition", "UnknownDefinition", "Status", "SourceReference"),
-    "tblConfidencePolicies": ("ConfidencePolicyId", "Scope", "EvidenceStrength", "WeightOrScore", "AgreementRequirement", "MissingEvidenceBehavior", "Status", "EffectiveFrom", "SourceReference"),
+    "tblConfidencePolicies": ("ConfidencePolicyId", "Scope", "EvidenceStrength", "WeightOrScore", "ResultConfidence", "CorroborationRule", "AgreementRequirement", "MissingEvidenceBehavior", "Status", "EffectiveFrom", "SourceReference"),
     "tblEffortDriverDefinitions": ("EffortDriverId", "DriverCode", "DriverName", "Category", "Weight", "MinimumBandOverrideEligible", "Status", "EffectiveFrom", "SourceReference"),
     "tblEffortDriverPhases": ("EffortDriverId", "Phase"),
     "tblEffortThresholds": ("EffortThresholdId", "ThresholdScopeType", "ThresholdScopeCode", "BandCode", "LowerInclusive", "UpperInclusive", "Unit", "Status", "EffectiveFrom", "SourceReference"),
@@ -114,7 +114,11 @@ BOOL_FIELDS = {
     "CarryForwardToPostMigration", "MinimumBandOverrideEligible", "LowerInclusive", "UpperInclusive",
     "MandatoryBlockerOverride", "Required",
 }
-INT_FIELDS = {"EvaluationOrder", "RuleRevision", "Priority", "Specificity", "Sequence", "GroupSequence", "DefaultPriorityIncrement", "MaximumValidityDays"}
+INT_FIELDS = {"EvaluationOrder", "RuleRevision", "Priority", "Specificity", "Sequence", "GroupSequence", "DefaultPriorityIncrement", "MaximumValidityDays", "SortOrder"}
+
+# Workbook-only authoring columns. They are never serialized into Runtime JSON (defence in depth: the runtime
+# projection drops them as well). LegacyRuleId is informational T3c traceability, never a runtime identity.
+WORKBOOK_ONLY_COLUMNS: dict[str, frozenset[str]] = {"tblRules": frozenset({"LegacyRuleId"})}
 NUMBER_FIELDS = {"WeightOrScore", "Weight", "Cap", "Floor", "LowerBound", "UpperBound", "OutputValue"}
 
 KEYS = {
@@ -264,6 +268,8 @@ def _clean_row(row: dict[str, Any], exclude: Iterable[str] = ()) -> OrderedDict[
 
 
 def build_runtime_json(tables: dict[str, list[dict[str, Any]]]) -> OrderedDict[str, Any]:
+    """Serialize already-projected runtime tables. Callers must pass the runtime projection
+    (``emas_xlsx_poc_projection.project_runtime_tables``); this function does not filter lifecycle."""
     result: OrderedDict[str, Any] = OrderedDict()
     result["configuration"] = _clean_row(tables["tblConfiguration"][0])
 
@@ -301,7 +307,7 @@ def build_runtime_json(tables: dict[str, list[dict[str, Any]]]) -> OrderedDict[s
         master[json_name] = [_clean_row(row) for row in tables[table_name]]
     result["masterData"] = master
     result["relationships"] = [_clean_row(row) for row in tables["tblMasterDataRelationships"]]
-    result["rules"] = [_clean_row(row) for row in tables["tblRules"]]
+    result["rules"] = [_clean_row(row, WORKBOOK_ONLY_COLUMNS["tblRules"]) for row in tables["tblRules"]]
     result["rulePhases"] = [_clean_row(row) for row in tables["tblRulePhaseAssignments"]]
     result["conditionGroups"] = [_clean_row(row) for row in tables["tblConditionGroups"]]
     result["ruleConditions"] = [_clean_row(row) for row in tables["tblRuleConditions"]]

@@ -33,9 +33,9 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 | CFG-REL | 4 | [Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Product Owner / Technical Architect |
 | CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.1 Effective Logical-Model Contract | Product Owner / Technical Architect |
 | CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.1 Effective Verification Contract; Schema 1.0.0 + 1.1.0 fixtures | Technical Architect / QA Lead |
-| CFG-XLSM-POC | 5–8 | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.0 Effective POC verification contract | Technical Architect / QA Lead |
-| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective with approved in-place `Warning` compatibility update | Technical Architect |
-| SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective with valid, boundary and invalid `Warning` fixtures | Technical Architect / QA Lead |
+| CFG-XLSM-POC | 5–8 | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.1 Effective POC verification contract; Schema 1.1.0 Identification authoring/export | Technical Architect / QA Lead |
+| SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 + 1.1.0 supported; 1.1.0 adds governed Identification semantics | Technical Architect |
+| SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 compatibility plus 1.1.0 Identification valid/boundary/invalid fixtures | Technical Architect / QA Lead |
 
 ## Architecture and phase contracts
 
@@ -65,7 +65,7 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 |---|---|---|
 | WP-RUNTIME-WARNING | [Runtime/Warning/Template Work Package](implementation/WORK_PACKAGE_Runtime_Profile_Warning_and_Template_Corrections.md) | Approved implementation route |
 | POC-SOURCE | [Synthetic workbook source](../config/authoring/poc/README.md) | Implemented source-controlled POC |
-| POC-VBA | [Reviewable VBA source](../config/vba/README.md) | Nine POC modules; native qualification pending |
+| POC-VBA | [Reviewable VBA source](../config/vba/README.md) | Ten POC modules; Schema 1.1.0 source conformance passed; native qualification pending |
 | BUILD-POC | `build/generate_emas_mapping_poc_workbook.py`, `build/validate_xlsm_vba_poc.py` | Deterministic build/CI verification |
 | BUILD-XLSM | `build/Build-eMASMappingPoc.ps1` | Internal Windows/Excel XLSM build |
 | TEST-XLSM-NATIVE | `build/Test-eMASMappingPoc.ps1` | Manual native qualification gate |

@@ -1,8 +1,8 @@
 # eMAS Mapping Configuration XLSM/VBA Proof of Concept
 
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Status:** Synthetic Proof of Concept  
-**Schema:** Runtime JSON Schema 1.0.0  
+**Schema:** Runtime JSON Schema 1.1.0 (Identification semantics)  
 **Data classification:** Synthetic test data only
 
 ## Purpose
@@ -18,7 +18,7 @@ The public repository does not contain a controlled production XLSM. It contains
 - an independent table reader and reference exporter;
 - valid, controlled, boundary and invalid workbook-model fixtures;
 - an approved deterministic Runtime JSON SHA-256 golden hash;
-- automated structural, deterministic and Runtime JSON Schema 1.0.0 conformance checks.
+- automated structural, deterministic and Runtime JSON Schema 1.1.0 conformance checks.
 
 ## Files
 
@@ -35,6 +35,33 @@ The public repository does not contain a controlled production XLSM. It contains
 | `../../../build/validate_xlsm_vba_poc.py` | Independent source, fixture and schema validation |
 
 Generated XLSX and XLSM files belong below local `output/` and `dist/`; neither is committed.
+
+## Schema 1.1.0 Identification authoring (T3b)
+
+| Table | Added column(s) | Notes |
+|---|---|---|
+| `tblValueLists` | `SortOrder` | Canonical Data Dictionary §13 column; carries the ordinal `EVIDENCE_STRENGTH` precedence STRONG(1) > MEDIUM(2) > WEAK(3) |
+| `tblFieldCatalogue` | `MaxEvidenceStrength` | Ceiling for fields used as Identification evidence |
+| `tblRules` | `LegacyRuleId` | **Workbook-only** informational traceability. Never a runtime identity and never exported. |
+| `tblRuleOutputs` | `TargetEntityType`, `EvidenceStrength`, `EvidencePolarity` | Required on IDENTIFICATION `ClassificationCandidate` outputs only |
+| `tblConflictPolicies` | `MinimumEvidenceStrengthForValue` | Synthetic Identification policy uses the accepted `MEDIUM` floor |
+| `tblConfidencePolicies` | `ResultConfidence`, `CorroborationRule` | Identification rows carry no `WeightOrScore`; non-Identification rows keep it |
+
+Controlled lists: `EVIDENCE_STRENGTH` (STRONG/MEDIUM/WEAK), `CONFIDENCE` (HIGH/MEDIUM/LOW/UNKNOWN), `EVIDENCE_POLARITY`, `TIE_BEHAVIOR`, `CORROBORATION_RULE`, `IDENTIFICATION_DIMENSION` (TECHNICAL_STANDARD, REGIONAL_IMPLEMENTATION), `RULE_TYPE` + `IDENTIFICATION`, and the full `RULE_LIFECYCLE_STATUS` set. `Supporting` is not an executable code; the engine-side `Supporting → MEDIUM` normalization is not implemented through aliases.
+
+Synthetic rows: one Effective IDENTIFICATION rule `ID-SYN-TS-001` (TECHNICAL_STANDARD → `ICH_ECTD_3_2_2`, STRONG from a STRONG-capped field) and one Draft IDENTIFICATION rule `ID-SYN-RI-001` with `LegacyRuleId = LEGACY-SYN-001` and its own phase, group, condition and output rows. No historical mapping rule is imported.
+
+### Runtime-eligibility projection
+
+Every Runtime JSON export (DEV and CONTROLLED) uses one projection:
+
+```text
+Status = Effective AND EffectiveFrom <= evaluation date AND (EffectiveTo empty OR evaluation date < EffectiveTo)
+```
+
+A non-eligible rule is excluded together with its rule phases, condition groups, conditions, outputs and `RULE_SUPERSESSION` relationships, so the output has no orphan rows. The deterministic POC evaluation date is `2026-07-13`; normal DEV export uses the current UTC date. Reviewed rules are **not** exported in DEV either, because Runtime JSON Schema 1.0.0/1.1.0 requires `rule.status = Effective`.
+
+Implementation: `build/emas_xlsx_poc_projection.py` (reference) and `config/vba/modules/modRuntimeProjection.bas` (VBA). `verify_runtime_projection` checks the projection independently (Draft leak, ineligible rule, orphan rows) and `scan_runtime_json_for_legacy` proves `LegacyRuleId` is absent from the serialized JSON. VBA additionally refuses to return JSON containing a `legacyRuleId` property or any `LegacyRuleId` value.
 
 ## Source and runtime boundaries
 
@@ -65,7 +92,8 @@ The automated check proves:
 - output is UTF-8 without BOM;
 - valid and boundary cases pass;
 - invalid cases fail with expected semantic codes;
-- valid cases pass Runtime JSON Schema 1.0.0 and independent semantic validation;
+- valid cases pass Runtime JSON Schema 1.1.0 and independent semantic validation;
+- the runtime projection contains only runtime-eligible Effective rules, has no orphan rows and contains no `LegacyRuleId`;
 - VBA modules contain required entry points and prohibited selection/unsafe short-circuit patterns are absent;
 - source-definition, generated-workbook and golden JSON checksums match the POC manifest.
 
@@ -87,7 +115,7 @@ The native test:
 3. runs deterministic VBA export twice;
 4. compares both exports;
 5. compares the VBA export with the approved golden JSON SHA-256;
-6. validates the export through the independent Schema 1.0.0 validator;
+6. validates the export through the independent Schema 1.1.0 validator;
 7. writes environment and checksum evidence below `output/`.
 
 Native Excel execution is unavailable on GitHub-hosted Linux CI and remains a required manual qualification gate before controlled workbook release.
@@ -99,4 +127,5 @@ Native Excel execution is unavailable on GitHub-hosted Linux CI and remains a re
 - Full Excel 2019/2021/Microsoft 365, 32/64-bit and German/English locale qualification remains separate validation work.
 - Regulatory master data is illustrative synthetic content and is not approved regulatory content.
 - The POC VBA validator covers fixture-aligned critical cases; the controlled workbook must implement and qualify the complete mandatory validation sequence.
-- Native Excel/VBA execution has not been claimed until `Test-eMASMappingPoc.ps1` evidence is reviewed.
+- Native Excel/VBA execution has not been claimed until `Test-eMASMappingPoc.ps1` evidence is reviewed. Current status: `NATIVE_EXCEL_QUALIFICATION_PENDING`.
+- Identification rows are synthetic conformance content, not approved regulatory or confidence policy content.

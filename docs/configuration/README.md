@@ -12,12 +12,12 @@ Use these documents in authority order for mapping-workbook, logical-model and r
 | CFG-REL | [06 — Normalized Relationship Matrix](06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Relationships, cardinalities and referential integrity |
 | CFG-DICT | [07 — Logical Data Dictionary](07_eMAS_Data_Dictionary.md) | v1.1 Effective | Fields, keys, types and requiredness |
 | CFG-VERIFY | [08 — Schema Validation and Fixture Contract](08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.1 Effective | Runtime fixture classes, semantic errors and independent validation |
-| CFG-XLSM-POC | [09 — XLSM/VBA POC and Conformance Contract](09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.0 Effective POC verification contract | Synthetic workbook source, VBA, fixtures, CI and native Excel qualification |
+| CFG-XLSM-POC | [09 — XLSM/VBA POC and Conformance Contract](09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.1 Effective POC verification contract | Schema 1.1.0 Identification authoring/export, synthetic workbook source, VBA, fixtures, CI and native Excel qualification |
 
 For workbook implementation, read all nine documents. CFG-REL and CFG-DICT are normative elaborations of the content catalogue. CFG-VERIFY governs runtime JSON verification; CFG-XLSM-POC governs source-controlled workbook/VBA proof and native qualification boundaries.
 
 Repeating fields such as phases and allowed operators use dedicated link tables. Shorthand may appear only as generated display and must not be implemented as comma-separated or ambiguous free text.
 
-Runtime JSON Schema 1.0.0 controls exact property names and required structure. The workbook POC must produce all canonical sections, including `policies` and `questionnaireMap`.
+Runtime JSON Schema 1.0.0 and 1.1.0 control exact property names and required structure. The current workbook POC authors/exports Schema 1.1.0 while the independent validation package preserves 1.0.0 compatibility. The workbook POC must produce all canonical sections, including `policies` and `questionnaireMap`.
 
 Detailed regulatory rules, authority relationships, folder/file expectations, weights, thresholds and exception-role values still require applicable owner/SME approval before Effective configuration export.

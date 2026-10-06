@@ -21,10 +21,10 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 - [Normalized Relationship Matrix v1.0](configuration/06_eMAS_Normalized_Relationship_Matrix.md)
 - [Logical Data Dictionary v1.1](configuration/07_eMAS_Data_Dictionary.md)
 - [Schema Validation and Fixture Contract v1.1](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
-- [XLSM/VBA POC and Conformance Contract v1.0](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
-- [Runtime JSON Schema 1.0.0](../config/schema/eMAS-runtime-config.schema.json)
+- [XLSM/VBA POC and Conformance Contract v1.1](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
+- [Runtime JSON Schema 1.0.0 / 1.1.0](../config/schema/eMAS-runtime-config.schema.json)
 
-The runtime-profile and `Warning` decisions amend conflicting baseline statements. The schema/runtime portion has been synchronized through the Runtime JSON Schema 1.0.0 compatibility amendment, fixtures, semantic validation and the initial PowerShell configuration-loader/runtime-adapter contract boundary; controlled template synchronization and functional loader implementation remain separate.
+The runtime-profile and `Warning` decisions amend conflicting baseline statements. The schema/runtime portion is synchronized through Runtime JSON Schema 1.0.0 compatibility plus Schema 1.1.0 Identification semantics, fixtures, semantic validation and the PowerShell configuration-loader/runtime-adapter contract boundary.
 
 ## Effective architecture and skills
 
@@ -71,10 +71,10 @@ The runtime-profile and `Warning` decisions amend conflicting baseline statement
 1. Governance baseline — completed.
 2. Requirements synchronization — completed.
 3. Logical-model freeze — completed.
-4. Schema 1.0.0 and independent fixture validation — completed.
+4. Runtime JSON Schema 1.0.0 compatibility and Schema 1.1.0 Identification support with independent fixture validation — completed.
 5. Solution architecture and phase contracts — completed.
 6. Operational skills and catalogue validation — completed.
-7. XLSM/VBA POC source and automated conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
+7. XLSM/VBA POC source and automated Schema 1.1.0 Identification authoring/export conformance harness — completed; native Windows/Excel execution and qualification evidence remain pending.
 8. Runtime-profile and `Warning` amendment — approved; schema/fixture/semantic-validator and phase-neutral Runtime JSON consumption/validation foundation implemented.
 9. Controlled report templates and mapping contracts — version 1.1.1 templates and mapping schema 1.0.0 implemented; mapping-driven end-to-end demo validated on macOS, with Windows/Excel qualification pending.
 

@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblConfidencePolicies","action":"set","keyField":"ConfidencePolicyId","keyValue":"CONFP-ID-001","field":"WeightOrScore","value":100}]}

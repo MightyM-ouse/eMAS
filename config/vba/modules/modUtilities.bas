@@ -119,7 +119,7 @@ Public Function IsNumberHeader(ByVal headerName As String) As Boolean
     Select Case headerName
         Case "EvaluationOrder", "RuleRevision", "Priority", "Specificity", _
              "Sequence", "GroupSequence", "DefaultPriorityIncrement", _
-             "MaximumValidityDays", "WeightOrScore", "Weight", "Cap", "Floor", _
+             "MaximumValidityDays", "WeightOrScore", "Weight", "Cap", "Floor", "SortOrder", _
              "LowerBound", "UpperBound", "OutputValue"
             IsNumberHeader = True
     End Select

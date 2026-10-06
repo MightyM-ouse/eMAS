@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: build/requirements-schema-validation.txt
       - name: Install independent schema validation dependency
         run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
-      - name: Validate workbook source, VBA contract, fixtures and Schema 1.0.0 conformance
+      - name: Validate workbook source, VBA contract, fixtures and Schema 1.1.0 conformance
         run: python build/validate_xlsm_vba_poc.py
       - name: Run XLSM/VBA POC unit tests
         run: python -m unittest discover -s tests/vba -p "test_*.py" -v

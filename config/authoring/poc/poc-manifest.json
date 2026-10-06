@@ -1,14 +1,14 @@
 {
   "artifactId": "EMAS-XLSM-VBA-POC",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "SyntheticProofOfConcept",
-  "schemaVersion": "1.0.0",
-  "mappingVersion": "0.1.0",
-  "sourceWorkbookVersion": "0.1.0",
-  "expectedJsonSha256": "fb56f6f8625cedfeeb333b13a9366cbf190613d48ec3532fb7a6a5c7c9706eea",
+  "schemaVersion": "1.1.0",
+  "mappingVersion": "0.2.0",
+  "sourceWorkbookVersion": "0.2.0",
+  "expectedJsonSha256": "3c6964c53db79815dfaa0d3b9ae4a290df2a00de5a0be4a27c055268e97cb68d",
   "fixtureManifest": "fixtures/manifest.json",
   "vbaSourceDirectory": "../../vba/modules",
-  "vbaModuleCount": 9,
+  "vbaModuleCount": 10,
   "nativeExcelBuild": "build/Build-eMASMappingPoc.ps1",
   "nativeExcelTest": "build/Test-eMASMappingPoc.ps1",
   "nativeExcelExecutionStatus": "ManualRequiredOnSupportedWindowsExcel",
@@ -16,6 +16,12 @@
   "runtimeDependencyBoundary": "Python reference validation is build/CI-only; Excel/VBA produces the runtime JSON in the native POC.",
   "workbookSourceDefinition": "workbook-source.json",
   "generatedSourceWorkbook": "output/poc/eMAS_Mapping_Configuration_POC_Source.xlsx",
-  "generatedSourceWorkbookSha256": "c67f7da321a1c0389390c2ce6ab2898df0ccda5f86b48b0b3de086af0c7f6832",
-  "workbookSourceBundleSha256": "bade5815821b5987eb7dfed7a3d7c33b08c7b8d15f419c59021ed3465f2a3e58"
+  "generatedSourceWorkbookSha256": "3ccfe818e630c8044253c168229170f21a18106069833f0ead33a207bf83f884",
+  "workbookSourceBundleSha256": "e28ebc6c824fe58d8d0c2f7aadc3a72619e59cc5839957f112894c6ab124d1db",
+  "nativeExcelQualification": "NATIVE_EXCEL_QUALIFICATION_PENDING",
+  "runtimeProjection": "Status = Effective AND EffectiveFrom <= evaluation date AND (EffectiveTo empty OR evaluation date < EffectiveTo); non-eligible rules are excluded with their phases, condition groups, conditions, outputs and RULE_SUPERSESSION relationships; DEV and CONTROLLED use the same projection.",
+  "deterministicEvaluationDate": "2026-07-13",
+  "workbookOnlyColumns": [
+    "tblRules.LegacyRuleId"
+  ]
 }

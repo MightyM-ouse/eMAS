@@ -40,10 +40,13 @@ class XlsmVbaPocTests(unittest.TestCase):
         for fixture in manifest["fixtures"]:
             with self.subTest(fixture=fixture["id"]):
                 tables = self.tables
+                projection_patch = None
                 if fixture.get("patch"):
                     patch = json.loads((self.fixture_root / fixture["patch"]).read_text(encoding="utf-8"))
                     tables = POC.apply_fixture_patch(self.tables, patch)
-                issues = POC.validate_workbook_tables(tables)
+                    if patch.get("projectionOperations"):
+                        projection_patch = {"operations": patch["projectionOperations"]}
+                issues = POC.validate_workbook_tables(tables, projection_patch)
                 self.assertEqual(bool(fixture["expectedValid"]), not issues, [i.render() for i in issues])
                 self.assertTrue(set(fixture.get("expectedErrorCodes", [])).issubset({i.code for i in issues}))
 
