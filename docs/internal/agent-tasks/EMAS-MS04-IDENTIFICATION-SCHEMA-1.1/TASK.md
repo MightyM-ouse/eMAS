@@ -4,7 +4,7 @@
 **Roadmap ID:** T3a  
 **Authoritative base commit:** `9d622cfa12bb94464ad5f149aec581bedac12dbc`  
 **Base branch:** `demo/end-to-end-mvp`  
-**Execution model:** Single worker (Codex) → ChatGPT central review → user merge decision  
+**Execution model:** Single worker (Claude) → ChatGPT central review → user merge decision  
 **Task type:** Bounded schema/validator/loader implementation  
 **Windows:** Runtime contract CI required; native end-to-end qualification remains deferred
 
@@ -330,7 +330,7 @@ T3b owns workbook/export implementation.
 
 Create/update:
 
-`docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-SCHEMA-1.1/reports/CODEX.md`
+`docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-SCHEMA-1.1/reports/CLAUDE.md`
 
 Include:
 
@@ -350,7 +350,7 @@ Include:
 
 Use branch:
 
-`implementation/emas-ms04-identification-schema-1-1`
+`implementation/emas-ms04-identification-schema-1-1-claude`
 
 Open a **draft PR into `demo/end-to-end-mvp`**.
 
@@ -368,3 +368,14 @@ Ready for ChatGPT review when:
 6. loader safely supports 1.1.0;
 7. canonical docs and fixtures are synchronized;
 8. no workbook/export/T4 implementation leaks into scope.
+
+
+## Worker reassignment note
+
+Codex did not start this task due token availability. The implementation owner is now **Claude**.
+
+This is a worker substitution only. Scope, acceptance criteria, schema decisions, allowed files and merge gate are unchanged.
+
+Claude must use a fresh implementation branch/worktree and must not continue from the completed T3c analysis branch.
+
+The completed T3c report in PR #50 may be read as informative context, especially its legacy-rule guard mapping, but it is **not normative until central review/user acceptance**. Do not widen T3a based on T3c open decisions U1–U11.
