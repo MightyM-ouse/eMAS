@@ -138,3 +138,26 @@ Do not fix the unrelated PS5.1 UTF-8 assertion inside T4.
 Do **not** merge PR #56 yet.
 
 First amend/accept/merge T4a. Then Codex refreshes from the coordination branch, implements E-2 through E-4, reruns the formal oracle gate, and returns a new fixed SHA for central review.
+
+
+## Implementation ownership handoff
+
+T4a is now accepted and merged.
+
+Accepted T4a merge:
+
+`ce8d56c0df59d7e8635207baec853b07f17462de`
+
+The T4b branch was synchronized with the accepted oracle through:
+
+`15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`
+
+Codex produced the initial engine but is unavailable for continuation due token limits. Remaining T4b implementation ownership is transferred to **Claude**.
+
+The central-review findings E-2 through E-4 remain binding:
+
+- implement MATCHES_PATTERN;
+- fix Identification-only orchestration so it does not force reference/checksum deep checks;
+- execute and wire the accepted 23-case oracle into CI.
+
+The accepted T4a oracle and behavior contract are read-only.
