@@ -1,163 +1,173 @@
 # ChatGPT Review — T4b IdentificationInterpretation Engine
 
-**Status:** `CHANGES_REQUIRED — WAIT FOR T4A AMENDMENT/MERGE`  
-**Reviewed Codex commit:** `4461547099b50ae99451602df51d85e003cfa6b6`  
-**Reviewed PR:** #56
+**Status:** `REVIEW_PASS — READY_FOR_USER_DECISION`  
+**Reviewed PR:** #56  
+**Reviewed branch head:** `4ccdc3da0e8367cf06bb0a48812361c563f11b97`  
+**Claude implementation commit:** `ccce071a33aba8e4d11dac009801e74deee88189`  
+**Accepted T4a oracle merge:** `ce8d56c0df59d7e8635207baec853b07f17462de`  
+**Oracle sync merge into T4b:** `15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`
 
-## Overall verdict
+## Final verdict
 
-The core implementation is promising and materially aligned with the accepted T3/T3a/T3b design.
+T4b passes central reconciliation.
 
-Central review confirms at the reviewed SHA:
+The implementation now satisfies the accepted T4a behavioral contract and frozen independent oracle without modifying oracle expectations.
 
-- shared-core module exists and is PowerShell 5.1-oriented;
-- CEC facts are not reopened or reparsed;
-- raw evidence is preserved;
-- Strong/Supporting/Weak normalization is engine-side;
-- candidates are dimension-scoped;
-- ordinal precedence is used with no numeric Identification score;
-- MEDIUM floor behavior is implemented;
-- equal-best and best-tier contradictions become Conflict;
-- output uses separate `Identification/1.0`;
-- no `Outcome` or `SupportStatus`;
-- input/config immutability tests exist;
-- focused engine tests pass 21/21 on macOS, Windows PowerShell 7.6 and Windows PowerShell 5.1;
-- Windows PS5.1 overall CI remains red only at the known unrelated UTF-8 RuntimeConfiguration expectation.
+The central-review items E-2 through E-4 are closed:
 
-The pre-merge 21/21 oracle trial is useful evidence, but it is not the formal gate because T4a is not yet accepted/merged.
+- `MATCHES_PATTERN` implemented and cross-runtime verified;
+- Identification-only orchestration no longer forces reference/checksum deep checks;
+- the complete accepted 23-case oracle is wired into CI and passes on all required PowerShell lanes.
 
-T4b is **not ready for merge**.
+## MATCHES_PATTERN
 
-## Required change E-1 — T4a final oracle gate
+Accepted implementation:
 
-T4a has central-review amendments pending.
+- explicit `.NET Regex`;
+- `CultureInvariant`;
+- `IgnoreCase` only when `caseSensitive = false`;
+- fixed 1-second timeout;
+- unanchored `IsMatch`;
+- String fields only;
+- no PowerShell `-match` / `Select-String`;
+- invalid/null/empty/non-String pattern configuration fails as `IDI-CONFIG-005`;
+- regex match timeout fails as `IDI-CONFIG-006`;
+- invalid pattern validation occurs before rule evaluation and before output writing.
 
-Codex must not finalize against the current provisional oracle.
+Accepted oracle cases:
 
-After PR #55 is amended, accepted and merged into the coordination branch:
+- IDO-22 — pattern success/case-sensitivity behavior;
+- IDO-23 — invalid pattern fails with `IDI-CONFIG-005` and produces no output.
 
-1. update this implementation branch from `coordination/emas-ms04-identification-interpretation`;
-2. treat oracle files as read-only;
-3. run the complete accepted oracle;
-4. report the fixed accepted oracle commit/SHA;
-5. fix implementation defects, never expected oracle output.
+## Identification-only short pipeline
 
-## Required change E-2 — MATCHES_PATTERN
+Accepted.
 
-The T4b TASK requires `MATCHES_PATTERN` as a bounded Identification operator.
+When Identification is requested without any explicit deep-check switch, the script now executes only:
 
-The reviewed implementation rejects it through `IDI-CONFIG-004`.
+`RepositoryDiscovery → BackboneXmlInventory → ClassificationEvidenceCollection → IdentificationInterpretation`
 
-Add support for valid string regex matching with:
+It no longer implicitly executes:
 
-- case-sensitive / case-insensitive behavior from the condition;
-- deterministic .NET regex semantics compatible with Windows PowerShell 5.1 and PowerShell 7.6;
-- safe failure with a stable configuration error for an invalid regex;
-- focused engine test coverage;
-- conformance to the amended T4a oracle case.
+- ReferenceInventory;
+- ReferenceResolution;
+- MissingReferenceInterpretation;
+- DeclaredChecksumComparison;
+- ChecksumMismatchInterpretation.
 
-Do not broaden the task into numeric GT/GTE/LT/LTE/BETWEEN operators.
+When a caller explicitly requests a deep capability, the existing dependency chain remains intact.
 
-## Required change E-3 — Pre-Sales orchestration must not force deep checks
+The focused orchestration test executes the real RD/BXI/CEC/Identification modules and substitutes tracing stubs for the five deep capabilities. It confirms:
 
-The current `-IncludeIdentificationInterpretation` integration causes the script to traverse:
+- Identification-only calls none of them;
+- CEC + Identification also calls none;
+- explicit checksum comparison causes the deep chain to execute in dependency order.
 
-RepositoryDiscovery → BackboneXmlInventory → ReferenceInventory → ReferenceResolution → MissingReferenceInterpretation → DeclaredChecksumComparison → ChecksumMismatchInterpretation → CEC → Identification
+This satisfies the Pre-Sales boundary that deep reference/checksum processing must not become mandatory merely to obtain Identification.
 
-even when the caller requested only Identification.
+## Accepted oracle conformance
 
-That makes Identification implicitly depend on reference/checksum processing.
+Formal accepted-oracle result:
 
-This conflicts with the Pre-Sales phase contract, which says referenced-file/checksum/deep validation must not become mandatory for the phase.
+**23/23 PASS**
 
-Required fix:
+- 22 result-producing cases;
+- 1 expected-failure case.
 
-- when Identification is requested **without explicit deep-check switches**, use the shortest factual chain needed:
-  `RepositoryDiscovery → BackboneXmlInventory → ClassificationEvidenceCollection → IdentificationInterpretation`;
-- only execute reference/missing/checksum capabilities when the caller explicitly requests them;
-- preserve existing behavior for callers who explicitly request the deeper switches;
-- keep the Identification output as the separate terminal document.
+The harness:
 
-If clean orchestration would require a risky broad script refactor, remove/defer the T4 script integration and leave the shared-core engine as the T4 baseline rather than making deep checks mandatory by accident.
+- reads the frozen oracle fixtures;
+- uses the exact ScannerObservations fixture SHA-256 as evidence-document provenance;
+- handles the expected failure contract;
+- verifies no output is written on failure;
+- verifies scanner/config objects are not mutated;
+- rechecks fixture file hashes after each case;
+- removes only the explicitly non-deterministic execution metadata fields before semantic comparison.
 
-Add a focused test proving Identification-only mode does not invoke/reference the deep-check capabilities.
+Central review confirms the PR does not modify the accepted T4a oracle or behavioral contract.
 
-## Required change E-4 — formal oracle CI
+## CI verification
 
-After T4a is merged, add the read-only oracle conformance harness to CI.
+Latest reviewed workflow run:
 
-At minimum run it on:
+`37530424352`
 
-- Windows PowerShell 5.1;
-- Windows PowerShell 7.6;
-- macOS PowerShell 7.6 development lane.
+Results:
 
-The known unrelated PS5.1 UTF-8 failure may remain, but the oracle step itself must report separately and pass.
+| Lane | Runtime config | T4b engine | Accepted oracle | Job |
+|---|---|---|---|---|
+| Windows PowerShell 5.1 | 27/28 — known UTF-8 expectation only | PASS 28/28 | PASS 23/23 | red only from known UTF-8 test |
+| Windows PowerShell 7.6 | PASS 28/28 | PASS 28/28 | PASS 23/23 | green |
+| macOS PowerShell 7.6 | PASS 28/28 | PASS 28/28 | PASS 23/23 | green |
+| Static runtime contracts | n/a | n/a | n/a | green |
 
-## Central decisions inherited from T4a
+The PS5.1 failure is exactly the pre-existing:
 
-Implement/follow the accepted T4a decisions after its amendment:
+`Expected=Synthetic UTF-8 â€“ PrÃ¼fung; Actual=Synthetic UTF-8 – Prüfung`
 
-- B-1 fixed `CEC-FIELD-PROJECTION/1` accepted for bounded T4;
-- B-2 runtime strength cap accepted;
-- B-3 NotAssessed => ReviewRequired true;
-- B-4 generic MEDIUM physical-v4 rule may evaluate if explicitly Effective, but production v4 rule content remains blocked by T2/governance;
-- B-5 lower-tier contradiction sets review/limiting factor without automatic confidence rewrite;
-- B-6 UNKNOWN and MANUAL_REVIEW tie behavior share the same Identification/1.0 machine result;
-- B-7 relationship-derived Region is deferred from bounded T4.
+and occurs before separate `if: always()` T4 engine/oracle steps, both of which pass.
 
-Do not hard-code a special `ECTD_4_0` exception into the engine.
+Therefore the Windows PS5.1 CI job's red aggregate status is **not a T4 blocker**.
 
-## Non-blocking provenance clarification
+## Regression evidence
 
-When `EvidenceSourceSha256` is not supplied, the module computes an in-memory object serialization hash.
+Accepted reported regression evidence:
 
-Document this as evidence-source identity, not as an original source-file checksum.
+- focused engine: 28/28;
+- RuntimeConfiguration: 28/28 locally;
+- schema fixture compositions: 43/43;
+- schema tests: 44;
+- static runtime tests: 12;
+- T3b VBA/export tests: 22;
+- reporting: 28;
+- Wave 1 scanner chain through CEC: PASS;
+- root-level dossier: PASS;
+- RepositoryDiscovery B3: 12/12;
+- eCTD v4 discovery: 22/22 + 2/2.
 
-When an exact ScannerObservations file hash is available, prefer passing that exact hash.
+Wave1D was not rerun because its external corpus was unavailable in the worker workspace. This is not a T4 blocker because T4 does not change RepositoryDiscovery/dossier-diversity behavior and the protected scanner/CEC areas are unchanged.
 
-## Regression required after follow-up
+Native Excel qualification remains a separate T3b/final qualification gate and is not a T4 engine acceptance condition.
 
-Report:
+## Immutability / scope
 
-- focused T4b engine tests;
-- accepted T4a oracle conformance;
-- RuntimeConfiguration tests;
-- Schema tests;
-- CEC tests;
-- T3b POC tests;
-- relevant scanner integration tests;
-- macOS PS7.6;
-- Windows PS7.6;
-- Windows PS5.1 focused T4 tests/oracle gate.
+Central review accepts the reported immutability boundary:
 
-Do not fix the unrelated PS5.1 UTF-8 assertion inside T4.
+- accepted oracle and T4a behavior contract unchanged;
+- no changes to PowerShell runtime adapters;
+- no changes to Runtime JSON schema/configuration/build tooling;
+- no changes to CEC/scanner evidence semantics;
+- no changes to T1b/T2 or unresolved T3c U2–U9 policy.
+
+The engine still consumes CEC facts and validated Schema 1.1 runtime configuration only.
+
+## IDI-CONFIG-007
+
+The renumbered `IDI-CONFIG-007` is accepted as a **defensive internal invariant code**, not a new T4 behavioral-contract requirement.
+
+It protects conditions that should already have been rejected by the accepted Schema 1.1 / semantic validation boundary:
+
+- invalid `EVIDENCE_STRENGTH` ordering;
+- invalid configured evidence floor.
+
+It is therefore not necessary to reopen or mutate the frozen T4a oracle/behavior contract merely to list this internal defensive failure.
+
+Before a future public/stable error-code catalogue is declared, consolidate `IDI-*` engine errors into a governed error-contract document. That is technical debt, not a T4 blocker.
+
+## Governance boundaries retained
+
+T4 acceptance does **not** mean:
+
+- legacy T3c rules become Effective;
+- relationship-derived Region is implemented;
+- physical v4 markers alone become Strong/HIGH proof;
+- T2 structured v4 evidence is complete;
+- eMAS declares regulatory validity/readiness.
+
+The engine is configuration-driven and remains bounded to Pre-Sales Identification interpretation.
 
 ## Recommendation
 
-Do **not** merge PR #56 yet.
+**Accept and merge PR #56 into `coordination/emas-ms04-identification-interpretation` as the T4b IdentificationInterpretation engine baseline.**
 
-First amend/accept/merge T4a. Then Codex refreshes from the coordination branch, implements E-2 through E-4, reruns the formal oracle gate, and returns a new fixed SHA for central review.
-
-
-## Implementation ownership handoff
-
-T4a is now accepted and merged.
-
-Accepted T4a merge:
-
-`ce8d56c0df59d7e8635207baec853b07f17462de`
-
-The T4b branch was synchronized with the accepted oracle through:
-
-`15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`
-
-Codex produced the initial engine but is unavailable for continuation due token limits. Remaining T4b implementation ownership is transferred to **Claude**.
-
-The central-review findings E-2 through E-4 remain binding:
-
-- implement MATCHES_PATTERN;
-- fix Identification-only orchestration so it does not force reference/checksum deep checks;
-- execute and wire the accepted 23-case oracle into CI.
-
-The accepted T4a oracle and behavior contract are read-only.
+After that merge, perform one final coordination-branch CI/reconciliation check before merging parent T4 coordination PR #54 into `demo/end-to-end-mvp`.
