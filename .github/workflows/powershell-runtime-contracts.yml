@@ -91,6 +91,10 @@ jobs:
       - name: Run dependency-free Runtime JSON configuration tests
         shell: powershell
         run: .\tests\runtime\Test-eMASRuntimeConfiguration.ps1
+      - name: Run IdentificationInterpretation engine tests
+        if: always()
+        shell: powershell
+        run: .\tests\identification-interpretation\engine\Test-eMASIdentificationInterpretation.ps1
 
   windows-powershell-76-contracts:
     runs-on: windows-latest
@@ -120,6 +124,9 @@ jobs:
       - name: Run dependency-free Runtime JSON configuration tests
         shell: pwsh
         run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
+      - name: Run IdentificationInterpretation engine tests
+        shell: pwsh
+        run: ./tests/identification-interpretation/engine/Test-eMASIdentificationInterpretation.ps1
 
   macos-powershell-76-development-contracts:
     runs-on: macos-latest
@@ -147,6 +154,9 @@ jobs:
       - name: Run dependency-free Runtime JSON configuration tests
         shell: pwsh
         run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
+      - name: Run IdentificationInterpretation engine tests
+        shell: pwsh
+        run: ./tests/identification-interpretation/engine/Test-eMASIdentificationInterpretation.ps1
       - name: Install schema validation dependencies
         run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
       - name: Run schema, fixture and pure runtime-contract tests
