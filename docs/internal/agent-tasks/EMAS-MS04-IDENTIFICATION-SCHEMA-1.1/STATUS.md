@@ -4,7 +4,7 @@
 **Roadmap ID:** T3a  
 **Authoritative base:** `9d622cfa12bb94464ad5f149aec581bedac12dbc`  
 **Current project baseline includes T1a:** `08f4d0d240aac5393cba97f65ce9803fb4fffaa4`  
-**Overall status:** `REVIEW_PASS_READY_FOR_USER_DECISION`
+**Overall status:** `MAC_ACCEPTED_WINDOWS_PENDING`
 
 | Gate | Status |
 |---|---|
@@ -24,8 +24,8 @@
 | Windows PS7.6 / macOS / static contracts | PASS |
 | Windows PS5.1 overall job | FAIL — pre-existing UTF-8 assertion only |
 | ChatGPT central review | PASS |
-| User merge decision | READY |
-| T3b workbook/export | BLOCKED_ON_T3A_ACCEPTANCE |
+| User merge decision | ACCEPTED |
+| T3b workbook/export | AUTHORIZED_TO_PREPARE_AFTER_T3A_MERGE |
 | T4 IdentificationInterpretation | BLOCKED_ON_T3B |
 | native Windows end-to-end qualification | DEFERRED |
 
