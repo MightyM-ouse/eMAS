@@ -21,6 +21,8 @@ Read:
 - canonical authority/requirements/configuration documents;
 - current official regulatory sources as required.
 
+Current project baseline also includes accepted T1a at `08f4d0d240aac5393cba97f65ce9803fb4fffaa4`. Treat its physical-marker evidence strengths as accepted implementation context, but do not modify CEC or implementation code.
+
 Use the prior internal artifact:
 
 `eMAS_PreSalesMapping.json`
