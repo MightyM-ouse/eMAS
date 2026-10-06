@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-062",
+  "scenarioId": "V4-10",
+  "title": "Confirmed unit missing sha256.txt",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "00c4d4173774b6a7a30af30648a86b6ff5e3c06c6a17b3dd1f69ba834a5ef782",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/1",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

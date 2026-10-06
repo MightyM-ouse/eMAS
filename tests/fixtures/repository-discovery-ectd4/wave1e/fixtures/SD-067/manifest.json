@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-067",
+  "scenarioId": "V4-14",
+  "title": "Case-variant structural markers",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "17189fc7a5fa5319ba56e5a6ed1cea38c7697a4e8d0a507d5a30bf63f6bdf012",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/1",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

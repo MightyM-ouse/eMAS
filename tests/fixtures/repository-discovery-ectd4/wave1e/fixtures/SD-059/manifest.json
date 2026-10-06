@@ -1,0 +1,15 @@
+{
+  "sampleId": "SD-059",
+  "scenarioId": "V4-07",
+  "title": "Unrelated year folders",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "80ea04154c2467ce8ef290534beea8084450c9b3f4228aad56436b28f1b07987",
+  "expected": {
+    "candidatePaths": [],
+    "wrapperPaths": [],
+    "units": [],
+    "observationCounts": {},
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

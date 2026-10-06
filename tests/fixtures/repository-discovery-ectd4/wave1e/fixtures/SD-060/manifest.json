@@ -1,0 +1,15 @@
+{
+  "sampleId": "SD-060",
+  "scenarioId": "V4-08",
+  "title": "Numeric folders with arbitrary XML",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "a56cffcf88dc3decb2bec884f1a8e9364ceea37026fb64d4a9a6e2942a1f4baf",
+  "expected": {
+    "candidatePaths": [],
+    "wrapperPaths": [],
+    "units": [],
+    "observationCounts": {},
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

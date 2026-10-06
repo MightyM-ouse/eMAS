@@ -1,0 +1,41 @@
+{
+  "sampleId": "SD-069",
+  "scenarioId": "V4-16",
+  "title": "Mixed v3-to-v4 physical container",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "00dc92126cdf3ca206a63fd0b87e9e34e568829a718eaf2931c7794345e8cda3",
+  "expected": {
+    "candidatePaths": [
+      "App"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "App/0000",
+        "candidatePath": "App",
+        "sequenceLikeKind": "NumericSequenceDirectory",
+        "isExactSequenceFolder": true,
+        "sequenceNumber": 0
+      },
+      {
+        "relativePath": "App/0003",
+        "candidatePath": "App",
+        "sequenceLikeKind": "NumericSequenceDirectory",
+        "isExactSequenceFolder": true,
+        "sequenceNumber": 3
+      },
+      {
+        "relativePath": "App/4",
+        "candidatePath": "App",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 4
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

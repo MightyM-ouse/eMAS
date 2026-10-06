@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-061",
+  "scenarioId": "V4-09",
+  "title": "Minimal submission-unit marker",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "28ac1da4cc5dbc0822b44341f5a5a7f6747eee0f101d4dedc81c5d2c0f5e6a60",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/12",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 12
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

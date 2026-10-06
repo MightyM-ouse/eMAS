@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-063",
+  "scenarioId": "V4-11",
+  "title": "Damaged fallback marker set",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "760af9a19f62ff17fd2e2da6bc7c5616bd72875a8c5ceb6e0342d0b63f8b51da",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/1",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "DamagedSubmissionUnitCandidate",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "DamagedSubmissionUnitMarkerSet": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

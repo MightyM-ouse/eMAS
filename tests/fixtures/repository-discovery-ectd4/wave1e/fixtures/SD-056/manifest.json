@@ -1,0 +1,32 @@
+{
+  "sampleId": "SD-056",
+  "scenarioId": "V4-04",
+  "title": "Neutral deep wrappers",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "5a7eb752b5256cdb01a3552e0d8be04fea3eacd09963b5bea6fb873e8f064474",
+  "expected": {
+    "candidatePaths": [
+      "Customer/Export/Set/ema000123"
+    ],
+    "wrapperPaths": [
+      "Customer",
+      "Customer/Export",
+      "Customer/Export/Set"
+    ],
+    "units": [
+      {
+        "relativePath": "Customer/Export/Set/ema000123/7",
+        "candidatePath": "Customer/Export/Set/ema000123",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 7
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1,
+      "WrapperDepth": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

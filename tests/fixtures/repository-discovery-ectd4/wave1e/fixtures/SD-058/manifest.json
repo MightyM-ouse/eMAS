@@ -1,0 +1,35 @@
+{
+  "sampleId": "SD-058",
+  "scenarioId": "V4-06",
+  "title": "Separate v3 and v4 containers",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "b0faef0afca7418414506df7f8626ca3baf8172747091018bb1481bdd273c712",
+  "expected": {
+    "candidatePaths": [
+      "Legacy",
+      "Modern"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Legacy/0000",
+        "candidatePath": "Legacy",
+        "sequenceLikeKind": "NumericSequenceDirectory",
+        "isExactSequenceFolder": true,
+        "sequenceNumber": 0
+      },
+      {
+        "relativePath": "Modern/1",
+        "candidatePath": "Modern",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

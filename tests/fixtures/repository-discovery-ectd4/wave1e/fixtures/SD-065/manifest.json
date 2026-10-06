@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-065",
+  "scenarioId": "V4-13",
+  "title": "Root-level FDA-like unit",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "0c74cc4c111005f95c2880b8e05e2254f46c1d8756bf880f02617627b2f1d422",
+  "expected": {
+    "candidatePaths": [
+      ""
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "3",
+        "candidatePath": "",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 3
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}
