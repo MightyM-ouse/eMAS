@@ -1,3 +1,5 @@
 # Claude/Cursor launch
 
-Read `docs/internal/agent-workflow/AGENT_WORKFLOW.md` and this task's `TASK.md`. Review the exact Codex implementation commit SHA, read-only except for `reports/CLAUDE.md`. Verify both pre-fix reproductions, empty-root semantics, the minimal two-module fix, focused-test failure-before/pass-after evidence, wrapped-root parity, path-safety behavior, Windows PowerShell 5.1 compatibility, frozen-input integrity, and strict scope compliance. Do not edit code, tests, task files, or another report; do not merge.
+Not part of the default execution path for this task.
+
+ChatGPT is the central reviewer for the Mac implementation stage. Use Claude only if the coordinator assigns a specific independent review question after Codex publishes the implementation PR. Do not start a general duplicate review automatically.
