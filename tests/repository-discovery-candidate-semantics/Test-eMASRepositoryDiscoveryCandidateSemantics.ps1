@@ -2,7 +2,8 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string] $OutputRoot
+    [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string] $OutputRoot,
+    [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string] $CorpusRoot
 )
 
 Set-StrictMode -Version 2.0
@@ -10,6 +11,7 @@ $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $modulePath = Join-Path $repositoryRoot 'engine/powershell51/eMAS.RepositoryDiscovery.psm1'
+$entryScriptPath = Join-Path $repositoryRoot 'scripts/eMAS-PreSalesAssessment.ps1'
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 [void][System.IO.Directory]::CreateDirectory($resolvedOutputRoot)
 Import-Module -Name $modulePath -Force -ErrorAction Stop
@@ -140,7 +142,7 @@ try {
         $candidate = @($directoryResult.DossierCandidates | Where-Object { $_.RelativePath -eq 'AccessExact' })[0]
         Assert-eMASB3True ($null -ne $candidate) 'Unreadable exact sequence did not fail open.'
         $sequence = @($directoryResult.Sequences | Where-Object { $_.DossierId -eq $candidate.DossierId -and $_.RelativePath -eq 'AccessExact/0001' })[0]
-        Assert-eMASB3Equal 'AccessDenied' $sequence.CaptureStatus 'Unreadable exact sequence capture status differs.'
+        Assert-eMASB3Equal 1 @($directoryResult.Repository.Errors | Where-Object { $_.RelativePath -eq 'AccessExact/0001' -and $_.CaptureStatus -eq 'AccessDenied' }).Count 'Unreadable exact sequence access error was not retained.'
         Assert-eMASB3Equal 0 @($directoryResult.Observations | Where-Object { $_.SubjectId -eq $sequence.SequenceId -and $_.Code -eq 'EmptyExactSequenceFolder' }).Count 'Unreadable exact sequence was reported as empty.'
     }
 
@@ -153,6 +155,25 @@ try {
         $rootResult = Get-eMASB3Result -SourcePath (Join-Path $sourceRoot 'RootDossier') -ExecutionId 'EXEC-RD-B3-ROOT'
         Assert-eMASB3Equal 1 @($rootResult.DossierCandidates).Count 'Root-level dossier candidate count differs.'
         Assert-eMASB3Equal '' ([string]$rootResult.DossierCandidates[0].RelativePath) 'Root-level dossier path differs.'
+    }
+
+    Invoke-eMASB3Check -Name 'year-wrapped SD-002 retains the accepted end-to-end projection' -Action {
+        $sd002Zip = Join-Path ([System.IO.Path]::GetFullPath($CorpusRoot)) 'fixtures/SD-002/fixture.zip'
+        Assert-eMASB3True ([System.IO.File]::Exists($sd002Zip)) 'Frozen SD-002 fixture is missing.'
+        $sd002Extracted = Join-Path $temporaryRoot 'sd002-extracted'
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($sd002Zip, $sd002Extracted)
+        $dossierRoots = [System.IO.Directory]::GetDirectories($sd002Extracted)
+        Assert-eMASB3Equal 1 $dossierRoots.Count 'SD-002 extracted dossier-root count differs.'
+        $wrappedDossier = Join-Path $temporaryRoot 'year-wrapper/Exports/2024/ProductABC'
+        [void][System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($wrappedDossier))
+        Copy-Item -LiteralPath $dossierRoots[0] -Destination $wrappedDossier -Recurse
+        $wrappedOutput = Join-Path $resolvedOutputRoot 'year-wrapped-sd002.json'
+        $wrapped = & $entryScriptPath -SourcePath (Join-Path $temporaryRoot 'year-wrapper') -OutputPath $wrappedOutput -ExecutionId 'EXEC-RD-B3-YEAR-WRAPPER' -IncludeClassificationEvidenceCollection
+        Assert-eMASB3Equal 1 @($wrapped.DossierCandidates).Count 'Year-wrapped SD-002 candidate count differs.'
+        Assert-eMASB3Equal 'Exports/2024/ProductABC' ([string]$wrapped.DossierCandidates[0].RelativePath) 'Year-wrapped SD-002 dossier path differs.'
+        Assert-eMASB3Equal 94 @($wrapped.References).Count 'Year-wrapped SD-002 reference count differs.'
+        Assert-eMASB3Equal 93 @($wrapped.References | Where-Object { $_.ResolutionStatus -eq 'ResolvedPresent' }).Count 'Year-wrapped SD-002 resolved-present count differs.'
+        Assert-eMASB3Equal 86 @($wrapped.ClassificationEvidence).Count 'Year-wrapped SD-002 classification-evidence count differs.'
     }
 
     foreach ($lockedPath in @($lockedPaths)) { & /bin/chmod 700 $lockedPath }
