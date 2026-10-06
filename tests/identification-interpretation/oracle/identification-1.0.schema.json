@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MightyM-ouse/eMAS/tests/identification-interpretation/oracle/identification-1.0.schema.json",
+  "title": "eMAS.MS04.PreSales.Identification/1.0 (bounded T4 contract, oracle copy)",
+  "description": "Frozen by T4a. Machine result model = EvaluationStatus + Value/ValueSet + Confidence + ReviewRequired. No Outcome, no SupportStatus, no numeric score. Report projections (TechnicalFormat, SpecificationProfile, DossierContext) are derived outside this contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ContractId", "Execution", "EvidenceSource", "RuntimeConfig", "Normalization", "FieldProjection", "Results"],
+  "properties": {
+    "ContractId": {"const": "eMAS.MS04.PreSales.Identification/1.0"},
+    "Execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["Capability", "ExecutionId", "EngineVersion", "StartedAtUtc", "CompletedAtUtc", "CompletionStatus"],
+      "properties": {
+        "Capability": {"const": "IdentificationInterpretation"},
+        "ExecutionId": {"type": "string", "minLength": 1},
+        "EngineVersion": {"type": ["string", "null"]},
+        "StartedAtUtc": {"type": ["string", "null"]},
+        "CompletedAtUtc": {"type": ["string", "null"]},
+        "CompletionStatus": {"enum": ["Completed", "CompletedWithEvidenceGaps"]}
+      }
+    },
+    "EvidenceSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ContractId", "ExecutionId", "DocumentSha256"],
+      "properties": {
+        "ContractId": {"const": "eMAS.MS04.PreSales.ScannerObservations/1.0"},
+        "ExecutionId": {"type": "string", "minLength": 1},
+        "DocumentSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "RuntimeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ConfigurationId", "SchemaVersion", "MappingVersion", "ExportType", "Sha256"],
+      "properties": {
+        "ConfigurationId": {"type": "string", "minLength": 1},
+        "SchemaVersion": {"const": "1.1.0"},
+        "MappingVersion": {"type": "string", "minLength": 1},
+        "ExportType": {"enum": ["DEV", "CONTROLLED"]},
+        "Sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "Normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["PolicyId", "Version", "Mapping"],
+      "properties": {
+        "PolicyId": {"const": "EVIDENCE-STRENGTH-NORMALIZATION"},
+        "Version": {"const": "1"},
+        "Mapping": {"const": {"Strong": "STRONG", "Supporting": "MEDIUM", "Weak": "WEAK"}}
+      }
+    },
+    "FieldProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["PolicyId", "Version"],
+      "properties": {
+        "PolicyId": {"const": "CEC-FIELD-PROJECTION"},
+        "Version": {"const": "1"}
+      }
+    },
+    "Results": {"type": "array", "items": {"$ref": "#/$defs/result"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "strength": {"enum": ["STRONG", "MEDIUM", "WEAK"]},
+    "nullableStrength": {"enum": ["STRONG", "MEDIUM", "WEAK", null]},
+    "evidenceId": {"type": "string", "pattern": "^EVD-[0-9]{4,}$"},
+    "idList": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "citedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["EvidenceId", "RawStrength", "NormalizedStrength", "SourceTier"],
+      "properties": {
+        "EvidenceId": {"$ref": "#/$defs/evidenceId"},
+        "RawStrength": {"enum": ["Strong", "Supporting", "Weak"]},
+        "NormalizedStrength": {"$ref": "#/$defs/strength"},
+        "SourceTier": {"type": "string", "minLength": 1}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["Value", "BestSupportStrength", "BestContradictionStrength", "SupportingRuleIds", "ContradictingRuleIds", "SupportingEvidence", "ContradictingEvidence"],
+      "properties": {
+        "Value": {"type": "string", "minLength": 1},
+        "BestSupportStrength": {"$ref": "#/$defs/nullableStrength"},
+        "BestContradictionStrength": {"$ref": "#/$defs/nullableStrength"},
+        "SupportingRuleIds": {"$ref": "#/$defs/idList"},
+        "ContradictingRuleIds": {"$ref": "#/$defs/idList"},
+        "SupportingEvidence": {"type": "array", "items": {"$ref": "#/$defs/citedEvidence"}},
+        "ContradictingEvidence": {"type": "array", "items": {"$ref": "#/$defs/citedEvidence"}}
+      }
+    },
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["FieldCode", "EvidenceId", "Reason"],
+      "properties": {
+        "FieldCode": {"type": "string", "minLength": 1},
+        "EvidenceId": {"oneOf": [{"$ref": "#/$defs/evidenceId"}, {"type": "null"}]},
+        "Reason": {"enum": ["NotCollected", "InputUnavailable", "ParseFailed", "AccessDenied", "UnmappedStrength", "AmbiguousProjection"]}
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["IdentificationId", "SubjectType", "SubjectId", "DossierId", "Dimension", "EvaluationStatus", "Value", "ValueSet", "Confidence",
+                   "ReviewRequired", "ValueSource", "Candidates", "SupportingEvidenceIds", "ContradictingEvidenceIds", "UnavailableEvidence",
+                   "FiredRuleIds", "ScoreSummary", "LimitingFactors"],
+      "properties": {
+        "IdentificationId": {"type": "string", "pattern": "^IDR-[0-9]{4,}$"},
+        "SubjectType": {"const": "Sequence"},
+        "SubjectId": {"type": "string", "minLength": 1},
+        "DossierId": {"type": "string", "minLength": 1},
+        "Dimension": {"enum": ["REGION", "AUTHORITY", "TECHNICAL_STANDARD", "REGIONAL_IMPLEMENTATION", "PRODUCT_DOMAIN", "LIFECYCLE_CONTEXT", "PRODUCT_CLASS", "PROCEDURE_CONTEXT", "SOURCE_PRESENTATION"]},
+        "EvaluationStatus": {"enum": ["Evaluated", "InsufficientEvidence", "Conflict", "NotAssessed"]},
+        "Value": {"type": ["string", "null"]},
+        "ValueSet": {"type": "null"},
+        "Confidence": {"enum": ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]},
+        "ReviewRequired": {"type": "boolean"},
+        "ValueSource": {"enum": ["Derived", null]},
+        "Candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
+        "SupportingEvidenceIds": {"type": "array", "items": {"$ref": "#/$defs/evidenceId"}, "uniqueItems": true},
+        "ContradictingEvidenceIds": {"type": "array", "items": {"$ref": "#/$defs/evidenceId"}, "uniqueItems": true},
+        "UnavailableEvidence": {"type": "array", "items": {"$ref": "#/$defs/unavailable"}},
+        "FiredRuleIds": {"$ref": "#/$defs/idList"},
+        "ScoreSummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ScoreModel", "BestStrength", "TierRank", "CountByStrength", "IndependentSourceClassCount"],
+          "properties": {
+            "ScoreModel": {"const": "ORDINAL_TIER/1"},
+            "BestStrength": {"$ref": "#/$defs/nullableStrength"},
+            "TierRank": {"enum": [1, 2, 3, null]},
+            "CountByStrength": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["STRONG", "MEDIUM", "WEAK"],
+              "properties": {"STRONG": {"type": "integer", "minimum": 0}, "MEDIUM": {"type": "integer", "minimum": 0}, "WEAK": {"type": "integer", "minimum": 0}}
+            },
+            "IndependentSourceClassCount": {"type": ["integer", "null"], "minimum": 0}
+          }
+        },
+        "LimitingFactors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["BelowEvidenceFloor", "EqualBestStrengthCandidates", "LowerTierContradiction", "NoConfidencePolicyMatched",
+                             "NoIdentificationRuleConfigured", "NoRuleFired", "RuleNotEvaluable", "StrengthCappedByEvidence", "SupportContradictedAtBestStrength"]}
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"EvaluationStatus": {"const": "Evaluated"}}}, "then": {"properties": {"Value": {"type": "string"}, "ValueSource": {"const": "Derived"}}}},
+        {"if": {"properties": {"EvaluationStatus": {"enum": ["InsufficientEvidence", "Conflict", "NotAssessed"]}}},
+         "then": {"properties": {"Value": {"type": "null"}, "ValueSource": {"type": "null"}, "Confidence": {"const": "UNKNOWN"}, "ReviewRequired": {"const": true}}}}
+      ]
+    }
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "oracleId": "EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE",
+  "oracleVersion": "1.0.0",
+  "behaviorContract": "docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE/BEHAVIOR_CONTRACT.md",
+  "outputContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "inputContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "runtimeSchemaVersion": "1.1.0",
+  "dataClassification": "SyntheticOnly",
+  "comparison": {
+    "mode": "SemanticJsonEquality",
+    "volatileFields": [
+      "Execution.EngineVersion",
+      "Execution.StartedAtUtc",
+      "Execution.CompletedAtUtc"
+    ]
+  },
+  "cases": [
+    {
+      "id": "IDO-01",
+      "title": "Strong single candidate",
+      "decisions": [
+        "N1",
+        "S1",
+        "C1"
+      ],
+      "path": "cases/IDO-01"
+    },
+    {
+      "id": "IDO-02",
+      "title": "Raw Supporting normalized to MEDIUM",
+      "decisions": [
+        "N1",
+        "N2",
+        "F1",
+        "R2"
+      ],
+      "path": "cases/IDO-02"
+    },
+    {
+      "id": "IDO-03",
+      "title": "Weak-only candidate retained, no final value",
+      "decisions": [
+        "F1",
+        "F2"
+      ],
+      "path": "cases/IDO-03"
+    },
+    {
+      "id": "IDO-04",
+      "title": "Strong beats Medium without numeric score",
+      "decisions": [
+        "S1",
+        "S2"
+      ],
+      "path": "cases/IDO-04"
+    },
+    {
+      "id": "IDO-05",
+      "title": "Medium beats Weak at MEDIUM floor",
+      "decisions": [
+        "S1",
+        "F1",
+        "R2"
+      ],
+      "path": "cases/IDO-05"
+    },
+    {
+      "id": "IDO-06",
+      "title": "Equal best-strength different candidates -> Conflict",
+      "decisions": [
+        "K1",
+        "R1"
+      ],
+      "path": "cases/IDO-06"
+    },
+    {
+      "id": "IDO-07",
+      "title": "Support and equal-strength contradiction -> Conflict",
+      "decisions": [
+        "K2",
+        "R1"
+      ],
+      "path": "cases/IDO-07"
+    },
+    {
+      "id": "IDO-08",
+      "title": "Same code string in two dimensions resolved independently",
+      "decisions": [
+        "P3",
+        "D1"
+      ],
+      "path": "cases/IDO-08"
+    },
+    {
+      "id": "IDO-09",
+      "title": "Independent-source corroboration selects the corroborated policy row",
+      "decisions": [
+        "C1",
+        "C2"
+      ],
+      "path": "cases/IDO-09"
+    },
+    {
+      "id": "IDO-10",
+      "title": "Single-source Strong follows its explicit policy row",
+      "decisions": [
+        "C1",
+        "C3"
+      ],
+      "path": "cases/IDO-10"
+    },
+    {
+      "id": "IDO-11",
+      "title": "Unmapped raw strength is unavailable, never guessed",
+      "decisions": [
+        "N3",
+        "A1"
+      ],
+      "path": "cases/IDO-11",
+      "provisionalPendingBlockers": [
+        "B-3"
+      ]
+    },
+    {
+      "id": "IDO-12",
+      "title": "Evidence not collected -> NotAssessed",
+      "decisions": [
+        "A1",
+        "A2"
+      ],
+      "path": "cases/IDO-12",
+      "provisionalPendingBlockers": [
+        "B-3"
+      ]
+    },
+    {
+      "id": "IDO-13",
+      "title": "MISSING: assessed absence fires; not-collected stays NotAssessed",
+      "decisions": [
+        "P2",
+        "A1",
+        "A2",
+        "R2"
+      ],
+      "path": "cases/IDO-13",
+      "provisionalPendingBlockers": [
+        "B-3"
+      ]
+    },
+    {
+      "id": "IDO-14",
+      "title": "Negated guard affects firing but is not positive evidence",
+      "decisions": [
+        "P4",
+        "E1"
+      ],
+      "path": "cases/IDO-14"
+    },
+    {
+      "id": "IDO-15",
+      "title": "OR groups: only the fired group is cited",
+      "decisions": [
+        "P5",
+        "E1"
+      ],
+      "path": "cases/IDO-15"
+    },
+    {
+      "id": "IDO-16",
+      "title": "Shuffled evidence order gives equivalent ordered results",
+      "decisions": [
+        "O1"
+      ],
+      "path": "cases/IDO-16",
+      "equivalentTo": "IDO-09"
+    },
+    {
+      "id": "IDO-17",
+      "title": "Same candidate from several rules is one candidate",
+      "decisions": [
+        "K3"
+      ],
+      "path": "cases/IDO-17"
+    },
+    {
+      "id": "IDO-18",
+      "title": "Configured dimension without any Identification rule -> NotAssessed",
+      "decisions": [
+        "A3"
+      ],
+      "path": "cases/IDO-18",
+      "provisionalPendingBlockers": [
+        "B-3"
+      ]
+    },
+    {
+      "id": "IDO-19",
+      "title": "Physical v4 marker alone never yields STRONG/HIGH v4",
+      "decisions": [
+        "V1",
+        "R2"
+      ],
+      "path": "cases/IDO-19",
+      "provisionalPendingBlockers": [
+        "B-4"
+      ]
+    },
+    {
+      "id": "IDO-20",
+      "title": "Ordinal score summary only; numeric weights in non-Identification rows ignored",
+      "decisions": [
+        "S1",
+        "S2",
+        "W1"
+      ],
+      "path": "cases/IDO-20"
+    },
+    {
+      "id": "IDO-21",
+      "title": "Runtime cap: declared STRONG on raw Supporting evidence is capped to MEDIUM",
+      "decisions": [
+        "E2",
+        "V1"
+      ],
+      "path": "cases/IDO-21",
+      "provisionalPendingBlockers": [
+        "B-2"
+      ]
+    }
+  ]
+}

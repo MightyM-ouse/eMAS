@@ -1,0 +1,76 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.Identification/1.0",
+  "Execution": {
+    "Capability": "IdentificationInterpretation",
+    "ExecutionId": "EXE-ORACLE-IDO-11",
+    "EngineVersion": null,
+    "StartedAtUtc": null,
+    "CompletedAtUtc": null,
+    "CompletionStatus": "CompletedWithEvidenceGaps"
+  },
+  "EvidenceSource": {
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "ExecutionId": "EXE-ORACLE-IDO-11",
+    "DocumentSha256": "a45a9d0d0f1b35b56f2b03c63d9cade5a3cf1a070e1b01c307db7502ceb6ec27"
+  },
+  "RuntimeConfig": {
+    "ConfigurationId": "ORACLE_IDO_11",
+    "SchemaVersion": "1.1.0",
+    "MappingVersion": "1.0.0",
+    "ExportType": "DEV",
+    "Sha256": "3ea3ceba6bda00679fcdc2b2bff664e5959e4ab30c26f09139c1d254e3a54985"
+  },
+  "Normalization": {
+    "PolicyId": "EVIDENCE-STRENGTH-NORMALIZATION",
+    "Version": "1",
+    "Mapping": {
+      "Strong": "STRONG",
+      "Supporting": "MEDIUM",
+      "Weak": "WEAK"
+    }
+  },
+  "FieldProjection": {
+    "PolicyId": "CEC-FIELD-PROJECTION",
+    "Version": "1"
+  },
+  "Results": [
+    {
+      "IdentificationId": "IDR-0001",
+      "SubjectType": "Sequence",
+      "SubjectId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "Dimension": "TECHNICAL_STANDARD",
+      "EvaluationStatus": "NotAssessed",
+      "Value": null,
+      "ValueSet": null,
+      "Confidence": "UNKNOWN",
+      "ReviewRequired": true,
+      "ValueSource": null,
+      "Candidates": [],
+      "SupportingEvidenceIds": [],
+      "ContradictingEvidenceIds": [],
+      "UnavailableEvidence": [
+        {
+          "FieldCode": "CEC_XML_ROOT_ELEMENT_COMMON",
+          "EvidenceId": "EVD-0003",
+          "Reason": "UnmappedStrength"
+        }
+      ],
+      "FiredRuleIds": [],
+      "ScoreSummary": {
+        "ScoreModel": "ORDINAL_TIER/1",
+        "BestStrength": null,
+        "TierRank": null,
+        "CountByStrength": {
+          "STRONG": 0,
+          "MEDIUM": 0,
+          "WEAK": 0
+        },
+        "IndependentSourceClassCount": null
+      },
+      "LimitingFactors": [
+        "RuleNotEvaluable"
+      ]
+    }
+  ]
+}
