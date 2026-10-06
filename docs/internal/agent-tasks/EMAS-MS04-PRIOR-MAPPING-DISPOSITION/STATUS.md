@@ -3,10 +3,12 @@
 **Task ID:** `EMAS-MS04-PRIOR-MAPPING-DISPOSITION`  
 **Roadmap ID:** T3c  
 **Authoritative base:** `9d622cfa12bb94464ad5f149aec581bedac12dbc`  
+**Current project baseline includes T1a:** `08f4d0d240aac5393cba97f65ce9803fb4fffaa4`  
 **Overall status:** `READY_FOR_CLAUDE`
 
 | Gate | Status |
 |---|---|
+| T1a CEC physical-marker evidence | ACCEPTED / MERGED |
 | T3 design | ACCEPTED |
 | prior mapping source-count check | NOT_STARTED |
 | 39/39 disposition register | NOT_STARTED |
