@@ -1,0 +1,181 @@
+{
+  "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "Execution": {
+    "ScenarioId": "MS-04",
+    "Phase": "PreSales",
+    "ExecutionId": "EXE-ORACLE-IDO-15",
+    "ScannerName": "SYNTHETIC_ORACLE",
+    "ScannerVersion": "0.9.0",
+    "ContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+    "StartedAtUtc": "2026-10-06T00:00:00Z",
+    "CompletedAtUtc": "2026-10-06T00:00:01Z",
+    "CompletionStatus": "Completed",
+    "Configuration": null,
+    "Runtime": {
+      "PSEdition": "Desktop",
+      "PowerShellVersion": "5.1"
+    },
+    "Capabilities": [
+      "RepositoryDiscovery",
+      "BackboneXmlInventory",
+      "ClassificationEvidenceCollection"
+    ]
+  },
+  "Repository": {
+    "RepositoryId": "REP-0001",
+    "SourcePath": "synthetic-oracle",
+    "SourceKind": "Directory",
+    "ReadOnly": true,
+    "InventoryCaptureStatus": "Available",
+    "Entries": []
+  },
+  "DossierCandidates": [
+    {
+      "DossierId": "DOS-0001",
+      "RelativePath": "DOSSIER-A",
+      "DiscoveryEvidenceIds": [],
+      "CandidateStatus": "Candidate",
+      "DirectChildItems": [],
+      "CaptureStatus": "Available"
+    }
+  ],
+  "Sequences": [
+    {
+      "SequenceId": "SEQ-0001",
+      "DossierId": "DOS-0001",
+      "RelativePath": "DOSSIER-A/0000",
+      "FolderName": "0000",
+      "EntryKind": "Directory",
+      "IsExactSequenceFolder": true,
+      "SequenceNumber": 0,
+      "IsSequenceLike": true,
+      "SequenceLikeKind": "NumericSequenceDirectory",
+      "ParentSequenceId": null,
+      "FileCount": 1,
+      "DirectoryCount": 1,
+      "CaptureStatus": "Available"
+    }
+  ],
+  "XmlDocuments": [
+    {
+      "XmlId": "XML-0001",
+      "DossierId": "DOS-0001",
+      "SequenceId": "SEQ-0001",
+      "XmlKind": "CommonBackbone",
+      "RelativePath": "DOSSIER-A/0000/index.xml",
+      "Exists": true,
+      "ParseStatus": "Parsed",
+      "CaptureStatus": "Available"
+    }
+  ],
+  "References": [],
+  "Files": [],
+  "LifecycleRelationships": [],
+  "Observations": [],
+  "ClassificationEvidence": [
+    {
+      "EvidenceId": "EVD-0001",
+      "Dimension": "DossierContext",
+      "CandidateValue": null,
+      "EvidenceType": "DossierRootPath",
+      "RelativePath": "DOSSIER-A",
+      "ObservedValue": "DOSSIER-A",
+      "Strength": "Weak",
+      "Polarity": null,
+      "SourceRuleId": null,
+      "CaptureStatus": "Available",
+      "DossierId": "DOS-0001",
+      "SequenceId": null,
+      "XmlId": null,
+      "SubjectType": "Dossier",
+      "SourceTier": "FolderNameHeuristic",
+      "SequenceFolder": null,
+      "SequenceRelativePath": null,
+      "SourceCapability": "RepositoryDiscovery",
+      "SourceField": "DossierCandidates.RelativePath"
+    },
+    {
+      "EvidenceId": "EVD-0002",
+      "Dimension": "TechnicalFormat",
+      "CandidateValue": null,
+      "EvidenceType": "CommonBackbonePresence",
+      "RelativePath": "DOSSIER-A/0000/index.xml",
+      "ObservedValue": true,
+      "Strength": "Supporting",
+      "Polarity": null,
+      "SourceRuleId": null,
+      "CaptureStatus": "Available",
+      "DossierId": "DOS-0001",
+      "SequenceId": "SEQ-0001",
+      "XmlId": "XML-0001",
+      "SubjectType": "XmlDocument",
+      "SourceTier": "OfficialPhysicalPath",
+      "SequenceFolder": null,
+      "SequenceRelativePath": null,
+      "SourceCapability": "BackboneXmlInventory",
+      "SourceField": "XmlDocuments.Exists"
+    },
+    {
+      "EvidenceId": "EVD-0003",
+      "Dimension": "TechnicalFormat",
+      "CandidateValue": null,
+      "EvidenceType": "XmlRootElement",
+      "RelativePath": "DOSSIER-A/0000/index.xml",
+      "ObservedValue": "synthetic-not-ectd",
+      "Strength": "Strong",
+      "Polarity": null,
+      "SourceRuleId": null,
+      "CaptureStatus": "Available",
+      "DossierId": "DOS-0001",
+      "SequenceId": "SEQ-0001",
+      "XmlId": "XML-0001",
+      "SubjectType": "XmlDocument",
+      "SourceTier": "StructuredXml",
+      "SequenceFolder": null,
+      "SequenceRelativePath": null,
+      "SourceCapability": "BackboneXmlInventory",
+      "SourceField": "XmlDocuments.RootElement"
+    },
+    {
+      "EvidenceId": "EVD-0004",
+      "Dimension": "TechnicalFormat",
+      "CandidateValue": null,
+      "EvidenceType": "XmlNamespace",
+      "RelativePath": "DOSSIER-A/0000/index.xml",
+      "ObservedValue": "http://www.ich.org/ectd",
+      "Strength": "Strong",
+      "Polarity": null,
+      "SourceRuleId": null,
+      "CaptureStatus": "Available",
+      "DossierId": "DOS-0001",
+      "SequenceId": "SEQ-0001",
+      "XmlId": "XML-0001",
+      "SubjectType": "XmlDocument",
+      "SourceTier": "StructuredXml",
+      "SequenceFolder": null,
+      "SequenceRelativePath": null,
+      "SourceCapability": "BackboneXmlInventory",
+      "SourceField": "XmlDocuments.NamespaceUri"
+    }
+  ],
+  "CollectionCoverage": [
+    {
+      "CheckId": "ClassificationEvidenceCollection",
+      "SubjectType": "XmlDocument",
+      "SubjectId": "XML-0001",
+      "CaptureStatus": "Available",
+      "CollectionStatus": "Collected",
+      "RecordsProduced": 3,
+      "ReasonCode": null
+    },
+    {
+      "CheckId": "ClassificationEvidenceCollection",
+      "SubjectType": "Repository",
+      "SubjectId": "REP-0001",
+      "CaptureStatus": "Available",
+      "CollectionStatus": "Collected",
+      "RecordsProduced": 4,
+      "ReasonCode": null
+    }
+  ]
+}
