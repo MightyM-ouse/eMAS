@@ -1,0 +1,3 @@
+# Codex launch
+
+Read `docs/internal/agent-workflow/AGENT_WORKFLOW.md` and this task's `TASK.md`. Own the bounded implementation on `implementation/emas-ms04-root-level-dossier`: prove the qualified baseline, reproduce both root-level defects, add focused synthetic regression coverage, minimally fix only `ReferenceResolution` and `ClassificationEvidenceCollection`, run focused plus all eight Wave 1 suites, and publish `reports/CODEX.md`. Do not touch frozen Wave 1 inputs, `RepositoryDiscovery`, `FormatDetection`, or `RegionDetection`; do not merge. If the qualified package cannot be proven, publish `BLOCKED_BASELINE_NOT_REPRODUCIBLE` and stop.
