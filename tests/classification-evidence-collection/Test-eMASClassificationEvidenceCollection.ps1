@@ -23,6 +23,8 @@ $entryScriptPath = Join-Path $repositoryRoot 'scripts/eMAS-PreSalesAssessment.ps
 
 $resolvedCorpusRoot = [System.IO.Path]::GetFullPath($CorpusRoot)
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
+$wave1ERoot = Join-Path $repositoryRoot 'tests/fixtures/repository-discovery-ectd4/wave1e'
+$wave1EManifestPath = Join-Path $wave1ERoot 'WAVE1E_FREEZE_MANIFEST.csv'
 $resultRoot = Join-Path $resolvedOutputRoot 'results'
 [void][System.IO.Directory]::CreateDirectory($resultRoot)
 
@@ -36,6 +38,16 @@ $resultBySample = @{}
 $inputBySample = @{}
 $frozenBeforeVerified = 0
 $frozenAfterVerified = 0
+$wave1EState = @{}
+$wave1EFrozenBeforeVerified = 0
+$wave1EFrozenAfterVerified = 0
+$newPhysicalMarkerEvidenceTypes = @(
+    'RegulatoryUnitKind',
+    'SubmissionUnitMarkerFile',
+    'TocFileMarker',
+    'ChecksumFileMarker',
+    'UtilityDtdFolderMarker'
+)
 
 function Get-eMASTestSha256 {
     param([Parameter(Mandatory = $true)][string] $Path)
@@ -73,7 +85,7 @@ function Get-eMASSortedOrdinal {
 
 function ConvertTo-eMASDossierRelativeProjection {
     param([Parameter(Mandatory = $true)][object] $Result)
-    return ConvertTo-eMASJsonText ([object[]]@($Result.ClassificationEvidence | Where-Object { $_.EvidenceType -ne 'DossierRootPath' } | ForEach-Object {
+    return ConvertTo-eMASJsonText ([object[]]@($Result.ClassificationEvidence | Where-Object { $_.EvidenceType -ne 'DossierRootPath' -and $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType } | ForEach-Object {
         [pscustomobject][ordered]@{ EvidenceType = $_.EvidenceType; Dimension = $_.Dimension; Strength = $_.Strength; SourceTier = $_.SourceTier; SequenceFolder = $_.SequenceFolder; SequenceRelativePath = $_.SequenceRelativePath; ObservedValue = $_.ObservedValue; CaptureStatus = $_.CaptureStatus; XmlId = $_.XmlId; SequenceId = $_.SequenceId }
     }))
 }
@@ -115,6 +127,16 @@ foreach ($manifestRow in @($manifestRows | Where-Object { $_.VerificationStatus 
 }
 Write-Output ('[PASS] Pre-test freeze gate verified {0} ZIP fixtures.' -f $frozenBeforeVerified)
 
+foreach ($manifestRow in @(Import-Csv -LiteralPath $wave1EManifestPath)) {
+    $fixturePath = Join-Path $wave1ERoot ($manifestRow.FixtureFilename -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+    if (-not [System.IO.File]::Exists($fixturePath)) { throw ('FREEZE-VERIFY-005 Wave1E fixture is missing: {0}' -f $manifestRow.SampleId) }
+    $actualHash = Get-eMASTestSha256 -Path $fixturePath
+    if ($actualHash -ne $manifestRow.FixtureSHA256) { throw ('FREEZE-VERIFY-006 Wave1E fixture hash mismatch: {0}' -f $manifestRow.SampleId) }
+    $wave1EState[$manifestRow.SampleId] = [pscustomobject]@{ Path = $fixturePath; Hash = $actualHash; LastWriteTimeUtc = (New-Object System.IO.FileInfo($fixturePath)).LastWriteTimeUtc }
+    $wave1EFrozenBeforeVerified++
+}
+Write-Output ('[PASS] Pre-test Wave1E freeze gate verified {0} ZIP fixtures.' -f $wave1EFrozenBeforeVerified)
+
 $unchangedCollections = @('Repository', 'DossierCandidates', 'Sequences', 'XmlDocuments', 'References', 'Files', 'LifecycleRelationships', 'Observations')
 foreach ($fixtureExpectation in @($expectations.fixtures)) {
     $sampleId = [string]$fixtureExpectation.sampleId
@@ -135,15 +157,16 @@ foreach ($fixtureExpectation in @($expectations.fixtures)) {
         Assert-eMASEqual -Expected $otherCoverageBefore -Actual (ConvertTo-eMASJsonText ([object[]]@($result.CollectionCoverage | Where-Object { $_.CheckId -ne 'ClassificationEvidenceCollection' }))) -Message "$sampleId changed upstream coverage."
 
         $records = @($result.ClassificationEvidence)
-        Assert-eMASEqual -Expected $fixtureExpectation.expectedRecordCount -Actual $records.Count -Message "$sampleId record count differs."
-        $actualKeys = [string[]]@($records | ForEach-Object { ConvertTo-eMASRecordKey $_.EvidenceType $_.Dimension $_.Strength $_.SourceTier $_.SequenceFolder $_.SequenceRelativePath $_.ObservedValue })
+        $historicalRecords = @($records | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+        Assert-eMASEqual -Expected $fixtureExpectation.expectedRecordCount -Actual $historicalRecords.Count -Message "$sampleId historical record count differs."
+        $actualKeys = [string[]]@($historicalRecords | ForEach-Object { ConvertTo-eMASRecordKey $_.EvidenceType $_.Dimension $_.Strength $_.SourceTier $_.SequenceFolder $_.SequenceRelativePath $_.ObservedValue })
         $expectedKeys = [string[]]@($fixtureExpectation.records | ForEach-Object { ConvertTo-eMASRecordKey $_.evidenceType $_.dimension $_.strength $_.sourceTier $_.sequenceFolder $_.xmlSequenceRelativePath $_.observedValue })
         Assert-eMASEqual -Expected (Get-eMASSortedOrdinal $expectedKeys) -Actual (Get-eMASSortedOrdinal $actualKeys) -Message "$sampleId evidence records differ from independent expectations."
         foreach ($property in @($fixtureExpectation.countsByType.PSObject.Properties)) {
-            Assert-eMASEqual -Expected ([int]$property.Value) -Actual @($records | Where-Object { $_.EvidenceType -eq $property.Name }).Count -Message "$sampleId count differs for $($property.Name)."
+            Assert-eMASEqual -Expected ([int]$property.Value) -Actual @($historicalRecords | Where-Object { $_.EvidenceType -eq $property.Name }).Count -Message "$sampleId count differs for $($property.Name)."
         }
         foreach ($property in @($fixtureExpectation.countsByDimension.PSObject.Properties)) {
-            Assert-eMASEqual -Expected ([int]$property.Value) -Actual @($records | Where-Object { $_.Dimension -eq $property.Name }).Count -Message "$sampleId count differs for dimension $($property.Name)."
+            Assert-eMASEqual -Expected ([int]$property.Value) -Actual @($historicalRecords | Where-Object { $_.Dimension -eq $property.Name }).Count -Message "$sampleId historical count differs for dimension $($property.Name)."
         }
 
         $xmlById = @{}; foreach ($xml in @($result.XmlDocuments)) { $xmlById[[string]$xml.XmlId] = $xml }
@@ -193,7 +216,8 @@ foreach ($fixtureExpectation in @($expectations.fixtures)) {
         $resultBySample[$sampleId] = $result
         $inputBySample[$sampleId] = $inputResult
         $byDimension = [ordered]@{}; foreach ($group in @($records | Group-Object -Property Dimension | Sort-Object Name)) { $byDimension[$group.Name] = $group.Count }
-        $actualSummary = [pscustomobject][ordered]@{ RecordCount = $records.Count; CountsByDimension = [pscustomobject]$byDimension; RepositoryCollectionStatus = $repository[0].CollectionStatus; CompletionStatus = $result.Execution.CompletionStatus }
+        $newByType = [ordered]@{}; foreach ($group in @($records | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType } | Group-Object -Property EvidenceType | Sort-Object Name)) { $newByType[$group.Name] = $group.Count }
+        $actualSummary = [pscustomobject][ordered]@{ RecordCount = $records.Count; HistoricalRecordCount = $historicalRecords.Count; NewPhysicalMarkerCountsByType = [pscustomobject]$newByType; CountsByDimension = [pscustomobject]$byDimension; RepositoryCollectionStatus = $repository[0].CollectionStatus; CompletionStatus = $result.Execution.CompletionStatus }
         Write-Output ('[PASS] {0} ClassificationEvidenceCollection acceptance' -f $sampleId)
     }
     catch {
@@ -208,6 +232,131 @@ foreach ($fixtureExpectation in @($expectations.fixtures)) {
         Detail = $detail
         ResultPath = ('results/{0}' -f $resultFileName)
     })
+}
+
+$v4ResultBySample = @{}
+foreach ($sampleId in @('SD-053', 'SD-063', 'SD-069', 'SD-073')) {
+    Invoke-eMASRecordedCheck -Name ("{0} physical-marker evidence can be collected from accepted Wave1E discovery" -f $sampleId) -Action {
+        $input = Invoke-eMASAcceptedChain -SourcePath $wave1EState[$sampleId].Path -ExecutionId ("EXEC-CEC-MARKER-{0}" -f $sampleId)
+        $v4ResultBySample[$sampleId] = Invoke-eMASClassificationEvidenceCollection -InputResult $input
+        Write-eMASTestJson -Value $v4ResultBySample[$sampleId] -Path (Join-Path $resultRoot ("{0}.physical-marker-evidence.json" -f $sampleId))
+        Assert-eMASTrue -Condition (@($v4ResultBySample[$sampleId].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType }).Count -gt 0) -Message 'No new physical-marker evidence was produced.'
+    }
+}
+
+Invoke-eMASRecordedCheck -Name 'v3 sequence records unit kind, direct index-md5 marker and exact util/dtd relationship' -Action {
+    $records = @($resultBySample['SD-002'].ClassificationEvidence)
+    Assert-eMASEqual -Expected 5 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'NumericSequenceDirectory' -and $_.Strength -eq 'Weak' }).Count -Message 'v3 unit-kind evidence differs.'
+    Assert-eMASEqual -Expected 5 -Actual @($records | Where-Object { $_.EvidenceType -eq 'ChecksumFileMarker' -and $_.ObservedValue -eq 'index-md5.txt' }).Count -Message 'v3 checksum marker evidence differs.'
+    Assert-eMASEqual -Expected 5 -Actual @($records | Where-Object { $_.EvidenceType -eq 'UtilityDtdFolderMarker' -and $_.ObservedValue -eq 'util/dtd' }).Count -Message 'v3 util/dtd marker evidence differs.'
+}
+
+Invoke-eMASRecordedCheck -Name 'clean v4 submission unit records direct submissionunit.xml and sha256.txt markers' -Action {
+    $records = @($v4ResultBySample['SD-053'].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'SubmissionUnitFolder' }).Count -Message 'Clean v4 unit kind differs.'
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'SubmissionUnitMarkerFile' -and $_.ObservedValue -eq 'submissionunit.xml' }).Count -Message 'Clean v4 submission marker differs.'
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'ChecksumFileMarker' -and $_.ObservedValue -eq 'sha256.txt' }).Count -Message 'Clean v4 checksum marker differs.'
+}
+
+Invoke-eMASRecordedCheck -Name 'damaged v4-like unit records sha256.txt without manufacturing submissionunit.xml' -Action {
+    $records = @($v4ResultBySample['SD-063'].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'DamagedSubmissionUnitCandidate' }).Count -Message 'Damaged v4 unit kind differs.'
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'ChecksumFileMarker' -and $_.ObservedValue -eq 'sha256.txt' }).Count -Message 'Damaged v4 checksum marker differs.'
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $_.EvidenceType -eq 'SubmissionUnitMarkerFile' }).Count -Message 'Missing submission marker became evidence.'
+}
+
+Invoke-eMASRecordedCheck -Name 'ambiguous unit preserves both-backbone unit kind and only its direct submission marker' -Action {
+    $records = @($v4ResultBySample['SD-073'].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'AmbiguousRegulatoryUnitFolder' -and $_.RelativePath -eq 'Pkg2/0001' }).Count -Message 'Ambiguous unit kind differs.'
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'SubmissionUnitMarkerFile' -and $_.RelativePath -eq 'Pkg2/0001/submissionunit.xml' }).Count -Message 'Ambiguous direct submission marker differs.'
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $_.RelativePath -like 'Pkg/1234567/*' }).Count -Message 'Out-of-range marker leaked to accepted unit.'
+}
+
+$syntheticMarkerState = @{}
+Invoke-eMASRecordedCheck -Name 'NeeS-like sequence records only source-backed direct TOC names and exact util/dtd marker' -Action {
+    $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('emas-cec-marker-{0}' -f [guid]::NewGuid().ToString('N'))
+    try {
+        foreach ($directory in @('Package/0001/m1', 'Package/0001/m2', 'Package/0001/util/DTD')) {
+            [void][System.IO.Directory]::CreateDirectory((Join-Path $temporaryRoot $directory))
+        }
+        $utf8 = New-Object System.Text.UTF8Encoding($false)
+        foreach ($relativePath in @('Package/0001/ctd-toc.pdf', 'Package/0001/M1-TOC.PDF', 'Package/0001/random.pdf', 'Package/0001/m2/sha256.txt', 'Package/submissionunit.xml')) {
+            [System.IO.File]::WriteAllText((Join-Path $temporaryRoot $relativePath), 'synthetic test-local marker', $utf8)
+        }
+        $discovery = Invoke-eMASRepositoryDiscovery -SourcePath $temporaryRoot -ExecutionId 'EXEC-CEC-SYNTHETIC-MARKERS'
+        $input = Invoke-eMASBackboneXmlInventory -SourcePath $temporaryRoot -RepositoryDiscoveryResult $discovery
+        $syntheticMarkerState['Result'] = Invoke-eMASClassificationEvidenceCollection -InputResult $input
+        Write-eMASTestJson -Value $syntheticMarkerState['Result'] -Path (Join-Path $resultRoot 'synthetic-nees-physical-marker-evidence.json')
+        $records = @($syntheticMarkerState['Result'].ClassificationEvidence)
+        Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'TocFileMarker' -and $_.ObservedValue -ceq 'ctd-toc.pdf' }).Count -Message 'ctd-toc.pdf evidence differs.'
+        Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'TocFileMarker' -and $_.ObservedValue -ceq 'M1-TOC.PDF' }).Count -Message 'Module TOC evidence differs.'
+        Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'UtilityDtdFolderMarker' -and $_.ObservedValue -eq 'util/DTD' }).Count -Message 'Exact direct util/DTD evidence differs.'
+    }
+    finally { if ([System.IO.Directory]::Exists($temporaryRoot)) { [System.IO.Directory]::Delete($temporaryRoot, $true) } }
+}
+
+Invoke-eMASRecordedCheck -Name 'random PDF never becomes TOC evidence' -Action {
+    Assert-eMASEqual -Expected 0 -Actual @($syntheticMarkerState['Result'].ClassificationEvidence | Where-Object { $_.EvidenceType -eq 'TocFileMarker' -and $_.ObservedValue -eq 'random.pdf' }).Count -Message 'Random PDF became TOC evidence.'
+}
+
+Invoke-eMASRecordedCheck -Name 'wrapper and nested file markers do not leak into sequence evidence' -Action {
+    $records = @($syntheticMarkerState['Result'].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $_.RelativePath -eq 'Package/submissionunit.xml' }).Count -Message 'Wrapper marker leaked.'
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $_.RelativePath -eq 'Package/0001/m2/sha256.txt' }).Count -Message 'Nested marker leaked.'
+}
+
+Invoke-eMASRecordedCheck -Name 'mixed v3/v4 container preserves evidence ownership per regulatory unit' -Action {
+    $records = @($v4ResultBySample['SD-069'].ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 2 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'NumericSequenceDirectory' }).Count -Message 'Mixed v3 units differ.'
+    Assert-eMASEqual -Expected 1 -Actual @($records | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.ObservedValue -eq 'SubmissionUnitFolder' }).Count -Message 'Mixed v4 unit differs.'
+    $submission = @($records | Where-Object { $_.EvidenceType -eq 'SubmissionUnitMarkerFile' })
+    $checksum = @($records | Where-Object { $_.EvidenceType -eq 'ChecksumFileMarker' })
+    Assert-eMASEqual -Expected 1 -Actual $submission.Count -Message 'Mixed submission marker count differs.'
+    Assert-eMASEqual -Expected '4' -Actual $submission[0].SequenceFolder -Message 'Submission marker assigned to wrong unit folder.'
+    Assert-eMASEqual -Expected 'App/4/submissionunit.xml' -Actual $submission[0].RelativePath -Message 'Submission marker path differs.'
+    Assert-eMASEqual -Expected $submission[0].SequenceId -Actual $checksum[0].SequenceId -Message 'v4 markers do not share unit ownership.'
+}
+
+Invoke-eMASRecordedCheck -Name 'partial inventory does not manufacture false marker absence' -Action {
+    $synthetic = Copy-eMASResult $inputBySample['SD-002']
+    $firstSequence = @($synthetic.Sequences | Sort-Object RelativePath)[0]
+    $removedPath = ([string]$firstSequence.RelativePath) + '/index-md5.txt'
+    $synthetic.Files = [object[]]@($synthetic.Files | Where-Object { $_.RelativePath -cne $removedPath })
+    $synthetic.Observations = [object[]]@($synthetic.Observations) + [pscustomobject]@{ Code = 'SyntheticPartialInventory'; RelativePath = $removedPath; CaptureStatus = 'AccessDenied' }
+    $result = Invoke-eMASClassificationEvidenceCollection -InputResult $synthetic
+    $newRecords = @($result.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 0 -Actual @($newRecords | Where-Object { $_.RelativePath -eq $removedPath }).Count -Message 'Unavailable marker became observed evidence.'
+    Assert-eMASEqual -Expected 0 -Actual @($newRecords | Where-Object { $_.ObservedValue -is [bool] -and $_.ObservedValue -eq $false }).Count -Message 'Marker absence was manufactured.'
+    Assert-eMASEqual -Expected 1 -Actual @($newRecords | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.SequenceId -eq $firstSequence.SequenceId }).Count -Message 'Available unit fact was lost.'
+}
+
+Invoke-eMASRecordedCheck -Name 'new physical-marker records keep all interpretation fields null' -Action {
+    $allNew = @($resultBySample.Values + $v4ResultBySample.Values | ForEach-Object { $_.ClassificationEvidence } | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASTrue -Condition ($allNew.Count -gt 0) -Message 'No new evidence was available to validate.'
+    foreach ($record in $allNew) {
+        Assert-eMASEqual -Expected $null -Actual $record.CandidateValue -Message 'CandidateValue was populated.'
+        Assert-eMASEqual -Expected $null -Actual $record.Polarity -Message 'Polarity was populated.'
+        Assert-eMASEqual -Expected $null -Actual $record.SourceRuleId -Message 'SourceRuleId was populated.'
+    }
+}
+
+Invoke-eMASRecordedCheck -Name 'new physical-marker records preserve raw Weak and Supporting strength vocabulary' -Action {
+    $allNew = @($resultBySample.Values + $v4ResultBySample.Values | ForEach-Object { $_.ClassificationEvidence } | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 0 -Actual @($allNew | Where-Object { $_.Strength -eq 'Medium' }).Count -Message 'Supporting was normalized to Medium.'
+    Assert-eMASEqual -Expected 0 -Actual @($allNew | Where-Object { $_.EvidenceType -eq 'RegulatoryUnitKind' -and $_.Strength -ne 'Weak' }).Count -Message 'Unit kind strength differs.'
+    Assert-eMASEqual -Expected 0 -Actual @($allNew | Where-Object { $_.EvidenceType -ne 'RegulatoryUnitKind' -and $_.Strength -ne 'Supporting' }).Count -Message 'Physical marker strength differs.'
+}
+
+Invoke-eMASRecordedCheck -Name 'additive evidence is deterministic and preserves historical EvidenceIds' -Action {
+    $result = $resultBySample['SD-002']
+    $repeat = Invoke-eMASClassificationEvidenceCollection -InputResult $inputBySample['SD-002']
+    Assert-eMASEqual -Expected (ConvertTo-eMASJsonText $result.ClassificationEvidence) -Actual (ConvertTo-eMASJsonText $repeat.ClassificationEvidence) -Message 'Marker evidence ordering is not deterministic.'
+    $historical = @($result.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+    Assert-eMASEqual -Expected 86 -Actual $historical.Count -Message 'Historical evidence count changed.'
+    for ($index = 0; $index -lt $historical.Count; $index++) {
+        Assert-eMASEqual -Expected ('EVD-{0:D4}' -f ($index + 1)) -Actual $historical[$index].EvidenceId -Message 'Historical EvidenceId changed.'
+    }
+    Assert-eMASEqual -Expected 'EVD-0087' -Actual @($result.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })[0].EvidenceId -Message 'Additive evidence did not follow the historical ID range.'
 }
 
 Invoke-eMASRecordedCheck -Name 'SD-001 historical DTD versions are preserved verbatim' -Action {
@@ -263,7 +412,9 @@ foreach ($pair in @($expectations.invariancePairs)) {
     Invoke-eMASRecordedCheck -Name ("Classification evidence invariant: {0} vs {1} ({2})" -f $pair.baseline, $pair.comparison, $pair.projection) -Action {
         $baseline = $resultBySample[[string]$pair.baseline]; $comparison = $resultBySample[[string]$pair.comparison]
         if ($pair.projection -eq 'Full') {
-            Assert-eMASEqual -Expected (ConvertTo-eMASJsonText $baseline.ClassificationEvidence) -Actual (ConvertTo-eMASJsonText $comparison.ClassificationEvidence) -Message 'Classification evidence differs.'
+            $baselineHistorical = [object[]]@($baseline.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+            $comparisonHistorical = [object[]]@($comparison.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+            Assert-eMASEqual -Expected (ConvertTo-eMASJsonText $baselineHistorical) -Actual (ConvertTo-eMASJsonText $comparisonHistorical) -Message 'Historical classification evidence differs.'
         }
         else {
             Assert-eMASEqual -Expected (ConvertTo-eMASDossierRelativeProjection -Result $baseline) -Actual (ConvertTo-eMASDossierRelativeProjection -Result $comparison) -Message 'Dossier-relative classification evidence differs.'
@@ -363,6 +514,14 @@ foreach ($sampleId in @($sourceState.Keys)) {
 }
 Write-Output ('[PASS] Post-test freeze gate verified {0} ZIP fixtures.' -f $frozenAfterVerified)
 
+foreach ($sampleId in @($wave1EState.Keys)) {
+    $state = $wave1EState[$sampleId]
+    if ((Get-eMASTestSha256 -Path $state.Path) -ne $state.Hash) { throw ('FREEZE-VERIFY-007 Wave1E fixture changed during testing: {0}' -f $sampleId) }
+    if ((New-Object System.IO.FileInfo($state.Path)).LastWriteTimeUtc -ne $state.LastWriteTimeUtc) { throw ('FREEZE-VERIFY-008 Wave1E fixture timestamp changed during testing: {0}' -f $sampleId) }
+    $wave1EFrozenAfterVerified++
+}
+Write-Output ('[PASS] Post-test Wave1E freeze gate verified {0} ZIP fixtures.' -f $wave1EFrozenAfterVerified)
+
 $fixtureFailureCount = @($fixtureResults | Where-Object { $_.Status -eq 'FAIL' }).Count
 $additionalFailureCount = @($additionalResults | Where-Object { $_.Status -eq 'FAIL' }).Count
 $overallStatus = $(if (($fixtureFailureCount + $additionalFailureCount) -eq 0) { 'PASS' } else { 'FAIL' })
@@ -374,6 +533,8 @@ $summary = [pscustomobject][ordered]@{
     OverallStatus = $overallStatus
     FrozenFixtureCountVerifiedBefore = $frozenBeforeVerified
     FrozenFixtureCountVerifiedAfter = $frozenAfterVerified
+    Wave1EFrozenFixtureCountVerifiedBefore = $wave1EFrozenBeforeVerified
+    Wave1EFrozenFixtureCountVerifiedAfter = $wave1EFrozenAfterVerified
     FixtureCount = $fixtureResults.Count
     FixturePassCount = @($fixtureResults | Where-Object { $_.Status -eq 'PASS' }).Count
     FixtureFailCount = $fixtureFailureCount
