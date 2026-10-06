@@ -149,3 +149,10 @@ After merge:
 - T3b workbook/export becomes the next required implementation task;
 - T3c can be accepted independently;
 - T4 remains blocked until T3b is accepted.
+
+
+## User decision
+
+Accepted. PR #51 is approved for merge as the T3a Schema 1.1.0 baseline.
+
+The accepted baseline includes the central-review conclusions and the coordinator documentation-index synchronization. Native Windows end-to-end qualification remains deferred; the known Windows PowerShell 5.1 UTF-8 assertion is not a T3a blocker.
