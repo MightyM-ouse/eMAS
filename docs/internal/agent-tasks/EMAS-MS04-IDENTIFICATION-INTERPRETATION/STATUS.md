@@ -3,7 +3,8 @@
 **Roadmap ID:** `T4`  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Coordination branch:** `coordination/emas-ms04-identification-interpretation`  
-**Overall status:** `READY_FOR_PARALLEL_T4A_T4B`
+**Overall status:** `READY_FOR_PARALLEL_T4A_T4B`  
+**Coordination PR:** #54
 
 ## Execution model
 
@@ -45,3 +46,11 @@ T4b may begin before T4a is merged, but T4b cannot become `READY_FOR_USER_DECISI
 5. user explicitly approves the final coordination PR.
 
 T4 does not make any production legacy-derived rule Effective.
+
+
+## Prepared worker branches
+
+- Claude / T4a: `analysis/emas-ms04-identification-interpretation-oracle`
+- Codex / T4b: `implementation/emas-ms04-identification-interpretation-engine`
+
+Both branches were created from the coordination head after the task documents were committed.
