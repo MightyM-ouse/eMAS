@@ -5,7 +5,7 @@ Set-StrictMode -Version 2.0
 $runtimeConfigurationModulePath = Join-Path $PSScriptRoot 'eMAS.RuntimeConfiguration.psm1'
 Import-Module -Name $runtimeConfigurationModulePath -Force -ErrorAction Stop
 
-$script:eMASIdentificationEngineVersion = '0.1.0'
+$script:eMASIdentificationEngineVersion = '0.2.0'
 $script:eMASIdentificationStrengthMap = [ordered]@{ Strong = 'STRONG'; Supporting = 'MEDIUM'; Weak = 'WEAK' }
 $script:eMASIdentificationFieldProjection = @{
     CEC_XML_ROOT_ELEMENT_COMMON = @{ EvidenceType = 'XmlRootElement'; Scope = 'Sequence'; XmlKind = 'CommonBackbone' }
@@ -119,8 +119,12 @@ function Assert-eMASIdentificationInputs {
         if (-not $identificationRuleIds.ContainsKey([string]$condition.ruleId)) { continue }
         $fieldCode = [string]$condition.fieldCode
         if (-not $catalogue.ContainsKey($fieldCode) -or [string]$catalogue[$fieldCode].producingComponent -ne 'CLASSIFICATION_EVIDENCE_COLLECTION' -or
-            -not $script:eMASIdentificationFieldProjection.ContainsKey($fieldCode) -or [string]$condition.operator -notin @('EQUALS', 'NOT_EQUALS', 'IN_LIST', 'CONTAINS', 'STARTS_WITH', 'ENDS_WITH', 'EXISTS', 'MISSING')) {
+            -not $script:eMASIdentificationFieldProjection.ContainsKey($fieldCode) -or [string]$condition.operator -notin @('EQUALS', 'NOT_EQUALS', 'IN_LIST', 'CONTAINS', 'STARTS_WITH', 'ENDS_WITH', 'MATCHES_PATTERN', 'EXISTS', 'MISSING')) {
             throw ('IDI-CONFIG-004 Unsupported CEC field projection or operator for {0}.' -f $fieldCode)
+        }
+        if ([string]$condition.operator -eq 'MATCHES_PATTERN') {
+            if ([string]$catalogue[$fieldCode].dataType -ne 'String') { throw ('IDI-CONFIG-004 MATCHES_PATTERN requires a String field: rule {0}, condition {1}, field {2}.' -f [string]$condition.ruleId, [string]$condition.conditionId, $fieldCode) }
+            [void](New-eMASIdentificationPatternRegex $condition)
         }
     }
     return $raw
@@ -130,7 +134,7 @@ function Get-eMASIdentificationStrengthOrder {
     param([Parameter(Mandatory = $true)][object] $RawConfiguration)
     $rank = @{}
     foreach ($row in @(ConvertTo-eMASIdentificationArray $RawConfiguration.valueLists.EVIDENCE_STRENGTH)) { if ([string]$row.code -in @('STRONG', 'MEDIUM', 'WEAK')) { $rank[[string]$row.code] = [int]$row.sortOrder } }
-    if ($rank.Count -ne 3 -or $rank.STRONG -ge $rank.MEDIUM -or $rank.MEDIUM -ge $rank.WEAK) { throw 'IDI-CONFIG-005 EVIDENCE_STRENGTH must order STRONG before MEDIUM before WEAK.' }
+    if ($rank.Count -ne 3 -or $rank.STRONG -ge $rank.MEDIUM -or $rank.MEDIUM -ge $rank.WEAK) { throw 'IDI-CONFIG-007 EVIDENCE_STRENGTH must order STRONG before MEDIUM before WEAK.' }
     return $rank
 }
 
@@ -215,6 +219,45 @@ function Test-eMASIdentificationEqual {
     return ($Actual -eq $Expected)
 }
 
+function Test-eMASIdentificationExceptionType {
+    param([AllowNull()][System.Exception] $Exception, [Parameter(Mandatory = $true)][type] $Type)
+    for ($current = $Exception; $null -ne $current; $current = $current.InnerException) { if ($Type.IsInstanceOfType($current)) { return $true } }
+    return $false
+}
+
+function New-eMASIdentificationPatternRegex {
+    # Contract §6.1 M1/M3: explicit .NET Regex, CultureInvariant, IgnoreCase only when caseSensitive = false,
+    # fixed 1-second match timeout. PowerShell -match is deliberately not used.
+    param([Parameter(Mandatory = $true)][object] $Condition)
+    $ruleId = [string]$Condition.ruleId
+    $conditionId = [string]$Condition.conditionId
+    $pattern = Get-eMASIdentificationPropertyValue $Condition 'value1'
+    if ($pattern -isnot [string] -or [string]::IsNullOrEmpty($pattern) -or [string](Get-eMASIdentificationPropertyValue $Condition 'valueDataType') -ne 'String') {
+        throw ('IDI-CONFIG-005 MATCHES_PATTERN requires a non-empty String pattern: rule {0}, condition {1}.' -f $ruleId, $conditionId)
+    }
+    $options = [System.Text.RegularExpressions.RegexOptions]::CultureInvariant
+    if (-not [bool]$Condition.caseSensitive) { $options = $options -bor [System.Text.RegularExpressions.RegexOptions]::IgnoreCase }
+    try { return New-Object System.Text.RegularExpressions.Regex -ArgumentList $pattern, $options, ([TimeSpan]::FromSeconds(1)) }
+    catch {
+        if (Test-eMASIdentificationExceptionType $_.Exception ([System.ArgumentException])) {
+            throw ('IDI-CONFIG-005 Invalid MATCHES_PATTERN regular expression: rule {0}, condition {1}.' -f $ruleId, $conditionId)
+        }
+        throw
+    }
+}
+
+function Test-eMASIdentificationPatternMatch {
+    param([Parameter(Mandatory = $true)][object] $Condition, [Parameter(Mandatory = $true)][string] $Value)
+    $regex = New-eMASIdentificationPatternRegex $Condition
+    try { return $regex.IsMatch($Value) }
+    catch {
+        if (Test-eMASIdentificationExceptionType $_.Exception ([System.Text.RegularExpressions.RegexMatchTimeoutException])) {
+            throw ('IDI-CONFIG-006 MATCHES_PATTERN evaluation exceeded the match timeout: rule {0}, condition {1}.' -f [string]$Condition.ruleId, [string]$Condition.conditionId)
+        }
+        throw
+    }
+}
+
 function Invoke-eMASIdentificationCondition {
     param([Parameter(Mandatory = $true)][object] $Condition, [Parameter(Mandatory = $true)][object] $FieldState)
     if ([string]$FieldState.State -eq 'Unavailable') { return 'Unknown' }
@@ -245,6 +288,7 @@ function Invoke-eMASIdentificationCondition {
                 $comparison = $(if ($caseSensitive) { [System.StringComparison]::Ordinal } else { [System.StringComparison]::OrdinalIgnoreCase })
                 $answer = ([string]$actual).EndsWith([string]$value1, $comparison)
             }
+            'MATCHES_PATTERN' { $answer = (($actual -is [string]) -and (Test-eMASIdentificationPatternMatch $Condition $actual)) }
             default { throw ('IDI-CONFIG-004 Unsupported Identification operator {0}.' -f $operator) }
         }
     }
@@ -349,7 +393,7 @@ function Resolve-eMASIdentificationDimension {
     $top = @($supportCandidates | Where-Object { $null -ne $bestRank -and [int]$StrengthOrder[[string]$_.BestSupportStrength] -eq $bestRank })
     $floor = [string](Get-eMASIdentificationPropertyValue $ConflictPolicy 'minimumEvidenceStrengthForValue')
     if ([string]::IsNullOrWhiteSpace($floor)) { $floor = 'MEDIUM' }
-    if (-not $StrengthOrder.ContainsKey($floor)) { throw 'IDI-CONFIG-005 Invalid Identification evidence floor.' }
+    if (-not $StrengthOrder.ContainsKey($floor)) { throw 'IDI-CONFIG-007 Invalid Identification evidence floor.' }
 
     $status = 'NotAssessed'
     $value = $null

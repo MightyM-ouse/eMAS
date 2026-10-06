@@ -127,70 +127,80 @@ if (-not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -
     return
 }
 
-$referenceInventoryModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ReferenceInventory.psm1'
-Import-Module -Name $referenceInventoryModule -Force -ErrorAction Stop
-$referenceInventoryResult = Invoke-eMASReferenceInventory `
-    -SourcePath $SourcePath `
-    -RepositoryDiscoveryResult $repositoryDiscoveryResult `
-    -BackboneXmlInventoryResult $backboneXmlInventoryResult `
-    -OutputPath $(if ($IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
-
-if (-not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
-    $referenceInventoryResult
-    return
+# Identification-only mode uses the shortest factual chain:
+# RepositoryDiscovery -> BackboneXmlInventory -> ClassificationEvidenceCollection -> IdentificationInterpretation.
+# Reference/missing-reference/checksum capabilities run only when their switches are explicitly requested.
+$deepCheckRequested = $IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation
+if ($IncludeIdentificationInterpretation -and -not $deepCheckRequested) {
+    $classificationEvidenceInput = $backboneXmlInventoryResult
 }
+else {
+    $referenceInventoryModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ReferenceInventory.psm1'
+    Import-Module -Name $referenceInventoryModule -Force -ErrorAction Stop
+    $referenceInventoryResult = Invoke-eMASReferenceInventory `
+        -SourcePath $SourcePath `
+        -RepositoryDiscoveryResult $repositoryDiscoveryResult `
+        -BackboneXmlInventoryResult $backboneXmlInventoryResult `
+        -OutputPath $(if ($IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-$referenceResolutionModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ReferenceResolution.psm1'
-Import-Module -Name $referenceResolutionModule -Force -ErrorAction Stop
-$referenceResolutionResult = Invoke-eMASReferenceResolution `
-    -SourcePath $SourcePath `
-    -RepositoryDiscoveryResult $repositoryDiscoveryResult `
-    -ReferenceInventoryResult $referenceInventoryResult `
-    -OutputPath $(if ($IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    if (-not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $referenceInventoryResult
+        return
+    }
 
-if (-not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
-    $referenceResolutionResult
-    return
-}
+    $referenceResolutionModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ReferenceResolution.psm1'
+    Import-Module -Name $referenceResolutionModule -Force -ErrorAction Stop
+    $referenceResolutionResult = Invoke-eMASReferenceResolution `
+        -SourcePath $SourcePath `
+        -RepositoryDiscoveryResult $repositoryDiscoveryResult `
+        -ReferenceInventoryResult $referenceInventoryResult `
+        -OutputPath $(if ($IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-$missingReferenceInterpretationModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.MissingReferenceInterpretation.psm1'
-Import-Module -Name $missingReferenceInterpretationModule -Force -ErrorAction Stop
-$missingReferenceInterpretationResult = Invoke-eMASMissingReferenceInterpretation `
-    -ReferenceResolutionResult $referenceResolutionResult `
-    -OutputPath $(if ($IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    if (-not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $referenceResolutionResult
+        return
+    }
 
-if (-not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
-    $missingReferenceInterpretationResult
-    return
-}
+    $missingReferenceInterpretationModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.MissingReferenceInterpretation.psm1'
+    Import-Module -Name $missingReferenceInterpretationModule -Force -ErrorAction Stop
+    $missingReferenceInterpretationResult = Invoke-eMASMissingReferenceInterpretation `
+        -ReferenceResolutionResult $referenceResolutionResult `
+        -OutputPath $(if ($IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-$declaredChecksumComparisonModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.DeclaredChecksumComparison.psm1'
-Import-Module -Name $declaredChecksumComparisonModule -Force -ErrorAction Stop
-$declaredChecksumComparisonResult = Invoke-eMASDeclaredChecksumComparison `
-    -SourcePath $SourcePath `
-    -MissingReferenceInterpretationResult $missingReferenceInterpretationResult `
-    -OutputPath $(if ($IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    if (-not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $missingReferenceInterpretationResult
+        return
+    }
 
-if (-not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
-    $declaredChecksumComparisonResult
-    return
-}
+    $declaredChecksumComparisonModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.DeclaredChecksumComparison.psm1'
+    Import-Module -Name $declaredChecksumComparisonModule -Force -ErrorAction Stop
+    $declaredChecksumComparisonResult = Invoke-eMASDeclaredChecksumComparison `
+        -SourcePath $SourcePath `
+        -MissingReferenceInterpretationResult $missingReferenceInterpretationResult `
+        -OutputPath $(if ($IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-$checksumMismatchInterpretationModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ChecksumMismatchInterpretation.psm1'
-Import-Module -Name $checksumMismatchInterpretationModule -Force -ErrorAction Stop
-$checksumMismatchInterpretationResult = Invoke-eMASChecksumMismatchInterpretation `
-    -DeclaredChecksumComparisonResult $declaredChecksumComparisonResult `
-    -OutputPath $(if ($IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    if (-not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $declaredChecksumComparisonResult
+        return
+    }
 
-if (-not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
-    $checksumMismatchInterpretationResult
-    return
+    $checksumMismatchInterpretationModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ChecksumMismatchInterpretation.psm1'
+    Import-Module -Name $checksumMismatchInterpretationModule -Force -ErrorAction Stop
+    $checksumMismatchInterpretationResult = Invoke-eMASChecksumMismatchInterpretation `
+        -DeclaredChecksumComparisonResult $declaredChecksumComparisonResult `
+        -OutputPath $(if ($IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+
+    if (-not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $checksumMismatchInterpretationResult
+        return
+    }
+    $classificationEvidenceInput = $checksumMismatchInterpretationResult
 }
 
 $classificationEvidenceCollectionModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1'
 Import-Module -Name $classificationEvidenceCollectionModule -Force -ErrorAction Stop
 $classificationEvidenceCollectionResult = Invoke-eMASClassificationEvidenceCollection `
-    -InputResult $checksumMismatchInterpretationResult `
+    -InputResult $classificationEvidenceInput `
     -OutputPath $(if ($IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
 if (-not $IncludeIdentificationInterpretation) {

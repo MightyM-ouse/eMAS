@@ -14,6 +14,7 @@ on:
       - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
       - "docs/development/runtime-json-consumption.md"
       - "tests/runtime/**"
+      - "tests/identification-interpretation/**"
       - "tests/reporting/**"
       - "demo/results/**"
       - "demo/scripts/**"
@@ -35,6 +36,7 @@ on:
       - "docs/architecture/eMAS_PowerShell_Runtime_Profile.md"
       - "docs/development/runtime-json-consumption.md"
       - "tests/runtime/**"
+      - "tests/identification-interpretation/**"
       - "tests/reporting/**"
       - "demo/results/**"
       - "demo/scripts/**"
@@ -95,6 +97,10 @@ jobs:
         if: always()
         shell: powershell
         run: .\tests\identification-interpretation\engine\Test-eMASIdentificationInterpretation.ps1
+      - name: Run accepted T4a oracle conformance (read-only, 23 cases)
+        if: always()
+        shell: powershell
+        run: .\tests\identification-interpretation\engine\Test-eMASIdentificationOracleConformance.ps1
 
   windows-powershell-76-contracts:
     runs-on: windows-latest
@@ -125,8 +131,13 @@ jobs:
         shell: pwsh
         run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
       - name: Run IdentificationInterpretation engine tests
+        if: always()
         shell: pwsh
         run: ./tests/identification-interpretation/engine/Test-eMASIdentificationInterpretation.ps1
+      - name: Run accepted T4a oracle conformance (read-only, 23 cases)
+        if: always()
+        shell: pwsh
+        run: ./tests/identification-interpretation/engine/Test-eMASIdentificationOracleConformance.ps1
 
   macos-powershell-76-development-contracts:
     runs-on: macos-latest
@@ -155,8 +166,13 @@ jobs:
         shell: pwsh
         run: ./tests/runtime/Test-eMASRuntimeConfiguration.ps1
       - name: Run IdentificationInterpretation engine tests
+        if: always()
         shell: pwsh
         run: ./tests/identification-interpretation/engine/Test-eMASIdentificationInterpretation.ps1
+      - name: Run accepted T4a oracle conformance (read-only, 23 cases)
+        if: always()
+        shell: pwsh
+        run: ./tests/identification-interpretation/engine/Test-eMASIdentificationOracleConformance.ps1
       - name: Install schema validation dependencies
         run: python -m pip install --disable-pip-version-check -r build/requirements-schema-validation.txt
       - name: Run schema, fixture and pure runtime-contract tests

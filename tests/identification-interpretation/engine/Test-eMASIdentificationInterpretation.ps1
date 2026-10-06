@@ -492,6 +492,140 @@ Invoke-eMASTest -Name 'Pre-Sales opt-in emits separate Identification contract' 
     }
 }
 
+function New-eMASPatternScenario {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][AllowNull()][object] $Pattern, [bool] $CaseSensitive = $true, [bool] $Negate = $false, [string] $ObservedValue = 'http://www.ich.org/ectd', [string] $DataType = 'String')
+    $field = New-eMASField -Code 'CEC_XML_NAMESPACE_COMMON' -Operators @('EQUALS', 'MATCHES_PATTERN') -DataType $DataType
+    $condition = New-eMASCondition -FieldCode $field.fieldCode -Operator 'MATCHES_PATTERN' -Value1 $Pattern -CaseSensitive $CaseSensitive -Negate $Negate
+    return New-eMASSingleRuleScenario -Field $field -Condition $condition -Evidence @((New-eMASEvidence -Id 'EVD-0170' -Type 'XmlNamespace' -Value $ObservedValue))
+}
+
+function Get-eMASIdentificationFailure {
+    param([Parameter(Mandatory = $true)][object] $Scenario)
+    try { [void](Invoke-eMASIdentificationInterpretation -InputResult $Scenario.Input -RuntimeConfiguration $Scenario.Configuration) } catch { return $_.Exception.Message }
+    return $null
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN honours caseSensitive with CultureInvariant .NET Regex' -Action {
+    $insensitive = Invoke-eMASIdentificationInterpretation -InputResult (New-eMASPatternScenario -Pattern '^HTTP://WWW\.ICH\.ORG/ECTD$' -CaseSensitive $false).Input -RuntimeConfiguration (New-eMASPatternScenario -Pattern '^HTTP://WWW\.ICH\.ORG/ECTD$' -CaseSensitive $false).Configuration
+    Assert-eMASEqual 'Evaluated' $insensitive.Results[0].EvaluationStatus 'Case-insensitive pattern did not match.'
+    Assert-eMASEqual 'EVD-0170' $insensitive.Results[0].Candidates[0].SupportingEvidence[0].EvidenceId 'Matched pattern did not cite its evidence.'
+    $sensitiveScenario = New-eMASPatternScenario -Pattern '^HTTP://WWW\.ICH\.ORG/ECTD$' -CaseSensitive $true
+    $sensitive = Invoke-eMASIdentificationInterpretation -InputResult $sensitiveScenario.Input -RuntimeConfiguration $sensitiveScenario.Configuration
+    Assert-eMASEqual 'InsufficientEvidence' $sensitive.Results[0].EvaluationStatus 'Case-sensitive pattern matched different case.'
+    Assert-eMASEqual 0 @($sensitive.Results[0].FiredRuleIds).Count 'Case-sensitive pattern fired.'
+    # Turkish-I check: CultureInvariant IgnoreCase must not depend on the machine culture.
+    $culture = [System.Threading.Thread]::CurrentThread.CurrentCulture
+    try {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('tr-TR')
+        $turkishScenario = New-eMASPatternScenario -Pattern '^HTTP://WWW\.ICH\.ORG/ECTD$' -CaseSensitive $false
+        $turkish = Invoke-eMASIdentificationInterpretation -InputResult $turkishScenario.Input -RuntimeConfiguration $turkishScenario.Configuration
+        Assert-eMASEqual 'Evaluated' $turkish.Results[0].EvaluationStatus 'Case-insensitive pattern depends on the machine culture.'
+    }
+    finally { [System.Threading.Thread]::CurrentThread.CurrentCulture = $culture }
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN is unanchored and negate is a guard' -Action {
+    $unanchored = New-eMASPatternScenario -Pattern 'ich\.org'
+    $result = Invoke-eMASIdentificationInterpretation -InputResult $unanchored.Input -RuntimeConfiguration $unanchored.Configuration
+    Assert-eMASEqual 'Evaluated' $result.Results[0].EvaluationStatus 'Unanchored IsMatch did not match a substring.'
+    $negated = New-eMASPatternScenario -Pattern 'fda\.gov' -Negate $true
+    $guard = Invoke-eMASIdentificationInterpretation -InputResult $negated.Input -RuntimeConfiguration $negated.Configuration
+    Assert-eMASEqual 1 @($guard.Results[0].FiredRuleIds).Count 'Negated non-match did not satisfy the guard.'
+    Assert-eMASEqual 0 @($guard.Results[0].Candidates[0].SupportingEvidence).Count 'Negated pattern guard fabricated evidence.'
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN invalid, empty or non-String patterns fail with IDI-CONFIG-005 before evaluation' -Action {
+    $message = Get-eMASIdentificationFailure (New-eMASPatternScenario -Pattern '^http://www\.ich\.org/(ectd$')
+    Assert-eMASTrue ($message -like 'IDI-CONFIG-005 *ID-RULE-001*COND-ID-RULE-001-00-00*') ('Invalid regex code differs: {0}' -f $message)
+    $message = Get-eMASIdentificationFailure (New-eMASPatternScenario -Pattern '')
+    Assert-eMASTrue ($message -like 'IDI-CONFIG-005 *') ('Empty pattern code differs: {0}' -f $message)
+    # An invalid pattern on a rule whose evidence is absent still fails the whole run up front.
+    $scenario = New-eMASPatternScenario -Pattern 'ich'
+    Add-eMASIdentificationRule -Configuration $scenario.Configuration -RuleId 'ID-RULE-BAD' -Dimension 'TECHNICAL_STANDARD' -Candidate 'OTHER' -Strength 'STRONG' -Groups @(,@((New-eMASCondition -FieldCode 'CEC_XML_NAMESPACE_COMMON' -Operator 'MATCHES_PATTERN' -Value1 '[unclosed')))
+    $scenario.Input.ClassificationEvidence = @()
+    $message = Get-eMASIdentificationFailure $scenario
+    Assert-eMASTrue ($message -like 'IDI-CONFIG-005 *ID-RULE-BAD*') ('Unreached invalid pattern was not rejected up front: {0}' -f $message)
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN on a non-String field is IDI-CONFIG-004' -Action {
+    $message = Get-eMASIdentificationFailure (New-eMASPatternScenario -Pattern 'true' -DataType 'Boolean')
+    Assert-eMASTrue ($message -like 'IDI-CONFIG-004 *ID-RULE-001*') ('Non-String field was not rejected with IDI-CONFIG-004: {0}' -f $message)
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN timeout fails with IDI-CONFIG-006' -Action {
+    $scenario = New-eMASPatternScenario -Pattern '^(a+)+$' -ObservedValue (('a' * 40) + '!')
+    $message = Get-eMASIdentificationFailure $scenario
+    Assert-eMASTrue ($message -like 'IDI-CONFIG-006 *ID-RULE-001*') ('Catastrophic pattern did not time out with IDI-CONFIG-006: {0}' -f $message)
+}
+
+Invoke-eMASTest -Name 'MATCHES_PATTERN does not use PowerShell -match' -Action {
+    $tokens = $null; $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($modulePath, [ref]$tokens, [ref]$errors)
+    foreach ($name in @('New-eMASIdentificationPatternRegex', 'Test-eMASIdentificationPatternMatch', 'Invoke-eMASIdentificationCondition')) {
+        $function = $ast.Find({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name }, $true)
+        Assert-eMASTrue ($null -ne $function) ('Function {0} is missing.' -f $name)
+        $matchOperators = @($function.FindAll({ param($node) $node -is [System.Management.Automation.Language.BinaryExpressionAst] -and [string]$node.Operator -match '^(I|C)?(Not)?Match$' }, $true))
+        Assert-eMASEqual 0 $matchOperators.Count ('{0} uses a PowerShell -match operator.' -f $name)
+        Assert-eMASTrue (-not $function.Extent.Text.Contains('Select-String')) ('{0} uses Select-String.' -f $name)
+    }
+}
+
+Invoke-eMASTest -Name 'Pre-Sales Identification-only mode skips reference and checksum capabilities' -Action {
+    # Mirror the entry script with tracing stubs for the five deep capabilities; the real RD/BXI/CEC/Identification modules run.
+    $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('emas-identification-short-{0}' -f [guid]::NewGuid().ToString('N'))
+    $mirror = Join-Path $temporaryRoot 'repo'
+    $sourceRoot = Join-Path $temporaryRoot 'source'
+    $outputRoot = Join-Path $temporaryRoot 'output'
+    $tracePath = Join-Path $temporaryRoot 'deep-trace.txt'
+    $previousTrace = $env:EMAS_T4B_DEEP_TRACE
+    try {
+        foreach ($directory in @($sourceRoot, $outputRoot, (Join-Path $mirror 'engine/powershell51/private'))) { [void][System.IO.Directory]::CreateDirectory($directory) }
+        Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts') -Destination (Join-Path $mirror 'scripts') -Recurse
+        Copy-Item -LiteralPath (Join-Path $repositoryRoot 'engine/core') -Destination (Join-Path $mirror 'engine/core') -Recurse
+        foreach ($name in @('eMAS.RepositoryDiscovery.psm1', 'eMAS.BackboneXmlInventory.psm1', 'eMAS.ClassificationEvidenceCollection.psm1')) { Copy-Item -LiteralPath (Join-Path $repositoryRoot ('engine/powershell51/' + $name)) -Destination (Join-Path $mirror ('engine/powershell51/' + $name)) }
+        Copy-Item -Path (Join-Path $repositoryRoot 'engine/powershell51/private/*') -Destination (Join-Path $mirror 'engine/powershell51/private')
+        $stubs = [ordered]@{
+            ReferenceInventory = @('$SourcePath, $RepositoryDiscoveryResult, $BackboneXmlInventoryResult, $OutputPath', 'BackboneXmlInventoryResult')
+            ReferenceResolution = @('$SourcePath, $RepositoryDiscoveryResult, $ReferenceInventoryResult, $OutputPath', 'ReferenceInventoryResult')
+            MissingReferenceInterpretation = @('$ReferenceResolutionResult, $OutputPath', 'ReferenceResolutionResult')
+            DeclaredChecksumComparison = @('$SourcePath, $MissingReferenceInterpretationResult, $OutputPath', 'MissingReferenceInterpretationResult')
+            ChecksumMismatchInterpretation = @('$DeclaredChecksumComparisonResult, $OutputPath', 'DeclaredChecksumComparisonResult')
+        }
+        $encoding = New-Object System.Text.UTF8Encoding($false)
+        foreach ($capability in $stubs.Keys) {
+            $body = 'function Invoke-eMAS{0} {{ param({1}) [System.IO.File]::AppendAllText($env:EMAS_T4B_DEEP_TRACE, "{0}`n"); return ${2} }}' -f $capability, $stubs[$capability][0], $stubs[$capability][1]
+            [System.IO.File]::WriteAllText((Join-Path $mirror ('engine/powershell51/eMAS.{0}.psm1' -f $capability)), $body, $encoding)
+        }
+        $env:EMAS_T4B_DEEP_TRACE = $tracePath
+
+        $configuration = New-eMASTestConfiguration
+        $configuration.fieldCatalogue = @((New-eMASField -Code 'CEC_XML_ROOT_ELEMENT_COMMON' -Operators @('EQUALS')))
+        Add-eMASIdentificationRule -Configuration $configuration -RuleId 'ID-SHORT-001' -Dimension 'TECHNICAL_STANDARD' -Candidate 'ICH_ECTD_3_2_2' -Strength 'STRONG' -Groups @(,@((New-eMASCondition -FieldCode 'CEC_XML_ROOT_ELEMENT_COMMON' -Operator 'EQUALS' -Value1 'ectd')))
+        $configurationPath = Join-Path $temporaryRoot 'runtime.json'
+        [System.IO.File]::WriteAllText($configurationPath, ($configuration | ConvertTo-Json -Depth 64), $encoding)
+        $entryScript = Join-Path $mirror 'scripts/eMAS-PreSalesAssessment.ps1'
+
+        $shortOutput = Join-Path $outputRoot 'short.json'
+        $result = & $entryScript -SourcePath $sourceRoot -OutputPath $shortOutput -ExecutionId 'EXEC-ID-SHORT' -RuntimeConfigurationPath $configurationPath -IncludeIdentificationInterpretation
+        Assert-eMASEqual 'eMAS.MS04.PreSales.Identification/1.0' $result.ContractId 'Short pipeline did not return Identification/1.0.'
+        Assert-eMASTrue ([System.IO.File]::Exists($shortOutput)) 'Short pipeline did not persist Identification output.'
+        Assert-eMASTrue (-not [System.IO.File]::Exists($tracePath)) ('Identification-only mode invoked deep capabilities: {0}' -f $(if ([System.IO.File]::Exists($tracePath)) { [System.IO.File]::ReadAllText($tracePath) } else { '' }))
+
+        $withCec = & $entryScript -SourcePath $sourceRoot -OutputPath (Join-Path $outputRoot 'cec.json') -ExecutionId 'EXEC-ID-SHORT-CEC' -RuntimeConfigurationPath $configurationPath -IncludeClassificationEvidenceCollection -IncludeIdentificationInterpretation
+        Assert-eMASEqual 'eMAS.MS04.PreSales.Identification/1.0' $withCec.ContractId 'CEC + Identification did not return Identification/1.0.'
+        Assert-eMASTrue (-not [System.IO.File]::Exists($tracePath)) 'Explicit CEC + Identification invoked deep capabilities.'
+
+        $deep = & $entryScript -SourcePath $sourceRoot -OutputPath (Join-Path $outputRoot 'deep.json') -ExecutionId 'EXEC-ID-DEEP' -RuntimeConfigurationPath $configurationPath -IncludeDeclaredChecksumComparison -IncludeIdentificationInterpretation
+        Assert-eMASEqual 'eMAS.MS04.PreSales.Identification/1.0' $deep.ContractId 'Explicit deep chain did not end in Identification/1.0.'
+        $trace = @([System.IO.File]::ReadAllLines($tracePath) | Where-Object { $_ })
+        Assert-eMASEqual 'ReferenceInventory,ReferenceResolution,MissingReferenceInterpretation,DeclaredChecksumComparison,ChecksumMismatchInterpretation' ($trace -join ',') 'Explicitly requested deep chain did not run in order.'
+    }
+    finally {
+        $env:EMAS_T4B_DEEP_TRACE = $previousTrace
+        if ([System.IO.Directory]::Exists($temporaryRoot)) { [System.IO.Directory]::Delete($temporaryRoot, $true) }
+    }
+}
+
 $total = $script:passed + $script:failed
 Write-Output ('IdentificationInterpretation engine tests completed: {0} total, {1} passed, {2} failed.' -f $total, $script:passed, $script:failed)
 if ($script:failed -gt 0) { exit 1 }
