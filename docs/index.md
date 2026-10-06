@@ -16,11 +16,11 @@ Use the [Canonical Document Index](CANONICAL_DOCUMENT_INDEX.md) when authority r
 
 - [Enterprise Requirements v3.1](requirements/eMAS_Final_Enterprise_Requirements_v3.1.md)
 - [Configuration Documentation](configuration/README.md)
-- [Runtime JSON Contract v1.2](configuration/04_eMAS_Runtime_JSON_Contract.md)
-- [Normalized Rule Model v1.1](configuration/05_eMAS_Normalized_Rule_Model.md)
+- [Runtime JSON Contract v1.3](configuration/04_eMAS_Runtime_JSON_Contract.md)
+- [Normalized Rule Model v1.2](configuration/05_eMAS_Normalized_Rule_Model.md)
 - [Normalized Relationship Matrix v1.0](configuration/06_eMAS_Normalized_Relationship_Matrix.md)
-- [Logical Data Dictionary v1.0](configuration/07_eMAS_Data_Dictionary.md)
-- [Schema Validation and Fixture Contract v1.0](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
+- [Logical Data Dictionary v1.1](configuration/07_eMAS_Data_Dictionary.md)
+- [Schema Validation and Fixture Contract v1.1](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md)
 - [XLSM/VBA POC and Conformance Contract v1.0](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md)
 - [Runtime JSON Schema 1.0.0](../config/schema/eMAS-runtime-config.schema.json)
 
