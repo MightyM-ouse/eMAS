@@ -51,7 +51,10 @@ param(
     [switch] $IncludeChecksumMismatchInterpretation,
 
     [Parameter(Mandatory = $false, ParameterSetName = 'RepositoryDiscovery')]
-    [switch] $IncludeClassificationEvidenceCollection
+    [switch] $IncludeClassificationEvidenceCollection,
+
+    [Parameter(Mandatory = $false, ParameterSetName = 'RepositoryDiscovery')]
+    [switch] $IncludeIdentificationInterpretation
 )
 
 Set-StrictMode -Version 2.0
@@ -69,6 +72,10 @@ if ($PSCmdlet.ParameterSetName -eq 'Initialization') {
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $configurationIdentity = $null
+$configuration = $null
+if ($IncludeIdentificationInterpretation -and [string]::IsNullOrWhiteSpace($RuntimeConfigurationPath)) {
+    throw 'ID-SCRIPT-001 IncludeIdentificationInterpretation requires RuntimeConfigurationPath.'
+}
 if (-not [string]::IsNullOrWhiteSpace($RuntimeConfigurationPath)) {
     $runtimeConfigurationModule = Join-Path $repositoryRoot 'engine/core/eMAS.RuntimeConfiguration.psm1'
     Import-Module -Name $runtimeConfigurationModule -Force -ErrorAction Stop
@@ -95,7 +102,7 @@ $repositoryDiscoveryParameters = @{
     Phase = $Phase
     ConfigurationIdentity = $configurationIdentity
 }
-if (-not $IncludeBackboneXmlInventory -and -not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeBackboneXmlInventory -and -not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $repositoryDiscoveryParameters.OutputPath = $OutputPath
     Invoke-eMASRepositoryDiscovery @repositoryDiscoveryParameters
     return
@@ -113,9 +120,9 @@ Import-Module -Name $backboneXmlInventoryModule -Force -ErrorAction Stop
 $backboneXmlInventoryResult = Invoke-eMASBackboneXmlInventory `
     -SourcePath $SourcePath `
     -RepositoryDiscoveryResult $repositoryDiscoveryResult `
-    -OutputPath $(if ($IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $backboneXmlInventoryResult
     return
 }
@@ -126,9 +133,9 @@ $referenceInventoryResult = Invoke-eMASReferenceInventory `
     -SourcePath $SourcePath `
     -RepositoryDiscoveryResult $repositoryDiscoveryResult `
     -BackboneXmlInventoryResult $backboneXmlInventoryResult `
-    -OutputPath $(if ($IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $referenceInventoryResult
     return
 }
@@ -139,9 +146,9 @@ $referenceResolutionResult = Invoke-eMASReferenceResolution `
     -SourcePath $SourcePath `
     -RepositoryDiscoveryResult $repositoryDiscoveryResult `
     -ReferenceInventoryResult $referenceInventoryResult `
-    -OutputPath $(if ($IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $referenceResolutionResult
     return
 }
@@ -150,9 +157,9 @@ $missingReferenceInterpretationModule = Join-Path $repositoryRoot 'engine/powers
 Import-Module -Name $missingReferenceInterpretationModule -Force -ErrorAction Stop
 $missingReferenceInterpretationResult = Invoke-eMASMissingReferenceInterpretation `
     -ReferenceResolutionResult $referenceResolutionResult `
-    -OutputPath $(if ($IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $missingReferenceInterpretationResult
     return
 }
@@ -162,9 +169,9 @@ Import-Module -Name $declaredChecksumComparisonModule -Force -ErrorAction Stop
 $declaredChecksumComparisonResult = Invoke-eMASDeclaredChecksumComparison `
     -SourcePath $SourcePath `
     -MissingReferenceInterpretationResult $missingReferenceInterpretationResult `
-    -OutputPath $(if ($IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $declaredChecksumComparisonResult
     return
 }
@@ -173,15 +180,27 @@ $checksumMismatchInterpretationModule = Join-Path $repositoryRoot 'engine/powers
 Import-Module -Name $checksumMismatchInterpretationModule -Force -ErrorAction Stop
 $checksumMismatchInterpretationResult = Invoke-eMASChecksumMismatchInterpretation `
     -DeclaredChecksumComparisonResult $declaredChecksumComparisonResult `
-    -OutputPath $(if ($IncludeClassificationEvidenceCollection) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeClassificationEvidenceCollection) {
+if (-not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $checksumMismatchInterpretationResult
     return
 }
 
 $classificationEvidenceCollectionModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1'
 Import-Module -Name $classificationEvidenceCollectionModule -Force -ErrorAction Stop
-Invoke-eMASClassificationEvidenceCollection `
+$classificationEvidenceCollectionResult = Invoke-eMASClassificationEvidenceCollection `
     -InputResult $checksumMismatchInterpretationResult `
+    -OutputPath $(if ($IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+
+if (-not $IncludeIdentificationInterpretation) {
+    $classificationEvidenceCollectionResult
+    return
+}
+
+$identificationInterpretationModule = Join-Path $repositoryRoot 'engine/core/eMAS.IdentificationInterpretation.psm1'
+Import-Module -Name $identificationInterpretationModule -Force -ErrorAction Stop
+Invoke-eMASIdentificationInterpretation `
+    -InputResult $classificationEvidenceCollectionResult `
+    -RuntimeConfiguration $configuration `
     -OutputPath $OutputPath
