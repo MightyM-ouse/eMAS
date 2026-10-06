@@ -267,7 +267,10 @@ Implementation may modify only:
 - `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1`;
 - `tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1`;
 - optional new **test-local** support data under `tests/classification-evidence-collection/**`;
-- this task's report/status files.
+- this task's report/status files;
+- `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1` **only for additive CEC expectation adaptation**;
+- `tests/dossier-diversity/Test-eMASDossierDiversity.ps1` **only for additive CEC historical-projection adaptation**;
+- `tests/repository-discovery-candidate-semantics/Test-eMASRepositoryDiscoveryCandidateSemantics.ps1` **only for additive CEC expectation adaptation**.
 
 ## Forbidden files
 
@@ -325,3 +328,27 @@ Ready for ChatGPT review when:
 6. frozen fixture hashes do not change;
 7. required Mac regressions pass;
 8. scope remains bounded.
+
+
+## Central-review scope amendment — additive composed regressions
+
+Authorized after Codex correctly stopped on stale composed-regression expectations.
+
+The three newly allowed harness files may be changed **only** to adapt their CEC assertions to the intentional additive evidence introduced by T1a.
+
+Required approach:
+
+1. Preserve the existing historical CEC assertions by comparing a historical projection that excludes:
+   - `RegulatoryUnitKind`
+   - `SubmissionUnitMarkerFile`
+   - `TocFileMarker`
+   - `ChecksumFileMarker`
+   - `UtilityDtdFolderMarker`
+2. Do not rewrite or regenerate Wave1D expectation JSON merely to absorb additive records.
+3. Root-level and B3 must continue proving the historical 86-record baseline on that projection, while any repository coverage `RecordsProduced` assertion must match the full additive CEC result.
+4. Wave1D must continue validating the old dossier-level CEC multiset/count on the historical projection, while full repository coverage must equal the actual full CEC record total.
+5. Do not modify frozen fixture bytes or freeze manifests.
+6. Do not weaken any non-CEC assertion.
+7. Rerun all T1a regression gates after the harness-only adaptation.
+
+No other scope expansion is authorized.
