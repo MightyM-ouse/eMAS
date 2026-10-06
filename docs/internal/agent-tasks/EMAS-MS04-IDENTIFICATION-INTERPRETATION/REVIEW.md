@@ -137,3 +137,10 @@ The result profile is unchanged:
 - Windows PowerShell 5.1 aggregate job: FAIL only on the known pre-existing UTF-8 RuntimeConfiguration assertion.
 
 No new T4 blocker was introduced by the final coordination commits.
+
+
+## User decision
+
+Accepted. The integrated T4 baseline is approved for merge into `demo/end-to-end-mvp`.
+
+This approval covers the accepted T4a oracle baseline, T4b engine baseline, final coordination reconciliation, and the documented qualification boundaries. The known unrelated Windows PowerShell 5.1 UTF-8 RuntimeConfiguration assertion remains out of scope.
