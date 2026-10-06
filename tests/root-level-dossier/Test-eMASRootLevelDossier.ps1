@@ -14,6 +14,13 @@ $entryScript = Join-Path $repositoryRoot 'scripts/eMAS-PreSalesAssessment.ps1'
 $fixturePath = Join-Path ([System.IO.Path]::GetFullPath($CorpusRoot)) 'fixtures/SD-002/fixture.zip'
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 [void][System.IO.Directory]::CreateDirectory($resolvedOutputRoot)
+$script:eMASRootPhysicalMarkerEvidenceTypes = @(
+    'RegulatoryUnitKind',
+    'SubmissionUnitMarkerFile',
+    'TocFileMarker',
+    'ChecksumFileMarker',
+    'UtilityDtdFolderMarker'
+)
 
 function Assert-eMASRootTrue {
     param([bool] $Condition, [Parameter(Mandatory = $true)][string] $Message)
@@ -28,6 +35,11 @@ function Assert-eMASRootEqual {
 function ConvertTo-eMASRootJson {
     param([AllowNull()][object] $Value)
     return ([object[]]@($Value) | ConvertTo-Json -Depth 64 -Compress)
+}
+
+function Get-eMASRootHistoricalClassificationEvidence {
+    param([AllowEmptyCollection()][object[]] $Records)
+    return @($Records | Where-Object { $script:eMASRootPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
 }
 
 function ConvertTo-eMASRootReferenceProjection {
@@ -133,7 +145,10 @@ try {
         $wrappedClassification = Invoke-eMASRootEntry -SourcePath $wrappedSource -ExecutionId 'EXEC-ROOT-WRAPPED-CLASSIFICATION' -OutputPath (Join-Path $resolvedOutputRoot 'wrapped-classification.json') -Classification
         $rootClassification = Invoke-eMASRootEntry -SourcePath $rootSource -ExecutionId 'EXEC-ROOT-CLASSIFICATION' -OutputPath (Join-Path $resolvedOutputRoot 'root-classification.json') -Classification
         Assert-eMASRootEqual -Expected '' -Actual ([string]$rootClassification.DossierCandidates[0].RelativePath) -Message 'Root dossier path differs.'
-        Assert-eMASRootEqual -Expected 86 -Actual @($rootClassification.ClassificationEvidence).Count -Message 'Root classification evidence count differs.'
+        $fullRecords = @($rootClassification.ClassificationEvidence)
+        $historicalRecords = @(Get-eMASRootHistoricalClassificationEvidence -Records $fullRecords)
+        Assert-eMASRootEqual -Expected 86 -Actual $historicalRecords.Count -Message 'Root historical classification evidence count differs.'
+        Assert-eMASRootEqual -Expected 101 -Actual $fullRecords.Count -Message 'Root additive classification evidence count differs.'
         $rootPathEvidence = @($rootClassification.ClassificationEvidence | Where-Object { $_.EvidenceType -eq 'DossierRootPath' })
         Assert-eMASRootEqual -Expected 1 -Actual $rootPathEvidence.Count -Message 'Root dossier-path evidence count differs.'
         Assert-eMASRootEqual -Expected '' -Actual ([string]$rootPathEvidence[0].ObservedValue) -Message 'Root dossier-path observed value differs.'
@@ -142,7 +157,7 @@ try {
         $coverage = @($rootClassification.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
         Assert-eMASRootEqual -Expected 1 -Actual $coverage.Count -Message 'Root classification repository coverage count differs.'
         Assert-eMASRootEqual -Expected 'Collected' -Actual $coverage[0].CollectionStatus -Message 'Root classification repository status differs.'
-        Assert-eMASRootEqual -Expected 86 -Actual $coverage[0].RecordsProduced -Message 'Root classification records-produced differs.'
+        Assert-eMASRootEqual -Expected $fullRecords.Count -Actual $coverage[0].RecordsProduced -Message 'Root classification records-produced differs from the full additive result.'
         Assert-eMASRootEqual -Expected (ConvertTo-eMASRootClassificationProjection -Result $wrappedClassification) -Actual (ConvertTo-eMASRootClassificationProjection -Result $rootClassification) -Message 'Wrapped/root classification projections differ.'
     }
 

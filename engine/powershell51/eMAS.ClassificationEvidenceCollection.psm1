@@ -7,7 +7,8 @@ Set-StrictMode -Version 2.0
 $script:eMASCecTypeOrder = @(
     'DossierRootPath', 'SequenceFolder', 'CtdModuleFolders', 'Module1RegionalFolder',
     'CommonBackbonePresence', 'CommonBackbonePath', 'RegionalBackbonePresence', 'RegionalBackbonePath',
-    'XmlRootElement', 'XmlNamespace', 'DtdVersion', 'DocumentTypeName', 'DtdSystemIdentifier', 'DtdPublicIdentifier'
+    'XmlRootElement', 'XmlNamespace', 'DtdVersion', 'DocumentTypeName', 'DtdSystemIdentifier', 'DtdPublicIdentifier',
+    'RegulatoryUnitKind', 'SubmissionUnitMarkerFile', 'TocFileMarker', 'ChecksumFileMarker', 'UtilityDtdFolderMarker'
 )
 $script:eMASCecTypeSpec = @{
     DossierRootPath          = @{ Dimension = 'DossierContext'; Strength = 'Weak'; SourceTier = 'FolderNameHeuristic' }
@@ -24,6 +25,11 @@ $script:eMASCecTypeSpec = @{
     DocumentTypeName         = @{ Dimension = 'ByXmlKind'; Strength = 'Supporting'; SourceTier = 'BackboneDeclaration' }
     DtdSystemIdentifier      = @{ Dimension = 'SpecificationProfile'; Strength = 'Supporting'; SourceTier = 'BackboneDeclaration' }
     DtdPublicIdentifier      = @{ Dimension = 'SpecificationProfile'; Strength = 'Supporting'; SourceTier = 'BackboneDeclaration' }
+    RegulatoryUnitKind       = @{ Dimension = 'TechnicalFormat'; Strength = 'Weak'; SourceTier = 'PackageStructure' }
+    SubmissionUnitMarkerFile = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
+    TocFileMarker            = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
+    ChecksumFileMarker       = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
+    UtilityDtdFolderMarker   = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
 }
 
 function Get-eMASCecPropertyValue {
@@ -74,6 +80,14 @@ function Get-eMASCecChildPath {
     return $ChildPath.Substring($ParentPath.Length + 1)
 }
 
+function Get-eMASCecParentPath {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string] $RelativePath)
+
+    $separator = $RelativePath.LastIndexOf('/')
+    if ($separator -lt 0) { return '' }
+    return $RelativePath.Substring(0, $separator)
+}
+
 function Get-eMASCecChildDirectoryNames {
     param([Parameter(Mandatory = $true)][object] $ChildrenByParent, [Parameter(Mandatory = $true)][string] $ParentPath)
 
@@ -101,14 +115,16 @@ function New-eMASCecDraft {
         [AllowNull()][string] $XmlId,
         [Parameter(Mandatory = $true)][string] $SubjectType,
         [Parameter(Mandatory = $true)][string] $SourceCapability,
-        [Parameter(Mandatory = $true)][string] $SourceField
+        [Parameter(Mandatory = $true)][string] $SourceField,
+        [int] $SortGroup = 0
     )
 
     $spec = $script:eMASCecTypeSpec[$EvidenceType]
     $dimension = [string]$spec.Dimension
     if ($dimension -eq 'ByXmlKind') { $dimension = $(if ($XmlKind -eq 'RegionalBackbone') { 'Region' } else { 'TechnicalFormat' }) }
     $typeIndex = [array]::IndexOf($script:eMASCecTypeOrder, $EvidenceType)
-    $sortKey = '{0}{1}{2}{1}{3}{1}{4:D2}' -f $DossierPath, [char]1, [string]$SequenceFolder, [string]$SequenceRelativePath, $typeIndex
+    # New evidence is sorted after the accepted historical catalogue so existing records retain stable IDs.
+    $sortKey = '{0:D2}{1}{2}{1}{3}{1}{4}{1}{5:D2}{1}{6}' -f $SortGroup, [char]1, $DossierPath, [string]$SequenceFolder, [string]$SequenceRelativePath, $typeIndex, [string]$RelativePath
     $record = [pscustomobject][ordered]@{
         EvidenceId = $null
         Dimension = $dimension
@@ -225,6 +241,42 @@ function Invoke-eMASClassificationEvidenceCollection {
             [void]$drafts.Add((New-eMASCecDraft -EvidenceType 'SequenceFolder' -DossierPath $dossierPath -SequenceFolder $sequenceFolder -SequenceRelativePath $null -XmlKind $null `
                 -RelativePath $sequencePath -ObservedValue ([string]$sequence.FolderName) -CaptureStatus 'Available' -DossierId ([string]$sequence.DossierId) -SequenceId ([string]$sequence.SequenceId) -XmlId $null `
                 -SubjectType 'Sequence' -SourceCapability 'RepositoryDiscovery' -SourceField 'Sequences.FolderName'))
+
+            $sequenceLikeKind = [string](Get-eMASCecPropertyValue -InputObject $sequence -Name 'SequenceLikeKind')
+            if (-not [string]::IsNullOrWhiteSpace($sequenceLikeKind)) {
+                [void]$drafts.Add((New-eMASCecDraft -EvidenceType 'RegulatoryUnitKind' -DossierPath $dossierPath -SequenceFolder $sequenceFolder -SequenceRelativePath $null -XmlKind $null `
+                    -RelativePath $sequencePath -ObservedValue $sequenceLikeKind -CaptureStatus 'Available' -DossierId ([string]$sequence.DossierId) -SequenceId ([string]$sequence.SequenceId) -XmlId $null `
+                    -SubjectType 'Sequence' -SourceCapability 'RepositoryDiscovery' -SourceField 'Sequences.SequenceLikeKind' -SortGroup 1))
+            }
+
+            # Only exact direct children of this accepted sequence can provide file-marker evidence.
+            $directFilePaths = New-Object 'System.Collections.Generic.List[string]'
+            foreach ($file in @($workingResult.Files)) {
+                if ([string]$file.SequenceId -ne [string]$sequence.SequenceId) { continue }
+                $filePath = [string]$file.RelativePath
+                if ((Get-eMASCecParentPath -RelativePath $filePath) -ceq $sequencePath) { $directFilePaths.Add($filePath) }
+            }
+            $sortedDirectFilePaths = $directFilePaths.ToArray()
+            [System.Array]::Sort($sortedDirectFilePaths, [System.StringComparer]::Ordinal)
+            foreach ($filePath in $sortedDirectFilePaths) {
+                $leafName = $filePath.Substring($filePath.LastIndexOf('/') + 1)
+                $evidenceType = $null
+                if ($leafName.Equals('submissionunit.xml', [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $evidenceType = 'SubmissionUnitMarkerFile'
+                }
+                elseif ($leafName.Equals('index-md5.txt', [System.StringComparison]::OrdinalIgnoreCase) -or $leafName.Equals('sha256.txt', [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $evidenceType = 'ChecksumFileMarker'
+                }
+                elseif ($leafName.Equals('ctd-toc.pdf', [System.StringComparison]::OrdinalIgnoreCase) -or $leafName -imatch '^m[1-5]-toc\.pdf$') {
+                    $evidenceType = 'TocFileMarker'
+                }
+                if ($null -ne $evidenceType) {
+                    [void]$drafts.Add((New-eMASCecDraft -EvidenceType $evidenceType -DossierPath $dossierPath -SequenceFolder $sequenceFolder -SequenceRelativePath $leafName -XmlKind $null `
+                        -RelativePath $filePath -ObservedValue $leafName -CaptureStatus 'Available' -DossierId ([string]$sequence.DossierId) -SequenceId ([string]$sequence.SequenceId) -XmlId $null `
+                        -SubjectType 'Sequence' -SourceCapability 'RepositoryDiscovery' -SourceField 'Files.RelativePath' -SortGroup 1))
+                }
+            }
+
             if (-not $directories.Contains($sequencePath)) { continue }
             $children = Get-eMASCecChildDirectoryNames -ChildrenByParent $childrenByParent -ParentPath $sequencePath
             $moduleFolders = [object[]]@($children | Where-Object { $_ -cmatch '^m[1-5]$' })
@@ -236,6 +288,17 @@ function Invoke-eMASClassificationEvidenceCollection {
                 [void]$drafts.Add((New-eMASCecDraft -EvidenceType 'Module1RegionalFolder' -DossierPath $dossierPath -SequenceFolder $sequenceFolder -SequenceRelativePath $null -XmlKind $null `
                     -RelativePath $moduleOnePath -ObservedValue (Get-eMASCecChildDirectoryNames -ChildrenByParent $childrenByParent -ParentPath $moduleOnePath) -CaptureStatus 'Available' `
                     -DossierId ([string]$sequence.DossierId) -SequenceId ([string]$sequence.SequenceId) -XmlId $null -SubjectType 'Sequence' -SourceCapability 'RepositoryDiscovery' -SourceField 'Repository.Entries'))
+            }
+            foreach ($utilityName in @($children | Where-Object { $_ -ieq 'util' })) {
+                $utilityPath = $sequencePath + '/' + $utilityName
+                $utilityChildren = Get-eMASCecChildDirectoryNames -ChildrenByParent $childrenByParent -ParentPath $utilityPath
+                foreach ($dtdName in @($utilityChildren | Where-Object { $_ -ieq 'dtd' })) {
+                    $markerPath = $utilityPath + '/' + $dtdName
+                    $sequenceRelativeMarkerPath = $utilityName + '/' + $dtdName
+                    [void]$drafts.Add((New-eMASCecDraft -EvidenceType 'UtilityDtdFolderMarker' -DossierPath $dossierPath -SequenceFolder $sequenceFolder -SequenceRelativePath $sequenceRelativeMarkerPath -XmlKind $null `
+                        -RelativePath $markerPath -ObservedValue $sequenceRelativeMarkerPath -CaptureStatus 'Available' -DossierId ([string]$sequence.DossierId) -SequenceId ([string]$sequence.SequenceId) -XmlId $null `
+                        -SubjectType 'Sequence' -SourceCapability 'RepositoryDiscovery' -SourceField 'Repository.Entries' -SortGroup 1))
+                }
             }
         }
 
@@ -341,7 +404,7 @@ function Invoke-eMASClassificationEvidenceCollection {
     $workingResult.ClassificationEvidence = [object[]]@($existingEvidence)
     $workingResult.CollectionCoverage = [object[]]@($coverage)
     $workingResult.Execution.ScannerName = ('{0}+ClassificationEvidenceCollection' -f [string]$workingResult.Execution.ScannerName)
-    $workingResult.Execution.ScannerVersion = '0.8.0'
+    $workingResult.Execution.ScannerVersion = '0.9.0'
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $workingResult.Execution.Capabilities = [object[]](@($capabilities) + 'ClassificationEvidenceCollection')
     if ($workingResult.Execution.CompletionStatus -eq 'Completed' -and $repositoryCollectionStatus -ne 'Collected') {

@@ -15,6 +15,13 @@ $entryScriptPath = Join-Path $repositoryRoot 'scripts/eMAS-PreSalesAssessment.ps
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 [void][System.IO.Directory]::CreateDirectory($resolvedOutputRoot)
 Import-Module -Name $modulePath -Force -ErrorAction Stop
+$script:eMASB3PhysicalMarkerEvidenceTypes = @(
+    'RegulatoryUnitKind',
+    'SubmissionUnitMarkerFile',
+    'TocFileMarker',
+    'ChecksumFileMarker',
+    'UtilityDtdFolderMarker'
+)
 
 $checks = New-Object System.Collections.ArrayList
 $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('emas-rd-b3-{0}' -f [guid]::NewGuid().ToString('N'))
@@ -36,6 +43,11 @@ function Get-eMASB3SortedText {
     $sorted = [string[]]@($Values)
     [System.Array]::Sort($sorted, [System.StringComparer]::Ordinal)
     return ($sorted -join "`n")
+}
+
+function Get-eMASB3HistoricalClassificationEvidence {
+    param([AllowEmptyCollection()][object[]] $Records)
+    return @($Records | Where-Object { $script:eMASB3PhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
 }
 
 function Invoke-eMASB3Check {
@@ -173,7 +185,13 @@ try {
         Assert-eMASB3Equal 'Exports/2024/ProductABC' ([string]$wrapped.DossierCandidates[0].RelativePath) 'Year-wrapped SD-002 dossier path differs.'
         Assert-eMASB3Equal 94 @($wrapped.References).Count 'Year-wrapped SD-002 reference count differs.'
         Assert-eMASB3Equal 93 @($wrapped.References | Where-Object { $_.ResolutionStatus -eq 'ResolvedPresent' }).Count 'Year-wrapped SD-002 resolved-present count differs.'
-        Assert-eMASB3Equal 86 @($wrapped.ClassificationEvidence).Count 'Year-wrapped SD-002 classification-evidence count differs.'
+        $fullRecords = @($wrapped.ClassificationEvidence)
+        $historicalRecords = @(Get-eMASB3HistoricalClassificationEvidence -Records $fullRecords)
+        Assert-eMASB3Equal 86 $historicalRecords.Count 'Year-wrapped SD-002 historical classification-evidence count differs.'
+        Assert-eMASB3Equal 101 $fullRecords.Count 'Year-wrapped SD-002 additive classification-evidence count differs.'
+        $coverage = @($wrapped.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
+        Assert-eMASB3Equal 1 $coverage.Count 'Year-wrapped SD-002 CEC repository coverage count differs.'
+        Assert-eMASB3Equal $fullRecords.Count $coverage[0].RecordsProduced 'Year-wrapped SD-002 CEC records-produced differs from the full additive result.'
     }
 
     foreach ($lockedPath in @($lockedPaths)) { & /bin/chmod 700 $lockedPath }
