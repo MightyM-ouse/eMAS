@@ -1,33 +1,36 @@
 # Task Status
 
 **Task ID:** `EMAS-MS04-ROOT-LEVEL-DOSSIER`  
-**Authoritative base commit:** `f2e1dc754e2ee6e1fcd52d5dcdf674fbbcc83aa7`  
-**Task phase:** Prepared for sequential agent execution  
-**Overall status:** `READY_FOR_CODEX_BASELINE_GATE`
+**Authoritative baseline commit:** `dac1664fee652f701a41204e2527f602077bb42f`  
+**Task phase:** Mac-first bounded defect resolution  
+**Overall status:** `READY_FOR_CODEX_RESTART`
 
-| Agent / gate | Role | Status | Deliverable / evidence |
+| Gate | Role | Status | Evidence |
 |---|---|---|---|
-| Coordination | Publish bounded task and launch prompts | PREPARED | `TASK.md`, `STATUS.md`, `*_LAUNCH.md` |
-| Codex | Baseline proof, reproduction, minimal implementation, focused and full regression | NOT_STARTED | `reports/CODEX.md` and implementation PR |
-| Claude | Fixed-SHA code and test review | BLOCKED_ON_CODEX_SHA | `reports/CLAUDE.md` |
-| Hermes | Independent regression and native Windows PowerShell 5.1 qualification | BLOCKED_ON_CODEX_AND_CLAUDE | `reports/HERMES.md` |
-| Consolidation | Reconcile reports and present user decision gate | BLOCKED_ON_ALL_REPORTS | `reports/CONSOLIDATED.md` |
-| User | Accept or reject implementation into baseline | NOT_READY | Explicit decision; no automatic merge |
+| RC1 baseline materialization | Exact qualified source/tests committed via PR #29 | COMPLETE | Merge commit `dac1664fee652f701a41204e2527f602077bb42f` |
+| Codex | Reproduce, minimally fix, focused + full Mac regression | READY_TO_RESTART | `reports/CODEX.md` + implementation PR |
+| ChatGPT | Central GitHub review and reconciliation | BLOCKED_ON_CODEX_PR | Chat review |
+| Windows PowerShell 5.1 | Native qualification | DEFERRED_UNTIL_MAC_BASELINE_ACCEPTED | Later Windows run |
+| User | Accept Mac implementation baseline / authorize Windows qualification | NOT_READY | Explicit decision |
 
-## Baseline
+## Accepted baseline
 
-- Accepted contract: `eMAS.MS04.PreSales.ScannerObservations/1.0`
-- Accepted scanner version: `0.8.0`
+- Contract: `eMAS.MS04.PreSales.ScannerObservations/1.0`
+- Scanner version: `0.8.0`
 - Accepted capabilities: 8
 - Frozen Wave 1 fixtures: 19
 - Existing automated suites: 8
-- Previous qualification: `PASS_WINDOWS_PS51_AUTOMATED_REGRESSION`
-- Planning decision source: `EMAS-MS04-WAVE2-PLANNING` at merge commit `f2e1dc754e2ee6e1fcd52d5dcdf674fbbcc83aa7`
+- Prior Windows qualification: `PASS_WINDOWS_PS51_AUTOMATED_REGRESSION`
+- RC1 source/test baseline is now repository-native via PR #29.
 
 ## Current gate
 
-Codex must prove the complete qualified package is present and hash-matched before editing. If that proof fails, set the overall status to `BLOCKED_BASELINE_NOT_REPRODUCIBLE`; do not reconstruct or broaden the baseline.
+Restart Codex from the materialized baseline. First rerun the eight existing suites on Mac, then reproduce and fix only the two root-level dossier defects.
 
-## Completion rule
+The previous blocked PR #28 is historical evidence only and was closed without merge.
 
-This task is not complete when code merely exists. Completion requires persisted Codex, Claude, Hermes, and consolidated reports; passing focused and full regression; unchanged frozen inputs; native Windows PowerShell 5.1 qualification at the reviewed SHA; and an explicit user decision on the implementation PR.
+## Completion rule for this stage
+
+This Mac stage is complete when Codex publishes a bounded implementation PR, focused tests pass, all eight existing suites pass on Mac, frozen inputs remain unchanged, and ChatGPT review finds no unresolved blocker.
+
+Windows PowerShell 5.1 requalification is a later explicit stage.
