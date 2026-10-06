@@ -1,0 +1,34 @@
+{
+  "sampleId": "SD-054",
+  "scenarioId": "V4-02",
+  "title": "FDA-like lifecycle archive with reuse-only unit",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "18e9251870311fed47710a21340ae378003712dee7f930cdba2db81e0cfc0c10",
+  "expected": {
+    "candidatePaths": [
+      "app"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "app/1",
+        "candidatePath": "app",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      },
+      {
+        "relativePath": "app/2",
+        "candidatePath": "app",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 2
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "sampleId": "SD-072",
+  "scenarioId": "V4-19",
+  "title": "EU grouped-transmission physical layout",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "dacbb828b06985de302736c2d20f122b0f0ea1a3f7f8624f9e8f7a3e093ab005",
+  "expected": {
+    "candidatePaths": [
+      "fr0034g/fr0345",
+      "fr0034g/fr1011",
+      "fr0034g/fr1762"
+    ],
+    "wrapperPaths": [
+      "fr0034g"
+    ],
+    "units": [
+      {
+        "relativePath": "fr0034g/fr0345/455",
+        "candidatePath": "fr0034g/fr0345",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 455
+      },
+      {
+        "relativePath": "fr0034g/fr1011/156",
+        "candidatePath": "fr0034g/fr1011",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 156
+      },
+      {
+        "relativePath": "fr0034g/fr1762/3",
+        "candidatePath": "fr0034g/fr1762",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 3
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 3,
+      "WrapperDepth": 3
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

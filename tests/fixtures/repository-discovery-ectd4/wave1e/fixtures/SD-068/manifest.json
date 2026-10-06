@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-068",
+  "scenarioId": "V4-15",
+  "title": "Malformed discovery-only XML stub",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "995abcb311d0334df0d9d13cd2c1e88f6306c3f03cf8f9694911e70878517050",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/1",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

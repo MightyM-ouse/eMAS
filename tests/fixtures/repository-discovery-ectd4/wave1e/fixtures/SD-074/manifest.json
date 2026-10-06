@@ -1,0 +1,31 @@
+{
+  "sampleId": "SD-074",
+  "scenarioId": "V4-22",
+  "title": "Year wrapper above a v4 package",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "7e80912088ff984484816c6bd5f95f88c0376966afe520d39d5afbaa78a4527a",
+  "expected": {
+    "candidatePaths": [
+      "Exports/2024/ema000123"
+    ],
+    "wrapperPaths": [
+      "Exports",
+      "Exports/2024"
+    ],
+    "units": [
+      {
+        "relativePath": "Exports/2024/ema000123/1",
+        "candidatePath": "Exports/2024/ema000123",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1,
+      "WrapperDepth": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "sampleId": "SD-071",
+  "scenarioId": "V4-18",
+  "title": "Leading-zero non-canonical unit name",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "ffd7705a99a3652310123cfa25f894525e94186cc24aabb7672fe20ff2817b0d",
+  "expected": {
+    "candidatePaths": [
+      "Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg/0001",
+        "candidatePath": "Pkg",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": null
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1,
+      "NonCanonicalSequenceNumberFolderName": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

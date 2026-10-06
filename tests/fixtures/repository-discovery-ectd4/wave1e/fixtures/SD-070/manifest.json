@@ -1,0 +1,34 @@
+{
+  "sampleId": "SD-070",
+  "scenarioId": "V4-17",
+  "title": "Four-digit v4 marker precedence",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "b0cf5b321aa815d81ebe96774b6af714c2d3ae4724d1b86de2d37d3fdcaa9c1f",
+  "expected": {
+    "candidatePaths": [
+      "App"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "App/0999",
+        "candidatePath": "App",
+        "sequenceLikeKind": "NumericSequenceDirectory",
+        "isExactSequenceFolder": true,
+        "sequenceNumber": 999
+      },
+      {
+        "relativePath": "App/1000",
+        "candidatePath": "App",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1000
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

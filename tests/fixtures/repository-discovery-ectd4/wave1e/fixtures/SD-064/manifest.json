@@ -1,0 +1,28 @@
+{
+  "sampleId": "SD-064",
+  "scenarioId": "V4-12",
+  "title": "Four-digit fail-open and non-four-digit unreadable negative",
+  "sourceMode": "DirectoryAccess",
+  "fixtureSha256": "894ddf95094355c9a2e524752c77972d1d5dd0a5d488a62a2ba8ee09b9264134",
+  "expected": {
+    "candidatePaths": [
+      "V3Pkg"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "V3Pkg/0005",
+        "candidatePath": "V3Pkg",
+        "sequenceLikeKind": "NumericSequenceDirectory",
+        "isExactSequenceFolder": true,
+        "sequenceNumber": 5
+      }
+    ],
+    "observationCounts": {},
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": [
+      "V3Pkg/0005",
+      "NonV4/5"
+    ]
+  }
+}

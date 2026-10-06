@@ -1,0 +1,35 @@
+{
+  "sampleId": "SD-057",
+  "scenarioId": "V4-05",
+  "title": "Two independent v4 containers",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "159f09d294ae88f2ac11376ccc036a75436d7514d5814c96775c9c7761538632",
+  "expected": {
+    "candidatePaths": [
+      "ema000123",
+      "nda123456"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "ema000123/1",
+        "candidatePath": "ema000123",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      },
+      {
+        "relativePath": "nda123456/1",
+        "candidatePath": "nda123456",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 2
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

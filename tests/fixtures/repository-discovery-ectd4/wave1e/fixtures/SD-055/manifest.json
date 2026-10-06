@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-055",
+  "scenarioId": "V4-03",
+  "title": "EU first-level folder and unit",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "6ea4261d0a01dc8e87c33b39c6af418ff6a881a5160717a863dc151d41bdb4e9",
+  "expected": {
+    "candidatePaths": [
+      "ema000123"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "ema000123/1",
+        "candidatePath": "ema000123",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

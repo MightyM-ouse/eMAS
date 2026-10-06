@@ -1,0 +1,27 @@
+{
+  "sampleId": "SD-053",
+  "scenarioId": "V4-01",
+  "title": "FDA-like root-level transmission",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "f312440c90f09fe8a170669cd392107e3b96b82c3a82fee1f537218ffe17e926",
+  "expected": {
+    "candidatePaths": [
+      ""
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "1",
+        "candidatePath": "",
+        "sequenceLikeKind": "SubmissionUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": 1
+      }
+    ],
+    "observationCounts": {
+      "SubmissionUnitFoldersObserved": 1
+    },
+    "unplacedSubmissionUnitMarkers": [],
+    "accessDeniedPaths": []
+  }
+}

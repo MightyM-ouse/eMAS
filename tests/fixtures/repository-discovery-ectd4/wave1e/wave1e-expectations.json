@@ -1,0 +1,652 @@
+{
+  "taskId": "EMAS-MS04-ECTD4-DISCOVERY-IMPLEMENTATION",
+  "fixtureSet": "Wave1E",
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "sourceBasis": [
+    "ICH eCTD v4.0 IG v1.7",
+    "FDA Regional M1 IG v1.9 and supported package v1.5.1",
+    "EU Practical Guidance v1.0 and Validation Criteria v1.1"
+  ],
+  "fixtures": [
+    {
+      "sampleId": "SD-053",
+      "scenarioId": "V4-01",
+      "title": "FDA-like root-level transmission",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "f312440c90f09fe8a170669cd392107e3b96b82c3a82fee1f537218ffe17e926",
+      "expected": {
+        "candidatePaths": [
+          ""
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "1",
+            "candidatePath": "",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-054",
+      "scenarioId": "V4-02",
+      "title": "FDA-like lifecycle archive with reuse-only unit",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "18e9251870311fed47710a21340ae378003712dee7f930cdba2db81e0cfc0c10",
+      "expected": {
+        "candidatePaths": [
+          "app"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "app/1",
+            "candidatePath": "app",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          },
+          {
+            "relativePath": "app/2",
+            "candidatePath": "app",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 2
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-055",
+      "scenarioId": "V4-03",
+      "title": "EU first-level folder and unit",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "6ea4261d0a01dc8e87c33b39c6af418ff6a881a5160717a863dc151d41bdb4e9",
+      "expected": {
+        "candidatePaths": [
+          "ema000123"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "ema000123/1",
+            "candidatePath": "ema000123",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-056",
+      "scenarioId": "V4-04",
+      "title": "Neutral deep wrappers",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "5a7eb752b5256cdb01a3552e0d8be04fea3eacd09963b5bea6fb873e8f064474",
+      "expected": {
+        "candidatePaths": [
+          "Customer/Export/Set/ema000123"
+        ],
+        "wrapperPaths": [
+          "Customer",
+          "Customer/Export",
+          "Customer/Export/Set"
+        ],
+        "units": [
+          {
+            "relativePath": "Customer/Export/Set/ema000123/7",
+            "candidatePath": "Customer/Export/Set/ema000123",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 7
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1,
+          "WrapperDepth": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-057",
+      "scenarioId": "V4-05",
+      "title": "Two independent v4 containers",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "159f09d294ae88f2ac11376ccc036a75436d7514d5814c96775c9c7761538632",
+      "expected": {
+        "candidatePaths": [
+          "ema000123",
+          "nda123456"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "ema000123/1",
+            "candidatePath": "ema000123",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          },
+          {
+            "relativePath": "nda123456/1",
+            "candidatePath": "nda123456",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 2
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-058",
+      "scenarioId": "V4-06",
+      "title": "Separate v3 and v4 containers",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "b0faef0afca7418414506df7f8626ca3baf8172747091018bb1481bdd273c712",
+      "expected": {
+        "candidatePaths": [
+          "Legacy",
+          "Modern"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Legacy/0000",
+            "candidatePath": "Legacy",
+            "sequenceLikeKind": "NumericSequenceDirectory",
+            "isExactSequenceFolder": true,
+            "sequenceNumber": 0
+          },
+          {
+            "relativePath": "Modern/1",
+            "candidatePath": "Modern",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-059",
+      "scenarioId": "V4-07",
+      "title": "Unrelated year folders",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "80ea04154c2467ce8ef290534beea8084450c9b3f4228aad56436b28f1b07987",
+      "expected": {
+        "candidatePaths": [],
+        "wrapperPaths": [],
+        "units": [],
+        "observationCounts": {},
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-060",
+      "scenarioId": "V4-08",
+      "title": "Numeric folders with arbitrary XML",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "a56cffcf88dc3decb2bec884f1a8e9364ceea37026fb64d4a9a6e2942a1f4baf",
+      "expected": {
+        "candidatePaths": [],
+        "wrapperPaths": [],
+        "units": [],
+        "observationCounts": {},
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-061",
+      "scenarioId": "V4-09",
+      "title": "Minimal submission-unit marker",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "28ac1da4cc5dbc0822b44341f5a5a7f6747eee0f101d4dedc81c5d2c0f5e6a60",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/12",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 12
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-062",
+      "scenarioId": "V4-10",
+      "title": "Confirmed unit missing sha256.txt",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "00c4d4173774b6a7a30af30648a86b6ff5e3c06c6a17b3dd1f69ba834a5ef782",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/1",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-063",
+      "scenarioId": "V4-11",
+      "title": "Damaged fallback marker set",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "760af9a19f62ff17fd2e2da6bc7c5616bd72875a8c5ceb6e0342d0b63f8b51da",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/1",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "DamagedSubmissionUnitCandidate",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "DamagedSubmissionUnitMarkerSet": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-064",
+      "scenarioId": "V4-12",
+      "title": "Four-digit fail-open and non-four-digit unreadable negative",
+      "sourceMode": "DirectoryAccess",
+      "fixtureSha256": "894ddf95094355c9a2e524752c77972d1d5dd0a5d488a62a2ba8ee09b9264134",
+      "expected": {
+        "candidatePaths": [
+          "V3Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "V3Pkg/0005",
+            "candidatePath": "V3Pkg",
+            "sequenceLikeKind": "NumericSequenceDirectory",
+            "isExactSequenceFolder": true,
+            "sequenceNumber": 5
+          }
+        ],
+        "observationCounts": {},
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": [
+          "V3Pkg/0005",
+          "NonV4/5"
+        ]
+      }
+    },
+    {
+      "sampleId": "SD-065",
+      "scenarioId": "V4-13",
+      "title": "Root-level FDA-like unit",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "0c74cc4c111005f95c2880b8e05e2254f46c1d8756bf880f02617627b2f1d422",
+      "expected": {
+        "candidatePaths": [
+          ""
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "3",
+            "candidatePath": "",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 3
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-066",
+      "scenarioId": "V4-13B",
+      "title": "Misplaced archive-root marker",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "c0dd0d8040b93f6d25e07c9b52e35706f02fcf31cb785b8ed1e2c3c8315d553f",
+      "expected": {
+        "candidatePaths": [],
+        "wrapperPaths": [],
+        "units": [],
+        "observationCounts": {
+          "UnplacedSubmissionUnitMarker": 1
+        },
+        "unplacedSubmissionUnitMarkers": [
+          "submissionunit.xml"
+        ],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-067",
+      "scenarioId": "V4-14",
+      "title": "Case-variant structural markers",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "17189fc7a5fa5319ba56e5a6ed1cea38c7697a4e8d0a507d5a30bf63f6bdf012",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/1",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-068",
+      "scenarioId": "V4-15",
+      "title": "Malformed discovery-only XML stub",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "995abcb311d0334df0d9d13cd2c1e88f6306c3f03cf8f9694911e70878517050",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/1",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-069",
+      "scenarioId": "V4-16",
+      "title": "Mixed v3-to-v4 physical container",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "00dc92126cdf3ca206a63fd0b87e9e34e568829a718eaf2931c7794345e8cda3",
+      "expected": {
+        "candidatePaths": [
+          "App"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "App/0000",
+            "candidatePath": "App",
+            "sequenceLikeKind": "NumericSequenceDirectory",
+            "isExactSequenceFolder": true,
+            "sequenceNumber": 0
+          },
+          {
+            "relativePath": "App/0003",
+            "candidatePath": "App",
+            "sequenceLikeKind": "NumericSequenceDirectory",
+            "isExactSequenceFolder": true,
+            "sequenceNumber": 3
+          },
+          {
+            "relativePath": "App/4",
+            "candidatePath": "App",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 4
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-070",
+      "scenarioId": "V4-17",
+      "title": "Four-digit v4 marker precedence",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "b0cf5b321aa815d81ebe96774b6af714c2d3ae4724d1b86de2d37d3fdcaa9c1f",
+      "expected": {
+        "candidatePaths": [
+          "App"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "App/0999",
+            "candidatePath": "App",
+            "sequenceLikeKind": "NumericSequenceDirectory",
+            "isExactSequenceFolder": true,
+            "sequenceNumber": 999
+          },
+          {
+            "relativePath": "App/1000",
+            "candidatePath": "App",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1000
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-071",
+      "scenarioId": "V4-18",
+      "title": "Leading-zero non-canonical unit name",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "ffd7705a99a3652310123cfa25f894525e94186cc24aabb7672fe20ff2817b0d",
+      "expected": {
+        "candidatePaths": [
+          "Pkg"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg/0001",
+            "candidatePath": "Pkg",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": null
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1,
+          "NonCanonicalSequenceNumberFolderName": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-072",
+      "scenarioId": "V4-19",
+      "title": "EU grouped-transmission physical layout",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "dacbb828b06985de302736c2d20f122b0f0ea1a3f7f8624f9e8f7a3e093ab005",
+      "expected": {
+        "candidatePaths": [
+          "fr0034g/fr0345",
+          "fr0034g/fr1011",
+          "fr0034g/fr1762"
+        ],
+        "wrapperPaths": [
+          "fr0034g"
+        ],
+        "units": [
+          {
+            "relativePath": "fr0034g/fr0345/455",
+            "candidatePath": "fr0034g/fr0345",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 455
+          },
+          {
+            "relativePath": "fr0034g/fr1011/156",
+            "candidatePath": "fr0034g/fr1011",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 156
+          },
+          {
+            "relativePath": "fr0034g/fr1762/3",
+            "candidatePath": "fr0034g/fr1762",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 3
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 3,
+          "WrapperDepth": 3
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-073",
+      "scenarioId": "V4-20-21",
+      "title": "Out-of-range marker and conflicting backbones",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "e3afe4d725bbf3c9f696015bb1fef51f8d7731048ea5665475405526ddd6a02a",
+      "expected": {
+        "candidatePaths": [
+          "Pkg2"
+        ],
+        "wrapperPaths": [],
+        "units": [
+          {
+            "relativePath": "Pkg2/0001",
+            "candidatePath": "Pkg2",
+            "sequenceLikeKind": "AmbiguousRegulatoryUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": null
+          }
+        ],
+        "observationCounts": {
+          "ConflictingBackboneMarkers": 1,
+          "NonCanonicalSequenceNumberFolderName": 1,
+          "UnplacedSubmissionUnitMarker": 1
+        },
+        "unplacedSubmissionUnitMarkers": [
+          "Pkg/1234567/submissionunit.xml"
+        ],
+        "accessDeniedPaths": []
+      }
+    },
+    {
+      "sampleId": "SD-074",
+      "scenarioId": "V4-22",
+      "title": "Year wrapper above a v4 package",
+      "sourceMode": "ZipAndDirectory",
+      "fixtureSha256": "7e80912088ff984484816c6bd5f95f88c0376966afe520d39d5afbaa78a4527a",
+      "expected": {
+        "candidatePaths": [
+          "Exports/2024/ema000123"
+        ],
+        "wrapperPaths": [
+          "Exports",
+          "Exports/2024"
+        ],
+        "units": [
+          {
+            "relativePath": "Exports/2024/ema000123/1",
+            "candidatePath": "Exports/2024/ema000123",
+            "sequenceLikeKind": "SubmissionUnitFolder",
+            "isExactSequenceFolder": false,
+            "sequenceNumber": 1
+          }
+        ],
+        "observationCounts": {
+          "SubmissionUnitFoldersObserved": 1,
+          "WrapperDepth": 1
+        },
+        "unplacedSubmissionUnitMarkers": [],
+        "accessDeniedPaths": []
+      }
+    }
+  ]
+}

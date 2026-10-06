@@ -347,30 +347,76 @@ function Get-eMASRepositoryDiscoveryModel {
     }
 
     $rawCandidatePaths = New-Object System.Collections.ArrayList
+    $classifiedUnitsByParent = @{}
+    $classifiedUnitKindByPath = @{}
     foreach ($parentPath in @($childrenMap.Keys)) {
-        $exactChildren = @($childrenMap[$parentPath] | Where-Object {
-            $_.EntryKind -eq 'Directory' -and (Get-eMASDiscoveryLeafName -RelativePath $_.RelativePath) -match '^\d{4}$'
+        $numericChildren = @($childrenMap[$parentPath] | Where-Object {
+            $_.EntryKind -eq 'Directory' -and (Get-eMASDiscoveryLeafName -RelativePath $_.RelativePath) -match '^\d{1,6}$'
         })
-        $hasQualifyingSequence = $false
-        foreach ($exactChild in $exactChildren) {
-            if ($enumerationGapPaths.ContainsKey([string]$exactChild.RelativePath)) {
-                $hasQualifyingSequence = $true
-                break
-            }
-            if (-not $childrenMap.ContainsKey([string]$exactChild.RelativePath)) {
-                continue
-            }
-            foreach ($sequenceChild in @($childrenMap[[string]$exactChild.RelativePath])) {
-                $name = Get-eMASDiscoveryLeafName -RelativePath $sequenceChild.RelativePath
-                if (($sequenceChild.EntryKind -eq 'Directory' -and $name -imatch '^m[1-5]$') -or
-                    ($sequenceChild.EntryKind -eq 'File' -and ($name -ieq 'index.xml' -or $name -ieq 'submissionunit.xml'))) {
-                    $hasQualifyingSequence = $true
-                    break
+        $classifiedChildren = @{}
+        foreach ($numericChild in $numericChildren) {
+            $numericPath = [string]$numericChild.RelativePath
+            $numericName = Get-eMASDiscoveryLeafName -RelativePath $numericPath
+            $unitKind = $null
+
+            if ($enumerationGapPaths.ContainsKey($numericPath)) {
+                if ($numericName -match '^\d{4}$') {
+                    $unitKind = 'NumericSequenceDirectory'
                 }
             }
-            if ($hasQualifyingSequence) { break }
+            else {
+                $unitChildren = @()
+                if ($childrenMap.ContainsKey($numericPath)) {
+                    $unitChildren = @($childrenMap[$numericPath])
+                }
+                $hasIndex = $false
+                $hasSubmissionUnit = $false
+                $hasSha256 = $false
+                $hasModuleDirectory = $false
+                foreach ($unitChild in $unitChildren) {
+                    $unitChildName = Get-eMASDiscoveryLeafName -RelativePath $unitChild.RelativePath
+                    if ($unitChild.EntryKind -eq 'File') {
+                        if ($unitChildName -ieq 'index.xml') { $hasIndex = $true }
+                        elseif ($unitChildName -ieq 'submissionunit.xml') { $hasSubmissionUnit = $true }
+                        elseif ($unitChildName -ieq 'sha256.txt') { $hasSha256 = $true }
+                    }
+                    elseif ($unitChild.EntryKind -eq 'Directory' -and $unitChildName -imatch '^m[1-5]$') {
+                        $hasModuleDirectory = $true
+                    }
+                }
+
+                if ($hasIndex -and $hasSubmissionUnit) {
+                    $unitKind = 'AmbiguousRegulatoryUnitFolder'
+                }
+                elseif ($hasSubmissionUnit) {
+                    $unitKind = 'SubmissionUnitFolder'
+                }
+                elseif (-not $hasIndex -and $hasSha256 -and $hasModuleDirectory) {
+                    $unitKind = 'DamagedSubmissionUnitCandidate'
+                }
+                elseif ($numericName -match '^\d{4}$' -and ($hasIndex -or $hasModuleDirectory)) {
+                    $unitKind = 'NumericSequenceDirectory'
+                }
+            }
+
+            if ($null -ne $unitKind) {
+                $classifiedChildren[$numericPath] = $unitKind
+                $classifiedUnitKindByPath[$numericPath] = $unitKind
+            }
         }
-        if ($hasQualifyingSequence) {
+        if ($classifiedChildren.Count -gt 0) {
+            # B3 records every direct NNNN child once any child establishes the
+            # physical container. Treat those retained children as classified
+            # units as well so nested suppression follows facts, not name shape.
+            foreach ($numericChild in $numericChildren) {
+                $numericPath = [string]$numericChild.RelativePath
+                $numericName = Get-eMASDiscoveryLeafName -RelativePath $numericPath
+                if ($numericName -match '^\d{4}$' -and -not $classifiedChildren.ContainsKey($numericPath)) {
+                    $classifiedChildren[$numericPath] = 'NumericSequenceDirectory'
+                    $classifiedUnitKindByPath[$numericPath] = 'NumericSequenceDirectory'
+                }
+            }
+            $classifiedUnitsByParent[[string]$parentPath] = $classifiedChildren
             [void]$rawCandidatePaths.Add([string]$parentPath)
         }
     }
@@ -397,7 +443,12 @@ function Get-eMASRepositoryDiscoveryModel {
                 else {
                     continue
                 }
-                if ($firstSegment -match '^\d{4}$') {
+                $classifiedPath = $firstSegment
+                if (-not [string]::IsNullOrEmpty($acceptedPath)) {
+                    $classifiedPath = '{0}/{1}' -f $acceptedPath, $firstSegment
+                }
+                if ($classifiedUnitsByParent.ContainsKey([string]$acceptedPath) -and
+                    $classifiedUnitsByParent[[string]$acceptedPath].ContainsKey([string]$classifiedPath)) {
                     $isNestedSequenceRoot = $true
                     break
                 }
@@ -453,7 +504,17 @@ function Get-eMASRepositoryDiscoveryModel {
             $isSequenceLike = $false
             $entryKind = 'Directory'
 
-            if ($entry.EntryKind -eq 'Directory' -and $name -match '^\d{4}$') {
+            if ($entry.EntryKind -eq 'Directory' -and $classifiedUnitKindByPath.ContainsKey([string]$entry.RelativePath)) {
+                $kind = [string]$classifiedUnitKindByPath[[string]$entry.RelativePath]
+                $isExact = ($kind -eq 'NumericSequenceDirectory')
+                if ($isExact -or $name -match '^[1-9]\d{0,5}$') {
+                    $sequenceNumber = [int]$name
+                }
+                $isSequenceLike = $true
+            }
+            elseif ($entry.EntryKind -eq 'Directory' -and $name -match '^\d{4}$') {
+                # Preserve the accepted B3 inventory rule: once a physical container is
+                # promoted, every direct NNNN child is recorded as an exact sequence.
                 $kind = 'NumericSequenceDirectory'
                 $isExact = $true
                 $sequenceNumber = [int]$name
@@ -597,6 +658,20 @@ function Get-eMASRepositoryDiscoveryModel {
             ObservedValue = [object[]]$exactNames
         })
 
+        $submissionUnitNames = @($sequenceObjects | Where-Object {
+            $_.DossierId -eq $candidate.DossierId -and $_.SequenceLikeKind -eq 'SubmissionUnitFolder'
+        } | ForEach-Object { $_.FolderName })
+        if ($submissionUnitNames.Count -gt 0) {
+            [void]$observationDescriptors.Add([pscustomobject][ordered]@{
+                SortPath = $candidate.RelativePath
+                Code = 'SubmissionUnitFoldersObserved'
+                Category = 'Inventory'
+                SubjectType = 'Dossier'
+                SubjectId = $candidate.DossierId
+                ObservedValue = [object[]]$submissionUnitNames
+            })
+        }
+
         $candidateWrappers = @($wrapperObjects | Where-Object { $_.CandidateDossierIds -contains $candidate.DossierId })
         if ($candidateWrappers.Count -gt 0) {
             [void]$observationDescriptors.Add([pscustomobject][ordered]@{
@@ -620,11 +695,24 @@ function Get-eMASRepositoryDiscoveryModel {
             'InvalidSequenceLikeDirectory' { $code = 'InvalidSequenceLikeFolderName' }
             'DuplicateCopyCandidate' { $code = 'DuplicateOrCopyCandidate' }
             'NestedSequenceLikeDirectory' { $code = 'NestedSequenceLikePath' }
+            'DamagedSubmissionUnitCandidate' { $code = 'DamagedSubmissionUnitMarkerSet' }
+            'AmbiguousRegulatoryUnitFolder' { $code = 'ConflictingBackboneMarkers' }
         }
         if ($null -ne $code) {
             [void]$observationDescriptors.Add([pscustomobject][ordered]@{
                 SortPath = $sequence.RelativePath
                 Code = $code
+                Category = 'Structure'
+                SubjectType = 'Sequence'
+                SubjectId = $sequence.SequenceId
+                ObservedValue = $sequence.RelativePath
+            })
+        }
+        if ($sequence.SequenceLikeKind -in @('SubmissionUnitFolder', 'DamagedSubmissionUnitCandidate', 'AmbiguousRegulatoryUnitFolder') -and
+            $sequence.FolderName -notmatch '^[1-9]\d{0,5}$') {
+            [void]$observationDescriptors.Add([pscustomobject][ordered]@{
+                SortPath = $sequence.RelativePath
+                Code = 'NonCanonicalSequenceNumberFolderName'
                 Category = 'Structure'
                 SubjectType = 'Sequence'
                 SubjectId = $sequence.SequenceId
@@ -641,6 +729,23 @@ function Get-eMASRepositoryDiscoveryModel {
                 SubjectType = 'Sequence'
                 SubjectId = $sequence.SequenceId
                 ObservedValue = $true
+            })
+        }
+    }
+
+    foreach ($entry in @($Entries | Where-Object {
+        $_.EntryKind -eq 'File' -and (Get-eMASDiscoveryLeafName -RelativePath $_.RelativePath) -ieq 'submissionunit.xml'
+    })) {
+        $markerParent = Get-eMASDiscoveryParentPath -RelativePath $entry.RelativePath
+        $markerParentName = Get-eMASDiscoveryLeafName -RelativePath $markerParent
+        if ([string]::IsNullOrEmpty($markerParent) -or $markerParentName -notmatch '^\d{1,6}$') {
+            [void]$observationDescriptors.Add([pscustomobject][ordered]@{
+                SortPath = $entry.RelativePath
+                Code = 'UnplacedSubmissionUnitMarker'
+                Category = 'Structure'
+                SubjectType = 'Repository'
+                SubjectId = 'REP-0001'
+                ObservedValue = $entry.RelativePath
             })
         }
     }
@@ -669,9 +774,9 @@ function Get-eMASRepositoryDiscoveryModel {
             EvidenceIds = [object[]]@()
         }
         [void]$observationObjects.Add($observation)
-        if ($descriptor.Code -eq 'ExactSequenceChildrenObserved') {
+        if ($descriptor.Code -in @('ExactSequenceChildrenObserved', 'SubmissionUnitFoldersObserved')) {
             $candidate = @($candidateObjects | Where-Object { $_.DossierId -eq $descriptor.SubjectId })[0]
-            $candidate.DiscoveryEvidenceIds = [object[]]@($observation.ObservationId)
+            $candidate.DiscoveryEvidenceIds = [object[]]@($candidate.DiscoveryEvidenceIds) + [object[]]@($observation.ObservationId)
         }
     }
 

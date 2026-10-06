@@ -1,0 +1,31 @@
+{
+  "sampleId": "SD-073",
+  "scenarioId": "V4-20-21",
+  "title": "Out-of-range marker and conflicting backbones",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "e3afe4d725bbf3c9f696015bb1fef51f8d7731048ea5665475405526ddd6a02a",
+  "expected": {
+    "candidatePaths": [
+      "Pkg2"
+    ],
+    "wrapperPaths": [],
+    "units": [
+      {
+        "relativePath": "Pkg2/0001",
+        "candidatePath": "Pkg2",
+        "sequenceLikeKind": "AmbiguousRegulatoryUnitFolder",
+        "isExactSequenceFolder": false,
+        "sequenceNumber": null
+      }
+    ],
+    "observationCounts": {
+      "ConflictingBackboneMarkers": 1,
+      "NonCanonicalSequenceNumberFolderName": 1,
+      "UnplacedSubmissionUnitMarker": 1
+    },
+    "unplacedSubmissionUnitMarkers": [
+      "Pkg/1234567/submissionunit.xml"
+    ],
+    "accessDeniedPaths": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "sampleId": "SD-066",
+  "scenarioId": "V4-13B",
+  "title": "Misplaced archive-root marker",
+  "sourceMode": "ZipAndDirectory",
+  "fixtureSha256": "c0dd0d8040b93f6d25e07c9b52e35706f02fcf31cb785b8ed1e2c3c8315d553f",
+  "expected": {
+    "candidatePaths": [],
+    "wrapperPaths": [],
+    "units": [],
+    "observationCounts": {
+      "UnplacedSubmissionUnitMarker": 1
+    },
+    "unplacedSubmissionUnitMarkers": [
+      "submissionunit.xml"
+    ],
+    "accessDeniedPaths": []
+  }
+}
