@@ -150,3 +150,16 @@ Production migration of legacy-derived rules remains blocked until:
 **Accept T3c with the central-review amendments above and merge PR #50 into its coordination branch.**
 
 T3c does not block T4 test-engine implementation, but it blocks production migration of legacy rule content.
+
+
+## User decision
+
+Accepted with the ChatGPT central-review amendments.
+
+The 39-rule disposition register is approved as the controlled legacy-rule backlog baseline:
+
+- RE_MODEL: 19
+- SEED_AS_DRAFT: 4
+- REJECT: 16
+
+No legacy rule becomes Effective by this acceptance. The remaining source/evidence/SME/PO gates continue to apply.
