@@ -1,6 +1,6 @@
 # ChatGPT Review — EMAS-MS04-IDENTIFICATION-RULE-RUNTIME-DESIGN
 
-**Status:** `REVIEW_COMPLETE — READY_FOR_USER_DECISION_WITH_AMENDMENTS`  
+**Status:** `DECISION_ACCEPTED — T3A_AND_T3C_AUTHORIZED`  
 **Reviewed Claude commit:** `ea4deca45919ed923521d584a6d7f2afdbe825bb`  
 **Reviewed PR:** #46
 
@@ -243,3 +243,15 @@ T3c need not block T4 test-engine implementation, but it blocks production migra
 **Accept T3 with these amendments, then authorize T3a and T3c.**
 
 T3b should be created after T3a fixes the canonical schema/validator contract.
+
+
+## User decision
+
+Accepted. T3 is approved with the ChatGPT central-review amendments.
+
+Authorized:
+
+- T3a — `EMAS-MS04-IDENTIFICATION-SCHEMA-1.1`
+- T3c — `EMAS-MS04-PRIOR-MAPPING-DISPOSITION`
+
+T3b workbook/export remains blocked until T3a is accepted. T4 remains blocked on T1a, T3a and T3b.
