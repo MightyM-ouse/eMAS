@@ -56,8 +56,8 @@
 | Report mapping/tests | PASS — 3 maps and 28/28 tests |
 | Operational skills | PASS — validator and 3/3 tests |
 | macOS PowerShell 7 development execution | PASS |
-| Windows PowerShell 7.6 CI | PASS (pre-engine-workflow commit); focused engine rerun pending |
-| Windows PowerShell 5.1 CI | Known unrelated UTF-8 expectation failure; focused engine rerun pending |
+| Windows PowerShell 7.6 CI | PASS — focused engine 21/21 |
+| Windows PowerShell 5.1 CI | Focused engine PASS — 21/21; job remains red only for known unrelated UTF-8 expectation |
 
 The independent oracle trial used the unmodified files on `analysis/emas-ms04-identification-interpretation-oracle` commit `a067baf11f6b964cddab9c805902e236f3599610`. It is not the formal acceptance run because that commit is not yet centrally accepted or merged into the coordination branch.
 
@@ -71,7 +71,7 @@ The independent oracle trial used the unmodified files on `analysis/emas-ms04-id
 
 1. T4a central review still has seven provisional decisions (`B-1` through `B-7`) and its review status remains `BLOCKED_ON_CLAUDE`.
 2. The T4a package has not been merged into `coordination/emas-ms04-identification-interpretation`; the formal required post-merge update and oracle run cannot yet be recorded.
-3. The pre-engine-workflow CI run passed Windows PowerShell 7.6 and failed Windows PowerShell 5.1 only at the known unrelated UTF-8 expectation (`Expected=Synthetic UTF-8 â€“ PrÃ¼fung; Actual=Synthetic UTF-8 – Prüfung`). The focused engine suite has been added to all runtime jobs and awaits its rerun.
+3. Windows PowerShell 5.1 executed the focused engine suite successfully (21/21). Its job remains red only at the known unrelated RuntimeConfiguration UTF-8 expectation (`Expected=Synthetic UTF-8 â€“ PrÃ¼fung; Actual=Synthetic UTF-8 – Prüfung`), which this task is forbidden to fix.
 4. The external Wave1D SD-044–SD-051 corpus is not present in the available workspace, so that optional broader regression was not rerun; the task-required Wave 1 chain is green.
 
 No oracle file was modified. No T1b/T2 or T3c U2–U9 behavior was implemented.
