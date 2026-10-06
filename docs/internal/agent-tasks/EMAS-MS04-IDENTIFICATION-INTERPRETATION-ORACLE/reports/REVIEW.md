@@ -104,3 +104,10 @@ That separation is required for the oracle to remain useful as an external behav
 **Accept PR #55 as the T4a bounded behavioral-contract + independent-oracle baseline and merge it into `coordination/emas-ms04-identification-interpretation`.**
 
 After that merge, the T4b implementation owner must refresh from the coordination branch and pass the complete accepted 23-case oracle without changing oracle expected outputs.
+
+
+## User decision
+
+Accepted. PR #55 is approved for merge as the T4a behavioral-contract + independent-oracle baseline.
+
+This acceptance freezes the 23-case oracle, including the MATCHES_PATTERN success/failure cases and central decisions B-1 through B-7, as the independent conformance baseline for T4b.
