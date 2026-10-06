@@ -9,10 +9,9 @@ Runs the composed accepted 8-capability chain (entry script with
 results with the independently derived expectations in
 tests/fixtures/dossier-diversity/wave1d-expectations.json.
 
-SD-044..SD-050 are normative. SD-051 is characterization only
-(CHARACTERIZATION_PENDING_DISCOVERY_DECISION): its genuine dossier is checked
-normatively; the behaviour of the current four-digit-folder discovery heuristic
-is compared with the recorded characterization snapshot, not judged correct.
+SD-044..SD-050 use the original normative expectations. SD-051 uses the
+versioned B3-FO normative expectation while its earlier characterization is
+retained unchanged for provenance.
 #>
 
 [CmdletBinding()]
@@ -22,6 +21,7 @@ param(
     [string] $FreezeManifestPath,
     [string] $ExpectationsPath,
     [string] $CharacterizationPath,
+    [string] $SD051NormativePath,
     [string] $Wave1CorpusRoot,
     [switch] $RecordCharacterization
 )
@@ -36,10 +36,12 @@ $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 if ([string]::IsNullOrWhiteSpace($FreezeManifestPath)) { $FreezeManifestPath = Join-Path $resolvedCorpusRoot 'WAVE1D_FREEZE_MANIFEST.csv' }
 if ([string]::IsNullOrWhiteSpace($ExpectationsPath)) { $ExpectationsPath = Join-Path $repositoryRoot 'tests/fixtures/dossier-diversity/wave1d-expectations.json' }
 if ([string]::IsNullOrWhiteSpace($CharacterizationPath)) { $CharacterizationPath = Join-Path $repositoryRoot 'tests/fixtures/dossier-diversity/wave1d-sd051-characterization.json' }
+if ([string]::IsNullOrWhiteSpace($SD051NormativePath)) { $SD051NormativePath = Join-Path $repositoryRoot 'tests/fixtures/dossier-diversity/wave1d-sd051-normative.v2.json' }
 $resultRoot = Join-Path $resolvedOutputRoot 'results'
 [void][System.IO.Directory]::CreateDirectory($resultRoot)
 
 $expectations = [System.IO.File]::ReadAllText([System.IO.Path]::GetFullPath($ExpectationsPath)) | ConvertFrom-Json
+$sd051Normative = [System.IO.File]::ReadAllText([System.IO.Path]::GetFullPath($SD051NormativePath)) | ConvertFrom-Json
 $manifestRows = @(Import-Csv -LiteralPath $FreezeManifestPath)
 $checks = New-Object System.Collections.ArrayList
 $resultBySample = @{}
@@ -245,7 +247,8 @@ foreach ($fixture in @($expectations.fixtures)) {
     $resultBySample[$sampleId] = $result
     $index = Get-eMASW1dIndex -Result $result
     $negative = Get-eMASW1dProperty $fixture 'negativeAssertions'
-    $isNormative = ($fixture.kind -eq 'Normative')
+    $normativeOverride = $(if ($sampleId -eq [string]$sd051Normative.sampleId) { $sd051Normative } else { $null })
+    $isNormative = ($fixture.kind -eq 'Normative' -or $null -ne $normativeOverride)
 
     Invoke-eMASW1dCheck -SampleId $sampleId -Name 'contract, capability chain and prohibited content' -Action {
         Assert-eMASW1dEqual $expectations.contractId $result.ContractId 'Contract differs.'
@@ -260,15 +263,16 @@ foreach ($fixture in @($expectations.fixtures)) {
 
     if ($isNormative) {
         Invoke-eMASW1dCheck -SampleId $sampleId -Name 'repository discovery, completion and coverage' -Action {
+            $repositoryExpectation = $(if ($null -ne $normativeOverride) { $normativeOverride } else { $fixture })
             $candidates = [string[]]@($result.DossierCandidates | ForEach-Object { [string]$_.RelativePath })
-            Assert-eMASW1dEqual (Get-eMASW1dSortedText ([string[]]@($fixture.discovery.candidateRootPaths))) (Get-eMASW1dSortedText $candidates) 'Dossier candidate paths differ.'
-            Assert-eMASW1dEqual (Get-eMASW1dSortedText ([string[]]@($fixture.discovery.wrapperPaths))) (Get-eMASW1dSortedText ([string[]]@($result.Repository.WrapperPaths | ForEach-Object { [string]$_.RelativePath }))) 'Wrapper paths differ.'
-            Assert-eMASW1dEqual $fixture.expectedCompletionStatus $result.Execution.CompletionStatus 'Completion status differs.'
+            Assert-eMASW1dEqual (Get-eMASW1dSortedText ([string[]]@($repositoryExpectation.discovery.candidateRootPaths))) (Get-eMASW1dSortedText $candidates) 'Dossier candidate paths differ.'
+            Assert-eMASW1dEqual (Get-eMASW1dSortedText ([string[]]@($repositoryExpectation.discovery.wrapperPaths))) (Get-eMASW1dSortedText ([string[]]@($result.Repository.WrapperPaths | ForEach-Object { [string]$_.RelativePath }))) 'Wrapper paths differ.'
+            Assert-eMASW1dEqual $repositoryExpectation.expectedCompletionStatus $result.Execution.CompletionStatus 'Completion status differs.'
             $coverage = @($result.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
             Assert-eMASW1dEqual 1 $coverage.Count 'Repository CEC coverage row count differs.'
-            Assert-eMASW1dEqual $fixture.expectedRepositoryCollectionStatus $coverage[0].CollectionStatus 'Repository CEC collection status differs.'
-            Assert-eMASW1dEqual $fixture.expectedRepositoryRecordCount $coverage[0].RecordsProduced 'Repository CEC records-produced differs.'
-            Assert-eMASW1dEqual $fixture.expectedRepositoryRecordCount @($result.ClassificationEvidence).Count 'Repository CEC record total differs.'
+            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryCollectionStatus $coverage[0].CollectionStatus 'Repository CEC collection status differs.'
+            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryRecordCount $coverage[0].RecordsProduced 'Repository CEC records-produced differs.'
+            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryRecordCount @($result.ClassificationEvidence).Count 'Repository CEC record total differs.'
             Assert-eMASW1dTrue (@($result.ClassificationEvidence).Count -gt 0) 'A fixture with a dossier produced zero classification evidence.'
         }
     }
@@ -279,6 +283,21 @@ foreach ($fixture in @($expectations.fixtures)) {
     }
 
     foreach ($expectedDossier in @($fixture.dossiers)) { Test-eMASW1dDossier -SampleId $sampleId -Result $result -Expected $expectedDossier }
+
+    if ($null -ne $normativeOverride) {
+        Invoke-eMASW1dCheck -SampleId $sampleId -Name ('B3 ownership semantics ({0})' -f $normativeOverride.statusLabel) -Action {
+            Assert-eMASW1dEqual $normativeOverride.fixtureSha256 $sourceState[$sampleId].Hash 'Versioned expectation fixture hash differs.'
+            foreach ($item in @($normativeOverride.unrelatedFiles)) {
+                $file = @($result.Files | Where-Object { $_.RelativePath -eq $item.path })
+                Assert-eMASW1dEqual 1 $file.Count ('Unrelated file {0} was not inventoried exactly once.' -f $item.path)
+                $ownerRoot = $(if ($null -eq $file[0].DossierId) { $null } else { [string]$index.Dossier[$file[0].DossierId].RelativePath })
+                Assert-eMASW1dEqual $item.expectedDossierRootPath $ownerRoot ('Owner of {0} differs.' -f $item.path)
+                if ($item.mustNotProduceClassificationEvidence) {
+                    Assert-eMASW1dEqual 0 @($result.ClassificationEvidence | Where-Object { $_.RelativePath -eq $item.path -or ([string]$_.RelativePath).StartsWith($item.path + '/', [System.StringComparison]::Ordinal) }).Count ('{0} produced classification evidence.' -f $item.path)
+                }
+            }
+        }
+    }
 
     Invoke-eMASW1dCheck -SampleId $sampleId -Name 'dossier isolation of sequences, XML, references and evidence' -Action {
         foreach ($sequence in @($result.Sequences)) { Assert-eMASW1dTrue (Test-eMASW1dUnderRoot -Path ([string]$sequence.RelativePath) -Root ([string]$index.Dossier[$sequence.DossierId].RelativePath)) ('Sequence {0} outside its dossier.' -f $sequence.SequenceId) }
@@ -397,55 +416,14 @@ foreach ($group in @($expectations.invarianceGroups)) {
     }
 }
 
-# SD-051 characterization ---------------------------------------------------------
-foreach ($fixture in @($expectations.fixtures | Where-Object { $_.kind -eq 'Characterization' })) {
-    $sampleId = [string]$fixture.sampleId
-    $result = $resultBySample[$sampleId]
-    $index = Get-eMASW1dIndex -Result $result
-    $genuine = @($fixture.dossiers | ForEach-Object { [string]$_.rootPath })
-    $snapshot = [pscustomobject][ordered]@{
-        sampleId = $sampleId
-        statusLabel = $fixture.statusLabel
-        note = 'Observed current behaviour of the accepted RepositoryDiscovery four-digit-folder heuristic. Not normative; not a correct regulatory dossier. A future discovery-semantics task may change it.'
-        fixtureSha256 = $sourceState[$sampleId].Hash
-        completionStatus = $result.Execution.CompletionStatus
-        repositoryClassificationCoverage = @($result.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' } | ForEach-Object { [pscustomobject][ordered]@{ CollectionStatus = $_.CollectionStatus; RecordsProduced = $_.RecordsProduced } })[0]
-        dossierCandidates = [object[]]@($result.DossierCandidates | ForEach-Object {
-            $candidate = $_
-            [pscustomobject][ordered]@{
-                dossierId = $candidate.DossierId
-                rootPath = [string]$candidate.RelativePath
-                genuine = ($genuine -contains [string]$candidate.RelativePath)
-                sequenceFolders = [object[]]@($result.Sequences | Where-Object { $_.DossierId -eq $candidate.DossierId } | ForEach-Object { $_.FolderName })
-                xmlDocuments = [object[]]@($result.XmlDocuments | Where-Object { $_.DossierId -eq $candidate.DossierId } | ForEach-Object { [pscustomobject][ordered]@{ relativePath = $_.RelativePath; xmlKind = $_.XmlKind; exists = $_.Exists; parseStatus = $_.ParseStatus } })
-                observationCodes = [object[]]@($result.Observations | Where-Object { ($_.SubjectType -eq 'Dossier' -and $_.SubjectId -eq $candidate.DossierId) -or ($_.SubjectType -eq 'XmlDocument' -and $index.Xml.ContainsKey([string]$_.SubjectId) -and $index.Xml[[string]$_.SubjectId].DossierId -eq $candidate.DossierId) -or ($_.SubjectType -eq 'Sequence' -and $index.Sequence.ContainsKey([string]$_.SubjectId) -and $index.Sequence[[string]$_.SubjectId].DossierId -eq $candidate.DossierId) } | ForEach-Object { $_.Code } | Sort-Object)
-                referenceCount = @($result.References | Where-Object { $_.DossierId -eq $candidate.DossierId }).Count
-                classificationRecordCount = @($result.ClassificationEvidence | Where-Object { $_.DossierId -eq $candidate.DossierId }).Count
-                classificationRecords = [object[]]@($result.ClassificationEvidence | Where-Object { $_.DossierId -eq $candidate.DossierId -and ($genuine -notcontains [string]$candidate.RelativePath) } | ForEach-Object { [pscustomobject][ordered]@{ evidenceType = $_.EvidenceType; dimension = $_.Dimension; strength = $_.Strength; sourceTier = $_.SourceTier; relativePath = $_.RelativePath; observedValue = $_.ObservedValue } })
-            }
-        })
-        unrelatedFileOwners = [object[]]@($fixture.negativeAssertions.unrelatedFiles | ForEach-Object {
-            $path = [string]$_.path
-            $file = @($result.Files | Where-Object { $_.RelativePath -eq $path })
-            [pscustomobject][ordered]@{ path = $path; ownerRootPath = $(if ($file.Count -eq 1 -and $null -ne $file[0].DossierId) { [string]$index.Dossier[$file[0].DossierId].RelativePath } else { $null }) }
-        })
-    }
-    $snapshotPath = Join-Path $resolvedOutputRoot ('{0}.characterization.observed.json' -f $sampleId)
-    Write-eMASW1dJson -Value $snapshot -Path $snapshotPath
-    if ($RecordCharacterization) {
-        Write-eMASW1dJson -Value $snapshot -Path ([System.IO.Path]::GetFullPath($CharacterizationPath))
-        $characterizationStatus = 'RECORDED'
-        Write-Output ('[INFO] {0} characterization recorded to {1}' -f $sampleId, $CharacterizationPath)
-    }
-    else {
-        Invoke-eMASW1dCheck -SampleId $sampleId -Category 'Characterization' -Name ('current behaviour matches recorded characterization ({0})' -f $fixture.statusLabel) -Action {
-            Assert-eMASW1dTrue ([System.IO.File]::Exists($CharacterizationPath)) 'Recorded characterization file is missing.'
-            $recorded = [System.IO.File]::ReadAllText($CharacterizationPath) | ConvertFrom-Json
-            Assert-eMASW1dEqual (ConvertTo-eMASW1dJson $recorded) (ConvertTo-eMASW1dJson ([System.IO.File]::ReadAllText($snapshotPath) | ConvertFrom-Json)) 'SD-051 behaviour drifted from the recorded characterization.'
-        }
-        $characterizationStatus = $(if (@($checks | Where-Object { $_.Category -eq 'Characterization' -and $_.Status -eq 'FAIL' }).Count -eq 0) { 'MATCHES_RECORDED' } else { 'DRIFTED' })
-    }
+# SD-051 normative v2 provenance -------------------------------------------------
+Invoke-eMASW1dCheck -SampleId 'SD-051' -Category 'Normative' -Name 'historical characterization is retained and superseded by normative v2' -Action {
+    Assert-eMASW1dTrue ([System.IO.File]::Exists($CharacterizationPath)) 'Historical SD-051 characterization file is missing.'
+    Assert-eMASW1dEqual 'wave1d-sd051-characterization.json' $sd051Normative.supersedes 'Normative v2 provenance differs.'
+    Assert-eMASW1dEqual 'NORMATIVE_B3_FO' $sd051Normative.statusLabel 'Normative v2 status label differs.'
+    Assert-eMASW1dTrue (-not $RecordCharacterization) 'The superseded historical characterization must not be overwritten.'
 }
+$characterizationStatus = 'SUPERSEDED_BY_NORMATIVE_V2'
 
 # Freeze gate (post) ----------------------------------------------------------------
 foreach ($sampleId in $sourceState.Keys) {
@@ -460,6 +438,7 @@ $summary = [pscustomobject][ordered]@{
     Capability = 'DossierDiversityWave1DRegression'
     Platform = [pscustomobject][ordered]@{ PSEdition = $PSVersionTable.PSEdition; PSVersion = $PSVersionTable.PSVersion.ToString(); OS = [string]$PSVersionTable['OS'] }
     ExpectationsSha256 = Get-eMASW1dSha256 -Path ([System.IO.Path]::GetFullPath($ExpectationsPath))
+    SD051NormativeSha256 = Get-eMASW1dSha256 -Path ([System.IO.Path]::GetFullPath($SD051NormativePath))
     FreezeManifestSha256 = Get-eMASW1dSha256 -Path ([System.IO.Path]::GetFullPath($FreezeManifestPath))
     Wave1InvarianceReferences = [object[]]@($wave1References.Keys | Sort-Object)
     FixtureHashes = [object[]]@($sourceState.Keys | Sort-Object | ForEach-Object { [pscustomobject][ordered]@{ SampleId = $_; Sha256 = $sourceState[$_].Hash; Status = $sourceState[$_].Status } })

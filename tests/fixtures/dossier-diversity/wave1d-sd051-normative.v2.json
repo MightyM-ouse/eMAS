@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2.0",
+  "taskId": "EMAS-MS04-REPOSITORY-DISCOVERY-CANDIDATE-IMPLEMENTATION",
+  "sampleId": "SD-051",
+  "fixtureSha256": "e2c6d859424932a50153c18d06bd23724645bebef06c97ec4c147e6157712ebe",
+  "statusLabel": "NORMATIVE_B3_FO",
+  "supersedes": "wave1d-sd051-characterization.json",
+  "expectedCompletionStatus": "Completed",
+  "expectedRepositoryCollectionStatus": "Collected",
+  "expectedRepositoryRecordCount": 86,
+  "discovery": {
+    "candidateRootPaths": [
+      "ProductABC"
+    ],
+    "wrapperPaths": []
+  },
+  "unrelatedFiles": [
+    {
+      "path": "Archive/2019/annual-report.pdf",
+      "expectedDossierRootPath": null,
+      "mustNotProduceClassificationEvidence": true
+    }
+  ]
+}

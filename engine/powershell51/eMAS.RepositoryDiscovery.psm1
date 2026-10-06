@@ -333,16 +333,44 @@ function Get-eMASDescendantCount {
 
 function Get-eMASRepositoryDiscoveryModel {
     param(
-        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]] $Entries
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]] $Entries,
+        [AllowEmptyCollection()][object[]] $Diagnostics = @()
     )
 
     $childrenMap = Get-eMASDiscoveryChildrenMap -Entries $Entries
+    $enumerationGapPaths = @{}
+    foreach ($diagnostic in @($Diagnostics)) {
+        if ($null -ne $diagnostic.RelativePath -and -not [string]::IsNullOrEmpty([string]$diagnostic.RelativePath) -and
+            $diagnostic.Code -in @('DISC-ACCESS-001', 'DISC-ENUM-001')) {
+            $enumerationGapPaths[[string]$diagnostic.RelativePath] = $true
+        }
+    }
+
     $rawCandidatePaths = New-Object System.Collections.ArrayList
     foreach ($parentPath in @($childrenMap.Keys)) {
         $exactChildren = @($childrenMap[$parentPath] | Where-Object {
             $_.EntryKind -eq 'Directory' -and (Get-eMASDiscoveryLeafName -RelativePath $_.RelativePath) -match '^\d{4}$'
         })
-        if ($exactChildren.Count -gt 0) {
+        $hasQualifyingSequence = $false
+        foreach ($exactChild in $exactChildren) {
+            if ($enumerationGapPaths.ContainsKey([string]$exactChild.RelativePath)) {
+                $hasQualifyingSequence = $true
+                break
+            }
+            if (-not $childrenMap.ContainsKey([string]$exactChild.RelativePath)) {
+                continue
+            }
+            foreach ($sequenceChild in @($childrenMap[[string]$exactChild.RelativePath])) {
+                $name = Get-eMASDiscoveryLeafName -RelativePath $sequenceChild.RelativePath
+                if (($sequenceChild.EntryKind -eq 'Directory' -and $name -imatch '^m[1-5]$') -or
+                    ($sequenceChild.EntryKind -eq 'File' -and ($name -ieq 'index.xml' -or $name -ieq 'submissionunit.xml'))) {
+                    $hasQualifyingSequence = $true
+                    break
+                }
+            }
+            if ($hasQualifyingSequence) { break }
+        }
+        if ($hasQualifyingSequence) {
             [void]$rawCandidatePaths.Add([string]$parentPath)
         }
     }
@@ -603,7 +631,9 @@ function Get-eMASRepositoryDiscoveryModel {
                 ObservedValue = $sequence.RelativePath
             })
         }
-        if ($sequence.IsExactSequenceFolder -and $sequence.FileCount -eq 0 -and $sequence.DirectoryCount -eq 0) {
+        if ($sequence.IsExactSequenceFolder -and
+            -not $enumerationGapPaths.ContainsKey([string]$sequence.RelativePath) -and
+            $sequence.FileCount -eq 0 -and $sequence.DirectoryCount -eq 0) {
             [void]$observationDescriptors.Add([pscustomobject][ordered]@{
                 SortPath = $sequence.RelativePath
                 Code = 'EmptyExactSequenceFolder'
@@ -791,7 +821,7 @@ function Invoke-eMASRepositoryDiscovery {
     }
 
     $entries = @(Get-eMASInventoryObjects -Entries $entryTable)
-    $discovery = Get-eMASRepositoryDiscoveryModel -Entries $entries
+    $discovery = Get-eMASRepositoryDiscoveryModel -Entries $entries -Diagnostics @($diagnostics)
     $portableEntries = @($entries | ForEach-Object {
         [pscustomobject][ordered]@{
             RelativePath = $_.RelativePath
