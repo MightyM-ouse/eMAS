@@ -207,3 +207,16 @@ After merge:
 - T4 `IdentificationInterpretation` becomes unblocked for bounded implementation;
 - native Excel qualification remains a later qualification gate;
 - Reviewed-in-DEV remains explicitly deferred unless separately approved.
+
+
+## User decision
+
+Accepted. PR #53 is approved for merge as the T3b source-controlled workbook/export baseline.
+
+Accepted qualification wording remains:
+
+`SOURCE_AND_AUTOMATED_CONFORMANCE_ACCEPTED / NATIVE_EXCEL_PENDING`
+
+The refreshed coordinator-head CI confirms the same expected profile: XLSM/VBA POC, macOS PowerShell, Windows PowerShell 7.6 and static runtime contracts pass; Windows PowerShell 5.1 fails only on the previously diagnosed UTF-8 metadata expectation. This unrelated failure is not a T3b blocker.
+
+After merge, T4 IdentificationInterpretation is unblocked for bounded implementation. Native Excel/VBA qualification remains a later explicit gate.
