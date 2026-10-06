@@ -31,6 +31,8 @@ Use branch:
 
 Implement only the bounded Schema 1.1.0 + semantic validators + loader support defined in TASK.md.
 
+Current project baseline also includes accepted T1a at `08f4d0d240aac5393cba97f65ce9803fb4fffaa4`. T1a is already complete; do not modify CEC behavior as part of this task.
+
 Important:
 
 - preserve 1.0.0 compatibility;
