@@ -2,7 +2,7 @@
 
 **Task ID:** `EMAS-MS04-ECTD4-DISCOVERY-IMPLEMENTATION`  
 **Authoritative base commit:** `e369ae3ebb8394fb7b241bf9fbb60d698ec53690`  
-**Overall status:** `MAC_REVIEW_PASS_READY_FOR_USER_DECISION`
+**Overall status:** `MAC_ACCEPTED_WINDOWS_PENDING`
 
 | Gate | Status |
 |---|---|
@@ -17,15 +17,25 @@
 | root-level | PASS — 3/3 |
 | Wave1D | PASS — 61/61 |
 | ChatGPT central review | PASS |
-| User acceptance | READY |
+| User acceptance | ACCEPTED |
 | Automatic Windows PS5.1 runtime-contract CI | FAIL — unrelated existing UTF-8 assertion |
 | Native Windows v4 qualification | DEFERRED |
-| FormatDetection | BLOCKED UNTIL ACCEPTANCE/MERGE |
-| RegionDetection | BLOCKED UNTIL ACCEPTANCE/MERGE |
+| FormatDetection | NEXT PHASE AFTER IDENTIFICATION RULES |
+| RegionDetection | NEXT PHASE AFTER IDENTIFICATION RULES |
 | v4 ReferenceResolution semantics | REQUIRED LATER |
 
-## Review conclusion
+## Accepted outcome
 
-PR #41 is recommended for acceptance as the Mac eCTD v4 physical-discovery baseline.
+PR #41 is accepted as the Mac eCTD v4 physical-discovery baseline.
 
-No forbidden implementation scope was changed. The automatic Windows PS5.1 failure is unrelated to PR #41 and comes from unchanged RuntimeConfiguration files.
+The implementation includes:
+- source-verified v4 physical submission-unit discovery;
+- confirmed, damaged/v4-like, and ambiguous structural unit kinds;
+- misplaced-marker observation;
+- preservation of accepted v3/NeeS B3 behavior;
+- protection from false v3 BackboneXmlInventory processing;
+- deterministic Wave1E SD-053–SD-074.
+
+The automatic Windows PowerShell 5.1 runtime-contract failure is unrelated to this implementation. Native Windows v4 qualification remains deferred to the later consolidated Windows stage.
+
+The next logical task is `EMAS-MS04-IDENTIFICATION-RULES` before FormatDetection/RegionDetection implementation.
