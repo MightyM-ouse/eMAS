@@ -1,0 +1,152 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "sourceKind": "Zip",
+  "forbiddenResultProperties": [
+    "DetectedRegion",
+    "PrimaryRegion",
+    "DetectedFormat",
+    "FolderRAGStatus",
+    "DetectionConfidence",
+    "EffortImpact",
+    "RecommendedPreSalesAction"
+  ],
+  "fixtures": [
+    {
+      "sampleId": "SD-001",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": [
+        "0000-WorkingDocuments",
+        "RegulatoryActivities.xml",
+        "ValidationReport_0000_long.pdf"
+      ]
+    },
+    {
+      "sampleId": "SD-002",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-010",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0002", "0003", "0004"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-011",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003"],
+      "sequenceLikeItems": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004.zip",
+          "kind": "SequenceLikeArchive"
+        }
+      ],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-012",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003"],
+      "sequenceLikeItems": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0004 - PSUR",
+          "kind": "InvalidSequenceLikeDirectory"
+        }
+      ],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-013",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004"],
+      "sequenceLikeItems": [
+        {
+          "relativePath": "EXTEDORIN 50mg Tablets EU-FR/0001 - Copy",
+          "kind": "DuplicateCopyCandidate"
+        }
+      ],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-014",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": ["EXTEDORIN 50mg Tablets EU-FR/0003/0003"],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-015",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004", "0005"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": ["EXTEDORIN 50mg Tablets EU-FR/0005"],
+      "wrapperPaths": [],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-016",
+      "candidateRootCount": 1,
+      "candidateRootPaths": ["EXPORT/INT/REC/Product/EU/EXTEDORIN 50mg Tablets EU-FR"],
+      "numericSequences": ["0000", "0001", "0002", "0003", "0004"],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [
+        "EXPORT",
+        "EXPORT/INT",
+        "EXPORT/INT/REC",
+        "EXPORT/INT/REC/Product",
+        "EXPORT/INT/REC/Product/EU"
+      ],
+      "requiredRootItems": []
+    },
+    {
+      "sampleId": "SD-020",
+      "candidateRootCount": 0,
+      "candidateRootPaths": [],
+      "numericSequences": [],
+      "sequenceLikeItems": [],
+      "nestedSequenceLikePaths": [],
+      "emptyNumericPaths": [],
+      "wrapperPaths": [],
+      "requiredRootItems": [
+        "UnrelatedDocuments"
+      ]
+    }
+  ]
+}

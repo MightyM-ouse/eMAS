@@ -1,0 +1,90 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "supportedAlgorithm": "MD5",
+  "calculatedHexCase": "lowercase",
+  "fixtures": [
+    { "sampleId": "SD-001", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-002", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-003", "applicableCount": 92, "matchedCount": 92, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 2 },
+    { "sampleId": "SD-004", "applicableCount": 93, "matchedCount": 92, "mismatchedCount": 1, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-005", "applicableCount": 92, "matchedCount": 92, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-006", "applicableCount": 89, "matchedCount": 89, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 2 },
+    { "sampleId": "SD-007", "applicableCount": 92, "matchedCount": 92, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-008", "applicableCount": 90, "matchedCount": 90, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-009", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-010", "applicableCount": 87, "matchedCount": 87, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 0 },
+    { "sampleId": "SD-011", "applicableCount": 89, "matchedCount": 89, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-012", "applicableCount": 89, "matchedCount": 89, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-013", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-014", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-015", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-016", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-017", "applicableCount": 93, "matchedCount": 93, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-018", "applicableCount": 93, "matchedCount": 92, "mismatchedCount": 1, "notAssessedCount": 0, "notApplicableCount": 1 },
+    { "sampleId": "SD-020", "applicableCount": 0, "matchedCount": 0, "mismatchedCount": 0, "notAssessedCount": 0, "notApplicableCount": 0 }
+  ],
+  "expectedMismatches": [
+    {
+      "sampleId": "SD-004",
+      "referenceId": "REF-0094",
+      "declaredChecksumAlgorithm": "MD5",
+      "declaredChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf"
+    },
+    {
+      "sampleId": "SD-018",
+      "referenceId": "REF-0094",
+      "declaredChecksumAlgorithm": "MD5",
+      "declaredChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "calculatedChecksum": "d41d8cd98f00b204e9800998ecf8427e",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf"
+    }
+  ],
+  "expectedUnavailableTargets": [
+    {
+      "sampleId": "SD-003",
+      "referenceId": "REF-0094",
+      "status": "NotApplicable",
+      "diagnosticCode": "TargetAbsent"
+    },
+    {
+      "sampleId": "SD-006",
+      "referenceId": "REF-0091",
+      "status": "NotApplicable",
+      "diagnosticCode": "TargetAbsent"
+    }
+  ],
+  "notApplicableReference": {
+    "sampleId": "SD-002",
+    "referenceId": "REF-0073",
+    "status": "NotApplicable",
+    "diagnosticCode": "NoPhysicalHref"
+  },
+  "invariancePairs": [
+    { "baseline": "SD-002", "comparison": "SD-009", "reason": "index-md5.txt is outside leaf checksum comparison" },
+    { "baseline": "SD-002", "comparison": "SD-017", "reason": "unreferenced extra file is outside declared-reference comparison" }
+  ],
+  "syntheticStates": [
+    { "name": "Unsupported checksum algorithm", "declaredAlgorithm": "SHA-256", "declaredChecksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "resolutionStatus": "ResolvedPresent", "targetExists": true, "captureStatus": "Available", "expectedStatus": "Unsupported", "expectedDiagnostic": "UnsupportedAlgorithm" },
+    { "name": "Malformed MD5 checksum", "declaredAlgorithm": "MD5", "declaredChecksum": "not-an-md5", "resolutionStatus": "ResolvedPresent", "targetExists": true, "captureStatus": "Available", "expectedStatus": "NotAssessed", "expectedDiagnostic": "InvalidDeclaredChecksum" },
+    { "name": "Access denied", "declaredAlgorithm": "MD5", "declaredChecksum": "d41d8cd98f00b204e9800998ecf8427e", "resolutionStatus": "AccessDenied", "targetExists": null, "captureStatus": "AccessDenied", "expectedStatus": "NotAssessed", "expectedDiagnostic": "TargetAccessDenied" },
+    { "name": "Target absent", "declaredAlgorithm": "MD5", "declaredChecksum": "d41d8cd98f00b204e9800998ecf8427e", "resolutionStatus": "ResolvedAbsent", "targetExists": false, "captureStatus": "Available", "expectedStatus": "NotApplicable", "expectedDiagnostic": "TargetAbsent" },
+    { "name": "Target existence unknown", "declaredAlgorithm": "MD5", "declaredChecksum": "d41d8cd98f00b204e9800998ecf8427e", "resolutionStatus": "InputUnavailable", "targetExists": null, "captureStatus": "InputUnavailable", "expectedStatus": "NotAssessed", "expectedDiagnostic": "TargetUnavailable" },
+    { "name": "No declared checksum", "declaredAlgorithm": null, "declaredChecksum": null, "resolutionStatus": "ResolvedPresent", "targetExists": true, "captureStatus": "Available", "expectedStatus": "NotApplicable", "expectedDiagnostic": "NoDeclaredChecksum" },
+    { "name": "Unsafe target identity: parent traversal", "declaredAlgorithm": "MD5", "declaredChecksum": "d41d8cd98f00b204e9800998ecf8427e", "resolutionStatus": "ResolvedPresent", "targetExists": true, "captureStatus": "Available", "fileRelativePath": "../outside.pdf", "expectedStatus": "NotAssessed", "expectedDiagnostic": "TargetIdentityUnsafe" },
+    { "name": "Unsafe target identity: rooted path", "declaredAlgorithm": "MD5", "declaredChecksum": "d41d8cd98f00b204e9800998ecf8427e", "resolutionStatus": "ResolvedPresent", "targetExists": true, "captureStatus": "Available", "fileRelativePath": "/etc/hosts", "expectedStatus": "NotAssessed", "expectedDiagnostic": "TargetIdentityUnsafe" },
+    { "name": "No href delete", "declaredAlgorithm": null, "declaredChecksum": null, "resolutionStatus": "NotApplicable", "targetExists": null, "captureStatus": "NotApplicable", "expectedStatus": "NotApplicable", "expectedDiagnostic": "NoPhysicalHref" }
+  ],
+  "mustRemainNotCollectedCoverage": [
+    "ChecksumMismatchInterpretation",
+    "ZeroByteInterpretation",
+    "FileReferenceOrphanCorrelation",
+    "LifecycleLinkResolution"
+  ],
+  "prohibitedObservationCodes": [
+    "DeclaredChecksumMismatch",
+    "ZeroByteFile",
+    "OrphanFileCandidate"
+  ]
+}

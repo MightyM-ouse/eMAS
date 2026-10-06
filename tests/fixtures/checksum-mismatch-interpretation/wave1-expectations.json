@@ -1,0 +1,481 @@
+{
+  "contractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
+  "observationCode": "DeclaredChecksumMismatch",
+  "derivation": "Factual mismatch counts were confirmed before implementation from accepted DeclaredChecksumComparison output (ChecksumComparisonStatus=Mismatched and ChecksumMatch=false) and from the independent oracle (declared-checksum-comparison-v1/independent-oracle/oracle.json); not derived from ChecksumMismatchInterpretation.",
+  "fixtures": [
+    {
+      "sampleId": "SD-001",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-002",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-003",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 92,
+      "expectedNotApplicableReferences": 2,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-004",
+      "factualMismatches": 1,
+      "expectedObservations": 1,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-005",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 92,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-006",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 89,
+      "expectedNotApplicableReferences": 2,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-007",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 92,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-008",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 90,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-009",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-010",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 87,
+      "expectedNotApplicableReferences": 0,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-011",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 89,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-012",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 89,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-013",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-014",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-015",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-016",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-017",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-018",
+      "factualMismatches": 1,
+      "expectedObservations": 1,
+      "expectedAssessedReferences": 93,
+      "expectedNotApplicableReferences": 1,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    },
+    {
+      "sampleId": "SD-020",
+      "factualMismatches": 0,
+      "expectedObservations": 0,
+      "expectedAssessedReferences": 0,
+      "expectedNotApplicableReferences": 0,
+      "expectedNotAssessedReferences": 0,
+      "expectedRepositoryAssessmentStatus": "Assessed"
+    }
+  ],
+  "expectedObservations": [
+    {
+      "sampleId": "SD-004",
+      "observationId": "OBS-0002",
+      "findingId": "FND-CHECKSUM-0001",
+      "referenceId": "REF-0094",
+      "dossierId": "DOS-0001",
+      "sequenceId": "SEQ-0005",
+      "xmlId": "XML-0010",
+      "targetFileId": "FIL-0125",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf",
+      "declaredChecksumAlgorithm": "MD5",
+      "declaredChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243"
+    },
+    {
+      "sampleId": "SD-018",
+      "observationId": "OBS-0002",
+      "findingId": "FND-CHECKSUM-0001",
+      "referenceId": "REF-0094",
+      "dossierId": "DOS-0001",
+      "sequenceId": "SEQ-0005",
+      "xmlId": "XML-0010",
+      "targetFileId": "FIL-0125",
+      "normalizedTargetPath": "0004/m1/eu/responses/de/de-responses.pdf",
+      "declaredChecksumAlgorithm": "MD5",
+      "declaredChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "calculatedChecksum": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "absentTargets": [
+    {
+      "sampleId": "SD-003",
+      "referenceId": "REF-0094"
+    },
+    {
+      "sampleId": "SD-006",
+      "referenceId": "REF-0091"
+    }
+  ],
+  "notApplicableReference": {
+    "sampleId": "SD-002",
+    "referenceId": "REF-0073",
+    "reasonCode": "NoPhysicalHref"
+  },
+  "invariancePairs": [
+    {
+      "baseline": "SD-002",
+      "comparison": "SD-009"
+    },
+    {
+      "baseline": "SD-002",
+      "comparison": "SD-017"
+    }
+  ],
+  "syntheticStates": [
+    {
+      "name": "Matched + true",
+      "checksumComparisonStatus": "Matched",
+      "checksumMatch": true,
+      "calculatedChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "Assessed",
+      "expectedReasonCode": null,
+      "expectedObservations": 0
+    },
+    {
+      "name": "Mismatched + false",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "Assessed",
+      "expectedReasonCode": null,
+      "expectedObservations": 1
+    },
+    {
+      "name": "NotApplicable + null (no href)",
+      "checksumComparisonStatus": "NotApplicable",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "NoPhysicalHref",
+      "expectedAssessmentStatus": "NotApplicable",
+      "expectedReasonCode": "NoPhysicalHref",
+      "expectedObservations": 0
+    },
+    {
+      "name": "TargetAbsent",
+      "checksumComparisonStatus": "NotApplicable",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetAbsent",
+      "expectedAssessmentStatus": "NotApplicable",
+      "expectedReasonCode": "TargetAbsent",
+      "expectedObservations": 0
+    },
+    {
+      "name": "NoDeclaredChecksum",
+      "checksumComparisonStatus": "NotApplicable",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "NoDeclaredChecksum",
+      "expectedAssessmentStatus": "NotApplicable",
+      "expectedReasonCode": "NoDeclaredChecksum",
+      "expectedObservations": 0
+    },
+    {
+      "name": "NotAssessed + null",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetUnavailable",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetUnavailable",
+      "expectedObservations": 0
+    },
+    {
+      "name": "AccessDenied",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetAccessDenied",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetAccessDenied",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Unsupported + null (UnsupportedAlgorithm)",
+      "checksumComparisonStatus": "Unsupported",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "UnsupportedAlgorithm",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "UnsupportedAlgorithm",
+      "expectedObservations": 0,
+      "declaredAlgorithm": "SHA-256"
+    },
+    {
+      "name": "InvalidDeclaredChecksum",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "InvalidDeclaredChecksum",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InvalidDeclaredChecksum",
+      "expectedObservations": 0,
+      "declaredChecksum": "not-an-md5"
+    },
+    {
+      "name": "TargetIdentityUnsafe",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetIdentityUnsafe",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetIdentityUnsafe",
+      "expectedObservations": 0
+    },
+    {
+      "name": "TargetOutsideSourceBoundary",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetOutsideSourceBoundary",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetOutsideSourceBoundary",
+      "expectedObservations": 0
+    },
+    {
+      "name": "TargetReadFailed",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetReadFailed",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetReadFailed",
+      "expectedObservations": 0
+    },
+    {
+      "name": "TargetEntryUnavailable",
+      "checksumComparisonStatus": "NotAssessed",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": "TargetEntryUnavailable",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "TargetEntryUnavailable",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Matched + false",
+      "checksumComparisonStatus": "Matched",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Mismatched + null",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": null,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Mismatched + false without calculated checksum",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Mismatched + false with equal values",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": "693fce6b6c9690b400cdbd30762fbfca",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Mismatched + false with diagnostic",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": "TargetReadFailed",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Contradiction: Mismatched + false with unsupported algorithm",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0,
+      "declaredAlgorithm": "SHA-1"
+    },
+    {
+      "name": "Contradiction: Mismatched + false on absent target",
+      "checksumComparisonStatus": "Mismatched",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0,
+      "resolutionStatus": "ResolvedAbsent",
+      "targetExists": false
+    },
+    {
+      "name": "Contradiction: NotApplicable with calculated checksum",
+      "checksumComparisonStatus": "NotApplicable",
+      "checksumMatch": false,
+      "calculatedChecksum": "f8080400322a986d9211de1cbeec9243",
+      "checksumDiagnosticCode": "TargetAbsent",
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "InconsistentChecksumEvidence",
+      "expectedObservations": 0
+    },
+    {
+      "name": "Missing comparison status",
+      "checksumComparisonStatus": "__missing__",
+      "checksumMatch": null,
+      "calculatedChecksum": null,
+      "checksumDiagnosticCode": null,
+      "expectedAssessmentStatus": "NotAssessed",
+      "expectedReasonCode": "ChecksumComparisonEvidenceUnavailable",
+      "expectedObservations": 0
+    }
+  ],
+  "mustRemainNotCollectedCoverage": [
+    "ZeroByteInterpretation",
+    "FileReferenceOrphanCorrelation",
+    "LifecycleLinkResolution",
+    "ClassificationEvidenceCollection"
+  ],
+  "prohibitedObservationCodes": [
+    "ZeroByteFile",
+    "CorruptFile",
+    "OrphanFileCandidate"
+  ],
+  "prohibitedFieldNames": [
+    "Rag",
+    "RAG",
+    "Severity",
+    "Recommendation",
+    "Confidence",
+    "Readiness",
+    "Blocker",
+    "Cause"
+  ]
+}
