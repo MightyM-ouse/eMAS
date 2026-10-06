@@ -3,7 +3,7 @@
 **Roadmap ID:** `T4`  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Coordination branch:** `coordination/emas-ms04-identification-interpretation`  
-**Overall status:** `T4A_ACCEPTED_MERGED_T4B_REFRESH_REQUIRED`  
+**Overall status:** `T4A_ACCEPTED_T4B_CLAUDE_CONTINUATION`  
 **Coordination PR:** #54
 
 ## Execution model
@@ -13,7 +13,7 @@ Two workers may proceed in parallel because their primary file ownership is inte
 | Workstream | Worker | Role | Merge target |
 |---|---|---|---|
 | T4a — behavioral contract + independent oracle | Claude | ACCEPTED / MERGED | this coordination branch |
-| T4b — IdentificationInterpretation engine | Codex | implementation owner | this coordination branch |
+| T4b — IdentificationInterpretation engine | Claude | continuation implementation owner; Codex initial implementation preserved | this coordination branch |
 | Central reconciliation | ChatGPT | fixed-SHA review and oracle/engine reconciliation | user merge gate |
 
 ## Hard ownership rule
@@ -40,7 +40,7 @@ Accepted T3c prior-mapping disposition remains governance input and is not direc
 T4b may begin before T4a is merged, but T4b cannot become `READY_FOR_USER_DECISION` until:
 
 1. T4a is centrally reviewed and merged into this coordination branch — **COMPLETE**;
-2. the T4b implementation branch is refreshed from this coordination branch;
+2. the T4b implementation branch is refreshed from this coordination branch — **COMPLETE**;
 3. the T4b implementation passes the accepted 23-case T4a oracle;
 4. ChatGPT reconciles any differences;
 5. user explicitly approves the final coordination PR.
@@ -65,3 +65,16 @@ Merge SHA:
 `ce8d56c0df59d7e8635207baec853b07f17462de`
 
 The accepted oracle contains 23 cases, including MATCHES_PATTERN success/failure coverage. T4b must treat these oracle files as read-only.
+
+
+## T4b continuation ownership
+
+Codex completed the initial T4b implementation but is unavailable for further work due token limits.
+
+Remaining implementation ownership is transferred to Claude on the existing branch and PR:
+
+- branch: `implementation/emas-ms04-identification-interpretation-engine`
+- PR: #56
+- accepted-oracle sync merge: `15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`
+
+Claude must treat the accepted T4a oracle as read-only and complete the remaining central-review items before final reconciliation.
