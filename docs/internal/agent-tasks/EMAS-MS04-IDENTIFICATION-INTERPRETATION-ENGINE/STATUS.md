@@ -7,7 +7,7 @@
 **T4b branch sync merge:** `15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`  
 **Claude implementation commit:** `ccce071a33aba8e4d11dac009801e74deee88189`  
 **Reviewed branch head:** `4ccdc3da0e8367cf06bb0a48812361c563f11b97`  
-**Overall status:** `REVIEW_PASS_READY_FOR_USER_DECISION`
+**Overall status:** `ACCEPTED_FOR_COORDINATION_MERGE`
 
 | Gate | Status |
 |---|---|
@@ -31,7 +31,7 @@
 | scanner/CEC/runtime-schema semantics modified | PASS — NO |
 | IDI-CONFIG-007 | ACCEPTED INTERNAL DEFENSIVE CODE / ERROR-CATALOGUE DEBT |
 | ChatGPT final reconciliation | PASS |
-| user merge decision | READY |
+| user merge decision | ACCEPTED |
 
 ## Qualification boundary
 
