@@ -3,7 +3,7 @@
 **Roadmap ID:** `T4`  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Coordination branch:** `coordination/emas-ms04-identification-interpretation`  
-**Overall status:** `T4A_ACCEPTED_T4B_CLAUDE_CONTINUATION`  
+**Overall status:** `T4B_REVIEW_PASS_AWAITING_USER_MERGE_DECISION`  
 **Coordination PR:** #54
 
 ## Execution model
@@ -78,3 +78,29 @@ Remaining implementation ownership is transferred to Claude on the existing bran
 - accepted-oracle sync merge: `15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`
 
 Claude must treat the accepted T4a oracle as read-only and complete the remaining central-review items before final reconciliation.
+
+
+## T4b central reconciliation
+
+PR #56 has completed central review.
+
+Reviewed implementation head before coordinator review/status commits:
+
+`4ccdc3da0e8367cf06bb0a48812361c563f11b97`
+
+Central result:
+
+`REVIEW_PASS — READY_FOR_USER_DECISION`
+
+Verified gates:
+
+- focused T4b engine tests: 28/28;
+- accepted T4a oracle: 23/23;
+- Windows PowerShell 5.1 T4 engine/oracle: PASS;
+- Windows PowerShell 7.6 T4 engine/oracle: PASS;
+- macOS PowerShell 7.6 T4 engine/oracle: PASS;
+- Identification-only short pipeline: PASS;
+- accepted oracle remains read-only;
+- PS5.1 aggregate job remains red only for the pre-existing UTF-8 RuntimeConfiguration expectation.
+
+PR #56 must still receive explicit user merge approval before it is merged into this coordination branch.
