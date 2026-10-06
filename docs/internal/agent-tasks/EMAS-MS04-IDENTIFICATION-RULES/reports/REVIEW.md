@@ -1,6 +1,6 @@
 # ChatGPT Review — EMAS-MS04-IDENTIFICATION-RULES
 
-**Status:** `REVIEW_COMPLETE — READY_FOR_USER_DECISION_WITH_AMENDMENTS`  
+**Status:** `DECISION_ACCEPTED — T1A_AND_T3_AUTHORIZED`  
 **Reviewed Claude commit:** `7dcef379eb5ca114c83665825a7ec5bbd54be29f`  
 **Reviewed PR:** #43
 
@@ -291,3 +291,15 @@ The central review recommends the following design decisions:
 **Accept the Identification Rules design with the central-review amendments above.**
 
 After user acceptance, merge the report/coordination task and create T1a and T3 as the next bounded tasks. T1a and T3 are genuinely separable and may proceed in parallel if desired; T4 waits for both.
+
+
+## User decision
+
+Accepted. The MS-04 Identification Rules design is approved with the central-review amendments.
+
+Authorized next tasks:
+
+- T1a — `EMAS-MS04-CEC-PHYSICAL-MARKER-EVIDENCE`
+- T3 — `EMAS-MS04-IDENTIFICATION-RULE-RUNTIME-DESIGN`
+
+T4 unified IdentificationInterpretation implementation remains blocked until both T1a and T3 are accepted.
