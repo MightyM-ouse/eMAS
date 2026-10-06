@@ -334,6 +334,18 @@
           "type": "integer",
           "minimum": 0
         },
+        "targetEntityType": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: canonical master-data entity type (IDENTIFICATION_DIMENSION) in which an IDENTIFICATION ClassificationCandidate outputCode is resolved."
+        },
+        "evidenceStrength": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: ordinal EVIDENCE_STRENGTH code of an IDENTIFICATION ClassificationCandidate."
+        },
+        "evidencePolarity": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: EVIDENCE_POLARITY code (SUPPORTS or CONTRADICTS) of an IDENTIFICATION ClassificationCandidate."
+        },
         "comment": {
           "type": "string"
         }

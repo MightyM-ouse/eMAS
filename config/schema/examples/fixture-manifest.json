@@ -1,5 +1,9 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
+  "supportedSchemaVersions": [
+    "1.0.0",
+    "1.1.0"
+  ],
   "fixtureFormat": "json-merge-patch-v1",
   "fixtures": [
     {
@@ -192,6 +196,365 @@
         "base/02-catalogue-and-master-data.json",
         "base/03-rules-and-outputs.json",
         "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "valid/identification-weightless-confidence-1.1.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "valid/identification-same-code-two-dimensions-1.1.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "boundary/identification-strength-equals-ceiling-1.1.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "boundary/identification-contradicting-medium-1.1.patch.json",
+      "expectedValid": true,
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-candidate-outside-dimension-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_OUTPUT_TARGET"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-dimension-mismatch-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_DIMENSION_MISMATCH"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unknown-evidence-strength-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_CONTROLLED_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unknown-evidence-polarity-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_CONTROLLED_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unknown-tie-behavior-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_CONTROLLED_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unknown-result-confidence-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_CONTROLLED_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unknown-corroboration-rule-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_CONTROLLED_REFERENCE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-strength-exceeds-ceiling-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_EVIDENCE_STRENGTH_CEILING"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-weak-field-mixed-group-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_EVIDENCE_STRENGTH_CEILING"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/version-1.1-property-labelled-1.0.0.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SCHEMA_VERSION_FEATURE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/version-1.1-field-ceiling-labelled-1.0.0.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SCHEMA_VERSION_FEATURE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/version-identification-rule-labelled-1.0.0.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_VERSION_FEATURE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/version-1.0.0-confidence-weight-missing.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SCHEMA_ERROR"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json"
+      ]
+    },
+    {
+      "patch": "invalid/version-unsupported-schema-version.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SCHEMA_UNSUPPORTED_VERSION"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-noncanonical-evidence-strength-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_REQUIRED_CODE",
+        "SEM_UNKNOWN_CODE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-ordinal-sort-order-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_ORDINAL_ORDER"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-numeric-weight-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_NUMERIC_WEIGHT"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-candidate-output-value-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_NUMERIC_WEIGHT"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-unapproved-dimension-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_DIMENSION"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-metadata-missing-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_METADATA_REQUIRED"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-metadata-out-of-scope-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_IDENTIFICATION_METADATA_SCOPE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
+      ]
+    },
+    {
+      "patch": "invalid/identification-dimension-not-canonical-1.1.patch.json",
+      "expectedValid": false,
+      "expectedErrorCodes": [
+        "SEM_UNKNOWN_CODE"
+      ],
+      "fragments": [
+        "base/01-configuration-and-value-lists.json",
+        "base/02-catalogue-and-master-data.json",
+        "base/03-rules-and-outputs.json",
+        "base/04-policies-and-reporting.json",
+        "base/05-identification-1.1.json"
       ]
     }
   ]

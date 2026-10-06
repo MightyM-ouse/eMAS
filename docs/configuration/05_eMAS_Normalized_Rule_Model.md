@@ -1,6 +1,6 @@
 # eMAS Normalized Rule Model
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Approved design baseline  
 **Effective date:** 2026-07-13  
 **Owner:** Product Owner and Technical Architect  
@@ -138,6 +138,16 @@ Rule outputs are maintained separately and may include:
 
 One rule may have multiple ordered outputs. `OutputType` is the discriminator that determines the permitted `OutputCode` target and `OutputValue` type.
 
+### 7.1 Identification candidates (Schema 1.1.0)
+
+A rule with `RuleType = IDENTIFICATION` (Schema 1.1.0 only) emits `ClassificationCandidate` outputs that carry:
+
+- `TargetEntityType`: the canonical master-data entity type (`IDENTIFICATION_DIMENSION`) in which `OutputCode` resolves; it must equal the rule's `ConflictGroup`;
+- `EvidenceStrength`: `STRONG`, `MEDIUM` or `WEAK`;
+- `EvidencePolarity`: `SUPPORTS` or `CONTRADICTS`.
+
+Identification candidates carry no `OutputValue` score. The output's `EvidenceStrength` must not exceed the weakest `MaxEvidenceStrength` ceiling of the fields referenced by the rule's non-negated conditions across all of its condition groups. Negated conditions are guards, not evidence; `MISSING` asserts absence evidence and counts. Every field used as evidence by an Identification rule must declare a ceiling. The ceiling is an authoring guard and never rewrites factual evidence. Identification metadata on any other output is rejected.
+
 `Rules.FindingCode`, where used, is the optional primary/default finding reference. Additional or phase-specific findings are emitted through `Rule_Outputs`. Complete finding definitions remain in `Findings`.
 
 ## 8. Findings and recommendations
@@ -194,6 +204,13 @@ Defaults:
 
 Unresolved conflicts must never be silently resolved.
 
+For Identification rules (Schema 1.1.0):
+
+- `HighestEvidenceScore` is evaluated as ordinal tier precedence `STRONG > MEDIUM > WEAK`, taken from the governed `EVIDENCE_STRENGTH.sortOrder`; no numeric business score or weight is used;
+- an Identification conflict policy's `TieBehavior` must be `UNKNOWN` or `MANUAL_REVIEW`;
+- `MinimumEvidenceStrengthForValue` provides the Weak-only floor capability; the floor value is governed content;
+- Identification confidence rows use `ResultConfidence` and `CorroborationRule` and carry no numeric weight until numeric Identification weights are approved.
+
 ## 11. Exceptions
 
 The master configuration stores exception policies, not project-specific accepted exceptions.
@@ -237,6 +254,8 @@ The normalized classification backbone is:
 - SourcePresentation where applicable
 
 ASMF is a ProcedureContext, not a technical format. Regional implementations are layered on technical standards. A report-level primary dossier type may be derived but is not maintained as a single authoring dimension.
+
+Identification candidate resolution is dimension-scoped: a candidate code is resolved only within its declared `TargetEntityType`. The same code string (for example `OTHER` or `UNKNOWN`) may exist in several dimensions; global cross-dimension code uniqueness is not required. Rules that are not `IDENTIFICATION` keep the Schema 1.0.0 candidate resolution.
 
 Master-data relationship types and permitted endpoint pairs are frozen in the relationship matrix. Broad regional groupings must not act as regulatory authorities.
 
@@ -298,3 +317,4 @@ Adding approved content rows without changing structure or semantics does not ch
 |---|---|---|
 | 1.0 | 2026-07-13 | Initial approved normalized rule model |
 | 1.1 | 2026-07-13 | Bound rule behavior to frozen relationship, data-dictionary, link-entity, polymorphic-reference and validation-run contracts |
+| 1.2 | 2026-10-06 | Added Schema 1.1.0 Identification candidates, ordinal tier precedence, evidence-strength ceiling and dimension-scoped candidate resolution |

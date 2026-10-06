@@ -1,6 +1,6 @@
 # eMAS Logical Data Dictionary
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Effective Logical-Model Contract  
 **Effective date:** 2026-07-13  
 **Owner:** Product Owner and Technical Architect  
@@ -266,7 +266,7 @@ One current document-control record governs the workbook document.
 | Status | RuleLifecycleStatus | Yes | Controlled-content profile |
 | EffectiveFrom | Date | Conditional | Required for Effective runtime value |
 | EffectiveTo | Date | No | Exclusive end |
-| SortOrder | Integer | Yes | Display order |
+| SortOrder | Integer | Yes | Display order. For `EVIDENCE_STRENGTH` in Schema 1.1.0 it is also the governed ordinal precedence: ascending SortOrder must reproduce STRONG > MEDIUM > WEAK |
 | Description | LongText | No | Meaning |
 | SourceReference | String | Conditional | Required for regulated/externally governed values |
 
@@ -286,6 +286,7 @@ One current document-control record governs the workbook document.
 | EffectiveTo | Date | No | Exclusive end |
 | Description | LongText | Yes | Business meaning |
 | SourceReference | String | Conditional | Requirement or approved source |
+| MaxEvidenceStrength | EvidenceStrength | Conditional | Schema 1.1.0 only. Required for a field used as evidence by an IDENTIFICATION rule. Highest strength an Identification output may claim when it relies on the field; authoring ceiling, never rewrites evidence |
 
 Allowed operators and phases are maintained only through link entities.
 
@@ -601,8 +602,11 @@ Arbitrary VBA, PowerShell and expression-language code is prohibited.
 | Phase | Phase | Yes | Must exist in Rule_Phase_Assignment |
 | OutputType | OutputType | Yes | ClassificationCandidate, Finding, RAG, ConfidenceImpact, EffortImpact, DecisionImpact or ClarificationTrigger |
 | OutputCode | Identifier | Yes | Polymorphic target controlled by OutputType |
-| OutputValue | JsonValue | Conditional | Allowed only by output target contract |
+| OutputValue | JsonValue | Conditional | Allowed only by output target contract. Prohibited on IDENTIFICATION candidates (no numeric score) |
 | Sequence | Integer | Yes | Ordered output sequence |
+| TargetEntityType | IdentificationDimension | Conditional | Schema 1.1.0 only. Required on IDENTIFICATION `ClassificationCandidate`; OutputCode must exist in this master-data entity type and it must equal the rule's ConflictGroup. Prohibited on other outputs |
+| EvidenceStrength | EvidenceStrength | Conditional | Schema 1.1.0 only. Required on IDENTIFICATION `ClassificationCandidate`; must not exceed the weakest MaxEvidenceStrength of the rule's non-negated evidence fields |
+| EvidencePolarity | EvidencePolarity | Conditional | Schema 1.1.0 only. Required on IDENTIFICATION `ClassificationCandidate`: SUPPORTS or CONTRADICTS |
 | Comment | LongText | No | Non-executable note |
 
 ## 37. Rule_Supersession — `tblRuleSupersession`
@@ -679,7 +683,8 @@ Findings do not contain full recommendation text.
 | ConflictPolicyId | Identifier | Yes | Primary key |
 | RuleType | RuleType | Yes | Applicable rule category |
 | ConflictStrategy | ConflictStrategy | Yes | Approved strategy |
-| TieBehavior | Code | Yes | Unknown, ManualReview or approved result |
+| TieBehavior | Code | Yes | Unknown, ManualReview or approved result. For RuleType IDENTIFICATION (Schema 1.1.0) it must resolve to `TIE_BEHAVIOR`: UNKNOWN or MANUAL_REVIEW |
+| MinimumEvidenceStrengthForValue | EvidenceStrength | No | Schema 1.1.0 only; IDENTIFICATION policies only. Weak-only floor capability; the floor value is governed content |
 | StopBehavior | Code | Yes | Continue, StopGroup or StopEvaluation as approved |
 | DefaultPriorityIncrement | Integer | Yes | Normally 100 |
 | Status | RuleLifecycleStatus | Yes | Controlled-content profile |
@@ -726,8 +731,10 @@ NotAssessed and NotApplicable are prohibited as RAG values.
 |---|---|---:|---|
 | ConfidencePolicyId | Identifier | Yes | Primary key |
 | Scope | Code | Yes | Classification, effort or approved scope |
-| EvidenceStrength | EvidenceStrength | Yes | Controlled strength |
-| WeightOrScore | Decimal | Yes | Requires owner/SME approval |
+| EvidenceStrength | EvidenceStrength | Yes | Controlled strength. Validated against `EVIDENCE_STRENGTH` for IDENTIFICATION scope (Schema 1.1.0) |
+| WeightOrScore | Decimal | Conditional | Requires owner/SME approval. Required in Schema 1.0.0 and for non-IDENTIFICATION scopes in 1.1.0; prohibited for IDENTIFICATION scope until numeric Identification weights are approved |
+| ResultConfidence | Confidence | Conditional | Schema 1.1.0 only. Required for IDENTIFICATION scope: HIGH, MEDIUM, LOW or UNKNOWN |
+| CorroborationRule | CorroborationRule | Conditional | Schema 1.1.0 only. Required for IDENTIFICATION scope: NONE_REQUIRED or INDEPENDENT_SOURCE_CLASS |
 | AgreementRequirement | LongText | Yes | Required evidence agreement rule |
 | MissingEvidenceBehavior | Code | Yes | Controlled behavior |
 | Status | RuleLifecycleStatus | Yes | Controlled-content profile |
@@ -917,6 +924,7 @@ The following ListName values are mandatory in `Value_Lists`:
 - Unit;
 - RelationshipType;
 - ExportType;
+- for Schema 1.1.0 additionally: IdentificationDimension, EvidencePolarity, TieBehavior and CorroborationRule;
 - phase-result code lists;
 - change and validation categories required by the workbook.
 
@@ -985,6 +993,23 @@ The following ListName values are mandatory in `Value_Lists`:
 - AcceptDifference;
 - DowngradeDecisionImpact.
 
+### 55.8 Schema 1.1.0 Identification code sets
+
+Enforced as exact sets for Schema 1.1.0 documents only; Schema 1.0.0 documents keep their 1.0.0 behavior.
+
+| List | Codes |
+|---|---|
+| EVIDENCE_STRENGTH | STRONG, MEDIUM, WEAK (ordinal by SortOrder) |
+| CONFIDENCE | HIGH, MEDIUM, LOW, UNKNOWN |
+| EVIDENCE_POLARITY | SUPPORTS, CONTRADICTS |
+| TIE_BEHAVIOR | UNKNOWN, MANUAL_REVIEW |
+| CORROBORATION_RULE | NONE_REQUIRED, INDEPENDENT_SOURCE_CLASS |
+| IDENTIFICATION_DIMENSION | Subset of the canonical master-data entity types: REGION, AUTHORITY, TECHNICAL_STANDARD, REGIONAL_IMPLEMENTATION, PRODUCT_DOMAIN, LIFECYCLE_CONTEXT, PRODUCT_CLASS, PROCEDURE_CONTEXT, SOURCE_PRESENTATION |
+
+`RULE_TYPE` must contain IDENTIFICATION when IDENTIFICATION rules or conflict policies exist. Display synonyms (for example `Supporting`) are not executable codes. The raw CEC `Supporting` strength is normalized to MEDIUM by the engine-side `EVIDENCE-STRENGTH-NORMALIZATION/1` adapter, not by aliases.
+
+Master-data codes are unique within each entity type. The same code string may exist in several entity types; Identification candidates resolve within their declared TargetEntityType.
+
 ## 56. Runtime inclusion rules
 
 A controlled export includes only:
@@ -1021,7 +1046,7 @@ The data dictionary is implemented when:
 
 ## 58. Change control
 
-This dictionary is frozen at Version 1.0.
+This dictionary is frozen at Version 1.1. Version 1.1 adds only the optional Schema 1.1.0 Identification fields and code sets; workbook implementation of these fields is T3b.
 
 A field addition, removal, rename, type change, requiredness change, key change or semantic code change requires:
 
@@ -1039,3 +1064,4 @@ Adding approved content rows without changing field structure or meaning does no
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-07-13 | Frozen logical entity, field, key, type, requiredness and serialization contract |
+| 1.1 | 2026-10-06 | Added Schema 1.1.0 Identification fields (MaxEvidenceStrength, TargetEntityType, EvidenceStrength, EvidencePolarity, MinimumEvidenceStrengthForValue, ResultConfidence, CorroborationRule), conditional WeightOrScore and Identification code sets |

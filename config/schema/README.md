@@ -2,7 +2,11 @@
 
 ## Effective baseline
 
-`eMAS-runtime-config.schema.json` is the effective eMAS runtime configuration schema at **Schema Version 1.0.0**.
+`eMAS-runtime-config.schema.json` is the effective eMAS runtime configuration schema. It supports **Schema Version 1.0.0** and **Schema Version 1.1.0** (MINOR, additive Identification semantics).
+
+`configuration.schemaVersion` must be `1.0.0` or `1.1.0`. A root `VERSION-GATE-1.0.0` branch rejects every 1.1.0 property in a document that declares `1.0.0` (`SCHEMA_VERSION_FEATURE`); any other version fails as `SCHEMA_UNSUPPORTED_VERSION`.
+
+Schema 1.1.0 adds optional `ruleOutput.targetEntityType`, `evidenceStrength` and `evidencePolarity`, `conflictPolicy.minimumEvidenceStrengthForValue`, `confidencePolicy.resultConfidence` and `corroborationRule` (with `weightOrScore` required for non-IDENTIFICATION scopes only) and `fieldDefinition.maxEvidenceStrength`. Identification candidates resolve within their declared dimension; no global cross-dimension code uniqueness is required. Identification uses ordinal `EVIDENCE_STRENGTH` precedence from `sortOrder` and carries no numeric weights.
 
 It uses JSON Schema Draft 2020-12 and is synchronized with:
 
@@ -25,8 +29,9 @@ It uses JSON Schema Draft 2020-12 and is synchronized with:
 | `examples/invalid/` | Deliberately invalid JSON Merge Patch variants |
 | `../../build/validate_emas_schema.py` | Independent Draft 2020-12 and semantic validator |
 | `../../tests/schema/test_schema_fixtures.py` | Automated fixture tests |
+| `../../tests/schema/test_identification_schema_1_1.py` | Schema 1.1.0 version-gate and Identification-guard tests |
 
-The fixture suite uses one synthetic base assembled from ordered fragments plus compact RFC 7396-style JSON Merge Patch variants. The independent validator materializes each variant before validation. No fixture contains customer data, production mappings or approved regulatory content.
+The fixture suite uses one synthetic 1.0.0 base assembled from ordered fragments (1.1.0 fixtures add `base/05-identification-1.1.json`) plus compact RFC 7396-style JSON Merge Patch variants. The independent validator materializes each variant before validation. No fixture contains customer data, production mappings or approved regulatory content.
 
 ## Validation model
 
@@ -52,7 +57,8 @@ The independent semantic validator additionally validates:
 - finding, recommendation, exception and alias references;
 - effort-threshold gaps and overlaps;
 - decision and questionnaire references;
-- temporal ranges and supersession cycles.
+- temporal ranges and supersession cycles;
+- for Schema 1.1.0: governed Identification code lists and ordinal order, dimension-scoped candidate resolution, Identification metadata, controlled tie behavior, floor, result confidence and corroboration rule, the evidence-strength ceiling and the absence of numeric Identification weights.
 
 A JSON Schema pass alone does not prove semantic or referential integrity.
 

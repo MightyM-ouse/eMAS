@@ -1,12 +1,14 @@
-"""Cross-collection semantic validation for eMAS Runtime JSON 1.0.0."""
+"""Cross-collection semantic validation for eMAS Runtime JSON 1.0.0 and 1.1.0."""
 from __future__ import annotations
 
 import math
 from typing import Any
 
 from emas_schema_model import (
-    COLLECTION_KEYS, MASTER_ENTITY_MAP, POLICY_KEYS, RELATIONSHIP_ENDPOINTS,
-    REQUIRED_CODES, REQUIRED_VALUE_LISTS, ValidationIssue, _codes, _index,
+    COLLECTION_KEYS, EVIDENCE_STRENGTH_PRECEDENCE, IDENTIFICATION_POLICY_SCOPE, IDENTIFICATION_RULE_TYPE,
+    IDENTIFICATION_SCHEMA_VERSION, MASTER_ENTITY_MAP, POLICY_KEYS, RELATIONSHIP_ENDPOINTS, REQUIRED_CODES,
+    REQUIRED_CODES_1_1, REQUIRED_VALUE_LISTS, REQUIRED_VALUE_LISTS_1_1, SUPPORTED_SCHEMA_VERSIONS,
+    ValidationIssue, _codes, _index,
 )
 
 def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
@@ -15,10 +17,14 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
     def add(code: str, path: str, message: str) -> None:
         issues.append(ValidationIssue(code, path, message))
     configuration = instance['configuration']
-    if configuration.get('schemaVersion') != '1.0.0':
-        add('SEM_SCHEMA_VERSION', '$.configuration.schemaVersion', 'must equal 1.0.0')
+    schema_version = configuration.get('schemaVersion')
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        add('SEM_SCHEMA_VERSION', '$.configuration.schemaVersion', f'must be one of {", ".join(SUPPORTED_SCHEMA_VERSIONS)}')
+    is_identification_version = schema_version == IDENTIFICATION_SCHEMA_VERSION
+    required_value_lists = REQUIRED_VALUE_LISTS_1_1 if is_identification_version else REQUIRED_VALUE_LISTS
+    required_codes = REQUIRED_CODES_1_1 if is_identification_version else REQUIRED_CODES
     value_lists = instance['valueLists']
-    missing_lists = sorted(REQUIRED_VALUE_LISTS - set(value_lists))
+    missing_lists = sorted(required_value_lists - set(value_lists))
     for name in missing_lists:
         add('SEM_REQUIRED_VALUE_LIST', f'$.valueLists.{name}', 'mandatory list is missing')
     for name, rows in value_lists.items():
@@ -28,13 +34,20 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
             if code in seen:
                 add('SEM_DUPLICATE_ID', f'$.valueLists.{name}[{i}].code', f'duplicate code {code}')
             seen.add(code)
-    for name, expected in REQUIRED_CODES.items():
+    for name, expected in required_codes.items():
         missing_codes = sorted(expected - _codes(value_lists, name))
         for code in missing_codes:
             add('SEM_REQUIRED_CODE', f'$.valueLists.{name}', f'mandatory code {code} is missing')
         unknown_codes = sorted(_codes(value_lists, name) - expected)
         for code in unknown_codes:
             add('SEM_UNKNOWN_CODE', f'$.valueLists.{name}', f'unknown controlled code {code} is not approved')
+    if is_identification_version:
+        for code in sorted(_codes(value_lists, 'IDENTIFICATION_DIMENSION') - set(MASTER_ENTITY_MAP)):
+            add('SEM_UNKNOWN_CODE', '$.valueLists.IDENTIFICATION_DIMENSION', f'{code} is not a canonical master-data entity type')
+        strength_rows = {str(row.get('code')): row for row in value_lists.get('EVIDENCE_STRENGTH', [])}
+        orders = [strength_rows[code].get('sortOrder') for code in EVIDENCE_STRENGTH_PRECEDENCE if code in strength_rows]
+        if any(order is None for order in orders) or orders != sorted(orders) or len(set(orders)) != len(orders):
+            add('SEM_ORDINAL_ORDER', '$.valueLists.EVIDENCE_STRENGTH', 'sortOrder must be present, unique and ascending in the canonical precedence STRONG > MEDIUM > WEAK')
     for collection, key in COLLECTION_KEYS.items():
         seen: set[str] = set()
         for i, row in enumerate(instance[collection]):
@@ -192,6 +205,8 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
         elif output_type == 'RAG':
             valid_target = code in rag_codes
         elif output_type == 'ClassificationCandidate':
+            if is_identification_version and rules[rule_id].get('ruleType') == IDENTIFICATION_RULE_TYPE:
+                continue  # resolved within its declared targetEntityType by _identification_issues
             valid_target = code in all_master_codes
         elif output_type == 'ConfidenceImpact':
             valid_target = code in confidence_policies or code in all_controlled_codes
@@ -281,6 +296,7 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
             add('SEM_BROKEN_REFERENCE', f'{path}.triggerCode', 'field trigger does not exist')
         if entry['triggerType'] == 'FINDING' and entry['triggerCode'] not in findings:
             add('SEM_BROKEN_REFERENCE', f'{path}.triggerCode', 'finding trigger does not exist')
+    _identification_issues(instance, add, schema_version, rules, fields, groups, master_indexes)
     report_seen: set[tuple[str, str, str]] = set()
     for i, definition in enumerate(instance['reportTerminology']['definitions']):
         key = (definition['reportCode'], definition['sheetCode'], definition['columnCode'])
@@ -288,3 +304,106 @@ def _semantic_issues(instance: dict[str, Any]) -> list[ValidationIssue]:
             add('SEM_DUPLICATE_COMPOSITE', f'$.reportTerminology.definitions[{i}]', f'duplicate report definition {key}')
         report_seen.add(key)
     return issues
+
+
+def _identification_issues(instance: dict[str, Any], add: Any, schema_version: Any, rules: dict[str, dict[str, Any]], fields: dict[str, dict[str, Any]], groups: dict[str, dict[str, Any]], master_indexes: dict[str, dict[str, dict[str, Any]]]) -> None:
+    """Schema 1.1.0 Identification guards. Candidate codes resolve only within their declared dimension;
+    no global cross-dimension code uniqueness is required."""
+    identification_rules = {rule_id for rule_id, rule in rules.items() if rule.get('ruleType') == IDENTIFICATION_RULE_TYPE}
+    if schema_version != IDENTIFICATION_SCHEMA_VERSION:
+        for rule_id in sorted(identification_rules):
+            add('SEM_VERSION_FEATURE', '$.rules', f'rule {rule_id}: ruleType {IDENTIFICATION_RULE_TYPE} requires schemaVersion {IDENTIFICATION_SCHEMA_VERSION}')
+        return
+    value_lists = instance['valueLists']
+    dimensions = _codes(value_lists, 'IDENTIFICATION_DIMENSION') & set(MASTER_ENTITY_MAP)
+    rank = {code: i for i, code in enumerate(EVIDENCE_STRENGTH_PRECEDENCE)}  # lower rank = stronger
+
+    def controlled(path: str, value: Any, list_name: str) -> bool:
+        if value not in _codes(value_lists, list_name):
+            add('SEM_CONTROLLED_REFERENCE', path, f'{value} does not resolve to {list_name}')
+            return False
+        return True
+    rule_index = {str(rule.get('ruleId')): i for i, rule in enumerate(instance['rules'])}
+    for rule_id in sorted(identification_rules):
+        path = f'$.rules[{rule_index[rule_id]}]'
+        controlled(f'{path}.ruleType', IDENTIFICATION_RULE_TYPE, 'RULE_TYPE')
+        group = rules[rule_id].get('conflictGroup')
+        if group is None:
+            add('SEM_IDENTIFICATION_METADATA_REQUIRED', f'{path}.conflictGroup', 'IDENTIFICATION rules require conflictGroup set to their identification dimension')
+        elif group not in dimensions:
+            add('SEM_IDENTIFICATION_DIMENSION', f'{path}.conflictGroup', f'{group} is not an approved IDENTIFICATION_DIMENSION')
+    ceilings: dict[str, Any] = {}
+    for i, field in enumerate(instance['fieldCatalogue']):
+        ceiling = field.get('maxEvidenceStrength')
+        if ceiling is not None and controlled(f'$.fieldCatalogue[{i}].maxEvidenceStrength', ceiling, 'EVIDENCE_STRENGTH'):
+            ceilings[field['fieldCode']] = ceiling
+    evidence_fields: dict[str, set[str]] = {rule_id: set() for rule_id in identification_rules}
+    for condition in instance['ruleConditions']:
+        # Negated conditions are guards, not evidence; MISSING asserts absence evidence and is counted.
+        if condition['ruleId'] in evidence_fields and not condition['negate'] and condition['conditionGroupId'] in groups:
+            evidence_fields[condition['ruleId']].add(condition['fieldCode'])
+    for i, output in enumerate(instance['ruleOutputs']):
+        path = f'$.ruleOutputs[{i}]'
+        rule_id = output['ruleId']
+        metadata = [key for key in ('targetEntityType', 'evidenceStrength', 'evidencePolarity') if key in output]
+        is_candidate = rule_id in identification_rules and output['outputType'] == 'ClassificationCandidate'
+        if not is_candidate:
+            if metadata:
+                add('SEM_IDENTIFICATION_METADATA_SCOPE', path, f'{metadata} are only valid on IDENTIFICATION ClassificationCandidate outputs')
+            continue
+        for key in ('targetEntityType', 'evidenceStrength', 'evidencePolarity'):
+            if key not in output:
+                add('SEM_IDENTIFICATION_METADATA_REQUIRED', f'{path}.{key}', f'IDENTIFICATION ClassificationCandidate requires {key}')
+        if 'outputValue' in output:
+            add('SEM_IDENTIFICATION_NUMERIC_WEIGHT', f'{path}.outputValue', 'IDENTIFICATION candidates use ordinal evidenceStrength; outputValue scores are not approved')
+        target = output.get('targetEntityType')
+        if target is not None:
+            if target not in dimensions:
+                add('SEM_IDENTIFICATION_DIMENSION', f'{path}.targetEntityType', f'{target} is not an approved IDENTIFICATION_DIMENSION')
+            else:
+                group = rules[rule_id].get('conflictGroup')
+                if group is not None and group != target:
+                    add('SEM_IDENTIFICATION_DIMENSION_MISMATCH', f'{path}.targetEntityType', f'{target} differs from rule {rule_id} conflictGroup {group}')
+                if output['outputCode'] not in master_indexes.get(target, {}):
+                    add('SEM_OUTPUT_TARGET', f'{path}.outputCode', f"ClassificationCandidate {output['outputCode']} does not exist in {target}")
+        if 'evidencePolarity' in output:
+            controlled(f'{path}.evidencePolarity', output['evidencePolarity'], 'EVIDENCE_POLARITY')
+        strength = output.get('evidenceStrength')
+        if strength is None or not controlled(f'{path}.evidenceStrength', strength, 'EVIDENCE_STRENGTH'):
+            continue
+        used = sorted(evidence_fields.get(rule_id, set()))
+        if not used:
+            add('SEM_EVIDENCE_STRENGTH_CEILING', f'{path}.evidenceStrength', f'rule {rule_id} has no positive evidence field to support {strength}')
+            continue
+        uncapped = [code for code in used if code in fields and code not in ceilings]
+        for code in uncapped:
+            add('SEM_IDENTIFICATION_METADATA_REQUIRED', '$.fieldCatalogue', f'field {code} used by IDENTIFICATION rule {rule_id} requires maxEvidenceStrength')
+        capped = [ceilings[code] for code in used if code in ceilings and ceilings[code] in rank]
+        if capped and strength in rank:
+            weakest = max(capped, key=lambda c: rank[c])
+            if rank[strength] < rank[weakest]:
+                add('SEM_EVIDENCE_STRENGTH_CEILING', f'{path}.evidenceStrength', f'{strength} exceeds the {weakest} ceiling of the evidence fields used by rule {rule_id}')
+    for i, policy in enumerate(instance['policies']['conflictPolicies']):
+        path = f'$.policies.conflictPolicies[{i}]'
+        floor = policy.get('minimumEvidenceStrengthForValue')
+        if policy['ruleType'] == IDENTIFICATION_RULE_TYPE:
+            controlled(f'{path}.ruleType', policy['ruleType'], 'RULE_TYPE')
+            controlled(f'{path}.tieBehavior', policy['tieBehavior'], 'TIE_BEHAVIOR')
+            if floor is not None:
+                controlled(f'{path}.minimumEvidenceStrengthForValue', floor, 'EVIDENCE_STRENGTH')
+        elif floor is not None:
+            add('SEM_IDENTIFICATION_METADATA_SCOPE', f'{path}.minimumEvidenceStrengthForValue', 'only valid on IDENTIFICATION conflict policies')
+    for i, policy in enumerate(instance['policies']['confidencePolicies']):
+        path = f'$.policies.confidencePolicies[{i}]'
+        ordinal = [key for key in ('resultConfidence', 'corroborationRule') if key in policy]
+        if policy['scope'] != IDENTIFICATION_POLICY_SCOPE:
+            if ordinal:
+                add('SEM_IDENTIFICATION_METADATA_SCOPE', path, f'{ordinal} are only valid on IDENTIFICATION confidence policies')
+            continue
+        controlled(f'{path}.evidenceStrength', policy['evidenceStrength'], 'EVIDENCE_STRENGTH')
+        if 'resultConfidence' in policy:
+            controlled(f'{path}.resultConfidence', policy['resultConfidence'], 'CONFIDENCE')
+        if 'corroborationRule' in policy:
+            controlled(f'{path}.corroborationRule', policy['corroborationRule'], 'CORROBORATION_RULE')
+        if 'weightOrScore' in policy:
+            add('SEM_IDENTIFICATION_NUMERIC_WEIGHT', f'{path}.weightOrScore', 'numeric Identification weights are not approved')

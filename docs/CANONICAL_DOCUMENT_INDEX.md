@@ -28,11 +28,11 @@ This index routes eMAS work to authoritative requirements, approved amendments, 
 | CFG-FUNC | 2 | [Mapping Functional Requirements](configuration/01_eMAS_Mapping_Configuration_Functional_Requirements.md) | v3.0 Effective; `Warning` amendment synchronized for schema/runtime scope | Product Owner |
 | CFG-TECH | 3 | [Mapping Technical Requirements](configuration/02_eMAS_Mapping_Configuration_Technical_Requirements.md) | v3.0 Effective; `Warning` amendment synchronized for schema/runtime scope | Technical Architect |
 | CFG-CAT | 4 | [Content Catalogue](configuration/03_eMAS_Mapping_Configuration_Content_Catalogue.md) | v3.0 Effective logical model; `Warning` amendment synchronized for schema/runtime scope | Product Owner / SMEs |
-| CFG-JSON | 3–5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.2 Effective with in-place Schema 1.0.0 `Warning` compatibility amendment | Technical Architect |
-| CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.1 Approved; `Warning` amendment synchronized for schema/runtime scope | Product Owner / Technical Architect |
+| CFG-JSON | 3–5 | [Runtime JSON Contract](configuration/04_eMAS_Runtime_JSON_Contract.md) | v1.3 Effective; Runtime JSON Schema 1.0.0 + 1.1.0 supported | Technical Architect |
+| CFG-RULE | 2–5 | [Normalized Rule Model](configuration/05_eMAS_Normalized_Rule_Model.md) | v1.2 Approved design baseline; Identification semantics synchronized | Product Owner / Technical Architect |
 | CFG-REL | 4 | [Relationship Matrix](configuration/06_eMAS_Normalized_Relationship_Matrix.md) | v1.0 Effective | Product Owner / Technical Architect |
-| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.0 Effective; `Warning` semantic-code amendment synchronized for schema/runtime scope | Product Owner / Technical Architect |
-| CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.0 Effective; `Warning` fixtures and semantic checks added for schema/runtime scope | Technical Architect / QA Lead |
+| CFG-DICT | 4 | [Logical Data Dictionary](configuration/07_eMAS_Data_Dictionary.md) | v1.1 Effective Logical-Model Contract | Product Owner / Technical Architect |
+| CFG-VERIFY | 5 | [Schema Validation and Fixture Contract](configuration/08_eMAS_Schema_Validation_and_Fixture_Contract.md) | v1.1 Effective Verification Contract; Schema 1.0.0 + 1.1.0 fixtures | Technical Architect / QA Lead |
 | CFG-XLSM-POC | 5–8 | [XLSM/VBA POC and Conformance Contract](configuration/09_eMAS_XLSM_VBA_POC_and_Conformance.md) | v1.0 Effective POC verification contract | Technical Architect / QA Lead |
 | SCHEMA-JSON | 5 | [Runtime JSON Schema](../config/schema/eMAS-runtime-config.schema.json) | 1.0.0 Effective with approved in-place `Warning` compatibility update | Technical Architect |
 | SCHEMA-FIX | 5 | [Runtime Fixture Manifest](../config/schema/examples/fixture-manifest.json) | 1.0.0 Effective with valid, boundary and invalid `Warning` fixtures | Technical Architect / QA Lead |

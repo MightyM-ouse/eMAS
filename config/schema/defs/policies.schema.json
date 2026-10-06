@@ -79,6 +79,10 @@
         "tieBehavior": {
           "$ref": "common.schema.json#/$defs/identifier"
         },
+        "minimumEvidenceStrengthForValue": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: lowest EVIDENCE_STRENGTH tier that may produce an identified value for an IDENTIFICATION conflict policy (Weak-only floor capability). The floor value itself is governed content."
+        },
         "stopBehavior": {
           "$ref": "common.schema.json#/$defs/identifier"
         },
@@ -151,7 +155,6 @@
         "confidencePolicyId",
         "scope",
         "evidenceStrength",
-        "weightOrScore",
         "agreementRequirement",
         "missingEvidenceBehavior",
         "status",
@@ -169,7 +172,16 @@
           "$ref": "common.schema.json#/$defs/identifier"
         },
         "weightOrScore": {
-          "type": "number"
+          "type": "number",
+          "description": "Numeric weight. Mandatory in Schema 1.0.0 and for non-IDENTIFICATION scopes in 1.1.0. Not permitted on IDENTIFICATION-scope rows until numeric Identification weights are approved (semantic guard)."
+        },
+        "resultConfidence": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: CONFIDENCE code produced by an ordinal IDENTIFICATION confidence row (no numeric weight)."
+        },
+        "corroborationRule": {
+          "$ref": "common.schema.json#/$defs/identifier",
+          "description": "Schema 1.1.0+: CORROBORATION_RULE code required for resultConfidence on an IDENTIFICATION confidence row."
         },
         "agreementRequirement": {
           "type": "string",
