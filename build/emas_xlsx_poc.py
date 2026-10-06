@@ -6,16 +6,20 @@ import argparse
 from pathlib import Path
 
 from emas_xlsx_poc_model import build_runtime_json as _build_runtime_json, read_xlsx_tables
+from emas_xlsx_poc_projection import POC_EVALUATION_DATE, project_runtime_tables
 from emas_xlsx_poc_semantics import apply_fixture_patch, canonical_json_bytes, validate_workbook_tables
 
 __all__ = [
     "apply_fixture_patch", "build_runtime_json", "canonical_json_bytes",
-    "read_xlsx_tables", "validate_workbook_tables"
+    "project_runtime_tables", "read_xlsx_tables", "validate_workbook_tables"
 ]
 
-def build_runtime_json(tables):
-    """Build deterministic POC runtime JSON with VBA-equivalent date export."""
-    result = _build_runtime_json(tables)
+def build_runtime_json(tables, evaluation_date=POC_EVALUATION_DATE):
+    """Build deterministic POC runtime JSON from the runtime-eligibility projection.
+
+    DEV and CONTROLLED exports use the same projection; only runtime-eligible Effective rules and
+    their dependent rows are serialized, and workbook-only columns are never exported."""
+    result = _build_runtime_json(project_runtime_tables(tables, evaluation_date))
     exported_at = result["configuration"].get("exportedAtUtc")
     if isinstance(exported_at, (int, float)):
         result["configuration"]["exportedAtUtc"] = "2026-07-13T10:00:00Z"

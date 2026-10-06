@@ -3,17 +3,21 @@ Option Explicit
 
 Public Function BuildRuntimeJson(Optional ByVal deterministic As Boolean = False) As String
     Dim properties As New Collection
+    Dim eligible As Object
+    Dim jsonText As String
+    ' One runtime projection for DEV and CONTROLLED: only runtime-eligible Effective rules and their dependent rows.
+    Set eligible = RuntimeEligibleRuleIds(RuntimeEvaluationDate(deterministic))
     properties.Add JsonString("configuration") & ":" & BuildConfigurationJson(deterministic)
     properties.Add JsonString("valueLists") & ":" & BuildValueListsJson()
     properties.Add JsonString("fieldCatalogue") & ":" & BuildFieldCatalogueJson()
     properties.Add JsonString("metricCatalogue") & ":" & BuildMetricCatalogueJson()
     properties.Add JsonString("masterData") & ":" & BuildMasterDataJson()
-    properties.Add JsonString("relationships") & ":" & BuildTableArray("tblMasterDataRelationships")
-    properties.Add JsonString("rules") & ":" & BuildTableArray("tblRules")
-    properties.Add JsonString("rulePhases") & ":" & BuildTableArray("tblRulePhaseAssignments")
-    properties.Add JsonString("conditionGroups") & ":" & BuildTableArray("tblConditionGroups")
-    properties.Add JsonString("ruleConditions") & ":" & BuildTableArray("tblRuleConditions")
-    properties.Add JsonString("ruleOutputs") & ":" & BuildTableArray("tblRuleOutputs")
+    properties.Add JsonString("relationships") & ":" & BuildRuntimeGraphArray("tblMasterDataRelationships", eligible, Empty)
+    properties.Add JsonString("rules") & ":" & BuildRuntimeGraphArray("tblRules", eligible, Array(EMAS_WORKBOOK_ONLY_RULE_COLUMNS))
+    properties.Add JsonString("rulePhases") & ":" & BuildRuntimeGraphArray("tblRulePhaseAssignments", eligible, Empty)
+    properties.Add JsonString("conditionGroups") & ":" & BuildRuntimeGraphArray("tblConditionGroups", eligible, Empty)
+    properties.Add JsonString("ruleConditions") & ":" & BuildRuntimeGraphArray("tblRuleConditions", eligible, Empty)
+    properties.Add JsonString("ruleOutputs") & ":" & BuildRuntimeGraphArray("tblRuleOutputs", eligible, Empty)
     properties.Add JsonString("findings") & ":" & BuildTableArray("tblFindings")
     properties.Add JsonString("recommendations") & ":" & BuildTableArray("tblRecommendations")
     properties.Add JsonString("findingRecommendationLinks") & ":" & BuildTableArray("tblFindingRecommendationLinks")
@@ -22,7 +26,36 @@ Public Function BuildRuntimeJson(Optional ByVal deterministic As Boolean = False
     properties.Add JsonString("policies") & ":" & BuildPoliciesJson()
     properties.Add JsonString("questionnaireMap") & ":" & BuildTableArray("tblQuestionnaireMap")
     properties.Add JsonString("reportTerminology") & ":" & BuildReportTerminologyJson()
-    BuildRuntimeJson = "{" & JoinCollection(properties, ",") & "}"
+    jsonText = "{" & JoinCollection(properties, ",") & "}"
+    AssertRuntimeJsonHasNoLegacyRuleId jsonText
+    BuildRuntimeJson = jsonText
+End Function
+
+Private Function BuildRuntimeGraphArray(ByVal tableName As String, ByVal eligible As Object, ByVal excludedHeaders As Variant) As String
+    Dim lo As ListObject
+    Dim items As New Collection
+    Dim i As Long
+    Dim includeRow As Boolean
+    Set lo = GetTableByName(tableName)
+    If lo Is Nothing Then
+        BuildRuntimeGraphArray = "[]"
+        Exit Function
+    End If
+    If lo.DataBodyRange Is Nothing Then
+        BuildRuntimeGraphArray = "[]"
+        Exit Function
+    End If
+    For i = 1 To lo.DataBodyRange.Rows.Count
+        If RowHasValues(lo, i) Then
+            If tableName = "tblMasterDataRelationships" Then
+                includeRow = RelationshipIsRuntime(lo, i, eligible)
+            Else
+                includeRow = RowBelongsToRuntimeRule(lo, i, eligible)
+            End If
+            If includeRow Then items.Add BuildRowObject(lo, i, excludedHeaders)
+        End If
+    Next i
+    BuildRuntimeGraphArray = JsonArrayFromCollection(items)
 End Function
 
 Private Function BuildConfigurationJson(ByVal deterministic As Boolean) As String

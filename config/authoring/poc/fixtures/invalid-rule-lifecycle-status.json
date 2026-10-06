@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblRules","action":"set","keyField":"RuleId","keyValue":"ID-SYN-RI-001","field":"Status","value":"Approved"}]}

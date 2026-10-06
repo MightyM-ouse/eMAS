@@ -30,7 +30,18 @@ REQUIRED_MODULES = {
     "modChecksum.bas": ("Option Explicit", "CalculateFileSha256"),
     "modExportHistory.bas": ("Option Explicit", "AppendExportHistory"),
     "modMain.bas": ("Option Explicit", "eMAS_ValidateWorkbook", "eMAS_ExportDevJson"),
+    "modRuntimeProjection.bas": ("Option Explicit", "IsRuntimeEligibleRule", "RuntimeEligibleRuleIds", "RowBelongsToRuntimeRule", "AssertRuntimeJsonHasNoLegacyRuleId"),
 }
+# Schema 1.1.0 / T3b contract tokens that must stay present in the reviewed VBA source.
+REQUIRED_VBA_CONTRACT = {
+    "modConstants.bas": ('EMAS_SCHEMA_VERSION As String = "1.1.0"', "EMAS_RUNTIME_STATUS", "EMAS_WORKBOOK_ONLY_RULE_COLUMNS"),
+    "modJsonBuilder.bas": ("RuntimeEligibleRuleIds", "EMAS_WORKBOOK_ONLY_RULE_COLUMNS", "AssertRuntimeJsonHasNoLegacyRuleId"),
+    "modValidation.bas": ("ValidateIdentification", "ValidateLifecycleAndLegacy", "SEM_EVIDENCE_STRENGTH_CEILING", "POC_LEGACY_RULE_ID_AS_RULE_ID", "SEM_ORDINAL_ORDER"),
+    "modWorkbookStructure.bas": ("MaxEvidenceStrength", "TargetEntityType", "EvidenceStrength", "EvidencePolarity", "MinimumEvidenceStrengthForValue", "ResultConfidence", "CorroborationRule", "LegacyRuleId", "SortOrder"),
+    "modUtilities.bas": ('"SortOrder"',),
+}
+# Tokens that would implement Supporting -> MEDIUM through workbook aliases or reintroduce numeric Identification weights.
+PROHIBITED_T3B_TOKENS = ("SUPPORTING",)
 PROHIBITED_VBA_TOKENS = (
     "ActiveCell",
     "Selection",
@@ -39,6 +50,9 @@ PROHIBITED_VBA_TOKENS = (
     "MappingWorkbookPath",
     " Is Nothing Or ",
 )
+
+
+SCHEMA_VERSION = "1.1.0"
 
 
 def source_bundle_sha256(source_definition: Path) -> str:
@@ -78,6 +92,12 @@ def validate_vba_sources(vba_dir: Path) -> list[str]:
                 failures.append(f"{filename}: prohibited token {token}")
         if "PowerShell".lower() in content.lower():
             failures.append(f"{filename}: PowerShell must not generate or repair runtime JSON")
+        for token in REQUIRED_VBA_CONTRACT.get(filename, ()):
+            if token not in content:
+                failures.append(f"{filename}: missing Schema 1.1.0 contract token {token}")
+        for token in PROHIBITED_T3B_TOKENS:
+            if token in content:
+                failures.append(f"{filename}: prohibited token {token}")
     return failures
 
 
@@ -133,10 +153,13 @@ def validate_package(repo_root: Path, skip_schema: bool = False) -> int:
         temp_dir = Path(temp_dir_text)
         for fixture in fixture_manifest["fixtures"]:
             case_tables = tables
+            projection_patch = None
             if fixture.get("patch"):
                 patch = json.loads((fixture_root / fixture["patch"]).read_text(encoding="utf-8"))
                 case_tables = apply_fixture_patch(tables, patch)
-            case_issues = validate_workbook_tables(case_tables)
+                if patch.get("projectionOperations"):
+                    projection_patch = {"operations": patch["projectionOperations"]}
+            case_issues = validate_workbook_tables(case_tables, projection_patch)
             actual_valid = not case_issues
             codes = {issue.code for issue in case_issues}
             expected_codes = set(fixture.get("expectedErrorCodes", []))
@@ -155,7 +178,7 @@ def validate_package(repo_root: Path, skip_schema: bool = False) -> int:
                 if not schema_ok:
                     failures.append(f"{fixture['id']}: Runtime JSON Schema/semantic validation failed: {schema_output}")
                 else:
-                    print(f"[PASS] {fixture['id']} Runtime JSON Schema 1.0.0 validation")
+                    print(f"[PASS] {fixture['id']} Runtime JSON Schema {SCHEMA_VERSION} validation")
 
     if manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

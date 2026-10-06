@@ -64,7 +64,7 @@ try {
     $expectedHash = [string]$manifest.expectedJsonSha256
     if ($hash1 -ne $expectedHash) { throw "VBA export differs from the approved POC golden hash: $hash1 vs $expectedHash" }
 
-    Write-Host '[5/6] Running independent Runtime JSON Schema 1.0.0 validation.'
+    Write-Host '[5/6] Running independent Runtime JSON Schema 1.1.0 validation.'
     & python (Join-Path $repoRoot 'build\validate_emas_schema.py') --instance $export1
     if ($LASTEXITCODE -ne 0) { throw 'Independent schema/semantic validation failed.' }
 
@@ -77,7 +77,7 @@ try {
         export2 = $export2
         exportedJsonSha256 = $hash1
         expectedJsonSha256 = $expectedHash
-        schemaVersion = '1.0.0'
+        schemaVersion = '1.1.0'
         deterministicMatch = $true
         schemaValidation = 'Passed'
         environment = [ordered]@{

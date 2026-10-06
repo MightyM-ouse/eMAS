@@ -12,7 +12,12 @@ Public Sub ValidateWorkbookStructure(ByRef issues As Collection)
     Next tableName
 
     ValidateColumns issues, "tblConfiguration", Array("ConfigurationId", "SchemaVersion", "MappingVersion", "SourceWorkbookVersion", "MinimumEngineVersion", "ExportType", "Status")
-    ValidateColumns issues, "tblRules", Array("RuleId", "RuleRevision", "RuleType", "Status", "Priority", "ConflictStrategy", "Specificity", "StopProcessing")
+    ValidateColumns issues, "tblRules", Array("RuleId", "RuleRevision", "RuleType", "Status", "EffectiveFrom", "EffectiveTo", "Priority", "ConflictGroup", "ConflictStrategy", "Specificity", "StopProcessing", "LegacyRuleId")
+    ValidateColumns issues, "tblValueLists", Array("ListName", "Code", "Status", "EffectiveFrom", "SortOrder")
+    ValidateColumns issues, "tblFieldCatalogue", Array("FieldCode", "MaxEvidenceStrength")
+    ValidateColumns issues, "tblRuleOutputs", Array("RuleOutputId", "RuleId", "OutputType", "OutputCode", "OutputValue", "TargetEntityType", "EvidenceStrength", "EvidencePolarity")
+    ValidateColumns issues, "tblConflictPolicies", Array("ConflictPolicyId", "RuleType", "TieBehavior", "MinimumEvidenceStrengthForValue")
+    ValidateColumns issues, "tblConfidencePolicies", Array("ConfidencePolicyId", "Scope", "EvidenceStrength", "WeightOrScore", "ResultConfidence", "CorroborationRule")
     ValidateColumns issues, "tblRuleConditions", Array("ConditionId", "RuleId", "ConditionGroupId", "FieldCode", "Operator", "ValueDataType")
     ValidateColumns issues, "tblMasterDataRelationships", Array("RelationshipId", "RelationshipType", "SourceEntityType", "SourceEntityCode", "TargetEntityType", "TargetEntityCode")
     ValidateColumns issues, "tblEffortThresholds", Array("EffortThresholdId", "ThresholdScopeType", "ThresholdScopeCode", "LowerBound", "UpperBound", "LowerInclusive", "UpperInclusive")

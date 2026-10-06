@@ -1,0 +1,1 @@
+{"operations":[{"table":"tblRules","action":"set","keyField":"RuleId","keyValue":"ID-SYN-TS-001","field":"ConflictGroup","value":"PRODUCT_CLASS"}]}

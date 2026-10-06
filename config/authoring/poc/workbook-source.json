@@ -8,6 +8,7 @@
     "instructions": [
       "Use this source only for proof-of-concept and conformance testing.",
       "Run validation before preview or DEV export.",
+      "Only runtime-eligible Effective rules and their dependent rows are exported; Draft, InReview and Reviewed rules and the workbook-only LegacyRuleId never enter Runtime JSON.",
       "Controlled export is intentionally disabled in the public POC."
     ]
   },

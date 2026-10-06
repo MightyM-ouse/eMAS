@@ -4,10 +4,11 @@ This folder contains deterministic repository initialization, build, validation 
 
 ## Available validation commands
 
-- `validate_emas_schema.py` — Runtime JSON Schema 1.0.0 and semantic fixture validation.
+- `validate_emas_schema.py` — Runtime JSON Schema 1.0.0/1.1.0 and semantic fixture validation.
 - `validate_operational_skills.py` — Effective operational-skill contract validation.
 - `generate_emas_mapping_poc_workbook.py` — standard-library deterministic XLSX generation from the synthetic workbook definition.
-- `validate_xlsm_vba_poc.py` — workbook source, VBA contract, fixture, checksum and Schema 1.0.0 conformance validation.
+- `emas_xlsx_poc_projection.py` — reference runtime-eligibility projection, independent projection verifier and LegacyRuleId export scan for the POC.
+- `validate_xlsm_vba_poc.py` — workbook source, VBA contract, fixture, checksum and Schema 1.1.0 conformance validation.
 - `Build-eMASMappingPoc.ps1` — internal Windows/Excel build that imports reviewed VBA and saves the POC XLSM.
 - `Test-eMASMappingPoc.ps1` — native Excel/VBA deterministic-export and schema-conformance evidence.
 
