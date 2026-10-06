@@ -3,7 +3,7 @@
 **Roadmap ID:** `T4`  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Coordination branch:** `coordination/emas-ms04-identification-interpretation`  
-**Overall status:** `T4B_REVIEW_PASS_AWAITING_USER_MERGE_DECISION`  
+**Overall status:** `T4A_T4B_ACCEPTED_MERGED_FINAL_COORDINATION_REVIEW_PENDING`  
 **Coordination PR:** #54
 
 ## Execution model
@@ -13,7 +13,7 @@ Two workers may proceed in parallel because their primary file ownership is inte
 | Workstream | Worker | Role | Merge target |
 |---|---|---|---|
 | T4a — behavioral contract + independent oracle | Claude | ACCEPTED / MERGED | this coordination branch |
-| T4b — IdentificationInterpretation engine | Claude | continuation implementation owner; Codex initial implementation preserved | this coordination branch |
+| T4b — IdentificationInterpretation engine | Claude | ACCEPTED / MERGED; Codex initial implementation preserved | this coordination branch |
 | Central reconciliation | ChatGPT | fixed-SHA review and oracle/engine reconciliation | user merge gate |
 
 ## Hard ownership rule
@@ -41,8 +41,8 @@ T4b may begin before T4a is merged, but T4b cannot become `READY_FOR_USER_DECISI
 
 1. T4a is centrally reviewed and merged into this coordination branch — **COMPLETE**;
 2. the T4b implementation branch is refreshed from this coordination branch — **COMPLETE**;
-3. the T4b implementation passes the accepted 23-case T4a oracle;
-4. ChatGPT reconciles any differences;
+3. the T4b implementation passes the accepted 23-case T4a oracle — **COMPLETE**;
+4. ChatGPT reconciles any differences — **T4B COMPLETE; FINAL COORDINATION CHECK PENDING**;
 5. user explicitly approves the final coordination PR.
 
 T4 does not make any production legacy-derived rule Effective.
@@ -103,4 +103,18 @@ Verified gates:
 - accepted oracle remains read-only;
 - PS5.1 aggregate job remains red only for the pre-existing UTF-8 RuntimeConfiguration expectation.
 
-PR #56 must still receive explicit user merge approval before it is merged into this coordination branch.
+PR #56 received explicit user approval and is merged into this coordination branch.
+
+T4b merge SHA:
+
+`9841ffd98c517c16ab4d528a714d092f133e0432`
+
+
+## Final T4 integration state
+
+Both bounded T4 workstreams are now accepted and merged into the coordination branch:
+
+- T4a behavioral contract + independent oracle: **ACCEPTED / MERGED**
+- T4b IdentificationInterpretation engine: **ACCEPTED / MERGED**
+
+The remaining gate is a final coordination-head CI/reconciliation review of PR #54 before any merge into `demo/end-to-end-mvp`.
