@@ -1,6 +1,6 @@
 {
   "oracleId": "EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE",
-  "oracleVersion": "1.0.0",
+  "oracleVersion": "1.1.0",
   "behaviorContract": "docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE/BEHAVIOR_CONTRACT.md",
   "outputContractId": "eMAS.MS04.PreSales.Identification/1.0",
   "inputContractId": "eMAS.MS04.PreSales.ScannerObservations/1.0",
@@ -23,7 +23,8 @@
         "S1",
         "C1"
       ],
-      "path": "cases/IDO-01"
+      "path": "cases/IDO-01",
+      "expectation": "Output"
     },
     {
       "id": "IDO-02",
@@ -34,7 +35,8 @@
         "F1",
         "R2"
       ],
-      "path": "cases/IDO-02"
+      "path": "cases/IDO-02",
+      "expectation": "Output"
     },
     {
       "id": "IDO-03",
@@ -43,7 +45,8 @@
         "F1",
         "F2"
       ],
-      "path": "cases/IDO-03"
+      "path": "cases/IDO-03",
+      "expectation": "Output"
     },
     {
       "id": "IDO-04",
@@ -52,7 +55,8 @@
         "S1",
         "S2"
       ],
-      "path": "cases/IDO-04"
+      "path": "cases/IDO-04",
+      "expectation": "Output"
     },
     {
       "id": "IDO-05",
@@ -62,7 +66,8 @@
         "F1",
         "R2"
       ],
-      "path": "cases/IDO-05"
+      "path": "cases/IDO-05",
+      "expectation": "Output"
     },
     {
       "id": "IDO-06",
@@ -71,7 +76,8 @@
         "K1",
         "R1"
       ],
-      "path": "cases/IDO-06"
+      "path": "cases/IDO-06",
+      "expectation": "Output"
     },
     {
       "id": "IDO-07",
@@ -80,7 +86,8 @@
         "K2",
         "R1"
       ],
-      "path": "cases/IDO-07"
+      "path": "cases/IDO-07",
+      "expectation": "Output"
     },
     {
       "id": "IDO-08",
@@ -89,7 +96,8 @@
         "P3",
         "D1"
       ],
-      "path": "cases/IDO-08"
+      "path": "cases/IDO-08",
+      "expectation": "Output"
     },
     {
       "id": "IDO-09",
@@ -98,7 +106,8 @@
         "C1",
         "C2"
       ],
-      "path": "cases/IDO-09"
+      "path": "cases/IDO-09",
+      "expectation": "Output"
     },
     {
       "id": "IDO-10",
@@ -107,7 +116,8 @@
         "C1",
         "C3"
       ],
-      "path": "cases/IDO-10"
+      "path": "cases/IDO-10",
+      "expectation": "Output"
     },
     {
       "id": "IDO-11",
@@ -117,7 +127,8 @@
         "A1"
       ],
       "path": "cases/IDO-11",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-3"
       ]
     },
@@ -129,7 +140,8 @@
         "A2"
       ],
       "path": "cases/IDO-12",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-3"
       ]
     },
@@ -143,7 +155,8 @@
         "R2"
       ],
       "path": "cases/IDO-13",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-3"
       ]
     },
@@ -154,7 +167,8 @@
         "P4",
         "E1"
       ],
-      "path": "cases/IDO-14"
+      "path": "cases/IDO-14",
+      "expectation": "Output"
     },
     {
       "id": "IDO-15",
@@ -163,7 +177,8 @@
         "P5",
         "E1"
       ],
-      "path": "cases/IDO-15"
+      "path": "cases/IDO-15",
+      "expectation": "Output"
     },
     {
       "id": "IDO-16",
@@ -172,6 +187,7 @@
         "O1"
       ],
       "path": "cases/IDO-16",
+      "expectation": "Output",
       "equivalentTo": "IDO-09"
     },
     {
@@ -180,7 +196,8 @@
       "decisions": [
         "K3"
       ],
-      "path": "cases/IDO-17"
+      "path": "cases/IDO-17",
+      "expectation": "Output"
     },
     {
       "id": "IDO-18",
@@ -189,7 +206,8 @@
         "A3"
       ],
       "path": "cases/IDO-18",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-3"
       ]
     },
@@ -201,7 +219,8 @@
         "R2"
       ],
       "path": "cases/IDO-19",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-4"
       ]
     },
@@ -213,7 +232,8 @@
         "S2",
         "W1"
       ],
-      "path": "cases/IDO-20"
+      "path": "cases/IDO-20",
+      "expectation": "Output"
     },
     {
       "id": "IDO-21",
@@ -223,9 +243,31 @@
         "V1"
       ],
       "path": "cases/IDO-21",
-      "provisionalPendingBlockers": [
+      "expectation": "Output",
+      "centralDecisions": [
         "B-2"
       ]
+    },
+    {
+      "id": "IDO-22",
+      "title": "MATCHES_PATTERN honours caseSensitive and cites the matched evidence",
+      "decisions": [
+        "M1",
+        "M2",
+        "E1"
+      ],
+      "path": "cases/IDO-22",
+      "expectation": "Output"
+    },
+    {
+      "id": "IDO-23",
+      "title": "Invalid MATCHES_PATTERN regex fails fast with IDI-CONFIG-005",
+      "decisions": [
+        "M3",
+        "I2"
+      ],
+      "path": "cases/IDO-23",
+      "expectation": "Failure"
     }
   ]
 }

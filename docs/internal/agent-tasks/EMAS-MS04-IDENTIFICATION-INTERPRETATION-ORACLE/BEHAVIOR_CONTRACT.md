@@ -4,7 +4,7 @@
 **Output contract:** `eMAS.MS04.PreSales.Identification/1.0`
 **Input contracts:** `eMAS.MS04.PreSales.ScannerObservations/1.0` (unchanged) and Runtime JSON Schema `1.1.0`
 **Owner:** T4a oracle (Claude). It was written independently of the T4b implementation.
-**Status:** Draft for central review. Clauses marked **[BLOCKER B-n]** need a central decision (§15).
+**Status:** Revision 1.1. Central-review decisions B-1 to B-7 and amendments A-1 to A-3 (REVIEW.md) are incorporated. No open blocker remains (§15).
 
 Each clause has an ID, for example `F1`. The oracle manifest cites these IDs per case. "Accepted" refers to:
 - the Identification Rules review (IR-REV) amendments 1–7;
@@ -49,7 +49,11 @@ It:
 | `IDI-CONFIG-001` | Runtime config `schemaVersion ≠ 1.1.0` |
 | `IDI-CONFIG-002` | Number of IDENTIFICATION conflict policies ≠ 1 |
 | `IDI-CONFIG-003` | Two IDENTIFICATION confidence rows share the same (`evidenceStrength`, `corroborationRule`) |
-| `IDI-CONFIG-004` | A field used by an IDENTIFICATION rule has no CEC-FIELD-PROJECTION/1 binding (§4) |
+| `IDI-CONFIG-004` | A field used by an IDENTIFICATION rule has no CEC-FIELD-PROJECTION/1 binding (§4); or an operator outside §6 is used; or an operator is applied to an incompatible field type (for example `MATCHES_PATTERN` on a Boolean field) |
+| `IDI-CONFIG-005` | A `MATCHES_PATTERN` condition has a null or empty `value1`, a non-String `valueDataType`, or a pattern that is not a valid .NET regular expression (§6.1) |
+| `IDI-CONFIG-006` | A `MATCHES_PATTERN` evaluation exceeds the fixed match timeout (§6.1) |
+
+Configuration validation (IDI-CONFIG-001 to 005) runs **before** any rule is evaluated. Every `MATCHES_PATTERN` condition of every IDENTIFICATION rule is compiled up front, so an invalid pattern fails the run even if the rule would never be reached. A failed run writes **no** Identification document; an invalid pattern is never treated as False or Unknown. The error message names the `RuleId` and `ConditionId`.
 
 Evidence gaps (unavailable, unmapped, not collected) are **never** failures. They become result content (A1–A3).
 
@@ -76,7 +80,9 @@ Evidence gaps (unavailable, unmapped, not collected) are **never** failures. The
 
 ## 4. CEC-to-field projection (`CEC-FIELD-PROJECTION/1`)
 
-The runtime field catalogue has no selector column binding a `FieldCode` to CEC records. The bounded engine therefore uses this **fixed, versioned binding table**, recorded in the output as `FieldProjection {PolicyId, Version}`. Changing it is an engine release, not a workbook edit. See **[BLOCKER B-1]**.
+The runtime field catalogue has no selector column binding a `FieldCode` to CEC records. The bounded engine therefore uses this **fixed, versioned binding table**, recorded in the output as `FieldProjection {PolicyId, Version}`. Changing it is an engine release, not a workbook edit.
+
+**Decision B-1 (accepted for bounded T4):** this table is a bounded compatibility decision, not a permanent rule that all future CEC fields are hard-coded. Before T1b/T2 materially expand the evidence field catalogue, it should be revisited whether selector metadata becomes governed schema/workbook content.
 
 | FieldCode | CEC `EvidenceType` | Additional selector | Scope | Scalar value |
 |---|---|---|---|---|
@@ -135,11 +141,39 @@ Conditions are evaluated with three values: **True / False / Unknown**.
 |---|---|---|---|
 | `EQUALS` / `NOT_EQUALS` | compare `v` to `value1`. Strings: ordinal comparison, case-folded when `caseSensitive = false`. Booleans: equality. | False / True | Unknown |
 | `IN_LIST` | `v` ∈ `value1` list | False | Unknown |
+| `MATCHES_PATTERN` | String `v`: .NET regex `IsMatch` per §6.1 | False | Unknown |
 | `CONTAINS` / `STARTS_WITH` / `ENDS_WITH` | substring test on a string | False | Unknown |
 | `EXISTS` | True | False | Unknown |
 | `MISSING` | False | True | Unknown |
 
-Other operators (`MATCHES_PATTERN`, `GT`, `GTE`, `LT`, `LTE`, `BETWEEN`) are not used by the bounded field set. A rule using them on a bound field is `IDI-CONFIG-004`.
+`GT`, `GTE`, `LT`, `LTE` and `BETWEEN` are outside the bounded Identification field set (REVIEW A-1). A rule using them on a bound field is `IDI-CONFIG-004`.
+
+### 6.1 `MATCHES_PATTERN` (M1–M3)
+
+**M1 — Engine.** The pattern is evaluated with `System.Text.RegularExpressions.Regex`, constructed explicitly as `[regex]::new(value1, options, timeout)` and called with `.IsMatch(v)`. The engine must not use PowerShell's `-match`, `-imatch`, `-cmatch` or `Select-String`: `-match` is case-insensitive by default and does not carry these exact options.
+
+| Setting | Value |
+|---|---|
+| Options when `caseSensitive = true` | `RegexOptions.CultureInvariant` |
+| Options when `caseSensitive = false` | `RegexOptions.IgnoreCase -bor RegexOptions.CultureInvariant` |
+| Options never used | `Multiline`, `Singleline`, `ExplicitCapture`, `IgnorePatternWhitespace`, `RightToLeft`, `ECMAScript`, `NonBacktracking` |
+| Match timeout | 1 second per evaluation |
+| Match semantics | `IsMatch`: unanchored. Authors anchor explicitly with `^…$` for a full match. |
+| Field types | String fields only (`dataType = String`); `valueDataType` must be `String` |
+
+These are the same API, options and semantics on Windows PowerShell 5.1 (.NET Framework 4.x) and PowerShell 7.6 (.NET 8+), so results are deterministic across both. `CultureInvariant` removes the dependence on the machine culture. Exact cross-runtime equality is guaranteed for ASCII patterns and values, which is all the bounded field set (paths, XML names, namespace URIs, markers) and the oracle use. Non-ASCII case-insensitive matching may follow runtime Unicode case tables.
+
+**M2 — Evaluation.** States follow §6:
+- Available String value → True or False from `IsMatch`;
+- AssessedAbsent → False;
+- Unavailable → Unknown;
+- `negate` inverts True/False.
+
+A matched, non-negated condition cites its evidence record (E1). Strength follows E2.
+
+**M3 — Failure.**
+- An invalid pattern raises `ArgumentException` on construction (`RegexParseException`, a subclass, on .NET 5+). The engine catches `ArgumentException`, which covers both runtimes, and fails fast with `IDI-CONFIG-005` during configuration validation.
+- A `RegexMatchTimeoutException` fails the run with `IDI-CONFIG-006`. A pattern that backtracks catastrophically is a configuration defect, not evidence.
 
 `negate = true` inverts True/False; Unknown stays Unknown.
 
@@ -156,7 +190,8 @@ Other operators (`MATCHES_PATTERN`, `GT`, `GTE`, `LT`, `LTE`, `BETWEEN`) are not
 
 **E2 — Hit strength.** Hit strength = the rule output `evidenceStrength`, **capped** at the weakest `NormalizedStrength` among the hit's cited records (no cap when nothing is cited).
 - A cap below the declared strength adds `StrengthCappedByEvidence`.
-- The cap never raises a strength. **[BLOCKER B-2]**
+- The cap never raises a strength.
+- **Decision B-2 (accepted):** the declared output strength is a ceiling, not permission to overstate weaker evidence observed at run time. The cap is defence in depth alongside the T3a authoring-time `maxEvidenceStrength` guard. It does not mutate the CEC record.
 
 Each firing rule produces one **hit**: *(dimension, value = outputCode, polarity = evidencePolarity, strength, ruleId, cited records)*.
 
@@ -199,9 +234,9 @@ Let **B** = the strongest `BestSupportStrength` over the candidates of the resul
 
 Modifiers:
 - **Rows 4–7:** if any rule of the dimension was not evaluable, also add `RuleNotEvaluable` and list its Unavailable fields. The status does not change.
-- **Row 7:** if the selected candidate has `floor ≤ BestContradictionStrength < B`, add `LowerTierContradiction` and set `ReviewRequired = true` (R1). The confidence effect is **[BLOCKER B-5]**.
+- **Row 7:** if the selected candidate has `floor ≤ BestContradictionStrength < B`, keep the selected value, add `LowerTierContradiction` and set `ReviewRequired = true` (R1). **Decision B-5:** Confidence is left exactly as the configured confidence policy selects it (C1). There is no automatic downgrade, because the current policy model has no governed contradiction axis. A future explicit contradiction-confidence policy may extend this.
 - **F2:** Weak-only evidence keeps every candidate visible but never produces a value.
-- **TieBehavior** (`UNKNOWN` / `MANUAL_REVIEW`) has no machine effect in Identification/1.0. Both give `Conflict` with no value and `ReviewRequired = true`. The report layer may display the configured tie behavior (T3-REV amendment 1).
+- **Decision B-6 — TieBehavior** (`UNKNOWN` / `MANUAL_REVIEW`) has no machine effect in Identification/1.0. Both give `EvaluationStatus = Conflict`, null `Value`/`ValueSet`, `Confidence = UNKNOWN` and `ReviewRequired = true`. The value may inform later display or consultant wording only; it never creates a second executable status vocabulary (T3-REV amendment 1).
 
 ---
 
@@ -229,7 +264,9 @@ Modifiers:
 - there is no `LowerTierContradiction`;
 - a confidence row matched.
 
-In every other case `ReviewRequired = true`, including `Conflict`, `InsufficientEvidence` and `NotAssessed` **[BLOCKER B-3 for NotAssessed]**.
+In every other case `ReviewRequired = true`, including `Conflict`, `InsufficientEvidence` and `NotAssessed`.
+
+**Decision B-3 (accepted):** `NotAssessed` always requires review. For Pre-Sales it means the consultant lacks enough evidence, capability or configuration to reach the identification conclusion, so it must stay visible for clarification. This covers unavailable required evidence, capability not collected, and a configured dimension with no Identification rule.
 
 **R2.** An `Evaluated` result whose best strength is `MEDIUM` requires review. This is the accepted Identification design §7 mapping of the "Probable" state into the canonical model (IR-REV amendment 1 keeps "Probable" as a display label only).
 
@@ -300,6 +337,11 @@ The machine-readable copy is `tests/identification-interpretation/oracle/identif
 
 Field rules:
 - **`CompletionStatus`** = `CompletedWithEvidenceGaps` when any result has a non-empty `UnavailableEvidence`; otherwise `Completed`.
+- **`EvidenceSource.DocumentSha256` is provenance identity, not source-file validation (REVIEW A-3):**
+  - when the engine reads the ScannerObservations input from a file, or the caller supplies that file's exact SHA-256, the value is the SHA-256 of those exact file bytes. The oracle uses this form; its expected hashes are the hashes of the fixture files.
+  - when the engine is invoked on an in-memory ScannerObservations object and no file hash is supplied, the value is the SHA-256 of a deterministic serialization of that object. It is the identity of the evidence document that was interpreted, not proof of an original customer file.
+  - In neither case does the hash validate the customer source repository; that remains the scanner's `Repository` provenance.
+- **`RuntimeConfig.Sha256`** is the SHA-256 of the exact runtime-configuration file bytes loaded.
 - **`SupportingEvidenceIds` / `ContradictingEvidenceIds`** are the sorted unions of the candidate citations. `FiredRuleIds` is the sorted union of candidate rule IDs.
 - **`ScoreSummary`:**
   - `TierRank` is the `EVIDENCE_STRENGTH` ordinal position of `BestStrength`. It is a rank, not a score.
@@ -317,7 +359,7 @@ Field rules:
 | ID | Deferred | Reason / owner |
 |---|---|---|
 | D-1 | Dossier-level aggregation, `ValueSet`, lifecycle multi-value (v3→v4) | IR-REV amendment 5: the aggregation policy is a PO/SME decision |
-| D-2 | Region derived from RegionalImplementation through governed relationships | T3c-REV amendment 2 assigns it to T4, but the confidence limit (U2) is open **[BLOCKER B-7]** |
+| D-2 | Region derived from RegionalImplementation through governed relationships | **Decision B-7: DEFERRED** from bounded T4 while T3c U2 is unresolved. This is a bounded deferral, not cancellation of the accepted relationship concept. A later relationship-derived Region task follows once the Regulatory SME and PO settle the confidence/region policy. The engine must not hard-code EU/US/CA/CH/GCC Region inference. |
 | D-3 | v4 structured identification (Strong v4) | Needs T2 `SubmissionUnitXmlInventory` |
 | D-4 | Non-EU regional / envelope fields | Needs T1b |
 | D-5 | Re-checking rule lifecycle/effective dates at run time | Guaranteed by the governed export (T3b) |
@@ -325,22 +367,50 @@ Field rules:
 | D-7 | `Reviewed`-in-DEV rules | DEFERRED_BY_DESIGN (T3b review) |
 | D-8 | T3c U2–U9 | Remain open; not encoded here |
 
-**V1 — Physical v4 markers.**
-- Physical markers (`SubmissionUnitMarkerFile`, `ChecksumFileMarker`, unit kind) are raw `Supporting`/`Weak`. Under N1 + E2 they never yield `STRONG`, so v4 can never be `Evaluated` at `STRONG` or receive `HIGH` confidence from physical markers alone.
-- Whether a MEDIUM-only v4 hit may produce an `Evaluated` value (with review) or must stay `InsufficientEvidence` is **[BLOCKER B-4]**.
+**V1 — Physical v4 markers (Decision B-4, wording per REVIEW A-2).**
+
+*Generic engine rule:*
+- Physical marker evidence (`SubmissionUnitMarkerFile`, `ChecksumFileMarker`, unit kind) is raw `Supporting`/`Weak`. Under N1 + E2 it cannot exceed `MEDIUM`.
+- It cannot create a `STRONG` hit, and therefore cannot produce STRONG/HIGH v4 identification by itself.
+- Whether a MEDIUM value is emitted is governed entirely by Effective runtime rule and policy content. If a validated Runtime JSON deliberately contains an Effective Identification rule whose physical v4 marker produces a MEDIUM hit, the engine returns `Evaluated`, the configured v4 TechnicalStandard value, the policy-derived MEDIUM-tier confidence, and `ReviewRequired = true` (IDO-19).
+- The engine contains no v4-specific code and does not hard-code `eCTD_4_0` business meaning.
+
+*Production content governance (unchanged by this contract):*
+- physical v4 evidence is capped at MEDIUM;
+- physical evidence alone never produces STRONG/HIGH v4 identification;
+- R-FMT-02 remains RE_MODEL and source-refresh controlled;
+- strong, reliable v4 identification requires T2 `SubmissionUnitXmlInventory`;
+- no production v4 rule becomes Effective merely because the generic engine supports MEDIUM semantics. The oracle's v4 rules are synthetic.
 
 ---
 
-## 15. Design blockers for central review
+## 15. Central decisions (closed)
 
-| ID | Question | Oracle default (provisional) | Affected cases |
+All seven questions raised in revision 1.0 were decided by central review (REVIEW.md). No open blocker remains for bounded T4.
+
+| ID | Decision | Clause | Cases |
 |---|---|---|---|
-| **B-1** | The runtime field catalogue has no CEC selector, and CEC records have no `XmlKind`. Is the fixed engine table `CEC-FIELD-PROJECTION/1` (XmlId→XmlKind join) the accepted binding, or should a governed selector be added in a later schema/workbook task? | Fixed engine table, recorded in the output | All |
-| **B-2** | Runtime cap of hit strength at the weakest cited normalized raw strength (E2). | Cap applies; `StrengthCappedByEvidence` | IDO-21 |
-| **B-3** | `ReviewRequired` for `NotAssessed`, including `NoIdentificationRuleConfigured`. | `true` | IDO-11, 12, 13, 18 |
-| **B-4** | Physical-only v4 at MEDIUM: an `Evaluated` value (review required, policy confidence) or `InsufficientEvidence`? | `Evaluated`, `ReviewRequired = true`, confidence from the MEDIUM policy row. This is consistent with T3c `MaxStrength = MEDIUM` for R-FMT-02 and IR §9. | IDO-19 |
-| **B-5** | Confidence effect of a lower-tier (≥ floor) contradiction on the selected value. | `ReviewRequired = true` and `LowerTierContradiction`; confidence unchanged from policy | None (no case until decided) |
-| **B-6** | `TieBehavior UNKNOWN` versus `MANUAL_REVIEW`: is there any machine difference? | None (both `ReviewRequired = true`) | None |
-| **B-7** | Is relationship-derived Region in bounded T4 scope, given open U2? | Deferred; no REGION result is derived from RegionalImplementation evidence | None |
+| B-1 | **Accepted for bounded T4:** fixed, versioned `CEC-FIELD-PROJECTION/1` table with the XmlId → XmlKind join. Revisit governed selector metadata before T1b/T2 expand the field catalogue. | §4 | All |
+| B-2 | **Accepted:** hit strength = min(declared, weakest cited normalized strength); `StrengthCappedByEvidence`. | E2 | IDO-21 |
+| B-3 | **Accepted:** `NotAssessed` → `ReviewRequired = true`, including a dimension with no rule. | R1 | IDO-11, 12, 13, 18 |
+| B-4 | **Accepted with production-governance caveat:** generic MEDIUM v4 semantics are allowed; production v4 stays blocked by T2/governance. | V1 | IDO-19 |
+| B-5 | **Accepted:** lower-tier contradiction keeps the value, adds `LowerTierContradiction` and review; confidence comes from policy unchanged. | §8 row 7 | (no case) |
+| B-6 | **Accepted:** `UNKNOWN` and `MANUAL_REVIEW` give the same Conflict result. | §8 | IDO-06, IDO-07 |
+| B-7 | **Deferred** from bounded T4: no relationship-derived Region. | D-2 | (none) |
 
-Provisional cases are marked `provisionalPendingBlockers` in `manifest.json`. If central review changes a default, only those cases' expected files change.
+Amendments from the same review:
+
+| ID | Change | Clause | Cases |
+|---|---|---|---|
+| A-1 | `MATCHES_PATTERN` defined with deterministic .NET regex semantics; an invalid pattern fails with `IDI-CONFIG-005` | §6.1, I2 | IDO-22, IDO-23 |
+| A-2 | Physical-v4 wording split into the generic engine rule and production governance | V1 | IDO-19 |
+| A-3 | `EvidenceSource.DocumentSha256` provenance semantics | §13 | All |
+
+Cases governed by a decision carry `centralDecisions` in `manifest.json`.
+
+## 16. Revision history
+
+| Revision | Date | Change |
+|---|---|---|
+| 1.0 | 2026-10-06 | Initial bounded behavioral contract, Identification/1.0 shape, 21 oracle cases, 7 open blockers |
+| 1.1 | 2026-10-06 | Central decisions B-1 to B-7 frozen; `MATCHES_PATTERN` (§6.1) with `IDI-CONFIG-005`/`006`; physical-v4 wording; evidence-source hash semantics; IDO-22 and IDO-23 |

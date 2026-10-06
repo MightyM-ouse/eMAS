@@ -20,12 +20,12 @@ class OracleStaticValidationTests(unittest.TestCase):
         self.assertGreaterEqual(len(manifest["cases"]), 20)
         self.assertEqual(f"IDO-{len(manifest['cases']):02d}", manifest["cases"][-1]["id"])
 
-    def _mutate(self, case_id, mutate):
+    def _mutate(self, case_id, mutate, name="expected-identification.json"):
         original = ORACLE.ORACLE
         with tempfile.TemporaryDirectory() as tmp:
             copy_root = Path(tmp) / "oracle"
             shutil.copytree(HERE, copy_root, ignore=shutil.ignore_patterns("__pycache__"))
-            path = copy_root / "cases" / case_id / "expected-identification.json"
+            path = copy_root / "cases" / case_id / name
             document = json.loads(path.read_text(encoding="utf-8"))
             mutate(document)
             path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
@@ -35,8 +35,8 @@ class OracleStaticValidationTests(unittest.TestCase):
             finally:
                 ORACLE.ORACLE = original
 
-    def assert_rejected(self, case_id, mutate, fragment):
-        errors = self._mutate(case_id, mutate)
+    def assert_rejected(self, case_id, mutate, fragment, name="expected-identification.json"):
+        errors = self._mutate(case_id, mutate, name)
         self.assertTrue(any(fragment in error for error in errors), errors)
 
     def test_rejects_outcome_and_support_status(self):
@@ -81,6 +81,35 @@ class OracleStaticValidationTests(unittest.TestCase):
 
     def test_rejects_conflict_with_value(self):
         self.assert_rejected("IDO-06", lambda d: d["Results"][0].update(Value="ICH_ECTD_3_2_2", ValueSource="Derived"), "Identification/1.0 schema")
+
+
+    def test_matches_pattern_case_exists_and_failure_case_is_stable(self):
+        manifest = ORACLE.load(HERE / "manifest.json")
+        by_id = {c["id"]: c for c in manifest["cases"]}
+        self.assertEqual("Output", by_id["IDO-22"]["expectation"])
+        self.assertEqual("Failure", by_id["IDO-23"]["expectation"])
+        config = ORACLE.load(HERE / "cases" / "IDO-22" / "runtime-config.json")
+        sensitivity = sorted(c["caseSensitive"] for c in ORACLE._pattern_conditions(config))
+        self.assertEqual([False, True], sensitivity)
+        failure = ORACLE.load(HERE / "cases" / "IDO-23" / "expected-failure.json")["ExpectedFailure"]
+        self.assertEqual("IDI-CONFIG-005", failure["ErrorCode"])
+        self.assertIsNone(failure["OutputDocument"])
+
+    def test_rejects_unstable_failure_code_and_output_for_failure_case(self):
+        self.assert_rejected("IDO-23", lambda d: d["ExpectedFailure"].update(ErrorCode="REGEX_BROKEN"), "stable contract code", "expected-failure.json")
+        self.assert_rejected("IDO-23", lambda d: d["ExpectedFailure"].update(OutputDocument={}), "no output document", "expected-failure.json")
+
+    def test_rejects_pattern_case_without_citation_change_detection(self):
+        def mutate(d):
+            d["Results"][0]["Candidates"][0]["SupportingRuleIds"] = ["ID-TS-NS-PATTERN-CS"]
+            d["Results"][0]["FiredRuleIds"] = ["ID-TS-NS-PATTERN-CS"]
+        self.assert_rejected("IDO-22", mutate, "does not output SUPPORTS")
+
+    def test_every_central_decision_is_closed_in_the_contract(self):
+        text = ORACLE.CONTRACT.read_text(encoding="utf-8")
+        self.assertNotIn("[BLOCKER", text)
+        for decision in sorted(ORACLE.CENTRAL_DECISIONS):
+            self.assertIn(f"| {decision} |", text)
 
 
 if __name__ == "__main__":

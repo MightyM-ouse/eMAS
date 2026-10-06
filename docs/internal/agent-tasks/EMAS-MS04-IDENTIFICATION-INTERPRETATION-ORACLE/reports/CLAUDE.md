@@ -1,11 +1,31 @@
 # Claude Report — T4a IdentificationInterpretation Oracle
 
-**Status:** `ORACLE_COMPLETE — READY FOR CENTRAL REVIEW` (7 design blockers recorded, B-1 to B-7)
+**Status:** `ORACLE_AMENDED — READY FOR CENTRAL RE-REVIEW` (revision 1.1: central decisions B-1 to B-7 and amendments A-1 to A-3 applied; no open blocker)
 **Agent:** Claude (independent behavioral/oracle owner)
 **Branch:** `analysis/emas-ms04-identification-interpretation-oracle`
 **Based on:** prepared branch head `eb56581`, from the coordination branch, which contains the authoritative base `cff3456`
 **Draft PR target:** `coordination/emas-ms04-identification-interpretation`
 **Date:** 2026-10-06
+
+## Revision 1.1 — central-review amendments (REVIEW.md)
+
+I changed only T4a-owned files: this task directory and `tests/identification-interpretation/oracle/**`.
+
+| Item | Change |
+|---|---|
+| B-1 to B-7 | Frozen in `BEHAVIOR_CONTRACT.md` exactly as decided: B-1 fixed projection accepted for bounded T4 (revisit before T1b/T2); B-2 runtime cap; B-3 `NotAssessed` → review; B-4 generic MEDIUM v4 semantics with the production-governance caveat; B-5 lower-tier contradiction keeps policy confidence and adds review; B-6 same Conflict result for both tie behaviors; B-7 relationship-derived Region deferred. §15 is now "Central decisions (closed)". The manifest's `provisionalPendingBlockers` became `centralDecisions`. |
+| A-1 `MATCHES_PATTERN` | New §6.1: explicit `[regex]::new(pattern, options, 1 s timeout).IsMatch(v)`; `CultureInvariant`, plus `IgnoreCase` only when `caseSensitive = false`; unanchored; String fields only; PowerShell `-match` is forbidden. Invalid pattern → `IDI-CONFIG-005` (catch `ArgumentException`, which covers .NET Framework and .NET 5+ `RegexParseException`), validated up front and never treated as False/Unknown. Match timeout → `IDI-CONFIG-006`. GT/GTE/LT/LTE/BETWEEN stay out of scope. |
+| A-2 physical v4 | V1 split into the generic engine rule (≤ MEDIUM, never STRONG/HIGH; any value emitted is governed by Effective content) and unchanged production governance (R-FMT-02 RE_MODEL; Strong v4 needs T2). The "final v4 value" wording is removed. |
+| A-3 evidence hash | §13 states that `DocumentSha256` is provenance identity: file bytes when file-backed, otherwise a deterministic serialization hash, and never proof of an original customer file. |
+| New cases | **IDO-22** (Output): a case-insensitive pattern matches and cites EVD-0004; the same pattern case-sensitive does not fire. **IDO-23** (Failure): an unbalanced-group pattern → `IDI-CONFIG-005`, no output document. |
+
+.NET behavior was checked on PowerShell 7.5.2:
+- case-insensitive `IsMatch` → True;
+- case-sensitive → False;
+- the invalid pattern throws `RegexParseException`;
+- `-match` is case-insensitive by default, which is why §6.1 forbids it.
+
+Windows PowerShell 5.1 was not available locally. §6.1 relies only on APIs and options present in .NET Framework 4.5+.
 
 ## Independence statement
 
@@ -21,7 +41,7 @@ I did not read or inspect the T4b engine branch, its task files or any implement
 | Behavioral contract + exact Identification/1.0 shape | `docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE/BEHAVIOR_CONTRACT.md` |
 | Machine contract (frozen JSON Schema) | `tests/identification-interpretation/oracle/identification-1.0.schema.json` |
 | Oracle manifest | `tests/identification-interpretation/oracle/manifest.json` |
-| 21 cases × 3 files | `tests/identification-interpretation/oracle/cases/IDO-01 … IDO-21/` |
+| 23 cases × 3 files (22 Output, 1 Failure) | `tests/identification-interpretation/oracle/cases/IDO-01 … IDO-23/` |
 | Static validator + tests | `tests/identification-interpretation/oracle/validate_oracle.py`, `test_oracle_static.py` |
 | README | `tests/identification-interpretation/oracle/README.md` |
 
@@ -66,7 +86,7 @@ I did not read or inspect the T4b engine branch, its task files or any implement
 | v4 | Physical markers can never yield STRONG or HIGH v4 (raw `Supporting`/`Weak` plus the runtime cap). The MEDIUM-only value question is B-4. |
 | Determinism | Fixed orderings and IDs; semantic equality after removing three volatile execution fields; a shuffled-input equivalence case. |
 
-## Oracle cases (21)
+## Oracle cases (23)
 
 | Case | Covers | Expected |
 |---|---|---|
@@ -91,6 +111,8 @@ I did not read or inspect the T4b engine branch, its task files or any implement
 | IDO-19 | Physical v4 marker only | Not STRONG/HIGH; MEDIUM Evaluated with review *(B-4)* |
 | IDO-20 | Ordinal summary; non-Identification numeric rows ignored | Counts 1/1/1, no numeric score |
 | IDO-21 | Declared STRONG on raw Supporting | Capped to MEDIUM, `StrengthCappedByEvidence` *(B-2)* |
+| IDO-22 | `MATCHES_PATTERN`, case-insensitive vs case-sensitive | Evaluated ICH_ECTD_3_2_2 from the case-insensitive rule only; namespace evidence cited |
+| IDO-23 | Invalid `MATCHES_PATTERN` regex | Failure `IDI-CONFIG-005`, no output document |
 
 All inputs are synthetic. No customer data, prior rule payloads or R-REG/FMT/TYP logic is used. Confidence rows are synthetic test policy, explicitly not approved content.
 
@@ -109,25 +131,16 @@ All inputs are synthetic. No customer data, prior rule payloads or R-REG/FMT/TYP
 
 | Command | Result |
 |---|---|
-| `python tests/identification-interpretation/oracle/validate_oracle.py` | **Passed: 21 cases** |
-| `python -m unittest discover -s tests/identification-interpretation/oracle -p "test_*.py"` | **Ran 10, OK.** This includes 8 mutation tests proving the validator rejects `Outcome`/`SupportStatus`, numeric scores, unknown cited evidence, rewritten raw strength, unknown rules or wrong-dimension candidates, below-floor values, STRONG v4, non-deterministic ordering, and Conflict-with-value. |
-| Runtime configs under the T3a validator | 21/21 valid (also checked inside the static validator) |
+| `python tests/identification-interpretation/oracle/validate_oracle.py` | **Passed: 23 cases** (revision 1.1) |
+| `python -m unittest discover -s tests/identification-interpretation/oracle -p "test_*.py"` | **Ran 14, OK.** Mutation tests prove the validator rejects: `Outcome`/`SupportStatus`; numeric scores; unknown cited evidence; rewritten raw strength; unknown rules or wrong-dimension candidates; below-floor values; STRONG v4; non-deterministic ordering; Conflict-with-value; unstable failure codes; an output for a failure case; a wrong pattern-rule attribution. A further test checks that every central decision is closed in the contract. |
+| Runtime configs under the T3a validator | 23/23 valid (also checked inside the static validator) |
+| T3a Schema 1.1 fixture suite (`python build/validate_emas_schema.py`) | 43/43 passed |
 
 The static validator does not evaluate rules. It checks structure, references, ordering, invariants and hashes only. It is not wired into CI: workflows are outside T4a's allowed files.
 
-## Unresolved design blockers (central review)
+## Design blockers
 
-| ID | Question | Provisional default | Cases |
-|---|---|---|---|
-| B-1 | Accept the fixed `CEC-FIELD-PROJECTION/1` engine table (XmlId→XmlKind join), or add a governed selector later? | Fixed table | All |
-| B-2 | Runtime cap of hit strength at the weakest cited normalized raw strength? | Cap applies | IDO-21 |
-| B-3 | `ReviewRequired` for `NotAssessed` (including a dimension with no rule)? | `true` | IDO-11, 12, 13, 18 |
-| B-4 | Physical-only v4 at MEDIUM: an Evaluated value with review, or `InsufficientEvidence`? | Evaluated + review (T3c MaxStrength MEDIUM; IR §9) | IDO-19 |
-| B-5 | Confidence effect of a lower-tier (≥ floor) contradiction? | Review + `LowerTierContradiction`; confidence from policy | None |
-| B-6 | Any machine difference between TieBehavior UNKNOWN and MANUAL_REVIEW? | None | None |
-| B-7 | Is relationship-derived Region in bounded T4 scope while U2 is open? | Deferred | None |
-
-Provisional cases carry `provisionalPendingBlockers` in the manifest, so only those expected files change if a default is overturned.
+None open. B-1 to B-7 are closed as recorded in REVIEW.md and frozen in `BEHAVIOR_CONTRACT.md` §15. B-7 is closed as **DEFERRED** from bounded T4.
 
 ## Confirmation
 

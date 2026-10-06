@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,24 @@ FORBIDDEN_KEYS = {"Outcome", "SupportStatus", "NumericScore", "Score", "Weight",
 # The only numeric values allowed in an expected document are ordinal ranks and counts.
 NUMERIC_ALLOWED_KEYS = {"TierRank", "STRONG", "MEDIUM", "WEAK", "IndependentSourceClassCount"}
 VOLATILE = ("EngineVersion", "StartedAtUtc", "CompletedAtUtc")
+FAILURE_CODES = {"IDI-INPUT-001", "IDI-INPUT-002", "IDI-INPUT-003", "IDI-INPUT-004",
+                 "IDI-CONFIG-001", "IDI-CONFIG-002", "IDI-CONFIG-003", "IDI-CONFIG-004", "IDI-CONFIG-005", "IDI-CONFIG-006"}
+CENTRAL_DECISIONS = {f"B-{i}" for i in range(1, 8)}
+CONTRACT = REPO / "docs" / "internal" / "agent-tasks" / "EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE" / "BEHAVIOR_CONTRACT.md"
+
+
+def _pattern_conditions(cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    id_rules = {r["ruleId"] for r in cfg["rules"] if r["ruleType"] == "IDENTIFICATION"}
+    return [c for c in cfg["ruleConditions"] if c["ruleId"] in id_rules and c["operator"] == "MATCHES_PATTERN"]
+
+
+def _python_regex_ok(pattern: str) -> bool:
+    """Sanity approximation only (Python re, not .NET); used to keep fixture intent unambiguous."""
+    try:
+        re.compile(pattern)
+        return True
+    except re.error:
+        return False
 
 
 def load(path: Path) -> Any:
@@ -62,14 +81,28 @@ def validate_case(entry: dict[str, Any], schema_validator: Draft202012Validator,
     errors: list[str] = []
     cid = entry["id"]
     folder = ORACLE / entry["path"]
-    files = {name: folder / name for name in ("scanner-observations.json", "runtime-config.json", "expected-identification.json")}
+    failure = entry.get("expectation") == "Failure"
+    if entry.get("expectation") not in ("Output", "Failure"):
+        errors.append(f"{cid}: expectation must be Output or Failure")
+    expected_name = "expected-failure.json" if failure else "expected-identification.json"
+    other_name = "expected-identification.json" if failure else "expected-failure.json"
+    files = {name: folder / name for name in ("scanner-observations.json", "runtime-config.json", expected_name)}
     for name, path in files.items():
         if not path.is_file():
             errors.append(f"{cid}: missing {name}")
+    if (folder / other_name).exists():
+        errors.append(f"{cid}: {other_name} must not exist for a {entry.get('expectation')} case")
     if errors:
         return errors
     obs, cfg, exp = (load(files[n]) for n in files)
     e = lambda msg: errors.append(f"{cid}: {msg}")  # noqa: E731
+    unknown_decisions = set(entry.get("centralDecisions", [])) - CENTRAL_DECISIONS
+    if unknown_decisions:
+        e(f"unknown central decisions {sorted(unknown_decisions)}")
+    contract_text = CONTRACT.read_text(encoding="utf-8")
+    for clause in entry.get("decisions", []):
+        if not re.search(rf"\b{re.escape(clause)}\b", contract_text):
+            e(f"clause {clause} is not defined in the behavioral contract")
 
     # Input contracts
     if obs.get("ContractId") != SCANNER_CONTRACT or obs["Execution"].get("ContractId") != SCANNER_CONTRACT:
@@ -83,6 +116,33 @@ def validate_case(entry: dict[str, Any], schema_validator: Draft202012Validator,
     runtime_issues = RUNTIME.validate_instance(runtime_schema, cfg, runtime_registry)
     for issue in runtime_issues:
         e(f"runtime config invalid: {issue.render()}")
+
+    patterns = _pattern_conditions(cfg)
+    for c in patterns:
+        if c.get("valueDataType") != "String" or not isinstance(c.get("value1"), str) or not isinstance(c.get("caseSensitive"), bool):
+            e(f"MATCHES_PATTERN condition {c['conditionId']} must have a String value1/valueDataType and a boolean caseSensitive")
+
+    if failure:
+        expected_failure = exp.get("ExpectedFailure", {})
+        if set(exp) != {"ExpectedFailure"} or set(expected_failure) != {"ErrorCode", "RuleId", "ConditionId", "OutputDocument"}:
+            e("expected-failure.json must contain exactly ExpectedFailure{ErrorCode, RuleId, ConditionId, OutputDocument}")
+            return errors
+        if expected_failure["ErrorCode"] not in FAILURE_CODES:
+            e(f"failure code {expected_failure['ErrorCode']} is not a stable contract code")
+        if expected_failure["OutputDocument"] is not None:
+            e("a failure case must expect no output document")
+        condition = next((c for c in cfg["ruleConditions"] if c["conditionId"] == expected_failure["ConditionId"]), None)
+        if condition is None or condition["ruleId"] != expected_failure["RuleId"]:
+            e("failure ConditionId/RuleId do not identify a condition of that rule in the runtime config")
+        elif expected_failure["ErrorCode"] == "IDI-CONFIG-005":
+            if condition["operator"] != "MATCHES_PATTERN":
+                e("IDI-CONFIG-005 must point at a MATCHES_PATTERN condition")
+            elif _python_regex_ok(condition["value1"]):
+                e("IDI-CONFIG-005 fixture pattern must be syntactically invalid")
+        return errors
+    for c in patterns:
+        if isinstance(c.get("value1"), str) and not _python_regex_ok(c["value1"]):
+            e(f"MATCHES_PATTERN condition {c['conditionId']} in an Output case must be a valid pattern")
 
     # Output contract shape (frozen JSON Schema) and forbidden content
     for err in schema_validator.iter_errors(exp):
@@ -223,6 +283,8 @@ def validate_package() -> list[str]:
         errors.append(f"case folders {on_disk} differ from manifest {ids}")
     if manifest.get("outputContractId") != OUTPUT_CONTRACT or manifest.get("inputContractId") != SCANNER_CONTRACT:
         errors.append("manifest contract IDs are wrong")
+    if not any(c.get("expectation") == "Failure" for c in manifest["cases"]):
+        errors.append("manifest must contain at least one Failure case")
     for entry in manifest["cases"]:
         errors.extend(validate_case(entry, validator, runtime_schema, registry))
         if "equivalentTo" in entry:
