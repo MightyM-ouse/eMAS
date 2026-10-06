@@ -3,7 +3,7 @@
 **Task ID:** `EMAS-MS04-IDENTIFICATION-INTERPRETATION-ORACLE`  
 **Roadmap ID:** T4a  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
-**Overall status:** `ACCEPTED_READY_FOR_USER_MERGE_DECISION`
+**Overall status:** `ACCEPTED_FOR_MERGE`
 
 | Gate | Status |
 |---|---|
@@ -23,7 +23,7 @@
 | MATCHES_PATTERN contract | ACCEPTED |
 | engine files touched | PASS — NONE |
 | ChatGPT central review | ACCEPTED |
-| merge to T4 coordination | READY_FOR_USER_DECISION |
+| merge to T4 coordination | USER_ACCEPTED |
 | Windows PS5.1 engine conformance | T4B GATE AFTER MERGE |
 
 Single worker: Claude.
