@@ -47,6 +47,13 @@ $checks = New-Object System.Collections.ArrayList
 $resultBySample = @{}
 $sourceState = @{}
 $characterizationStatus = 'NOT_RUN'
+$script:eMASW1dPhysicalMarkerEvidenceTypes = @(
+    'RegulatoryUnitKind',
+    'SubmissionUnitMarkerFile',
+    'TocFileMarker',
+    'ChecksumFileMarker',
+    'UtilityDtdFolderMarker'
+)
 
 function Get-eMASW1dSha256 {
     param([Parameter(Mandatory = $true)][string] $Path)
@@ -69,6 +76,10 @@ function Get-eMASW1dProperty {
     return $property.Value
 }
 function ConvertTo-eMASW1dJson { param([AllowNull()][object] $Value) return ([object[]]@($Value) | ConvertTo-Json -Depth 64 -Compress) }
+function Get-eMASW1dHistoricalClassificationEvidence {
+    param([AllowEmptyCollection()][object[]] $Records)
+    return @($Records | Where-Object { $script:eMASW1dPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+}
 function Write-eMASW1dJson {
     param([Parameter(Mandatory = $true)][object] $Value, [Parameter(Mandatory = $true)][string] $Path)
     [System.IO.File]::WriteAllText($Path, ($Value | ConvertTo-Json -Depth 64), (New-Object System.Text.UTF8Encoding($false)))
@@ -195,9 +206,9 @@ function Test-eMASW1dDossier {
         Assert-eMASW1dEqual $Expected.checksumMismatchObservationCount $mismatch.Count 'Checksum-mismatch observation count differs.'
     }
 
-    Invoke-eMASW1dCheck -SampleId $SampleId -Name ("dossier '{0}' classification evidence multiset ({1} records)" -f $label, $Expected.classificationRecordCount) -Action {
+    Invoke-eMASW1dCheck -SampleId $SampleId -Name ("dossier '{0}' historical classification evidence multiset ({1} records)" -f $label, $Expected.classificationRecordCount) -Action {
         $dossierId = $index.DossierByPath[$root].DossierId
-        $records = @($Result.ClassificationEvidence | Where-Object { $_.DossierId -eq $dossierId })
+        $records = @(Get-eMASW1dHistoricalClassificationEvidence -Records @($Result.ClassificationEvidence | Where-Object { $_.DossierId -eq $dossierId }))
         Assert-eMASW1dEqual $Expected.classificationRecordCount $records.Count 'Classification record count differs.'
         $actualKeys = [string[]]@($records | ForEach-Object { ConvertTo-eMASW1dRecordKey $_.EvidenceType $_.Dimension $_.Strength $_.SourceTier $_.SequenceFolder $_.SequenceRelativePath $_.ObservedValue })
         $expectedKeys = [string[]]@($Expected.classificationRecords | ForEach-Object { ConvertTo-eMASW1dRecordKey $_.evidenceType $_.dimension $_.strength $_.sourceTier $_.sequenceFolder $_.xmlSequenceRelativePath $_.observedValue })
@@ -271,9 +282,11 @@ foreach ($fixture in @($expectations.fixtures)) {
             $coverage = @($result.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
             Assert-eMASW1dEqual 1 $coverage.Count 'Repository CEC coverage row count differs.'
             Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryCollectionStatus $coverage[0].CollectionStatus 'Repository CEC collection status differs.'
-            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryRecordCount $coverage[0].RecordsProduced 'Repository CEC records-produced differs.'
-            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryRecordCount @($result.ClassificationEvidence).Count 'Repository CEC record total differs.'
-            Assert-eMASW1dTrue (@($result.ClassificationEvidence).Count -gt 0) 'A fixture with a dossier produced zero classification evidence.'
+            $fullRecords = @($result.ClassificationEvidence)
+            $historicalRecords = @(Get-eMASW1dHistoricalClassificationEvidence -Records $fullRecords)
+            Assert-eMASW1dEqual $repositoryExpectation.expectedRepositoryRecordCount $historicalRecords.Count 'Repository historical CEC record total differs.'
+            Assert-eMASW1dEqual $fullRecords.Count $coverage[0].RecordsProduced 'Repository CEC records-produced differs from the full additive result.'
+            Assert-eMASW1dTrue ($fullRecords.Count -gt 0) 'A fixture with a dossier produced zero classification evidence.'
         }
     }
     else {

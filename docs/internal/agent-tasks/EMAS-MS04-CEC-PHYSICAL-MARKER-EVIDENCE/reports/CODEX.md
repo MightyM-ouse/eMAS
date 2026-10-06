@@ -1,6 +1,6 @@
 # Codex Report — EMAS-MS04-CEC-PHYSICAL-MARKER-EVIDENCE
 
-**Status:** `IMPLEMENTED_BLOCKED_ON_ADDITIVE_REGRESSION_EXPECTATIONS`
+**Status:** `READY_FOR_CHATGPT_REVIEW`
 
 **Implementation branch:** `implementation/emas-ms04-cec-physical-marker-evidence`
 
@@ -73,11 +73,21 @@ The utility marker is omitted when the exact direct relationship is absent. No w
 |---|---|
 | Focused CEC | PASS, 19/19 fixtures and 38/38 additional checks; Wave 1 19/19 and Wave1E 22/22 hashes verified before and after |
 | Wave 1 eight-suite | PASS, 275/275 checks plus 16/16 Wave 1 freeze gates |
-| Root-level | FAIL, 2/3; only failure is frozen additive CEC total `Expected=86; Actual=101` |
-| Wave1D | FAIL, 44/61; all 17 failures are frozen CEC totals/multisets that omit the new additive records; all non-CEC checks and dossier-relative invariance pass |
+| Root-level | PASS, 3/3; historical projection proves 86 records, full additive result proves 101, and coverage equals the full total |
+| Wave1D | PASS, 61/61; legacy per-dossier counts/multisets use the historical projection, full repository coverage equals the additive result, and 8/8 fixture hashes are unchanged |
 | Focused v4 discovery | PASS, 22/22 fixtures and 2/2 additional checks |
-| B3 | FAIL, 11/12; only failure is frozen downstream CEC total `Expected=86; Actual=101`; all 11 RepositoryDiscovery semantics checks pass |
+| B3 | PASS, 12/12; historical projection proves 86 records, full additive result proves 101, and coverage equals the full total |
 | Frozen hashes | PASS; Wave 1 19/19, Wave1D 8/8, and Wave1E 22/22 fixtures unchanged |
+
+## Central-review follow-up
+
+The centrally authorized harness-only refresh was applied without changing CEC implementation semantics:
+
+- root-level and B3 explicitly prove both the 86-record historical SD-002 projection and the 101-record full additive result;
+- their repository `RecordsProduced` assertions use the full additive record count;
+- Wave1D legacy count/multiset checks use a historical projection excluding the five T1a types;
+- Wave1D repository coverage remains tied to the complete additive CEC collection;
+- all other assertions remain unchanged.
 
 ## Scope audit
 
@@ -85,18 +95,16 @@ Changed only:
 
 - `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1`
 - `tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1`
+- `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1`
+- `tests/dossier-diversity/Test-eMASDossierDiversity.ps1`
+- `tests/repository-discovery-candidate-semantics/Test-eMASRepositoryDiscoveryCandidateSemantics.ps1`
 - `docs/internal/agent-tasks/EMAS-MS04-CEC-PHYSICAL-MARKER-EVIDENCE/reports/CODEX.md`
 - `docs/internal/agent-tasks/EMAS-MS04-CEC-PHYSICAL-MARKER-EVIDENCE/STATUS.md`
 
 No frozen fixture byte, schema, runtime configuration, workbook, entry script, RepositoryDiscovery, BackboneXmlInventory, reference/checksum capability, FormatDetection, RegionDetection, or interpretation module was modified.
 
-## Blocker
+## Open issues and deferred work
 
-The implementation is complete, but task acceptance criterion 7 cannot be met within the task's allowed-file boundary.
-
-The root-level, Wave1D, and B3 harnesses freeze the pre-addition CEC count/multiset. The required additive evidence correctly changes SD-002-profile results from 86 to 101 records. Making those three composed regressions pass requires versioned additive expectations or historical-projection handling in their own harness/expectation files, which `TASK.md` does not allow this worker to modify. `TASK.md` explicitly says to stop and report if a forbidden change becomes necessary.
-
-Central review and merge acceptance must remain blocked until coordination either:
-
-1. authorizes a follow-up expectation-only task for the three affected suites; or
-2. amends this task's allowed files to include those harness/expectation updates.
+- No implementation or Mac regression blocker remains.
+- Windows PowerShell 5.1 qualification remains deferred by task; the separately diagnosed RuntimeConfiguration UTF-8 CI issue is unrelated.
+- ChatGPT follow-up review and user acceptance remain pending. This implementation worker did not merge PR #47.
