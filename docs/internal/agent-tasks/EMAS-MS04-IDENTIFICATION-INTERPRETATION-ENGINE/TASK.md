@@ -4,7 +4,7 @@
 **Roadmap ID:** T4b  
 **Authoritative base:** `cff3456df0852b4c9cc8399d8908bac09bf5720e`  
 **Base branch:** `coordination/emas-ms04-identification-interpretation`  
-**Worker:** Codex  
+**Worker:** Claude (continuation owner; Codex performed the initial implementation)  
 **Task type:** Bounded shared-core engine implementation  
 **Merge target:** `coordination/emas-ms04-identification-interpretation`
 
@@ -14,15 +14,15 @@ Implement the bounded, configuration-driven MS-04 Pre-Sales `IdentificationInter
 
 The engine converts accepted CEC facts plus validated Runtime JSON Schema 1.1.0 Identification rules into the separate `eMAS.MS04.PreSales.Identification/1.0` result.
 
-Codex is the **single implementation owner**.
+Claude is now the **single continuation implementation owner**.
 
-Claude owns the independent T4a oracle and expected outcomes.
+Codex produced the initial T4b implementation through commit `4461547099b50ae99451602df51d85e003cfa6b6`. The accepted T4a oracle is now merged and frozen. Claude may modify T4b-owned engine files but must treat all T4a oracle files and expected outcomes as read-only.
 
 ## Parallel-work rule
 
 T4b may start while T4a is being created.
 
-However, before T4b can be declared ready for central review, Codex must:
+However, before T4b can be declared ready for central review, the implementation owner must:
 
 1. wait for T4a to be centrally accepted/merged into the coordination branch;
 2. update/rebase the implementation branch from that coordination branch;
@@ -391,7 +391,7 @@ Known PS5.1 UTF-8 expectation failure remains unrelated unless T4 changes that t
 
 ## Allowed files
 
-Codex owns:
+Claude owns:
 
 - `engine/core/eMAS.IdentificationInterpretation.psm1`;
 - `engine/core/private/eMAS.Identification.*.ps1`;
@@ -401,7 +401,7 @@ Codex owns:
 - CI workflow update only if needed to execute T4 engine/oracle tests;
 - this T4b task report/status.
 
-Codex may read T4a files but may not edit them.
+Claude may read T4a files but may not edit them. The accepted oracle remains an independent frozen baseline even though Claude is now completing the engine implementation.
 
 ## Forbidden
 
@@ -436,9 +436,11 @@ Do not merge.
 
 ## Report
 
-Write:
+Write the continuation report to:
 
-`docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-INTERPRETATION-ENGINE/reports/CODEX.md`
+`docs/internal/agent-tasks/EMAS-MS04-IDENTIFICATION-INTERPRETATION-ENGINE/reports/CLAUDE.md`
+
+Keep `reports/CODEX.md` unchanged as the historical initial-implementation report.
 
 Return:
 
@@ -462,3 +464,36 @@ Return:
 ## Acceptance gate
 
 T4b is not ready for central review until it is rebased/updated after T4a acceptance and passes the independent oracle.
+
+
+## Continuation handoff — authoritative current state
+
+This section supersedes any earlier chronology in this task.
+
+- T4a PR #55 is accepted and merged into the coordination branch.
+- Accepted T4a merge SHA: `ce8d56c0df59d7e8635207baec853b07f17462de`.
+- The accepted oracle contains 23 cases and is read-only for T4b.
+- The T4b branch was synchronized with the accepted oracle through sync merge `15964bf6ec8b0917de6eb0d83d4ed472c9849d2d`.
+- Codex tokens became unavailable after the initial implementation. Remaining T4b ownership transfers to Claude.
+- PR #56 remains the single T4b implementation PR. Do not open a replacement implementation PR unless central coordination explicitly requests it.
+
+### Remaining mandatory work
+
+1. Implement `MATCHES_PATTERN` exactly as frozen by the accepted T4a contract:
+   - explicit .NET `Regex`;
+   - CultureInvariant;
+   - IgnoreCase only when `caseSensitive=false`;
+   - 1-second timeout;
+   - invalid pattern → `IDI-CONFIG-005`;
+   - timeout → `IDI-CONFIG-006`.
+2. Fix Identification-only Pre-Sales orchestration so it uses the shortest required chain:
+   `RepositoryDiscovery → BackboneXmlInventory → ClassificationEvidenceCollection → IdentificationInterpretation`.
+   Reference/missing/checksum capabilities must run only when explicitly requested.
+3. Add a focused orchestration test proving Identification-only mode does not invoke deep reference/checksum checks.
+4. Run the complete accepted 23-case oracle without modifying oracle files.
+5. Add the read-only oracle conformance harness to CI for:
+   - Windows PowerShell 5.1;
+   - Windows PowerShell 7.6;
+   - macOS PowerShell 7.6 development lane.
+6. Preserve the known unrelated Windows PowerShell 5.1 UTF-8 failure as out of scope.
+7. Update the Claude continuation report and task status.
