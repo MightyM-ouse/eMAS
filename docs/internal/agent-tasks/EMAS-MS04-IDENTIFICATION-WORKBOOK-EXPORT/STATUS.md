@@ -4,7 +4,7 @@
 **Roadmap ID:** T3b  
 **Authoritative base:** `e83123bba30a6c51727d04290b76a950e9c47d59`  
 **Accepted T3c reference:** `4f34d08de9277028589bd8e4e877cbdc9ead91ad`  
-**Overall status:** `REVIEW_PASS_READY_FOR_USER_DECISION`
+**Overall status:** `SOURCE_AUTOMATED_BASELINE_ACCEPTED_NATIVE_EXCEL_PENDING`
 
 | Gate | Status |
 |---|---|
@@ -26,8 +26,8 @@
 | native Excel/VBA execution | NATIVE_EXCEL_QUALIFICATION_PENDING |
 | coordinator index/workflow sync | COMPLETE |
 | ChatGPT central review | PASS |
-| User merge decision | READY |
-| T4 IdentificationInterpretation | BLOCKED_ON_T3B_ACCEPTANCE |
+| User merge decision | ACCEPTED |
+| T4 IdentificationInterpretation | UNBLOCKED_FOR_BOUNDED_IMPLEMENTATION |
 
 ## Accepted qualification wording
 
