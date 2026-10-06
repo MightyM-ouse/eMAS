@@ -282,7 +282,7 @@ function Invoke-eMASReferenceResolution {
                 $diagnosticCode = 'SourceXmlOutsideDossier'
             }
             else {
-                $xmlPathRelativeToDossier = $xmlRepositoryPath.Substring($dossierPath.Length + 1)
+                $xmlPathRelativeToDossier = $(if ([string]::IsNullOrEmpty($dossierPath)) { $xmlRepositoryPath } else { $xmlRepositoryPath.Substring($dossierPath.Length + 1) })
                 $pathOutcome = Resolve-eMASReferencePath -RawHref $reference.RawHref -XmlPathRelativeToDossier $xmlPathRelativeToDossier
                 $captureStatus = $pathOutcome.CaptureStatus
                 $resolutionStatus = $pathOutcome.ResolutionStatus
