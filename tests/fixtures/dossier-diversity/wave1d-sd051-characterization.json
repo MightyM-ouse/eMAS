@@ -1,0 +1,170 @@
+{
+  "sampleId": "SD-051",
+  "statusLabel": "CHARACTERIZATION_PENDING_DISCOVERY_DECISION",
+  "note": "Observed current behaviour of the accepted RepositoryDiscovery four-digit-folder heuristic. Not normative; not a correct regulatory dossier. A future discovery-semantics task may change it.",
+  "fixtureSha256": "e2c6d859424932a50153c18d06bd23724645bebef06c97ec4c147e6157712ebe",
+  "completionStatus": "Completed",
+  "repositoryClassificationCoverage": {
+    "CollectionStatus": "Collected",
+    "RecordsProduced": 91
+  },
+  "dossierCandidates": [
+    {
+      "dossierId": "DOS-0001",
+      "rootPath": "Archive",
+      "genuine": false,
+      "sequenceFolders": [
+        "2019"
+      ],
+      "xmlDocuments": [
+        {
+          "relativePath": "Archive/2019/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": false,
+          "parseStatus": "Missing"
+        },
+        {
+          "relativePath": "Archive/2019/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": false,
+          "parseStatus": "Missing"
+        }
+      ],
+      "observationCodes": [
+        "ExactSequenceChildrenObserved",
+        "MissingCommonBackbone",
+        "MissingRegionalBackbone"
+      ],
+      "referenceCount": 0,
+      "classificationRecordCount": 5,
+      "classificationRecords": [
+        {
+          "evidenceType": "DossierRootPath",
+          "dimension": "DossierContext",
+          "strength": "Weak",
+          "sourceTier": "FolderNameHeuristic",
+          "relativePath": "Archive",
+          "observedValue": "Archive"
+        },
+        {
+          "evidenceType": "SequenceFolder",
+          "dimension": "TechnicalFormat",
+          "strength": "Weak",
+          "sourceTier": "PackageStructure",
+          "relativePath": "Archive/2019",
+          "observedValue": "2019"
+        },
+        {
+          "evidenceType": "CtdModuleFolders",
+          "dimension": "TechnicalFormat",
+          "strength": "Weak",
+          "sourceTier": "PackageStructure",
+          "relativePath": "Archive/2019",
+          "observedValue": []
+        },
+        {
+          "evidenceType": "CommonBackbonePresence",
+          "dimension": "TechnicalFormat",
+          "strength": "Supporting",
+          "sourceTier": "OfficialPhysicalPath",
+          "relativePath": "Archive/2019/index.xml",
+          "observedValue": false
+        },
+        {
+          "evidenceType": "RegionalBackbonePresence",
+          "dimension": "Region",
+          "strength": "Supporting",
+          "sourceTier": "OfficialPhysicalPath",
+          "relativePath": "Archive/2019/m1/eu/eu-regional.xml",
+          "observedValue": false
+        }
+      ]
+    },
+    {
+      "dossierId": "DOS-0002",
+      "rootPath": "ProductABC",
+      "genuine": true,
+      "sequenceFolders": [
+        "0000",
+        "0001",
+        "0002",
+        "0003",
+        "0004"
+      ],
+      "xmlDocuments": [
+        {
+          "relativePath": "ProductABC/0000/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0000/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0001/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0001/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0002/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0002/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0003/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0003/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0004/index.xml",
+          "xmlKind": "CommonBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        },
+        {
+          "relativePath": "ProductABC/0004/m1/eu/eu-regional.xml",
+          "xmlKind": "RegionalBackbone",
+          "exists": true,
+          "parseStatus": "Parsed"
+        }
+      ],
+      "observationCodes": [
+        "ExactSequenceChildrenObserved"
+      ],
+      "referenceCount": 94,
+      "classificationRecordCount": 86,
+      "classificationRecords": []
+    }
+  ],
+  "unrelatedFileOwners": [
+    {
+      "path": "Archive/2019/annual-report.pdf",
+      "ownerRootPath": "Archive"
+    }
+  ]
+}
