@@ -1,6 +1,6 @@
 # ChatGPT Review — EMAS-MS04-ECTD4-DISCOVERY-DESIGN
 
-**Status:** `REVIEW_COMPLETE — READY_FOR_USER_DECISION_WITH_AMENDMENTS`  
+**Status:** `DECISION_ACCEPTED — IMPLEMENTATION AUTHORIZED AS SEPARATE TASK`  
 **Reviewed Claude commit:** `59f0596f3b7ef6f994655b0d06a93f0414a4050e`  
 **Reviewed PR:** #39
 
@@ -166,3 +166,10 @@ A separate implementation task may then:
 FormatDetection/RegionDetection remain blocked until the v4 physical discovery implementation is accepted.
 
 The v4 reference-semantics task is a separate downstream prerequisite before final v4 reference/integrity claims.
+
+
+## User decision
+
+Accepted. The eCTD v4 physical-discovery design is approved with the central-review amendments. A separate bounded RepositoryDiscovery implementation task is authorized.
+
+FormatDetection and RegionDetection remain blocked until that implementation is accepted.
