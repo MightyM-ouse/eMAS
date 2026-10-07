@@ -4,7 +4,7 @@
 **Roadmap ID:** T1b  
 **Authoritative base:** `5d2ab2d1337f3a93a30f999fed3a9e9436724d1a`  
 **Coordination branch:** `coordination/emas-ms04-regional-xml-evidence-t1b-design`  
-**Overall status:** `ACCEPTED_READY_FOR_USER_MERGE_DECISION — WORKER_PR_59`
+**Overall status:** `ACCEPTED_FOR_COORDINATION_MERGE — WORKER_PR_59`
 
 | Gate | Status |
 |---|---|
@@ -26,7 +26,7 @@
 | remaining open decisions | P-2, P-3, P-4, P-6, P-7, S-1…S-5 — none blocks first-wave collection |
 | implementation | NOT AUTHORIZED — prerequisite: central acceptance of the amended T1b design |
 | ChatGPT central review | ACCEPTED — fixed-SHA re-review PASS |
-| user design merge decision | READY |
+| user design merge decision | ACCEPTED |
 
 ## GitHub workflow
 
@@ -50,3 +50,8 @@ Result:
 `ACCEPTED — READY_FOR_USER_MERGE_DECISION`
 
 No T1b design blocker remains. Implementation remains unauthorized until this design PR is explicitly accepted and merged.
+
+
+## User decision
+
+Accepted. PR #59 is approved for merge into `coordination/emas-ms04-regional-xml-evidence-t1b-design` as the T1b EU regional XML evidence design baseline.
