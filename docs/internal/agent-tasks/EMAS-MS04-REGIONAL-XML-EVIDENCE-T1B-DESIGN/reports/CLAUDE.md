@@ -1,14 +1,31 @@
 # Claude Report — T1b Regional XML Evidence Design (EU Module 1)
 
-**Status:** `READY_FOR_CENTRAL_REVIEW`
+**Status:** `READY_FOR_CENTRAL_RE-REVIEW` (revision 1.1 — central amendments from `reports/REVIEW.md` applied)
 **Task:** `EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-DESIGN` (report only; no code, fixture, test, schema or workbook change)
 **Base:** `5d2ab2d1337f3a93a30f999fed3a9e9436724d1a` (`demo/end-to-end-mvp`, T4 integrated)
 **Branch:** `analysis/emas-ms04-regional-xml-evidence-t1b-design`, draft PR [MightyM-ouse/eMAS#59](https://github.com/MightyM-ouse/eMAS/pull/59)
+
+**Revision 1.1** records central decisions C-1 to C-7 and amendment A-1 (§0). It closes P-1 and P-5, and changes only design text; no production code, tests, fixtures, schema, workbook or T4 file is touched.
 
 Conventions used in this report:
 - **[REG]** marks an authoritative regulatory fact from the cited official source.
 - **[DES]** marks an eMAS design decision proposed here.
 - **[OBS]** marks an observation in the accepted repository corpus.
+
+---
+
+## 0. Central decisions (closed by central review, revision 1.1)
+
+| ID | Decision | Applied in |
+|---|---|---|
+| C-1 / P-1 | **Option A accepted.** T1b extends BackboneXmlInventory through a private EU envelope helper and **re-qualifies** the modified capability (RC1/scanner gates rerun). The RC1 file freeze is a qualification baseline, not an architectural prohibition. Duplicate XML parsing is not an option to preserve the previous RC1 hash. **P-1 closed.** | §1, §8, §14, §17 |
+| C-2 / P-5 | **No new CEC `Dimension` codes in T1b.** The five new types use existing *legacy compatibility hints only*: `EuEnvelopeCountry`, `EuAgencyCode` → `Region`; `EuProcedureType`, `EuSubmissionType`, `EuSubmissionUnitType` → `DossierContext`. These are compatibility buckets, **not canonical target dimensions**; IdentificationInterpretation must not use them to select a target dimension. The later governed `CEC-FIELD-PROJECTION/2` decides canonical targets. **P-5 closed.** | §10, §12, §16 |
+| A-1 | **Historical CEC record shape is preserved.** `SourceOrdinal` exists **only** on the new T1b envelope evidence records; no historical record gains a property (not even `null`). The ordinal is part of the new records' sort key; every historical EvidenceId is unchanged. | §10, §13, §14 |
+| C-3 | **All five facts accepted as raw `Strong` / `StructuredXml`.** Strong means only "the parsed regional XML contains this profile-recognized typed value". It does **not** mean the submission is regulatory-valid, that the XML is DTD-valid as a whole, or that the value proves Region, ProcedureContext or LifecycleContext. Dimension-specific strength/capping and conflicts stay with future Identification rules. | §10 |
+| C-4 | **Profile-specific embedded vocabulary checks accepted.** The parser stays non-validating and never resolves external DTDs. Comparing a raw value with the source-verified Appendix 3 enumeration of the document's declared profile is **neither DTD validation nor regulatory validation**. | §6, §11 |
+| C-5 | **`EU-EMA` vs `ema` conflict is documented and non-blocking.** For machine parsing, `envelope/@country` follows the DTD/App. 1.1 value `ema`; `agency/@code` may legitimately be `EU-EMA`. Neither is normalized into the other; a literal `EU-EMA` country is `OutsideProfileVocabulary`. | §11, §16 |
+| C-6 | **Additive ScannerObservations/1.0 extension accepted.** `XmlDocuments[].RegionalEnvelope` is optional and owned by BXI; no application or dossier identity is created. Only the scanner implementation version is incremented, never the contract identifier. | §9 |
+| C-7 / P-7 | **No T4 contract change for T1b collection.** The five types may be collected while `CEC-FIELD-PROJECTION/1` ignores them. A separate later task must define projection before any Effective rule uses them: multi-envelope values, field-specific coverage/unavailable reasons, dimension-scoped target mapping, `UnrecognizedValue`/ambiguity semantics, and no relationship-derived Region until U2/B-7 is settled. P-7 is future work, not a blocker. | §1, §16 |
 
 ---
 
@@ -35,7 +52,7 @@ Conventions used in this report:
    - BXI already loads the full DOM of every `eu-regional.xml` with the safe reader and discards everything but root metadata.
    - Reading the envelope from that same DOM is the only option with **no duplicate XML parsing**.
    - CEC consumes the new upstream facts and **never reopens XML**.
-   - Cost: BXI is an RC1 byte-frozen file (`.gitattributes`, `-text`), so the change needs RC1 re-qualification (PO decision P-1).
+   - **Accepted (C-1):** BXI is an RC1 byte-frozen file (`.gitattributes`, `-text`); T1b modifies it and re-qualifies the capability. Duplicate parsing is not used to preserve the old hash.
 
 3. **ScannerObservations contract:** an **additive** change that stays `eMAS.MS04.PreSales.ScannerObservations/1.0`.
    - Each XmlDocument gets one nullable `RegionalEnvelope` object.
@@ -223,6 +240,8 @@ All five are **[REG]** DTD-enumerated attributes on mandatory elements. Raw valu
 
 The implementation embeds these lists as a versioned table, `EU-M1-ENVELOPE-VOCABULARY/1`. The lists are copied from S2/S3/S5 Appendix 3, with the source page recorded per list.
 
+**This is not validation (C-4).** The parser is non-validating and never resolves the external DTD (`XmlResolver = $null`). Comparing one raw attribute value with the enumeration of the document's declared profile is a recognition check for that single value. It is **not** DTD validation of the document and **not** regulatory validation of the submission; a `Known` value says nothing about the validity of the rest of the XML or of the dossier.
+
 ---
 
 ## 7. Historical-version compatibility matrix
@@ -255,14 +274,14 @@ Consequences [DES]:
 | Future US/CA/CH/GCC | helper per regional profile (`eMAS.<Region>RegionalEnvelope.ps1`) behind one dispatch keyed on (root ns, local-name, version) | same, in one module | — |
 | PS5.1 | ✅ same APIs as today | ✅ | — |
 | T4 short pipeline | ✅ unchanged chain; facts arrive with BXI | ❌ adds a stage to the short chain, or the facts are missing in it | — |
-| Cost / risk | BXI is **RC1 byte-frozen**: requalification needed (P-1) | Leaves BXI frozen | — |
+| Cost / risk | BXI is **RC1 byte-frozen**: re-qualification required (accepted, C-1) | Leaves BXI frozen, at the cost of a duplicate parse (rejected, C-1) | — |
 
 **Recommendation: Option A [DES].**
 - **Edit to BXI:** dot-source the helper and, for `XmlKind = RegionalBackbone` with `ParseStatus = Parsed`, call `Get-eMASEuRegionalEnvelope -Document $document` before the DOM is released.
   - `Read-eMASXmlMetadata` gains one optional output property; the parse path is otherwise unchanged.
   - The kind-gated path `m1/eu/eu-regional.xml` is unchanged.
 - **Helper:** owns the profile table, the selector walk, vocabulary checks and status codes. It contains no interpretation.
-- **Fallback if the PO refuses to touch the RC1 file:** Option B with an explicit accepted cost of one duplicate parse per regional document. It is not recommended.
+- **Decision C-1:** Option A is accepted and P-1 is closed. T1b modifies BXI and re-runs the RC1/scanner qualification gates. Option B is not a fallback: duplicate XML parsing is not used to preserve the previous RC1 file hash.
 
 ---
 
@@ -307,19 +326,24 @@ Rules [DES]:
 
 These are new types appended to `eMASCecTypeOrder`, in this order, after `UtilityDtdFolderMarker`:
 
-| EvidenceType [DES] | Subject | SourceTier | Raw Strength | SourceField | ObservedValue | CEC `Dimension` hint (P-5) | May later support (§12) |
+| EvidenceType [DES] | Subject | SourceTier | Raw Strength | SourceField | ObservedValue | CEC `Dimension` (legacy compatibility hint only, C-2) | May later support (§12; decided by projection v2, not by this hint) |
 |---|---|---|---|---|---|---|---|
-| `EuEnvelopeCountry` | XmlDocument (+ SequenceId) | `StructuredXml` | **Strong** | `XmlDocuments.RegionalEnvelope.EU_ENVELOPE_COUNTRY` | token, e.g. `fr` | `Authority` | Authority (destination); Region **deferred** |
-| `EuAgencyCode` | XmlDocument | `StructuredXml` | **Strong** | `…EU_AGENCY_CODE` | e.g. `FR-ANSM` | `Authority` | Authority |
-| `EuProcedureType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_PROCEDURE_TYPE` | e.g. `mutual-recognition` | `ProcedureContext` | ProcedureContext (if master data models authorisation procedure, P-2); Authority (`centralised` ↔ EMA) |
-| `EuSubmissionType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_SUBMISSION_TYPE` | e.g. `var-type1a`, `asmf` | `ProcedureContext` | ProcedureContext (`asmf`/`pmf`/`cep`: U5 open), LifecycleContext |
-| `EuSubmissionUnitType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_SUBMISSION_UNIT_TYPE` | e.g. `response` | `LifecycleContext` | LifecycleContext |
+| `EuEnvelopeCountry` | XmlDocument (+ SequenceId) | `StructuredXml` | **Strong** | `XmlDocuments.RegionalEnvelope.EU_ENVELOPE_COUNTRY` | token, e.g. `fr` | `Region` | Authority (destination); Region **deferred** |
+| `EuAgencyCode` | XmlDocument | `StructuredXml` | **Strong** | `…EU_AGENCY_CODE` | e.g. `FR-ANSM` | `Region` | Authority |
+| `EuProcedureType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_PROCEDURE_TYPE` | e.g. `mutual-recognition` | `DossierContext` | ProcedureContext (if master data models authorisation procedure, P-2); Authority (`centralised` ↔ EMA) |
+| `EuSubmissionType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_SUBMISSION_TYPE` | e.g. `var-type1a`, `asmf` | `DossierContext` | ProcedureContext (`asmf`/`pmf`/`cep`: U5 open), LifecycleContext |
+| `EuSubmissionUnitType` | XmlDocument | `StructuredXml` | **Strong** | `…EU_SUBMISSION_UNIT_TYPE` | e.g. `response` | `DossierContext` | LifecycleContext |
+
+**CEC `Dimension` is a legacy compatibility hint only (C-2, P-5 closed).**
+- T1b adds **no** new `Dimension` codes; the existing vocabulary (`Region`, `TechnicalFormat`, `SpecificationProfile`, `DossierContext`) is unchanged.
+- The hint is a compatibility bucket. It is **not** a canonical target dimension, does not mean the value proves a Region or a dossier context, and **IdentificationInterpretation must not use it to select a canonical target dimension**. T4 already ignores `Dimension`; field binding is by `EvidenceType` through the governed projection.
+- The canonical target dimension(s) of each type are decided only by the later governed `CEC-FIELD-PROJECTION/2` (C-7). This keeps P-2 and U5 open.
 
 **Strength rationale [DES]:**
 - **Why Strong:** each value is a direct, typed, DTD-enumerated, mandatory regulatory value written by the applicant in the regional backbone.
   - That is the same evidential class as the existing Strong `DtdVersion`/`XmlNamespace`.
   - It is stronger than physical paths (Supporting) or folder names (Weak).
-- **What Strong does not mean:** Strong describes the *fact*, not its weight for a given dimension. For example, how strongly an agency code supports Region is an Interpretation rule decision (U2, deferred).
+- **What Strong does not mean (C-3):** Strong means only "the parsed regional XML contains this profile-recognized typed value". It does not mean the submission is regulatory-valid, the XML is DTD-valid as a whole, or the value proves Region, ProcedureContext or LifecycleContext. How strongly a value supports a dimension (for example agency code for Region, U2) is a future Identification rule decision, including any capping and conflict behaviour.
 - **Why `StructuredXml` and not a new tier:** T4 C2 counts distinct `SourceTier` values for `INDEPENDENT_SOURCE_CLASS`. A separate tier would let the envelope corroborate the root namespace of the **same file**, inflating confidence.
 - **Fields not proposed:** `mode` would be Strong too if added, but it is not proposed. Sequence and related-sequence would be `Supporting`. Free text would be `Weak` with a free-text tier.
 
@@ -328,12 +352,15 @@ These are new types appended to `eMASCecTypeOrder`, in this order, after `Utilit
 - `RelativePath`, `SequenceFolder` and `SequenceRelativePath` are as for the existing regional evidence.
 - `SourceCapability = BackboneXmlInventory`.
 
-**Additive record property:** `SourceOrdinal` (int, 1-based `EnvelopeOrdinal`; `null` for every historical type). It keeps multi-envelope records distinct and traceable.
+**Ordinal design (A-1):**
+- `SourceOrdinal` (int, 1-based, equal to the BXI `EnvelopeOrdinal`) is a property **only of the five new T1b envelope evidence types**.
+- **Historical CEC records keep their exact existing shape.** No historical record gains `SourceOrdinal`, not even as `null`; the CEC record builder adds the property only when it creates a new envelope record.
+- It keeps multi-envelope records distinct and traceable to `XmlDocuments[].RegionalEnvelope.Envelopes[EnvelopeOrdinal]`.
 
 **Deterministic EvidenceId:**
-- New drafts use `SortGroup = 2`. Historical types use 0 and 1, so all existing `EVD-nnnn` numbers are preserved, following the T1a precedent.
-- Sort key = `SortGroup, DossierPath, SequenceFolder, SequenceRelativePath, typeIndex, RelativePath, SourceOrdinal (D4)`.
-- IDs continue the global `EVD-` sequence.
+- New drafts use `SortGroup = 2`. Historical types use 0 and 1 and their sort keys are unchanged, so **every historical `EVD-nnnn` is unchanged**, following the T1a precedent.
+- New-record sort key = `SortGroup (2), DossierPath, SequenceFolder, SequenceRelativePath, typeIndex, RelativePath, SourceOrdinal (D4)`. The ordinal segment exists only in new-record keys; historical keys are not reformatted.
+- New IDs continue the global `EVD-` sequence after the existing maximum.
 - Input-order independence holds because BXI orders documents ordinally and envelopes follow document order.
 
 **Multiplicity:**
@@ -372,11 +399,20 @@ These are new types appended to `eMASCecTypeOrder`, in this order, after `Utilit
 - New: `MandatoryFieldAbsent`, `FieldNotDefinedInProfile`, `UnsupportedRegionalProfile`, `UnrecognizedRegionalStructure`, `ValueOutsideProfileVocabulary`, `CardinalityViolation`, `EnvelopeValuesDiffer`.
 - No guessed or normalized value is ever produced.
 
-**Note on rows 3 and 10:** the official v3.1 narrative (S5 p.10) says the Centralised Procedure envelope country should be "set to 'EU-EMA'". The DTD enumeration and the Appendix 1.1 table allow only `ema`, and `EU-EMA` is an **agency** code. The design follows the DTD, so a literal `EU-EMA` country is `OutsideProfileVocabulary`. This inconsistency is recorded for SME confirmation (S-3).
+**Source conflict `EU-EMA` vs `ema` (C-5, documented, non-blocking):** the official v3.1 narrative (S5 p.10) says the Centralised Procedure envelope country should be "set to 'EU-EMA'". The DTD enumeration and the Appendix 1.1 table allow only `ema`, and `EU-EMA` is an **agency** code. For machine parsing:
+- `envelope/@country` uses the DTD/App. 1.1 controlled value `ema`; a literal `EU-EMA` country is `OutsideProfileVocabulary` (row 10).
+- `agency/@code` may be `EU-EMA`, which is `Known` there.
+- Neither value is normalized into the other, in either direction.
+
+The conflict stays recorded for Regulatory SME confirmation (S-3) but does not block T1b collection.
+
+**Vocabulary status is not validation (C-4):** `Known` and `OutsideProfileVocabulary` describe only whether one raw value is in the declared profile's enumeration. No row in this table is a DTD-validation or regulatory-validation result.
 
 ---
 
 ## 12. Evidence-to-identification applicability matrix (design guidance only; non-executable)
+
+This matrix is independent of the CEC `Dimension` compatibility hint (C-2). It records what a later governed projection *may* consider; it is not a target-dimension mapping and selects nothing.
 
 Legend:
 - ● direct factual support is plausible;
@@ -410,7 +446,7 @@ Guardrails:
 
 | # | Case | Fixture | Expected |
 |---|---|---|---|
-| 1 | Clean typed field (3.1, 2 envelopes) | SD-002 seq 0004 | 5 types × 2 envelopes; `Known`; Strong/StructuredXml; `SourceOrdinal` 1, 2 |
+| 1 | Clean typed field (3.1, 2 envelopes) | SD-002 seq 0004 | 5 types × 2 envelopes; `Known`; Strong/StructuredXml; `SourceOrdinal` 1, 2; `Dimension` hints `Region`/`DossierContext` only |
 | 2 | Older profile (2.0); `tracking` not `procedure-tracking`; no unit | SD-002 seq 0000 | 4 types; unit row `FieldNotDefinedInProfile` |
 | 3 | Field absent, parse OK. All five first-wave fields are mandatory, so this is a synthetic 3.1 doc without `submission-unit` | synthetic | `Absent`; row `Collected`/`MandatoryFieldAbsent`; no record, no guessed value. The *optional*-field variant (§11 row 2) is added with `mode` in wave 2 |
 | 4 | Malformed regional XML | SD-008 seq 0004 | `NotAttempted`; rows `NotAssessed`/`ParseFailed` |
@@ -423,6 +459,8 @@ Guardrails:
 | 10b | Envelope in a default namespace | synthetic | `UnrecognizedRegionalStructure` |
 | 11 | Free text not collected | any | No record has `applicant`/`invented-name`/`inn`/`submission-description` values; no Strong record from free text |
 | 12 | Interpretation fields null | all | `CandidateValue`/`Polarity`/`SourceRuleId` null on every new record |
+| 12b | Historical record shape unchanged (A-1) | SD-001…SD-020 | Every historical CEC record is property-for-property identical to the current expectations; none has `SourceOrdinal`; only new envelope records have it |
+| 12c | No new `Dimension` codes (C-2) | all | The set of `Dimension` values is a subset of {`Region`, `TechnicalFormat`, `SpecificationProfile`, `DossierContext`} |
 | 13 | Deterministic IDs and order | SD-002 + shuffled synthetic | Every historical EvidenceId (Wave 1 + T1a physical-marker records) is byte-identical to the current expectations; new IDs follow the existing maximum; repeat runs and shuffled input are identical |
 | 14 | No XML reopen in CEC | Mocked BXI result with `RegionalEnvelope` but no source on disk | CEC succeeds; static check that the CEC module has no XML reader calls |
 | 15 | T4 short pipeline still valid | entry script with `-IncludeIdentificationInterpretation` | T4 focused tests 28/28 and oracle 23/23 unchanged; new types ignored by projection v1 |
@@ -438,12 +476,12 @@ Guardrails:
 | File | Change |
 |---|---|
 | `engine/powershell51/private/eMAS.EuRegionalEnvelope.ps1` | **New:** profile table, vocabulary `EU-M1-ENVELOPE-VOCABULARY/1`, selector walk, status codes |
-| `engine/powershell51/eMAS.BackboneXmlInventory.psm1` | Dot-source the helper; add `RegionalEnvelope` per XmlDocument; `ScannerVersion` 0.3.0. **RC1-frozen file** (P-1) |
-| `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1` | 5 types, `SortGroup = 2`, `SourceOrdinal`, field coverage rows |
+| `engine/powershell51/eMAS.BackboneXmlInventory.psm1` | Dot-source the helper; add `RegionalEnvelope` per XmlDocument; `ScannerVersion` 0.3.0. RC1-frozen file: modification accepted with re-qualification (C-1) |
+| `engine/powershell51/eMAS.ClassificationEvidenceCollection.psm1` | 5 types with existing `Dimension` hints only (C-2); `SortGroup = 2`; `SourceOrdinal` on the new records only (A-1); field coverage rows |
 | `tests/backbone-xml-inventory/**`, `tests/classification-evidence-collection/**`, new `tests/regional-xml-evidence/**` | Tests per §13 |
 | `tests/fixtures/*/…expectations.json` | Regenerated counts and new records |
 | `tests/fixtures/regional-xml-evidence/**` | New synthetic XMLs |
-| `.gitattributes` / RC1 package manifest | Only if the PO approves re-qualification |
+| `.gitattributes` / RC1 qualification record | Re-qualification of the modified BXI (C-1); keep the `-text` byte-exact rule for the new file version |
 | **Not changed** | RepositoryDiscovery, IdentificationInterpretation, T4 oracle/contract, runtime schema/workbook, Pre-Sales script |
 
 ---
@@ -470,18 +508,18 @@ Each region needs its own source-verified design task.
 
 ## 16. Open Regulatory SME / Product Owner decisions
 
+P-1 (architecture) and P-5 (CEC `Dimension` codes) are **closed** by central decisions C-1 and C-2 (§0) and are no longer listed. **None of the remaining decisions blocks first-wave factual collection** (REVIEW "Non-blocking open decisions"); they govern later interpretation, aliases or later waves.
+
 | ID | Decision | Owner |
 |---|---|---|
-| P-1 | Approve modifying RC1-frozen `eMAS.BackboneXmlInventory.psm1` (Option A) with RC1 re-qualification, or accept Option B's duplicate parse | PO + Technical Architect |
 | P-2 | Does the authorisation procedure (`centralised`/`national`/`mutual-recognition`/`decentralised`) belong in `ProcedureContext` master data, or in a separate dimension/attribute? | Regulatory SME + PO |
 | P-3 | Cross-version alias policy for raw submission types (e.g. 2.0 `initial-maa` ~ 3.x `maa`): master-data aliases, not scanner logic | Regulatory SME + PO |
 | P-4 | Verify and support EU M1 v1.4/1.4.1 and v3.0 (`dtd-version` values not in the corpus) in a later wave? | PO |
-| P-5 | Extend the CEC `Dimension` hint vocabulary with `Authority`, `ProcedureContext`, `LifecycleContext` (today: Region, TechnicalFormat, SpecificationProfile, DossierContext) | PO + Technical Architect |
 | P-6 | Is the envelope UUID (`identifier`, 3.x) wanted as an application-grouping fact, given RD has no application identity? | PO |
-| P-7 | Commission `CEC-FIELD-PROJECTION/2` (T4a contract revision): set-valued envelope fields, per-field coverage, new reason `UnrecognizedValue` | PO + central review |
+| P-7 | Future work, not a T1b blocker (C-7): commission `CEC-FIELD-PROJECTION/2` (T4a contract revision) before any Effective rule uses these fields — multi-envelope values, field-specific coverage/unavailable reasons, dimension-scoped target mapping, `UnrecognizedValue`/ambiguity, no relationship-derived Region until U2/B-7 | PO + central review |
 | S-1 (U2) | Confidence limit for Region derived from agency/country | Regulatory SME + PO |
 | S-2 (U3/U4) | IS/LI/NO, `uk` vs `xi` (UK(NI)) mapping to Region | Regulatory SME (EU/UK) + PO |
-| S-3 | Confirm `ema` (DTD) vs "EU-EMA" (S5 p.10 narrative) for the CP envelope country | Regulatory SME |
+| S-3 | Confirm `ema` (DTD) vs "EU-EMA" (S5 p.10 narrative) for the CP envelope country. Non-blocking: parsing follows the DTD (C-5) | Regulatory SME |
 | S-4 (U5) | ProcedureContext treatment of `asmf`, `pmf`, `cep` (EDQM) | Regulatory SME + PO |
 | S-5 (U8) | ProductDomain from H/V agencies | Regulatory SME + PO |
 
@@ -489,19 +527,20 @@ Each region needs its own source-verified design task.
 
 ## 17. Recommended bounded T1b implementation task
 
-**`EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE`** (single worker, after P-1 and P-5 are decided)
+**`EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE`** (single worker, after central acceptance of the amended T1b design)
 
 1. **Implement the helper and the BXI change** for profiles 2.0 / 3.0.1 / 3.1:
    - add `eMAS.EuRegionalEnvelope.ps1`;
    - add the BXI `RegionalEnvelope` property with the five first-wave fields;
    - apply the status semantics of §11.
-2. **Extend CEC** with the 5 Strong/StructuredXml types, `SortGroup = 2`, `SourceOrdinal` and the per-field coverage rows. CEC still never reopens XML.
+2. **Extend CEC** with the 5 Strong/StructuredXml types using only the existing `Dimension` compatibility hints (C-2), `SortGroup = 2`, `SourceOrdinal` on the new records only (A-1), and the per-field coverage rows. CEC still never reopens XML.
 3. **Tests and fixtures:**
    - tests per §13;
    - new synthetic fixtures;
    - regenerated expectation files;
    - historical EvidenceIds proven unchanged.
 4. **Regression:**
+   - **RC1/scanner re-qualification of the modified BackboneXmlInventory (C-1)**, recorded in the task report;
    - Wave 1 chain;
    - Wave1D (where the corpus is available);
    - the T4 engine (28/28) and oracle (23/23), proving zero T4 impact;
