@@ -168,7 +168,9 @@ pwsh -NoProfile -NonInteractive -File tests/identification-interpretation/engine
 
 ## Windows PowerShell 5.1 evidence status
 
-PENDING / NOT CLAIMED. The implementation and harness use `#requires -Version 5.1`-compatible syntax and import/run on local PowerShell Core, but no native Windows PowerShell 5.1 execution of the new BXI/CEC/focused suite was available locally. The repository's current Windows PS5.1 CI job runs runtime and T4 contracts, not the new BXI/CEC regional suite, so a green existing job would not constitute T1b Windows qualification.
+PENDING / NOT CLAIMED. The implementation and harness use `#requires -Version 5.1`-compatible syntax and import/run on local PowerShell Core, but no native Windows PowerShell 5.1 execution of the new BXI/CEC/focused suite was available locally. The repository's current Windows PS5.1 CI job runs runtime and T4 contracts, not the new BXI/CEC regional suite, so it cannot constitute T1b Windows qualification.
+
+PR #60 CI run `37639493570` completed with static runtime contracts, Windows PowerShell 7.6, and macOS PowerShell 7.6 passing. The Windows PowerShell 5.1 job failed only in the pre-existing Runtime JSON UTF-8 metadata assertion (`Expected=Synthetic UTF-8 â€“ PrÃ¼fung; Actual=Synthetic UTF-8 – Prüfung`). Its subsequent PS5.1 T4 focused engine and oracle steps both passed 28/28 and 23/23. No T1b file participates in that failing assertion, and the task does not authorize the unrelated UTF-8 fix.
 
 ## Deferred by task order
 
@@ -177,6 +179,6 @@ No projection v2, Identification rules, canonical procedure dimension, aliases, 
 ## Blockers and open issues
 
 1. Root-level harness scope blocker: the required root-level regression needs a historical projection update in `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1`, but that file is outside the formal authorized list. Current result is 2/3 with the stale count 86 vs 135.
-2. Native Windows PowerShell 5.1 T1b qualification is pending and not claimed because the supported CI lane does not execute the new focused/BXI/CEC suite.
+2. Native Windows PowerShell 5.1 T1b qualification is pending and not claimed because the supported CI lane does not execute the new focused/BXI/CEC suite. The existing PS5.1 runtime job is red only on the unrelated, previously known UTF-8 metadata expectation; its T4 steps pass.
 3. Native macOS PowerShell 7.6 T1b qualification is likewise not claimed; local execution used PowerShell 7.5.2 and the current 7.6 CI lane does not execute the new suite.
 4. Regulatory SME confirmation of the documented `ema` versus `EU-EMA` source inconsistency remains intentionally open and non-blocking; implementation follows the accepted DTD/App. 1.1 rule.
