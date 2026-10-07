@@ -6,6 +6,7 @@
 - Authoritative design base: `e9530adb6f2e8b31035ca27f7267d6a2de25081d`
 - Implementation branch: `implementation/emas-ms04-regional-xml-evidence-t1b-eu-envelope`
 - Implementation commit: `b1a4feb2a7c7bb3e11665ded2d66c05044a28de0`
+- Central-review amendment implementation commit: `3176465c8263ca34ce4db52718c9745a5674c002`
 - Report publication commit: recorded as the PR head and in the worker return because a commit cannot embed its own SHA
 - Draft PR: [#60](https://github.com/MightyM-ouse/eMAS/pull/60)
 - Target: `coordination/emas-ms04-regional-xml-evidence-t1b-design`
@@ -63,6 +64,7 @@ Tests:
 - `tests/backbone-xml-inventory/Test-eMASBackboneXmlInventory.ps1`
 - `tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1`
 - `tests/dossier-diversity/Test-eMASDossierDiversity.ps1`
+- `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1`
 - `tests/regional-xml-evidence/Test-eMASRegionalXmlEvidence.ps1`
 
 Synthetic read-only fixtures:
@@ -135,15 +137,39 @@ pwsh -NoProfile -NonInteractive -File tests/dossier-diversity/Test-eMASDossierDi
 
 PASS: 61/61; 8/8 frozen fixture hashes unchanged. Historical SD-002-profile assertions remain 86 records by excluding both T1a and T1b additive evidence from the legacy projection. `wave1d-expectations.json` was not modified.
 
+ChatGPT central fixed-SHA review inspected and ratified the exact test-only change to `tests/dossier-diversity/Test-eMASDossierDiversity.ps1`. That change only extends the historical projection to exclude the five accepted T1b evidence types. No additional change to that file was made during the amendment.
+
 ### Root-level dossier
 
 ```text
 pwsh -NoProfile -NonInteractive -File tests/root-level-dossier/Test-eMASRootLevelDossier.ps1 -CorpusRoot /private/tmp/emas-t1b-wave1-ref -OutputRoot /private/tmp/emas-t1b-root-final
 ```
 
-FAIL: 2/3. Reference resolution and unrelated SD-020 passed. The historical CEC count check expected 86 but observed 135 because this harness excludes the five T1a types but not the five new T1b types. Production behavior is the same accepted additive behavior proven by CEC and Wave1D.
+PASS: 3/3 after the centrally authorized test-only amendment. The historical projection excludes the five T1a and five T1b additive evidence types, preserving the historical count of 86. The full additive SD-002 count is 150. Root-level paths, ReferenceResolution, wrapped-versus-root equivalence, repository coverage, and unrelated SD-020 assertions remain intact.
 
-`tests/root-level-dossier/Test-eMASRootLevelDossier.ps1` is outside TASK.md's authorized test paths. The task says to stop and explain before changing any additional file, so it was not modified. Central authorization is required to extend that harness's historical projection with the five T1b evidence types; no non-CEC assertion needs weakening.
+ChatGPT central review explicitly authorized `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1` for this follow-up. No production semantics were changed.
+
+### Central-review amendment rerun
+
+Commands:
+
+```text
+pwsh -NoProfile -NonInteractive -File tests/root-level-dossier/Test-eMASRootLevelDossier.ps1 -CorpusRoot /private/tmp/emas-t1b-wave1-ref -OutputRoot /private/tmp/emas-t1b-followup-root
+pwsh -NoProfile -NonInteractive -File tests/regional-xml-evidence/Test-eMASRegionalXmlEvidence.ps1 -OutputRoot /private/tmp/emas-t1b-followup-focused
+pwsh -NoProfile -NonInteractive -File tests/classification-evidence-collection/Test-eMASClassificationEvidenceCollection.ps1 -CorpusRoot /Users/vinay/Projects/AI/eMAS/02_Working/MS-04-PreSales-Wave1 -FreezeManifestPath /Users/vinay/Projects/AI/eMAS/outputs/01a10828-17e0-7650-be63-84f1930c20ab/wave1-freeze-v1.1/WAVE1_FREEZE_MANIFEST.csv -OutputRoot /private/tmp/emas-t1b-followup-cec
+pwsh -NoProfile -NonInteractive -File tests/dossier-diversity/Test-eMASDossierDiversity.ps1 -CorpusRoot /private/tmp/emas-ectd4-baseline.e3oYH2/wave1d/eMAS_MS04_PreSales_Wave1D_DossierDiversity_v1 -Wave1CorpusRoot /private/tmp/emas-t1b-wave1-ref -OutputRoot /private/tmp/emas-t1b-followup-wave1d
+pwsh -NoProfile -NonInteractive -File tests/identification-interpretation/engine/Test-eMASIdentificationInterpretation.ps1
+pwsh -NoProfile -NonInteractive -File tests/identification-interpretation/engine/Test-eMASIdentificationOracleConformance.ps1
+```
+
+| Gate | Amendment rerun result |
+|---|---|
+| Root-level dossier | PASS 3/3; historical 86; full additive 150 |
+| Focused regional XML evidence | PASS 10/10; 11/11 focused fixtures unchanged |
+| ClassificationEvidenceCollection | PASS: 19 fixtures, 43 additional checks; Wave 1 19/19 and Wave1E 22/22 hashes before and after |
+| Wave1D | PASS 61/61; 8/8 frozen fixtures unchanged |
+| T4 focused engine | PASS 28/28 |
+| T4 accepted oracle | PASS 23/23 |
 
 ### T4 regressions
 
@@ -178,7 +204,6 @@ No projection v2, Identification rules, canonical procedure dimension, aliases, 
 
 ## Blockers and open issues
 
-1. Root-level harness scope blocker: the required root-level regression needs a historical projection update in `tests/root-level-dossier/Test-eMASRootLevelDossier.ps1`, but that file is outside the formal authorized list. Current result is 2/3 with the stale count 86 vs 135.
-2. Native Windows PowerShell 5.1 T1b qualification is pending and not claimed because the supported CI lane does not execute the new focused/BXI/CEC suite. The existing PS5.1 runtime job is red only on the unrelated, previously known UTF-8 metadata expectation; its T4 steps pass.
-3. Native macOS PowerShell 7.6 T1b qualification is likewise not claimed; local execution used PowerShell 7.5.2 and the current 7.6 CI lane does not execute the new suite.
-4. Regulatory SME confirmation of the documented `ema` versus `EU-EMA` source inconsistency remains intentionally open and non-blocking; implementation follows the accepted DTD/App. 1.1 rule.
+1. Native Windows PowerShell 5.1 T1b qualification is pending and not claimed because the supported CI lane does not execute the new focused/BXI/CEC suite. The existing PS5.1 runtime job is red only on the unrelated, previously known UTF-8 metadata expectation; its T4 steps pass.
+2. Native macOS PowerShell 7.6 T1b qualification is likewise not claimed; local execution used PowerShell 7.5.2 and the current 7.6 CI lane does not execute the new suite.
+3. Regulatory SME confirmation of the documented `ema` versus `EU-EMA` source inconsistency remains intentionally open and non-blocking; implementation follows the accepted DTD/App. 1.1 rule.
