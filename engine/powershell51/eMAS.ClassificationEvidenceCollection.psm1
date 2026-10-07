@@ -8,7 +8,8 @@ $script:eMASCecTypeOrder = @(
     'DossierRootPath', 'SequenceFolder', 'CtdModuleFolders', 'Module1RegionalFolder',
     'CommonBackbonePresence', 'CommonBackbonePath', 'RegionalBackbonePresence', 'RegionalBackbonePath',
     'XmlRootElement', 'XmlNamespace', 'DtdVersion', 'DocumentTypeName', 'DtdSystemIdentifier', 'DtdPublicIdentifier',
-    'RegulatoryUnitKind', 'SubmissionUnitMarkerFile', 'TocFileMarker', 'ChecksumFileMarker', 'UtilityDtdFolderMarker'
+    'RegulatoryUnitKind', 'SubmissionUnitMarkerFile', 'TocFileMarker', 'ChecksumFileMarker', 'UtilityDtdFolderMarker',
+    'EuEnvelopeCountry', 'EuAgencyCode', 'EuProcedureType', 'EuSubmissionType', 'EuSubmissionUnitType'
 )
 $script:eMASCecTypeSpec = @{
     DossierRootPath          = @{ Dimension = 'DossierContext'; Strength = 'Weak'; SourceTier = 'FolderNameHeuristic' }
@@ -30,6 +31,18 @@ $script:eMASCecTypeSpec = @{
     TocFileMarker            = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
     ChecksumFileMarker       = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
     UtilityDtdFolderMarker   = @{ Dimension = 'TechnicalFormat'; Strength = 'Supporting'; SourceTier = 'OfficialPhysicalPath' }
+    EuEnvelopeCountry        = @{ Dimension = 'Region'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    EuAgencyCode             = @{ Dimension = 'Region'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    EuProcedureType          = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    EuSubmissionType         = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    EuSubmissionUnitType     = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+}
+$script:eMASCecRegionalEnvelopeTypeByField = @{
+    EU_ENVELOPE_COUNTRY = 'EuEnvelopeCountry'
+    EU_AGENCY_CODE = 'EuAgencyCode'
+    EU_PROCEDURE_TYPE = 'EuProcedureType'
+    EU_SUBMISSION_TYPE = 'EuSubmissionType'
+    EU_SUBMISSION_UNIT_TYPE = 'EuSubmissionUnitType'
 }
 
 function Get-eMASCecPropertyValue {
@@ -116,7 +129,8 @@ function New-eMASCecDraft {
         [Parameter(Mandatory = $true)][string] $SubjectType,
         [Parameter(Mandatory = $true)][string] $SourceCapability,
         [Parameter(Mandatory = $true)][string] $SourceField,
-        [int] $SortGroup = 0
+        [int] $SortGroup = 0,
+        [AllowNull()][object] $SourceOrdinal
     )
 
     $spec = $script:eMASCecTypeSpec[$EvidenceType]
@@ -125,6 +139,8 @@ function New-eMASCecDraft {
     $typeIndex = [array]::IndexOf($script:eMASCecTypeOrder, $EvidenceType)
     # New evidence is sorted after the accepted historical catalogue so existing records retain stable IDs.
     $sortKey = '{0:D2}{1}{2}{1}{3}{1}{4}{1}{5:D2}{1}{6}' -f $SortGroup, [char]1, $DossierPath, [string]$SequenceFolder, [string]$SequenceRelativePath, $typeIndex, [string]$RelativePath
+    $hasSourceOrdinal = $PSBoundParameters.ContainsKey('SourceOrdinal')
+    if ($hasSourceOrdinal) { $sortKey += ('{0}{1:D4}' -f [char]1, [int]$SourceOrdinal) }
     $record = [pscustomobject][ordered]@{
         EvidenceId = $null
         Dimension = $dimension
@@ -146,11 +162,15 @@ function New-eMASCecDraft {
         SourceCapability = $SourceCapability
         SourceField = $SourceField
     }
+    if ($hasSourceOrdinal) {
+        $record | Add-Member -MemberType NoteProperty -Name SourceOrdinal -Value ([int]$SourceOrdinal)
+    }
     return [pscustomobject]@{ SortKey = $sortKey; Record = $record }
 }
 
 function New-eMASCecCoverage {
     param(
+        [string] $CheckId = 'ClassificationEvidenceCollection',
         [Parameter(Mandatory = $true)][ValidateSet('Repository', 'XmlDocument')][string] $SubjectType,
         [Parameter(Mandatory = $true)][string] $SubjectId,
         [Parameter(Mandatory = $true)][string] $CaptureStatus,
@@ -160,7 +180,7 @@ function New-eMASCecCoverage {
     )
 
     return [pscustomobject][ordered]@{
-        CheckId = 'ClassificationEvidenceCollection'
+        CheckId = $CheckId
         SubjectType = $SubjectType
         SubjectId = $SubjectId
         CaptureStatus = $CaptureStatus
@@ -168,6 +188,67 @@ function New-eMASCecCoverage {
         RecordsProduced = $RecordsProduced
         ReasonCode = $(if ([string]::IsNullOrWhiteSpace($ReasonCode)) { $null } else { $ReasonCode })
     }
+}
+
+function Get-eMASCecRegionalFieldCoverage {
+    param(
+        [Parameter(Mandatory = $true)][object] $XmlDocument,
+        [Parameter(Mandatory = $true)][string] $FieldCode,
+        [AllowEmptyCollection()][object[]] $Fields,
+        [Parameter(Mandatory = $true)][int] $RecordsProduced
+    )
+
+    $exists = Get-eMASCecPropertyValue -InputObject $XmlDocument -Name 'Exists'
+    $parseStatus = [string](Get-eMASCecPropertyValue -InputObject $XmlDocument -Name 'ParseStatus')
+    $xmlCapture = [string](Get-eMASCecPropertyValue -InputObject $XmlDocument -Name 'CaptureStatus')
+    $regional = Get-eMASCecPropertyValue -InputObject $XmlDocument -Name 'RegionalEnvelope'
+
+    $captureStatus = 'Available'
+    $collectionStatus = 'Collected'
+    $reasonCode = $null
+    if ($exists -is [bool] -and -not [bool]$exists) {
+        $captureStatus = 'InputUnavailable'; $collectionStatus = 'NotApplicable'; $reasonCode = 'SourceXmlMissing'
+    }
+    elseif ($parseStatus -eq 'ParseFailed') {
+        $captureStatus = 'ParseFailed'; $collectionStatus = 'NotAssessed'; $reasonCode = 'SourceXmlParseFailed'
+    }
+    elseif ($xmlCapture -ne 'Available' -or $null -eq $regional) {
+        $captureStatus = $(if ($xmlCapture -eq 'AccessDenied') { 'AccessDenied' } else { 'InputUnavailable' })
+        $collectionStatus = 'NotAssessed'; $reasonCode = 'SourceXmlUnavailable'
+    }
+    elseif ([string]$regional.ProfileStatus -eq 'UnsupportedRegionalProfile') {
+        $captureStatus = 'NotCollected'; $collectionStatus = 'NotAssessed'; $reasonCode = 'UnsupportedRegionalProfile'
+    }
+    elseif ([string]$regional.ProfileStatus -eq 'UnrecognizedRegionalStructure') {
+        $captureStatus = 'NotCollected'; $collectionStatus = 'NotAssessed'; $reasonCode = 'UnrecognizedRegionalStructure'
+    }
+    elseif ([string]$regional.ProfileStatus -eq 'NotAttempted') {
+        $captureStatus = $(if ($xmlCapture -eq 'AccessDenied') { 'AccessDenied' } elseif ($parseStatus -eq 'ParseFailed') { 'ParseFailed' } else { 'InputUnavailable' })
+        $collectionStatus = 'NotAssessed'
+        $reasonCode = $(if ($parseStatus -eq 'ParseFailed') { 'SourceXmlParseFailed' } else { 'SourceXmlUnavailable' })
+    }
+    elseif (@($Fields | Where-Object { $_.ValueStatus -eq 'MultipleValues' }).Count -gt 0) {
+        $collectionStatus = 'NotAssessed'; $reasonCode = 'CardinalityViolation'
+    }
+    elseif (@($Fields | Where-Object { $_.ValueStatus -eq 'OutsideProfileVocabulary' }).Count -gt 0) {
+        $collectionStatus = 'NotAssessed'; $reasonCode = 'ValueOutsideProfileVocabulary'
+    }
+    elseif (@($Fields | Where-Object { $_.ValueStatus -eq 'Absent' }).Count -gt 0) {
+        $reasonCode = 'MandatoryFieldAbsent'
+    }
+    elseif ($Fields.Count -gt 0 -and @($Fields | Where-Object { $_.ValueStatus -eq 'NotDefinedInProfile' }).Count -eq $Fields.Count) {
+        $captureStatus = 'NotCollected'; $collectionStatus = 'NotAssessed'; $reasonCode = 'FieldNotDefinedInProfile'
+    }
+    elseif ($Fields.Count -eq 0) {
+        $captureStatus = 'InputUnavailable'; $collectionStatus = 'NotAssessed'; $reasonCode = 'SourceXmlUnavailable'
+    }
+    else {
+        $knownValues = [string[]]@($Fields | Where-Object { $_.ValueStatus -eq 'Known' } | ForEach-Object { [string]$_.Value })
+        if (@($knownValues | Select-Object -Unique).Count -gt 1) { $reasonCode = 'EnvelopeValuesDiffer' }
+    }
+
+    return New-eMASCecCoverage -CheckId ('RegionalEnvelopeField:{0}' -f $FieldCode) -SubjectType 'XmlDocument' -SubjectId ([string]$XmlDocument.XmlId) `
+        -CaptureStatus $captureStatus -CollectionStatus $collectionStatus -RecordsProduced $RecordsProduced -ReasonCode $reasonCode
 }
 
 function Invoke-eMASClassificationEvidenceCollection {
@@ -205,6 +286,7 @@ function Invoke-eMASClassificationEvidenceCollection {
         if ($item.CheckId -ne 'ClassificationEvidenceCollection') { [void]$coverage.Add($item) }
     }
     $xmlCoverage = New-Object System.Collections.ArrayList
+    $regionalFieldCoverage = New-Object System.Collections.ArrayList
     $inventoryAvailable = ([string](Get-eMASCecPropertyValue -InputObject $workingResult.Repository -Name 'InventoryCaptureStatus') -eq 'Available')
 
     if ($inventoryAvailable) {
@@ -345,6 +427,26 @@ function Invoke-eMASClassificationEvidenceCollection {
                     [void]$xmlDrafts.Add((New-eMASCecDraft -EvidenceType $fact.Type -ObservedValue ([string]$fact.Value) -CaptureStatus 'Available' -SourceField ('XmlDocuments.' + $fact.Field) @common))
                     $structuredCount++
                 }
+
+                if ($xmlKind -eq 'RegionalBackbone') {
+                    $regionalEnvelope = Get-eMASCecPropertyValue -InputObject $xml -Name 'RegionalEnvelope'
+                    foreach ($fieldCode in @($script:eMASCecRegionalEnvelopeTypeByField.Keys | Sort-Object { [array]::IndexOf(@('EU_ENVELOPE_COUNTRY','EU_AGENCY_CODE','EU_PROCEDURE_TYPE','EU_SUBMISSION_TYPE','EU_SUBMISSION_UNIT_TYPE'), $_) })) {
+                        $fieldFacts = New-Object System.Collections.ArrayList
+                        if ($null -ne $regionalEnvelope -and [string]$regionalEnvelope.ProfileStatus -eq 'Supported') {
+                            foreach ($envelope in @($regionalEnvelope.Envelopes)) {
+                                $field = @($envelope.Fields | Where-Object { $_.FieldCode -eq $fieldCode })
+                                if ($field.Count -ne 1) { continue }
+                                [void]$fieldFacts.Add($field[0])
+                                if ([string]$field[0].ValueStatus -eq 'Known') {
+                                    [void]$xmlDrafts.Add((New-eMASCecDraft -EvidenceType ([string]$script:eMASCecRegionalEnvelopeTypeByField[$fieldCode]) -ObservedValue ([string]$field[0].Value) `
+                                        -CaptureStatus 'Available' -SourceField ('XmlDocuments.RegionalEnvelope.' + $fieldCode) -SortGroup 2 -SourceOrdinal ([int]$envelope.EnvelopeOrdinal) @common))
+                                }
+                            }
+                        }
+                        [void]$regionalFieldCoverage.Add((Get-eMASCecRegionalFieldCoverage -XmlDocument $xml -FieldCode $fieldCode -Fields @($fieldFacts) `
+                            -RecordsProduced @($fieldFacts | Where-Object { $_.ValueStatus -eq 'Known' }).Count))
+                    }
+                }
                 [void]$xmlCoverage.Add((New-eMASCecCoverage -SubjectType 'XmlDocument' -SubjectId ([string]$xml.XmlId) -CaptureStatus 'Available' -CollectionStatus 'Collected' -RecordsProduced $xmlDrafts.Count -ReasonCode $null))
             }
             elseif ($existsKnown -and -not [bool]$exists) {
@@ -356,6 +458,11 @@ function Invoke-eMASClassificationEvidenceCollection {
             else {
                 $unavailableCapture = $(if ($xmlCaptureStatus -eq 'AccessDenied') { 'AccessDenied' } else { 'InputUnavailable' })
                 [void]$xmlCoverage.Add((New-eMASCecCoverage -SubjectType 'XmlDocument' -SubjectId ([string]$xml.XmlId) -CaptureStatus $unavailableCapture -CollectionStatus 'NotAssessed' -RecordsProduced $xmlDrafts.Count -ReasonCode 'SourceXmlUnavailable'))
+            }
+            if ($xmlKind -eq 'RegionalBackbone' -and -not ($existsKnown -and [bool]$exists -and $parseStatus -eq 'Parsed' -and $xmlCaptureStatus -eq 'Available')) {
+                foreach ($fieldCode in @('EU_ENVELOPE_COUNTRY','EU_AGENCY_CODE','EU_PROCEDURE_TYPE','EU_SUBMISSION_TYPE','EU_SUBMISSION_UNIT_TYPE')) {
+                    [void]$regionalFieldCoverage.Add((Get-eMASCecRegionalFieldCoverage -XmlDocument $xml -FieldCode $fieldCode -Fields @() -RecordsProduced 0))
+                }
             }
             foreach ($draft in $xmlDrafts) { [void]$drafts.Add($draft) }
         }
@@ -399,12 +506,13 @@ function Invoke-eMASClassificationEvidenceCollection {
         }
     }
     foreach ($row in $xmlCoverage) { [void]$coverage.Add($row) }
+    foreach ($row in $regionalFieldCoverage) { [void]$coverage.Add($row) }
     [void]$coverage.Add((New-eMASCecCoverage -SubjectType 'Repository' -SubjectId 'REP-0001' -CaptureStatus $repositoryCaptureStatus -CollectionStatus $repositoryCollectionStatus -RecordsProduced $items.Count -ReasonCode $repositoryReasonCode))
 
     $workingResult.ClassificationEvidence = [object[]]@($existingEvidence)
     $workingResult.CollectionCoverage = [object[]]@($coverage)
     $workingResult.Execution.ScannerName = ('{0}+ClassificationEvidenceCollection' -f [string]$workingResult.Execution.ScannerName)
-    $workingResult.Execution.ScannerVersion = '0.9.0'
+    $workingResult.Execution.ScannerVersion = '0.10.0'
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $workingResult.Execution.Capabilities = [object[]](@($capabilities) + 'ClassificationEvidenceCollection')
     if ($workingResult.Execution.CompletionStatus -eq 'Completed' -and $repositoryCollectionStatus -ne 'Collected') {
