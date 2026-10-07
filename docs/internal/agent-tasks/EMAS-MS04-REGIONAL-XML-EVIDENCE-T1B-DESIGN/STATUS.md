@@ -4,7 +4,7 @@
 **Roadmap ID:** T1b  
 **Authoritative base:** `5d2ab2d1337f3a93a30f999fed3a9e9436724d1a`  
 **Coordination branch:** `coordination/emas-ms04-regional-xml-evidence-t1b-design`  
-**Overall status:** `AMENDED_READY_FOR_FIXED_SHA_RE-REVIEW — WORKER_PR_59`
+**Overall status:** `ACCEPTED_READY_FOR_USER_MERGE_DECISION — WORKER_PR_59`
 
 | Gate | Status |
 |---|---|
@@ -25,8 +25,8 @@
 | EU-EMA vs ema source conflict | DOCUMENTED, NON-BLOCKING (C-5) |
 | remaining open decisions | P-2, P-3, P-4, P-6, P-7, S-1…S-5 — none blocks first-wave collection |
 | implementation | NOT AUTHORIZED — prerequisite: central acceptance of the amended T1b design |
-| ChatGPT central review | CHANGES_REQUIRED → amendments applied; awaiting fixed-SHA re-review |
-| user implementation decision | PENDING |
+| ChatGPT central review | ACCEPTED — fixed-SHA re-review PASS |
+| user design merge decision | READY |
 
 ## GitHub workflow
 
@@ -37,3 +37,16 @@
 - Central review: `reports/REVIEW.md`
 
 Claude may update only task-owned report/status files. No production implementation is authorized.
+
+
+## Fixed-SHA central re-review
+
+Reviewed amended commit:
+
+`5eee04bbb059da5b62394d35aae8bfc0d26d413d`
+
+Result:
+
+`ACCEPTED — READY_FOR_USER_MERGE_DECISION`
+
+No T1b design blocker remains. Implementation remains unauthorized until this design PR is explicitly accepted and merged.
