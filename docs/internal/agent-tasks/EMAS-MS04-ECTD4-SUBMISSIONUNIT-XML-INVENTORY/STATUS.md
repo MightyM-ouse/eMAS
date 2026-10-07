@@ -12,6 +12,8 @@
 | T1b baseline promotion PR #58 | MERGED as 1213d971a3c6285d2ab8c202bc7dccf47603a6ad |
 | T1b status closeout PR #61 | MERGED as 09c6e3bbb37f9811e045214cfb6b9bb575ce669e |
 | T2 task order | CREATED |
+| Task-artifact commit | 34e91251781f7f2e62b99e2d3f310b7da48babe4 |
+| Coordination PR #62 | OPEN / DRAFT / DO NOT MERGE |
 | Claude design/research worker | READY TO LAUNCH |
 | Official source verification | PENDING CLAUDE |
 | Exact XML field/cardinality map | PENDING CLAUDE |
@@ -35,6 +37,15 @@ workbook, reporting, or UI change is authorized.
 
 The current accepted baseline may identify physical submissionunit.xml markers,
 but it does not parse the document or claim structured T2 evidence.
+
+## GitHub workflow
+
+- Coordination PR: #62
+- Coordination target: demo/end-to-end-mvp
+- Claude worker branch: analysis/emas-ms04-ectd4-submissionunit-xml-inventory-design
+- Claude worker target: coordination/emas-ms04-ectd4-submissionunit-xml-inventory
+- Required worker PR state: draft
+- Merge authority: new explicit user decision only
 
 ## Next gate
 
