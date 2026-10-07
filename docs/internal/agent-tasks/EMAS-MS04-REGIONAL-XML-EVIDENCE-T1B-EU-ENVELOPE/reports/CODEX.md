@@ -7,7 +7,7 @@
 - Implementation branch: `implementation/emas-ms04-regional-xml-evidence-t1b-eu-envelope`
 - Implementation commit: `b1a4feb2a7c7bb3e11665ded2d66c05044a28de0`
 - Report publication commit: recorded as the PR head and in the worker return because a commit cannot embed its own SHA
-- Draft PR: pending publication at the time this report commit was prepared
+- Draft PR: [#60](https://github.com/MightyM-ouse/eMAS/pull/60)
 - Target: `coordination/emas-ms04-regional-xml-evidence-t1b-design`
 
 The implementation branch descends from the authoritative base. The formal task order was present at branch start.
