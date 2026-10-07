@@ -4,7 +4,7 @@
 **Roadmap ID:** T1b  
 **Authoritative base:** `5d2ab2d1337f3a93a30f999fed3a9e9436724d1a`  
 **Coordination branch:** `coordination/emas-ms04-regional-xml-evidence-t1b-design`  
-**Overall status:** `DESIGN_ACCEPTED_MERGED — IMPLEMENTATION_TASK_READY`
+**Overall status:** `DESIGN_AND_IMPLEMENTATION_ACCEPTED / ACTIVE_BASELINE`
 
 | Gate | Status |
 |---|---|
@@ -24,7 +24,7 @@
 | vocabulary check ≠ DTD/regulatory validation | STATED (C-4) |
 | EU-EMA vs ema source conflict | DOCUMENTED, NON-BLOCKING (C-5) |
 | remaining open decisions | P-2, P-3, P-4, P-6, P-7, S-1…S-5 — none blocks first-wave collection |
-| implementation | AUTHORIZED FOR A NEW BOUNDED FOLLOW-UP TASK; not part of this design PR |
+| implementation | ACCEPTED / MERGED through PR #60 |
 | ChatGPT central review | ACCEPTED — fixed-SHA re-review PASS |
 | user design merge decision | ACCEPTED / MERGED |
 
@@ -36,7 +36,9 @@
 - Worker report: `docs/internal/agent-tasks/EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-DESIGN/reports/CLAUDE.md`
 - Central review: `reports/REVIEW.md`
 
-Claude may update only task-owned report/status files. No production implementation is authorized.
+The Claude design assignment is closed. Its accepted design constrained the
+subsequent bounded implementation task; no further T1b design edits are
+authorized by this closeout.
 
 
 ## Fixed-SHA central re-review
@@ -69,4 +71,19 @@ The next repository task may now be created:
 
 `EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE`
 
-Production implementation remains separate from this design baseline.
+Production implementation was subsequently accepted and merged through PR #60.
+
+
+## Active-baseline promotion
+
+The fixed coordination head
+`b9c28e678bb6becf719565e22f258ce236d6b596`, containing the accepted design
+and implementation, was reviewed and merged by PR #58 into
+`demo/end-to-end-mvp`.
+
+Promotion merge SHA:
+
+`1213d971a3c6285d2ab8c202bc7dccf47603a6ad`
+
+Native Windows PowerShell 5.1 T1b qualification remains pending/not claimed,
+and the `ema` versus `EU-EMA` source inconsistency remains open/non-blocking.
