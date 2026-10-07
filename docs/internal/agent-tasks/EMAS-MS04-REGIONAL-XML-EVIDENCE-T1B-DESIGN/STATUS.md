@@ -4,27 +4,25 @@
 **Roadmap ID:** T1b  
 **Authoritative base:** `5d2ab2d1337f3a93a30f999fed3a9e9436724d1a`  
 **Coordination branch:** `coordination/emas-ms04-regional-xml-evidence-t1b-design`  
-**Overall status:** `READY_FOR_CENTRAL_REVIEW — WORKER_PR_59`
+**Overall status:** `CHANGES_REQUIRED_AFTER_CENTRAL_REVIEW — WORKER_PR_59`
 
 | Gate | Status |
 |---|---|
 | T1a physical CEC evidence | ACCEPTED / MERGED |
 | T3/T3a/T3b rule/config foundation | ACCEPTED / MERGED |
 | T4 IdentificationInterpretation | ACCEPTED / MERGED |
-| EU regional XML design inventory | COMPLETE — 3 EU DTD generations (2.0, 3.0.1, 3.1) in corpus |
-| official source ledger | COMPLETE — EMA EU M1 spec v2.0, v3.0.1, v3.0.4, v3.1 + v3.1.1 release notes |
-| historical EU version compatibility | COMPLETE |
-| architecture decision | RECOMMENDED — Option A (extend BXI via private helper; RC1 requalification, P-1) |
-| ScannerObservations impact | ADDITIVE within 1.0 |
-| CEC evidence catalogue | COMPLETE — 5 first-wave types, raw Strong / StructuredXml |
+| EU regional XML design inventory | PASS |
+| official source ledger | PASS |
+| historical EU version compatibility | PASS |
+| architecture decision | ACCEPTED — extend BXI and re-qualify |
+| ScannerObservations impact | ACCEPTED — additive within 1.0 |
+| five first-wave evidence types | ACCEPTED — raw Strong / StructuredXml |
+| CEC Dimension hint expansion | REJECTED FOR T1B — use existing compatibility hints |
+| historical CEC record shape | AMENDMENT REQUIRED — SourceOrdinal only on new records |
+| T4 projection v2 | DEFERRED / SEPARATE TASK |
 | implementation | NOT AUTHORIZED |
-| ChatGPT central review | PENDING |
+| ChatGPT central review | CHANGES_REQUIRED |
 | user implementation decision | PENDING |
-
-Single worker: Claude.
-
-This is a report-only regulatory evidence design task. No production file, fixture, schema, workbook or test modification is authorized.
-
 
 ## GitHub workflow
 
@@ -32,5 +30,6 @@ This is a report-only regulatory evidence design task. No production file, fixtu
 - Worker branch: `analysis/emas-ms04-regional-xml-evidence-t1b-design`
 - Claude draft PR: #59
 - Worker report: `docs/internal/agent-tasks/EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-DESIGN/reports/CLAUDE.md`
+- Central review: `reports/REVIEW.md`
 
-Claude may update only the task-owned report/status files permitted by TASK.md. No production implementation is authorized.
+Claude may update only task-owned report/status files. No production implementation is authorized.
