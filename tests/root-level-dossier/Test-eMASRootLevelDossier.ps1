@@ -21,6 +21,14 @@ $script:eMASRootPhysicalMarkerEvidenceTypes = @(
     'ChecksumFileMarker',
     'UtilityDtdFolderMarker'
 )
+$script:eMASRootRegionalEnvelopeEvidenceTypes = @(
+    'EuEnvelopeCountry',
+    'EuAgencyCode',
+    'EuProcedureType',
+    'EuSubmissionType',
+    'EuSubmissionUnitType'
+)
+$script:eMASRootAdditiveEvidenceTypes = @($script:eMASRootPhysicalMarkerEvidenceTypes) + @($script:eMASRootRegionalEnvelopeEvidenceTypes)
 
 function Assert-eMASRootTrue {
     param([bool] $Condition, [Parameter(Mandatory = $true)][string] $Message)
@@ -39,7 +47,7 @@ function ConvertTo-eMASRootJson {
 
 function Get-eMASRootHistoricalClassificationEvidence {
     param([AllowEmptyCollection()][object[]] $Records)
-    return @($Records | Where-Object { $script:eMASRootPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+    return @($Records | Where-Object { $script:eMASRootAdditiveEvidenceTypes -notcontains $_.EvidenceType })
 }
 
 function ConvertTo-eMASRootReferenceProjection {
@@ -148,7 +156,7 @@ try {
         $fullRecords = @($rootClassification.ClassificationEvidence)
         $historicalRecords = @(Get-eMASRootHistoricalClassificationEvidence -Records $fullRecords)
         Assert-eMASRootEqual -Expected 86 -Actual $historicalRecords.Count -Message 'Root historical classification evidence count differs.'
-        Assert-eMASRootEqual -Expected 101 -Actual $fullRecords.Count -Message 'Root additive classification evidence count differs.'
+        Assert-eMASRootEqual -Expected 150 -Actual $fullRecords.Count -Message 'Root additive classification evidence count differs.'
         $rootPathEvidence = @($rootClassification.ClassificationEvidence | Where-Object { $_.EvidenceType -eq 'DossierRootPath' })
         Assert-eMASRootEqual -Expected 1 -Actual $rootPathEvidence.Count -Message 'Root dossier-path evidence count differs.'
         Assert-eMASRootEqual -Expected '' -Actual ([string]$rootPathEvidence[0].ObservedValue) -Message 'Root dossier-path observed value differs.'

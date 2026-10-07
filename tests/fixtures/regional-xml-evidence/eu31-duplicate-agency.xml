@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="3.1">
+  <eu-envelope>
+    <envelope country="fr">
+      <submission type="maa" />
+      <submission-unit type="initial" />
+      <agency code="FR-ANSM" />
+      <agency code="DE-BFARM" />
+      <procedure type="national" />
+    </envelope>
+  </eu-envelope>
+</eu:eu-backbone>

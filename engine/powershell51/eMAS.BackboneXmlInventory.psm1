@@ -2,6 +2,7 @@
 
 Set-StrictMode -Version 2.0
 . (Join-Path $PSScriptRoot 'private/eMAS.SafeXml.ps1')
+. (Join-Path $PSScriptRoot 'private/eMAS.EuRegionalEnvelope.ps1')
 
 function ConvertTo-eMASXmlRelativePath {
     param([AllowEmptyString()][string] $Path)
@@ -97,7 +98,10 @@ function Get-eMASXmlRootAttributes {
 }
 
 function Read-eMASXmlMetadata {
-    param([Parameter(Mandatory = $true)][System.IO.Stream] $Stream)
+    param(
+        [Parameter(Mandatory = $true)][System.IO.Stream] $Stream,
+        [Parameter(Mandatory = $true)][ValidateSet('CommonBackbone', 'RegionalBackbone', 'Other')][string] $XmlKind
+    )
 
     $loadResult = Read-eMASSafeXmlDocument -Stream $Stream
     if ($loadResult.ParseStatus -eq 'Parsed') {
@@ -113,6 +117,10 @@ function Read-eMASXmlMetadata {
         $documentType = $document.DocumentType
         $declaredVersion = $document.DocumentElement.GetAttribute('dtd-version')
         if ([string]::IsNullOrEmpty($declaredVersion)) { $declaredVersion = $null }
+        $regionalEnvelope = $null
+        if ($XmlKind -eq 'RegionalBackbone') {
+            $regionalEnvelope = Get-eMASEuRegionalEnvelope -Document $document
+        }
 
         return [pscustomobject][ordered]@{
             ParseStatus = 'Parsed'
@@ -132,6 +140,7 @@ function Read-eMASXmlMetadata {
             ParseErrorLineNumber = $null
             ParseErrorLinePosition = $null
             Diagnostic = $null
+            RegionalEnvelope = $regionalEnvelope
         }
     }
     else {
@@ -153,6 +162,7 @@ function Read-eMASXmlMetadata {
             ParseErrorLineNumber = $loadResult.ParseErrorLineNumber
             ParseErrorLinePosition = $loadResult.ParseErrorLinePosition
             Diagnostic = $loadResult.Diagnostic
+            RegionalEnvelope = $(if ($XmlKind -eq 'RegionalBackbone') { New-eMASEuRegionalEnvelopeNotAttempted } else { $null })
         }
     }
 }
@@ -162,7 +172,8 @@ function New-eMASXmlUnavailableMetadata {
         [Parameter(Mandatory = $true)][ValidateSet('Missing', 'NotAttempted')][string] $ParseStatus,
         [Parameter(Mandatory = $true)][ValidateSet('Available', 'InputUnavailable', 'AccessDenied', 'NotCollected')][string] $CaptureStatus,
         [AllowNull()][string] $ErrorCode,
-        [AllowNull()][string] $Diagnostic
+        [AllowNull()][string] $Diagnostic,
+        [Parameter(Mandatory = $true)][ValidateSet('CommonBackbone', 'RegionalBackbone', 'Other')][string] $XmlKind
     )
 
     return [pscustomobject][ordered]@{
@@ -183,6 +194,7 @@ function New-eMASXmlUnavailableMetadata {
         ParseErrorLineNumber = $null
         ParseErrorLinePosition = $null
         Diagnostic = $(if ([string]::IsNullOrWhiteSpace($Diagnostic)) { $null } else { $Diagnostic })
+        RegionalEnvelope = $(if ($XmlKind -eq 'RegionalBackbone' -and $ParseStatus -ne 'Missing') { New-eMASEuRegionalEnvelopeNotAttempted } else { $null })
     }
 }
 
@@ -356,7 +368,7 @@ function Invoke-eMASBackboneXmlInventory {
             $metadata = $null
             $exists = $null -ne $descriptor.FileRecord
             if (-not $exists) {
-                $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'Missing' -CaptureStatus 'Available' -ErrorCode $null -Diagnostic $null
+                $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'Missing' -CaptureStatus 'Available' -ErrorCode $null -Diagnostic $null -XmlKind $descriptor.XmlKind
             }
             elseif ($sourceKind -eq 'Zip') {
                 $entry = $null
@@ -364,19 +376,19 @@ function Invoke-eMASBackboneXmlInventory {
                     $entry = $zipArchive.GetEntry([string]$descriptor.FileRecord.ContainerPath)
                 }
                 if ($null -eq $entry) {
-                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-ZIP-ENTRY-001' -Diagnostic 'The XML entry identified by RepositoryDiscovery was unavailable when opened.'
+                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-ZIP-ENTRY-001' -Diagnostic 'The XML entry identified by RepositoryDiscovery was unavailable when opened.' -XmlKind $descriptor.XmlKind
                 }
                 else {
                     $entryStream = $null
                     try {
                         $entryStream = $entry.Open()
-                        $metadata = Read-eMASXmlMetadata -Stream $entryStream
+                        $metadata = Read-eMASXmlMetadata -Stream $entryStream -XmlKind $descriptor.XmlKind
                     }
                     catch [System.UnauthorizedAccessException] {
-                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'AccessDenied' -ErrorCode 'XML-ACCESS-001' -Diagnostic 'Access to the discovered XML entry was denied.'
+                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'AccessDenied' -ErrorCode 'XML-ACCESS-001' -Diagnostic 'Access to the discovered XML entry was denied.' -XmlKind $descriptor.XmlKind
                     }
                     catch {
-                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-READ-001' -Diagnostic (ConvertTo-eMASSafeXmlDiagnosticMessage -Message $_.Exception.Message)
+                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-READ-001' -Diagnostic (ConvertTo-eMASSafeXmlDiagnosticMessage -Message $_.Exception.Message) -XmlKind $descriptor.XmlKind
                     }
                     finally {
                         if ($null -ne $entryStream) { $entryStream.Dispose() }
@@ -388,27 +400,27 @@ function Invoke-eMASBackboneXmlInventory {
                 $xmlPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedSourcePath $platformRelativePath))
                 $sourcePrefix = $resolvedSourcePath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
                 if (-not $xmlPath.StartsWith($sourcePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'NotCollected' -ErrorCode 'XML-PATH-002' -Diagnostic 'The discovered XML path did not remain inside SourcePath.'
+                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'NotCollected' -ErrorCode 'XML-PATH-002' -Diagnostic 'The discovered XML path did not remain inside SourcePath.' -XmlKind $descriptor.XmlKind
                 }
                 elseif (-not [System.IO.File]::Exists($xmlPath)) {
-                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-FILE-001' -Diagnostic 'The XML file identified by RepositoryDiscovery was unavailable when opened.'
+                    $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-FILE-001' -Diagnostic 'The XML file identified by RepositoryDiscovery was unavailable when opened.' -XmlKind $descriptor.XmlKind
                 }
                 else {
                     $fileInfo = New-Object System.IO.FileInfo($xmlPath)
                     if (($fileInfo.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'NotCollected' -ErrorCode 'XML-REPARSE-001' -Diagnostic 'XML symbolic links and reparse points are not traversed.'
+                        $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'NotCollected' -ErrorCode 'XML-REPARSE-001' -Diagnostic 'XML symbolic links and reparse points are not traversed.' -XmlKind $descriptor.XmlKind
                     }
                     else {
                         $fileStream = $null
                         try {
                             $fileStream = [System.IO.File]::Open($xmlPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
-                            $metadata = Read-eMASXmlMetadata -Stream $fileStream
+                            $metadata = Read-eMASXmlMetadata -Stream $fileStream -XmlKind $descriptor.XmlKind
                         }
                         catch [System.UnauthorizedAccessException] {
-                            $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'AccessDenied' -ErrorCode 'XML-ACCESS-001' -Diagnostic 'Access to the discovered XML file was denied.'
+                            $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'AccessDenied' -ErrorCode 'XML-ACCESS-001' -Diagnostic 'Access to the discovered XML file was denied.' -XmlKind $descriptor.XmlKind
                         }
                         catch {
-                            $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-READ-001' -Diagnostic (ConvertTo-eMASSafeXmlDiagnosticMessage -Message $_.Exception.Message)
+                            $metadata = New-eMASXmlUnavailableMetadata -ParseStatus 'NotAttempted' -CaptureStatus 'InputUnavailable' -ErrorCode 'XML-READ-001' -Diagnostic (ConvertTo-eMASSafeXmlDiagnosticMessage -Message $_.Exception.Message) -XmlKind $descriptor.XmlKind
                         }
                         finally {
                             if ($null -ne $fileStream) { $fileStream.Dispose() }
@@ -445,6 +457,7 @@ function Invoke-eMASBackboneXmlInventory {
                 ParseErrorLineNumber = $metadata.ParseErrorLineNumber
                 ParseErrorLinePosition = $metadata.ParseErrorLinePosition
                 Diagnostic = $metadata.Diagnostic
+                RegionalEnvelope = $metadata.RegionalEnvelope
             })
         }
     }
@@ -491,7 +504,7 @@ function Invoke-eMASBackboneXmlInventory {
     $workingResult.CollectionCoverage = [object[]]@($coverage)
 
     $workingResult.Execution.ScannerName = 'eMAS.RepositoryDiscovery+BackboneXmlInventory'
-    $workingResult.Execution.ScannerVersion = '0.2.0'
+    $workingResult.Execution.ScannerVersion = '0.3.0'
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     if ($workingResult.Execution.PSObject.Properties.Name -contains 'Capabilities') {
         $workingResult.Execution.Capabilities = [object[]]@('RepositoryDiscovery', 'BackboneXmlInventory')

@@ -362,6 +362,36 @@ Invoke-eMASRecordedCheck -Name 'Directory and ZIP XML observations are equivalen
     }
 }
 
+Invoke-eMASRecordedCheck -Name 'SD-002 extracts supported EU envelope profiles during the existing BXI parse' -Action {
+    $result = $resultBySample['SD-002']
+    Assert-eMASEqual -Expected '0.3.0' -Actual $result.Execution.ScannerVersion -Message 'BXI scanner version differs.'
+    $regional = @($result.XmlDocuments | Where-Object { $_.XmlKind -eq 'RegionalBackbone' })
+    Assert-eMASEqual -Expected 5 -Actual $regional.Count -Message 'Regional XML document count differs.'
+    Assert-eMASEqual -Expected '2.0|3.0.1|3.0.1|3.0.1|3.1' -Actual (@($regional | ForEach-Object { $_.RegionalEnvelope.ProfileVersion }) -join '|') -Message 'EU profile sequence differs.'
+    Assert-eMASEqual -Expected 0 -Actual @($regional | Where-Object { $_.RegionalEnvelope.ProfileStatus -ne 'Supported' }).Count -Message 'A supported corpus profile was not recognized.'
+    Assert-eMASEqual -Expected '1|1|3|3|2' -Actual (@($regional | ForEach-Object { $_.RegionalEnvelope.EnvelopeCount }) -join '|') -Message 'Envelope counts differ.'
+    foreach ($document in $regional) {
+        foreach ($envelope in @($document.RegionalEnvelope.Envelopes)) {
+            Assert-eMASEqual -Expected 5 -Actual @($envelope.Fields).Count -Message 'Envelope field count differs.'
+        }
+    }
+    $profile20Unit = @($regional[0].RegionalEnvelope.Envelopes[0].Fields | Where-Object { $_.FieldCode -eq 'EU_SUBMISSION_UNIT_TYPE' })[0]
+    Assert-eMASEqual -Expected 'NotDefinedInProfile' -Actual $profile20Unit.ValueStatus -Message 'EU 2.0 submission-unit status differs.'
+}
+
+Invoke-eMASRecordedCheck -Name 'BXI preserves lifecycle envelope changes and new property remains regional-only' -Action {
+    $result = $resultBySample['SD-002']
+    $regional = @($result.XmlDocuments | Where-Object { $_.XmlKind -eq 'RegionalBackbone' })
+    $procedureValues = @($regional | ForEach-Object { $_.RegionalEnvelope.Envelopes[0].Fields | Where-Object { $_.FieldCode -eq 'EU_PROCEDURE_TYPE' } | ForEach-Object { $_.Value } })
+    Assert-eMASEqual -Expected 'national|national|mutual-recognition|mutual-recognition|mutual-recognition' -Actual ($procedureValues -join '|') -Message 'Procedure values were normalized or collapsed across lifecycle units.'
+    $common = @($result.XmlDocuments | Where-Object { $_.XmlKind -eq 'CommonBackbone' })
+    Assert-eMASEqual -Expected 0 -Actual @($common | Where-Object { $null -ne $_.RegionalEnvelope }).Count -Message 'Common backbone gained regional-envelope content.'
+    $missing = @($resultBySample['SD-006'].XmlDocuments | Where-Object { $_.XmlKind -eq 'RegionalBackbone' -and -not $_.Exists })[0]
+    Assert-eMASEqual -Expected $null -Actual $missing.RegionalEnvelope -Message 'Missing regional XML manufactured envelope content.'
+    $malformed = @($resultBySample['SD-008'].XmlDocuments | Where-Object { $_.XmlKind -eq 'RegionalBackbone' -and $_.ParseStatus -eq 'ParseFailed' })[0]
+    Assert-eMASEqual -Expected 'NotAttempted' -Actual $malformed.RegionalEnvelope.ProfileStatus -Message 'Malformed regional XML profile status differs.'
+}
+
 Invoke-eMASRecordedCheck -Name 'External XML entity and resource resolution is disabled' -Action {
     $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('emas-xml-safety-{0}' -f [guid]::NewGuid().ToString('N'))
     $sourceRoot = Join-Path $temporaryRoot 'source'
