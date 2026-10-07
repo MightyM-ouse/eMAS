@@ -250,3 +250,10 @@ Accept and merge PR #59 into `coordination/emas-ms04-regional-xml-evidence-t1b-d
 After that merge, create the bounded implementation task:
 
 `EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE`.
+
+
+## User decision
+
+Accepted. PR #59 is approved for merge into `coordination/emas-ms04-regional-xml-evidence-t1b-design` as the T1b design baseline.
+
+The accepted baseline freezes the EU-first five-field envelope design, Option A BXI extraction architecture, additive ScannerObservations/1.0 shape, raw Strong/StructuredXml factual evidence model, legacy CEC compatibility hints, historical-record-shape preservation, and the separation of later CEC-FIELD-PROJECTION/2 interpretation work.
