@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:eu-backbone xmlns:x="http://europa.eu.int" dtd-version="3.1">
+  <eu-envelope>
+    <envelope country="fr">
+      <submission type="var-type1a" />
+      <submission-unit type="response" />
+      <agency code="FR-ANSM" />
+      <procedure type="mutual-recognition" />
+      <applicant>Synthetic applicant not collected</applicant>
+      <invented-name>Synthetic product not collected</invented-name>
+      <inn>Synthetic INN not collected</inn>
+      <submission-description>Synthetic description not collected</submission-description>
+    </envelope>
+    <envelope country="de">
+      <submission type="var-type1a" />
+      <submission-unit type="response" />
+      <agency code="DE-BFARM" />
+      <procedure type="mutual-recognition" />
+    </envelope>
+  </eu-envelope>
+</x:eu-backbone>

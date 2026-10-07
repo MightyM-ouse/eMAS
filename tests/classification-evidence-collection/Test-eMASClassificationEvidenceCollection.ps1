@@ -48,6 +48,14 @@ $newPhysicalMarkerEvidenceTypes = @(
     'ChecksumFileMarker',
     'UtilityDtdFolderMarker'
 )
+$newRegionalEnvelopeEvidenceTypes = @(
+    'EuEnvelopeCountry',
+    'EuAgencyCode',
+    'EuProcedureType',
+    'EuSubmissionType',
+    'EuSubmissionUnitType'
+)
+$allAdditiveEvidenceTypes = @($newPhysicalMarkerEvidenceTypes + $newRegionalEnvelopeEvidenceTypes)
 
 function Get-eMASTestSha256 {
     param([Parameter(Mandatory = $true)][string] $Path)
@@ -85,7 +93,7 @@ function Get-eMASSortedOrdinal {
 
 function ConvertTo-eMASDossierRelativeProjection {
     param([Parameter(Mandatory = $true)][object] $Result)
-    return ConvertTo-eMASJsonText ([object[]]@($Result.ClassificationEvidence | Where-Object { $_.EvidenceType -ne 'DossierRootPath' -and $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType } | ForEach-Object {
+    return ConvertTo-eMASJsonText ([object[]]@($Result.ClassificationEvidence | Where-Object { $_.EvidenceType -ne 'DossierRootPath' -and $allAdditiveEvidenceTypes -notcontains $_.EvidenceType } | ForEach-Object {
         [pscustomobject][ordered]@{ EvidenceType = $_.EvidenceType; Dimension = $_.Dimension; Strength = $_.Strength; SourceTier = $_.SourceTier; SequenceFolder = $_.SequenceFolder; SequenceRelativePath = $_.SequenceRelativePath; ObservedValue = $_.ObservedValue; CaptureStatus = $_.CaptureStatus; XmlId = $_.XmlId; SequenceId = $_.SequenceId }
     }))
 }
@@ -147,17 +155,17 @@ foreach ($fixtureExpectation in @($expectations.fixtures)) {
         $inputResult = Invoke-eMASAcceptedChain -SourcePath $state.Path -ExecutionId ('EXEC-CEC-{0}' -f $sampleId)
         $before = @{}
         foreach ($collection in $unchangedCollections) { $before[$collection] = ConvertTo-eMASJsonText $inputResult.$collection }
-        $otherCoverageBefore = ConvertTo-eMASJsonText ([object[]]@($inputResult.CollectionCoverage | Where-Object { $_.CheckId -ne 'ClassificationEvidenceCollection' }))
+        $otherCoverageBefore = ConvertTo-eMASJsonText ([object[]]@($inputResult.CollectionCoverage | Where-Object { $_.CheckId -ne 'ClassificationEvidenceCollection' -and $_.CheckId -notlike 'RegionalEnvelopeField:*' }))
         $result = Invoke-eMASClassificationEvidenceCollection -InputResult $inputResult -OutputPath (Join-Path $resultRoot $resultFileName)
 
         Assert-eMASEqual -Expected $expectations.contractId -Actual $result.ContractId -Message "$sampleId contract differs."
         foreach ($collection in $unchangedCollections) {
             Assert-eMASEqual -Expected $before[$collection] -Actual (ConvertTo-eMASJsonText $result.$collection) -Message "$sampleId changed accepted $collection evidence."
         }
-        Assert-eMASEqual -Expected $otherCoverageBefore -Actual (ConvertTo-eMASJsonText ([object[]]@($result.CollectionCoverage | Where-Object { $_.CheckId -ne 'ClassificationEvidenceCollection' }))) -Message "$sampleId changed upstream coverage."
+        Assert-eMASEqual -Expected $otherCoverageBefore -Actual (ConvertTo-eMASJsonText ([object[]]@($result.CollectionCoverage | Where-Object { $_.CheckId -ne 'ClassificationEvidenceCollection' -and $_.CheckId -notlike 'RegionalEnvelopeField:*' }))) -Message "$sampleId changed upstream coverage."
 
         $records = @($result.ClassificationEvidence)
-        $historicalRecords = @($records | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+        $historicalRecords = @($records | Where-Object { $allAdditiveEvidenceTypes -notcontains $_.EvidenceType })
         Assert-eMASEqual -Expected $fixtureExpectation.expectedRecordCount -Actual $historicalRecords.Count -Message "$sampleId historical record count differs."
         $actualKeys = [string[]]@($historicalRecords | ForEach-Object { ConvertTo-eMASRecordKey $_.EvidenceType $_.Dimension $_.Strength $_.SourceTier $_.SequenceFolder $_.SequenceRelativePath $_.ObservedValue })
         $expectedKeys = [string[]]@($fixtureExpectation.records | ForEach-Object { ConvertTo-eMASRecordKey $_.evidenceType $_.dimension $_.strength $_.sourceTier $_.sequenceFolder $_.xmlSequenceRelativePath $_.observedValue })
@@ -190,7 +198,7 @@ foreach ($fixtureExpectation in @($expectations.fixtures)) {
             Assert-eMASEqual -Expected 1 -Actual $row.Count -Message "$sampleId per-XML coverage count differs."
             Assert-eMASEqual -Expected $expectedXml.captureStatus -Actual $row[0].CaptureStatus -Message "$sampleId per-XML capture status differs."
             Assert-eMASEqual -Expected $expectedXml.collectionStatus -Actual $row[0].CollectionStatus -Message "$sampleId per-XML collection status differs."
-            Assert-eMASEqual -Expected $expectedXml.structuredRecords -Actual @($records | Where-Object { $_.XmlId -eq $xml[0].XmlId -and ($_.SourceTier -eq 'StructuredXml' -or $_.SourceTier -eq 'BackboneDeclaration') }).Count -Message "$sampleId structured record count differs for $($expectedXml.xmlSequenceRelativePath)."
+            Assert-eMASEqual -Expected $expectedXml.structuredRecords -Actual @($historicalRecords | Where-Object { $_.XmlId -eq $xml[0].XmlId -and ($_.SourceTier -eq 'StructuredXml' -or $_.SourceTier -eq 'BackboneDeclaration') }).Count -Message "$sampleId historical structured record count differs for $($expectedXml.xmlSequenceRelativePath)."
         }
         $repository = @($result.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
         Assert-eMASEqual -Expected 1 -Actual $repository.Count -Message "$sampleId repository coverage count differs."
@@ -351,12 +359,66 @@ Invoke-eMASRecordedCheck -Name 'additive evidence is deterministic and preserves
     $result = $resultBySample['SD-002']
     $repeat = Invoke-eMASClassificationEvidenceCollection -InputResult $inputBySample['SD-002']
     Assert-eMASEqual -Expected (ConvertTo-eMASJsonText $result.ClassificationEvidence) -Actual (ConvertTo-eMASJsonText $repeat.ClassificationEvidence) -Message 'Marker evidence ordering is not deterministic.'
-    $historical = @($result.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+    $historical = @($result.ClassificationEvidence | Where-Object { $allAdditiveEvidenceTypes -notcontains $_.EvidenceType })
     Assert-eMASEqual -Expected 86 -Actual $historical.Count -Message 'Historical evidence count changed.'
     for ($index = 0; $index -lt $historical.Count; $index++) {
         Assert-eMASEqual -Expected ('EVD-{0:D4}' -f ($index + 1)) -Actual $historical[$index].EvidenceId -Message 'Historical EvidenceId changed.'
     }
     Assert-eMASEqual -Expected 'EVD-0087' -Actual @($result.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -contains $_.EvidenceType })[0].EvidenceId -Message 'Additive evidence did not follow the historical ID range.'
+}
+
+Invoke-eMASRecordedCheck -Name 'EU regional-envelope evidence implements exactly five accepted factual types' -Action {
+    $records = @($resultBySample['SD-002'].ClassificationEvidence | Where-Object { $newRegionalEnvelopeEvidenceTypes -contains $_.EvidenceType })
+    Assert-eMASEqual -Expected 49 -Actual $records.Count -Message 'SD-002 regional-envelope evidence count differs.'
+    foreach ($expected in @(
+        @{ Type = 'EuEnvelopeCountry'; Count = 10; Dimension = 'Region' },
+        @{ Type = 'EuAgencyCode'; Count = 10; Dimension = 'Region' },
+        @{ Type = 'EuProcedureType'; Count = 10; Dimension = 'DossierContext' },
+        @{ Type = 'EuSubmissionType'; Count = 10; Dimension = 'DossierContext' },
+        @{ Type = 'EuSubmissionUnitType'; Count = 9; Dimension = 'DossierContext' }
+    )) {
+        $typed = @($records | Where-Object { $_.EvidenceType -eq $expected.Type })
+        Assert-eMASEqual -Expected $expected.Count -Actual $typed.Count -Message ("Count differs for {0}." -f $expected.Type)
+        Assert-eMASEqual -Expected 0 -Actual @($typed | Where-Object { $_.Dimension -ne $expected.Dimension }).Count -Message ("Dimension hint differs for {0}." -f $expected.Type)
+    }
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $_.Strength -ne 'Strong' -or $_.SourceTier -ne 'StructuredXml' -or $_.SourceCapability -ne 'BackboneXmlInventory' }).Count -Message 'Regional evidence strength, tier or source capability differs.'
+    Assert-eMASEqual -Expected 0 -Actual @($records | Where-Object { $null -ne $_.CandidateValue -or $null -ne $_.Polarity -or $null -ne $_.SourceRuleId }).Count -Message 'Regional evidence populated interpretation fields.'
+}
+
+Invoke-eMASRecordedCheck -Name 'SourceOrdinal is present only on new regional-envelope records' -Action {
+    $records = @($resultBySample['SD-002'].ClassificationEvidence)
+    $regional = @($records | Where-Object { $newRegionalEnvelopeEvidenceTypes -contains $_.EvidenceType })
+    $other = @($records | Where-Object { $newRegionalEnvelopeEvidenceTypes -notcontains $_.EvidenceType })
+    Assert-eMASEqual -Expected 0 -Actual @($regional | Where-Object { $_.PSObject.Properties.Name -notcontains 'SourceOrdinal' -or [int]$_.SourceOrdinal -lt 1 }).Count -Message 'Regional evidence lacks a valid source ordinal.'
+    Assert-eMASEqual -Expected 0 -Actual @($other | Where-Object { $_.PSObject.Properties.Name -contains 'SourceOrdinal' }).Count -Message 'Historical or physical-marker evidence gained SourceOrdinal.'
+}
+
+Invoke-eMASRecordedCheck -Name 'historical and T1a EvidenceIds remain unchanged before the T1b range' -Action {
+    $records = @($resultBySample['SD-002'].ClassificationEvidence)
+    $preT1b = @($records | Where-Object { $newRegionalEnvelopeEvidenceTypes -notcontains $_.EvidenceType })
+    Assert-eMASEqual -Expected 101 -Actual $preT1b.Count -Message 'Pre-T1b evidence count changed.'
+    for ($index = 0; $index -lt $preT1b.Count; $index++) {
+        Assert-eMASEqual -Expected ('EVD-{0:D4}' -f ($index + 1)) -Actual $preT1b[$index].EvidenceId -Message 'Pre-T1b EvidenceId changed.'
+    }
+    Assert-eMASEqual -Expected 'EVD-0102' -Actual @($records | Where-Object { $newRegionalEnvelopeEvidenceTypes -contains $_.EvidenceType })[0].EvidenceId -Message 'T1b evidence did not start after the accepted range.'
+}
+
+Invoke-eMASRecordedCheck -Name 'regional-envelope field coverage preserves profile, missing and parse-failed reasons' -Action {
+    $sd002Rows = @($resultBySample['SD-002'].CollectionCoverage | Where-Object { $_.CheckId -like 'RegionalEnvelopeField:*' })
+    Assert-eMASEqual -Expected 25 -Actual $sd002Rows.Count -Message 'SD-002 regional field coverage row count differs.'
+    $profile20Xml = @($resultBySample['SD-002'].XmlDocuments | Where-Object { $_.XmlKind -eq 'RegionalBackbone' -and $_.DeclaredVersion -eq '2.0' })[0]
+    $notDefined = @($sd002Rows | Where-Object { $_.SubjectId -eq $profile20Xml.XmlId -and $_.CheckId -eq 'RegionalEnvelopeField:EU_SUBMISSION_UNIT_TYPE' })
+    Assert-eMASEqual -Expected 1 -Actual $notDefined.Count -Message '2.0 submission-unit coverage is missing.'
+    Assert-eMASEqual -Expected 'FieldNotDefinedInProfile' -Actual $notDefined[0].ReasonCode -Message '2.0 submission-unit reason differs.'
+    Assert-eMASEqual -Expected 5 -Actual @($resultBySample['SD-006'].CollectionCoverage | Where-Object { $_.CheckId -like 'RegionalEnvelopeField:*' -and $_.ReasonCode -eq 'SourceXmlMissing' }).Count -Message 'Missing regional XML field coverage differs.'
+    Assert-eMASEqual -Expected 5 -Actual @($resultBySample['SD-008'].CollectionCoverage | Where-Object { $_.CheckId -like 'RegionalEnvelopeField:*' -and $_.ReasonCode -eq 'SourceXmlParseFailed' }).Count -Message 'Malformed regional XML field coverage differs.'
+}
+
+Invoke-eMASRecordedCheck -Name 'CEC consumes mocked RegionalEnvelope facts without reopening XML' -Action {
+    $synthetic = Copy-eMASResult $inputBySample['SD-002']
+    $synthetic.Repository.ResolvedSourcePath = '/source/that/is/not/available/to-cec.zip'
+    $result = Invoke-eMASClassificationEvidenceCollection -InputResult $synthetic
+    Assert-eMASEqual -Expected 49 -Actual @($result.ClassificationEvidence | Where-Object { $newRegionalEnvelopeEvidenceTypes -contains $_.EvidenceType }).Count -Message 'Mocked upstream regional facts were not collected.'
 }
 
 Invoke-eMASRecordedCheck -Name 'SD-001 historical DTD versions are preserved verbatim' -Action {
@@ -412,8 +474,8 @@ foreach ($pair in @($expectations.invariancePairs)) {
     Invoke-eMASRecordedCheck -Name ("Classification evidence invariant: {0} vs {1} ({2})" -f $pair.baseline, $pair.comparison, $pair.projection) -Action {
         $baseline = $resultBySample[[string]$pair.baseline]; $comparison = $resultBySample[[string]$pair.comparison]
         if ($pair.projection -eq 'Full') {
-            $baselineHistorical = [object[]]@($baseline.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
-            $comparisonHistorical = [object[]]@($comparison.ClassificationEvidence | Where-Object { $newPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+            $baselineHistorical = [object[]]@($baseline.ClassificationEvidence | Where-Object { $allAdditiveEvidenceTypes -notcontains $_.EvidenceType })
+            $comparisonHistorical = [object[]]@($comparison.ClassificationEvidence | Where-Object { $allAdditiveEvidenceTypes -notcontains $_.EvidenceType })
             Assert-eMASEqual -Expected (ConvertTo-eMASJsonText $baselineHistorical) -Actual (ConvertTo-eMASJsonText $comparisonHistorical) -Message 'Historical classification evidence differs.'
         }
         else {

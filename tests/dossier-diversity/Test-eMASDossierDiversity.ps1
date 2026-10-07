@@ -54,6 +54,14 @@ $script:eMASW1dPhysicalMarkerEvidenceTypes = @(
     'ChecksumFileMarker',
     'UtilityDtdFolderMarker'
 )
+$script:eMASW1dRegionalEnvelopeEvidenceTypes = @(
+    'EuEnvelopeCountry',
+    'EuAgencyCode',
+    'EuProcedureType',
+    'EuSubmissionType',
+    'EuSubmissionUnitType'
+)
+$script:eMASW1dAdditiveEvidenceTypes = @($script:eMASW1dPhysicalMarkerEvidenceTypes) + @($script:eMASW1dRegionalEnvelopeEvidenceTypes)
 
 function Get-eMASW1dSha256 {
     param([Parameter(Mandatory = $true)][string] $Path)
@@ -78,7 +86,7 @@ function Get-eMASW1dProperty {
 function ConvertTo-eMASW1dJson { param([AllowNull()][object] $Value) return ([object[]]@($Value) | ConvertTo-Json -Depth 64 -Compress) }
 function Get-eMASW1dHistoricalClassificationEvidence {
     param([AllowEmptyCollection()][object[]] $Records)
-    return @($Records | Where-Object { $script:eMASW1dPhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+    return @($Records | Where-Object { $script:eMASW1dAdditiveEvidenceTypes -notcontains $_.EvidenceType })
 }
 function Write-eMASW1dJson {
     param([Parameter(Mandatory = $true)][object] $Value, [Parameter(Mandatory = $true)][string] $Path)

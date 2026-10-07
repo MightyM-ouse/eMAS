@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="2.0">
+  <eu-envelope>
+    <envelope country="fr">
+      <submission type="initial-maa" />
+      <agency code="FR-ANSM" />
+      <procedure type="national" />
+      <applicant>Synthetic applicant not collected</applicant>
+    </envelope>
+  </eu-envelope>
+</eu:eu-backbone>
