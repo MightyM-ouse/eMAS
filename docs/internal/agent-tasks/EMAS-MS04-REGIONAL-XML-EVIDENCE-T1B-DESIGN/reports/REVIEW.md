@@ -200,3 +200,53 @@ After the report is amended:
 - ChatGPT performs a short fixed-SHA re-review;
 - if the amendment matches this review, T1b design can be accepted and merged into the coordination branch;
 - only then should the bounded implementation task be created.
+
+
+## Fixed-SHA re-review
+
+**Reviewed amended commit:** `5eee04bbb059da5b62394d35aae8bfc0d26d413d`  
+**Result:** `ACCEPTED — READY_FOR_USER_MERGE_DECISION`
+
+The required amendments are correctly applied.
+
+Central re-review confirms:
+
+- C-1 through C-7 are recorded and consistent with the central review;
+- P-1 is closed: Option A is the approved architecture and BXI re-qualification is mandatory;
+- P-5 is closed: no new CEC `Dimension` codes are introduced;
+- the legacy compatibility mapping is exactly:
+  - `EuEnvelopeCountry -> Region`;
+  - `EuAgencyCode -> Region`;
+  - `EuProcedureType -> DossierContext`;
+  - `EuSubmissionType -> DossierContext`;
+  - `EuSubmissionUnitType -> DossierContext`;
+- the report clearly states these hints are not canonical Identification target dimensions;
+- `SourceOrdinal` exists only on new T1b envelope evidence records;
+- historical CEC record shape and historical EvidenceIds are preserved;
+- profile-vocabulary comparison is explicitly distinguished from DTD/regulatory validation;
+- the `ema` / `EU-EMA` source conflict remains documented and non-blocking;
+- the bounded implementation task now begins only after central acceptance of this design;
+- remaining P-2/P-3/P-4/P-6/P-7 and S-1…S-5 decisions are correctly treated as non-blocking for first-wave factual collection;
+- no production code, fixture, test, schema, workbook or T4 file was modified by the amendment.
+
+### Final design verdict
+
+**T1b EU regional-envelope design is accepted.**
+
+The approved first-wave collection baseline is:
+
+- EU M1 DTD profiles `2.0`, `3.0.1`, `3.1`;
+- five typed envelope facts;
+- Option A extraction during the existing BXI parse;
+- additive `ScannerObservations/1.0` shape;
+- raw `Strong / StructuredXml` factual evidence;
+- CEC remains fact-only and never reopens XML;
+- T4 projection/interpretation remains a separate later task.
+
+### Recommendation
+
+Accept and merge PR #59 into `coordination/emas-ms04-regional-xml-evidence-t1b-design` as the T1b design baseline.
+
+After that merge, create the bounded implementation task:
+
+`EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE`.
