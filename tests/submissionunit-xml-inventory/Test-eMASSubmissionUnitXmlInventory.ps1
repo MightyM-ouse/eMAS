@@ -1,7 +1,10 @@
 #requires -Version 5.1
 
 [CmdletBinding()]
-param([Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string] $OutputRoot)
+param(
+    [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string] $OutputRoot,
+    [string] $Wave1CorpusRoot
+)
 
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
@@ -23,6 +26,7 @@ Import-Module (Join-Path $repositoryRoot 'engine/powershell51/eMAS.Classificatio
 
 $script:passed = 0
 $script:failed = 0
+$script:skipped = 0
 $script:sourceState = @{}
 
 function Assert-eMAST2True { param([bool] $Condition, [string] $Message) if (-not $Condition) { throw $Message } }
@@ -35,7 +39,10 @@ function Assert-eMAST2Null { param([AllowNull()][object] $Value, [string] $Messa
 function Invoke-eMAST2Check {
     param([Parameter(Mandatory = $true)][string] $Name, [Parameter(Mandatory = $true)][scriptblock] $Action)
     try { & $Action; $script:passed++; Write-Output ('[PASS] {0}' -f $Name) }
-    catch { $script:failed++; Write-Output ('[FAIL] {0}: {1}' -f $Name, $_.Exception.Message) }
+    catch {
+        if ($_.Exception.Message.StartsWith('SKIP:', [System.StringComparison]::Ordinal)) { $script:skipped++; Write-Output ('[SKIP] {0}: {1}' -f $Name, $_.Exception.Message.Substring(5).Trim()); return }
+        $script:failed++; Write-Output ('[FAIL] {0}: {1}' -f $Name, $_.Exception.Message)
+    }
 }
 
 function Get-eMAST2Sha256 {
@@ -67,6 +74,59 @@ function New-eMAST2Repository {
     $zipPath = $root + '.zip'
     [System.IO.Compression.ZipFile]::CreateFromDirectory($root, $zipPath, [System.IO.Compression.CompressionLevel]::NoCompression, $false)
     return $zipPath
+}
+
+function New-eMAST2ZipFromEntries {
+    # Builds an adversarial ZIP in the test temp root from immutable fixture bytes; entry names are written verbatim.
+    param([Parameter(Mandatory = $true)][string] $Name, [Parameter(Mandatory = $true)][object[]] $Entries)
+    try { Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue } catch { }
+    try { Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue } catch { }
+    $zipPath = Join-Path $temporaryRoot ($Name + '.zip')
+    $stream = [System.IO.File]::Open($zipPath, [System.IO.FileMode]::CreateNew)
+    try {
+        $archive = New-Object System.IO.Compression.ZipArchive($stream, [System.IO.Compression.ZipArchiveMode]::Create, $true)
+        try {
+            foreach ($item in @($Entries + @(,@('1/sha256.txt', [System.Text.Encoding]::UTF8.GetBytes(('0' * 64)))) + @(,@('1/m1/synthetic-content.txt', [System.Text.Encoding]::UTF8.GetBytes('eMAS synthetic T2 content'))))) {
+                $entryStream = $archive.CreateEntry([string]$item[0]).Open()
+                try { $bytes = [byte[]]$item[1]; $entryStream.Write($bytes, 0, $bytes.Length) } finally { $entryStream.Dispose() }
+            }
+        }
+        finally { $archive.Dispose() }
+    }
+    finally { $stream.Dispose() }
+    return $zipPath
+}
+
+function Resolve-eMAST2SourcePath {
+    # Resolves a T2 CEC record's SourcePath against its SUXI document and returns the inventory value it names.
+    param([Parameter(Mandatory = $true)][object] $Document, [Parameter(Mandatory = $true)][object] $Record)
+    $path = [string]$Record.SourcePath
+    if ($path -eq 'R') { if ($Record.EvidenceType -eq 'Ectd4MessageRootElement') { return [string]$Document.Structure.RootLocalName } else { return [string]$Document.Structure.RootNamespaceUri } }
+    if ($path -match '^M(\d+)$') { return [string](@($Document.ProfileMarkers | Where-Object { [int]$_.MarkerOrdinal -eq [int]$Matches[1] })[0].Root) }
+    if ($path -eq 'U') { return [string]$Document.SubmissionUnit.Code.Code }
+    if ($path -notmatch '^S(\d+)(/A(\d+)(/I(\d+))?)?$') { throw ('Unresolvable SourcePath {0}' -f $path) }
+    $submission = @($Document.Submissions | Where-Object { [int]$_.SubmissionOrdinal -eq [int]$Matches[1] })[0]
+    if ([string]::IsNullOrEmpty($Matches[3])) {
+        if ($Record.EvidenceType -eq 'Ectd4SequenceNumber') { return [string]$submission.SequenceNumber.Value }
+        return [string]$submission.Code.Code
+    }
+    $application = @($submission.Applications | Where-Object { [int]$_.ApplicationOrdinal -eq [int]$Matches[3] })[0]
+    if ([string]::IsNullOrEmpty($Matches[5])) { return [string]$application.Code.Code }
+    return [string](@($application.IdItems | Where-Object { [int]$_.ItemOrdinal -eq [int]$Matches[5] })[0].Root)
+}
+
+function Assert-eMAST2SourcePathsResolve {
+    param([Parameter(Mandatory = $true)][object] $Chain)
+    $records = @($Chain.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })
+    foreach ($record in $records) {
+        $document = @($Chain.Suxi.SubmissionUnitXmlDocuments | Where-Object { $_.SubmissionUnitXmlId -eq $record.SubmissionUnitXmlId })[0]
+        Assert-eMAST2Equal ([string]$record.ObservedValue) (Resolve-eMAST2SourcePath -Document $document -Record $record) ('SourcePath {0} of {1} does not resolve to its observed value.' -f $record.SourcePath, $record.EvidenceType)
+    }
+}
+
+function Get-eMAST2SuxiCoverage {
+    param([Parameter(Mandatory = $true)][object] $Result, [Parameter(Mandatory = $true)][string] $CheckId)
+    return @($Result.CollectionCoverage | Where-Object { $_.CheckId -eq $CheckId })[0]
 }
 
 function Invoke-eMAST2Chain {
@@ -112,6 +172,12 @@ try {
         Assert-eMAST2Equal 8 @($prefixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' }).Count 'Prefixed fact count differs.'
         Assert-eMAST2Equal (ConvertTo-eMAST2StableJson $prefixed.Suxi.SubmissionUnitXmlDocuments) (ConvertTo-eMAST2StableJson $prefixedZip.Suxi.SubmissionUnitXmlDocuments) 'Directory and ZIP inventory differ.'
         Assert-eMAST2Equal (ConvertTo-eMAST2StableJson @($prefixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })) (ConvertTo-eMAST2StableJson @($prefixedZip.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })) 'Directory and ZIP CEC evidence differ.'
+        $unprefixedXml = [System.IO.File]::ReadAllText((Get-eMAST2FixturePath 'fixtures/SD-088/submissionunit.xml')).Replace('</x:', '</').Replace('<x:', '<').Replace('xmlns:x=', 'xmlns=')
+        Assert-eMAST2True (-not $unprefixedXml.Contains('x:')) 'Unprefixed rendering still contains the prefix.'
+        $unprefixedPath = Join-Path $temporaryRoot 'sd088-unprefixed.xml'; [System.IO.File]::WriteAllText($unprefixedPath, $unprefixedXml, (New-Object System.Text.UTF8Encoding($false)))
+        $unprefixed = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = $unprefixedPath } -Name 'sd088-unprefixed')
+        Assert-eMAST2Equal (ConvertTo-eMAST2StableJson $unprefixed.Suxi.SubmissionUnitXmlDocuments) (ConvertTo-eMAST2StableJson $prefixed.Suxi.SubmissionUnitXmlDocuments) 'Prefixed and unprefixed inventory differ.'
+        Assert-eMAST2Equal (ConvertTo-eMAST2StableJson @($unprefixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })) (ConvertTo-eMAST2StableJson @($prefixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })) 'Prefixed and unprefixed CEC evidence differ.'
     }
 
     Invoke-eMAST2Check 'T-2 free text and personal-data-shaped fields never reach inventory or CEC' {
@@ -214,8 +280,16 @@ try {
         Assert-eMAST2Equal 'Historical' $historical.Suxi.SubmissionUnitXmlDocuments[0].ProfileMarkers[1].SourceStatus 'Historical FDA status differs.'
         $unknown = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = (Get-eMAST2FixturePath 'fixtures/SD-077/submissionunit.xml') } -Name 'unknown-marker')
         Assert-eMAST2Equal 'UnrecognizedProfileMarker' $unknown.Suxi.SubmissionUnitXmlDocuments[0].ProfileStatus 'Unknown marker profile status differs.'
+        $unknownIg = Get-eMAST2SuxiCoverage -Result $unknown.Cec -CheckId 'SubmissionUnitXmlField:ECTD4_IG_OID'
+        Assert-eMAST2Equal 'Partial' $unknownIg.CollectionStatus 'Partially recognized IG field status differs.'
+        Assert-eMAST2Equal 'UnrecognizedProfileMarker' $unknownIg.ReasonCode 'Partial IG field leaked a raw recognition value as its reason.'
+        Assert-eMAST2Equal 1 $unknownIg.RecordsProduced 'Partial IG field count differs from emitted evidence.'
         $absent = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = (Get-eMAST2FixturePath 'fixtures/SD-078/submissionunit.xml') } -Name 'absent-marker')
         Assert-eMAST2Equal 'ProfileMarkersAbsent' $absent.Suxi.SubmissionUnitXmlDocuments[0].ProfileStatus 'Absent marker profile status differs.'
+        $absentIg = Get-eMAST2SuxiCoverage -Result $absent.Cec -CheckId 'SubmissionUnitXmlField:ECTD4_IG_OID'
+        Assert-eMAST2Equal 'Collected' $absentIg.CollectionStatus 'Absent markers in a parsed message are not S-18 assessed absence.'
+        Assert-eMAST2Equal 'MandatoryFieldAbsent' $absentIg.ReasonCode 'Absent marker reason differs.'
+        Assert-eMAST2Equal 0 $absentIg.RecordsProduced 'Absent marker count differs.'
         $conflictingXml = [System.IO.File]::ReadAllText($fdaPath).Replace('</id></device></receiver>', '<item root="2.16.840.1.113883.3.989.5.1.1.6.1.2"/></id></device></receiver>')
         $conflictingPath = Join-Path $temporaryRoot 'conflicting-markers.xml'; [System.IO.File]::WriteAllText($conflictingPath, $conflictingXml, (New-Object System.Text.UTF8Encoding($false)))
         $conflicting = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = $conflictingPath } -Name 'conflicting-markers')
@@ -233,6 +307,14 @@ try {
         $roundTrip = ($fda.Suxi | ConvertTo-Json -Depth 64) | ConvertFrom-Json
         Assert-eMAST2Equal (ConvertTo-eMAST2StableJson $fda.Suxi.SubmissionUnitXmlDocuments) (ConvertTo-eMAST2StableJson $roundTrip.SubmissionUnitXmlDocuments) 'JSON round-trip changed inventory.'
         Assert-eMAST2Equal 1 @($roundTrip.SubmissionUnitXmlDocuments[0].SubmissionUnit.Code.Observations).Count 'Coded observations were lost.'
+        $noIdXml = [System.IO.File]::ReadAllText($fdaPath).Replace('<id><item root="10000000-0000-4000-8000-000000000029" extension="0001"/></id>', '')
+        Assert-eMAST2True ($noIdXml -ne [System.IO.File]::ReadAllText($fdaPath)) 'Submission id removal did not apply.'
+        $noIdPath = Join-Path $temporaryRoot 'no-submission-id.xml'; [System.IO.File]::WriteAllText($noIdPath, $noIdXml, (New-Object System.Text.UTF8Encoding($false)))
+        $noId = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = $noIdPath } -Name 'no-submission-id') -SkipCec
+        $noIdJson = ConvertTo-eMAST2StableJson $noId.Suxi.SubmissionUnitXmlDocuments[0].Submissions[0]
+        Assert-eMAST2True ($noIdJson.Contains('"IdItems":[]')) ('Empty submission IdItems is not a typed empty array: {0}' -f $noIdJson)
+        $noIdRoundTrip = (ConvertTo-eMAST2StableJson $noId.Suxi) | ConvertFrom-Json
+        Assert-eMAST2True ((ConvertTo-eMAST2StableJson $noIdRoundTrip.SubmissionUnitXmlDocuments[0].Submissions[0]).Contains('"IdItems":[]')) 'Empty IdItems did not survive the JSON round trip.'
     }
 
     Invoke-eMAST2Check 'T-13 frozen Wave1E discovery stays unchanged and legacy stubs fail closed' {
@@ -293,6 +375,7 @@ try {
         }
         Assert-eMAST2Equal 'S1/A1,S2/A1' ((@($records | Where-Object { $_.EvidenceType -eq 'Ectd4ApplicationTypeCode' }) | ForEach-Object { $_.SourcePath }) -join ',') 'Grouped application paths differ.'
         Assert-eMAST2Equal 'S1/A1/I1,S2/A1/I1' ((@($records | Where-Object { $_.EvidenceType -eq 'Ectd4ApplicationIdNamespaceOid' }) | ForEach-Object { $_.SourcePath }) -join ',') 'Grouped id-item paths differ.'
+        foreach ($chain in @($grouped, $eu, $fda)) { Assert-eMAST2SourcePathsResolve -Chain $chain }
         $activity = Invoke-eMAST2Chain -SourcePath (New-eMAST2Repository -XmlByFolder @{ '1' = (Get-eMAST2FixturePath 'fixtures/SD-086/sequence-1.xml'); '2' = (Get-eMAST2FixturePath 'fixtures/SD-086/sequence-2.xml') } -Name 'same-activity')
         Assert-eMAST2Equal 2 @($activity.Suxi.SubmissionUnitXmlDocuments).Count 'Two-unit activity was aggregated or lost.'
         Assert-eMAST2Equal $activity.Suxi.SubmissionUnitXmlDocuments[0].Submissions[0].IdItems[0].Root $activity.Suxi.SubmissionUnitXmlDocuments[1].Submissions[0].IdItems[0].Root 'Shared submission identity was not preserved per unit.'
@@ -327,6 +410,39 @@ try {
         Assert-eMAST2Equal 2 $duplicateUnit.Suxi.SubmissionUnitXmlDocuments[0].Structure.SubmissionUnitCount 'Duplicate submissionUnit count differs.'
         Assert-eMAST2Null $duplicateUnit.Suxi.SubmissionUnitXmlDocuments[0].SubmissionUnit 'Duplicate submissionUnit selected a winner.'
         Assert-eMAST2Equal 0 @($duplicateUnit.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -in @('Ectd4SubmissionUnitTypeCode','Ectd4SubmissionTypeCode','Ectd4ApplicationTypeCode','Ectd4ApplicationIdNamespaceOid','Ectd4SequenceNumber') }).Count 'Duplicate submissionUnit emitted nested evidence.'
+        $duplicateUnitIg = Get-eMAST2SuxiCoverage -Result $duplicateUnit.Cec -CheckId 'SubmissionUnitXmlField:ECTD4_IG_OID'
+        Assert-eMAST2Equal 'Collected' $duplicateUnitIg.CollectionStatus 'S-16b IG field was not assessed above the duplicated submissionUnit.'
+        Assert-eMAST2Equal 2 $duplicateUnitIg.RecordsProduced 'S-16b IG field count differs from emitted evidence.'
+        Assert-eMAST2Equal 2 @($duplicateUnit.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -eq 'Ectd4ImplementationGuideOid' }).Count 'S-16b IG records differ.'
+        Assert-eMAST2Equal 'NotAssessed' (Get-eMAST2SuxiCoverage -Result $duplicateUnit.Cec -CheckId 'SubmissionUnitXmlField:ECTD4_SU_TYPE').CollectionStatus 'S-16b unit field was assessed.'
+
+        # M-1: real RD -> BXI -> SUXI -> CEC runs over archives whose marker aliases RD collapses into one record.
+        $fdaBytes = [System.IO.File]::ReadAllBytes($fdaPath)
+        $euBytes = [System.IO.File]::ReadAllBytes($euPath)
+        $aliasCases = @(
+            @{ Name = 'alias-case-fda-first'; Entries = @(@('1/submissionunit.xml', $fdaBytes), @('1/SubmissionUnit.xml', $euBytes)) },
+            @{ Name = 'alias-case-eu-first'; Entries = @(@('1/SubmissionUnit.xml', $euBytes), @('1/submissionunit.xml', $fdaBytes)) },
+            @{ Name = 'alias-exact-duplicate'; Entries = @(@('1/submissionunit.xml', $fdaBytes), @('1/submissionunit.xml', $euBytes)) },
+            @{ Name = 'alias-backslash'; Entries = @(@('1/submissionunit.xml', $fdaBytes), @('1\submissionunit.xml', $euBytes)) }
+        )
+        foreach ($aliasCase in $aliasCases) {
+            $aliasZip = New-eMAST2ZipFromEntries -Name $aliasCase.Name -Entries $aliasCase.Entries
+            $aliasArchive = [System.IO.Compression.ZipFile]::OpenRead($aliasZip)
+            try { $rawNames = @($aliasArchive.Entries | ForEach-Object { $_.FullName }) } finally { $aliasArchive.Dispose() }
+            foreach ($expectedEntry in $aliasCase.Entries) { Assert-eMAST2True ($rawNames -ccontains [string]$expectedEntry[0]) ('{0}: archive entry {1} was not written verbatim.' -f $aliasCase.Name, $expectedEntry[0]) }
+            $alias = Invoke-eMAST2Chain -SourcePath $aliasZip
+            Assert-eMAST2Equal 1 @($alias.Rd.Files | Where-Object { $_.RelativePath -ieq '1/submissionunit.xml' }).Count ('{0}: RD no longer collapses the aliases; revisit the RD-wide limitation.' -f $aliasCase.Name)
+            $aliasDoc = $alias.Suxi.SubmissionUnitXmlDocuments[0]
+            Assert-eMAST2Equal 1 @($alias.Suxi.SubmissionUnitXmlDocuments).Count ('{0}: SUXI document count differs.' -f $aliasCase.Name)
+            Assert-eMAST2Equal 'SUXI-DUPLICATE-001' $aliasDoc.ParseErrorCode ('{0}: alias ambiguity was not rejected.' -f $aliasCase.Name)
+            Assert-eMAST2Equal 'NotAttempted' $aliasDoc.ParseStatus ('{0}: an alias was parsed.' -f $aliasCase.Name)
+            Assert-eMAST2Null $aliasDoc.SubmissionUnit ('{0}: a winner was selected.' -f $aliasCase.Name)
+            Assert-eMAST2True (@($aliasDoc.Diagnostics.ReasonCodes) -contains 'DuplicateSubmissionUnitFiles') ('{0}: duplicate reason missing.' -f $aliasCase.Name)
+            Assert-eMAST2Equal 'NotAssessed' (Get-eMAST2SuxiCoverage -Result $alias.Cec -CheckId 'SubmissionUnitXmlInventory').CollectionStatus ('{0}: document coverage differs.' -f $aliasCase.Name)
+            Assert-eMAST2Equal 0 @($alias.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' }).Count ('{0}: alias ambiguity emitted T2 evidence.' -f $aliasCase.Name)
+        }
+
+        # The remaining check feeds an RD model that already lists both markers (the pre-existing SUXI branch); it is not end-to-end proof.
         $duplicateFileZip = New-eMAST2Repository -XmlByFolder @{ '1' = $fdaPath } -Name 'duplicate-file' -AsZip
         $archive = [System.IO.Compression.ZipFile]::Open($duplicateFileZip, [System.IO.Compression.ZipArchiveMode]::Update)
         try {
@@ -389,6 +505,40 @@ try {
         Assert-eMAST2True (@($disabled.Execution.Capabilities) -notcontains 'SubmissionUnitXmlInventory') 'Disabled capability token present.'
     }
 
+    Invoke-eMAST2Check 'SD-090 (design) mixed v3/v4 repository keeps historical evidence and adds deterministic T2 identities' {
+        # Design SD-090 is assembled in temp from frozen bytes: Wave 1 SD-002 (v3) + SD-028 (EU v4) + SD-029 (US v4).
+        # The committed SD-090 files are a different case (EU .6.1.3) and are not reused here.
+        if ([string]::IsNullOrWhiteSpace($Wave1CorpusRoot)) { throw 'SKIP: -Wave1CorpusRoot was not supplied; the frozen Wave 1 SD-002 corpus is external to the repository.' }
+        $wave1Manifest = @(Import-Csv -LiteralPath (Join-Path $Wave1CorpusRoot 'WAVE1_FREEZE_MANIFEST.csv') | Where-Object { $_.SampleId -eq 'SD-002' })[0]
+        $sd002Zip = Join-Path $Wave1CorpusRoot ([string]$wave1Manifest.FixtureFilename)
+        Assert-eMAST2Equal ([string]$wave1Manifest.FixtureSHA256) (Get-eMAST2Sha256 -Path $sd002Zip) 'Frozen SD-002 hash differs.'
+        $mixedRoot = Join-Path $temporaryRoot 'mixed-v3-v4'
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($sd002Zip, $mixedRoot)
+        foreach ($unit in @(@('eu-v4/1', $euPath), @('us-v4/1', $fdaPath))) {
+            $unitPath = Join-Path $mixedRoot ([string]$unit[0])
+            [void][System.IO.Directory]::CreateDirectory((Join-Path $unitPath 'm1'))
+            [System.IO.File]::Copy([string]$unit[1], (Join-Path $unitPath 'submissionunit.xml'))
+            [System.IO.File]::WriteAllText((Join-Path $unitPath 'sha256.txt'), ('0' * 64), (New-Object System.Text.UTF8Encoding($false)))
+            [System.IO.File]::WriteAllText((Join-Path $unitPath 'm1/synthetic-content.txt'), 'eMAS synthetic T2 content', (New-Object System.Text.UTF8Encoding($false)))
+        }
+        $mixed = Invoke-eMAST2Chain -SourcePath $mixedRoot
+        Assert-eMAST2Equal 2 @($mixed.Suxi.SubmissionUnitXmlDocuments).Count 'Mixed repository SUXI document count differs.'
+        Assert-eMAST2Equal 'Available,Available' ((@($mixed.Suxi.SubmissionUnitXmlDocuments) | ForEach-Object { $_.CaptureStatus }) -join ',') 'Mixed repository v4 units were not both parsed.'
+        Assert-eMAST2True (@($mixed.Bxi.XmlDocuments).Count -gt 0) 'Mixed repository lost its v3 backbone XML inventory.'
+        $without = Invoke-eMASClassificationEvidenceCollection -InputResult $mixed.Bxi
+        $historical = @($mixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -notlike 'Ectd4*' })
+        Assert-eMAST2Equal @($without.ClassificationEvidence).Count $historical.Count 'Mixed repository pre-T2 evidence count changed.'
+        Assert-eMAST2Equal (ConvertTo-eMAST2StableJson @($without.ClassificationEvidence)) (ConvertTo-eMAST2StableJson $historical) 'Mixed repository pre-T2 evidence or EvidenceIds changed.'
+        foreach ($record in $historical) { Assert-eMAST2True ($null -eq $record.PSObject.Properties['SourcePath']) 'Pre-T2 record gained a T2 property.' }
+        $t2 = @($mixed.Cec.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })
+        Assert-eMAST2Equal 17 $t2.Count 'Mixed repository T2 evidence count differs (8 EU + 9 US).'
+        $expectedIds = @(for ($n = 1; $n -le $t2.Count; $n++) { 'EVD-{0:D4}' -f ($historical.Count + $n) })
+        Assert-eMAST2Equal ($expectedIds -join ',') ((@($t2) | ForEach-Object { $_.EvidenceId }) -join ',') 'Mixed repository T2 EvidenceIds do not follow the pre-T2 sequence.'
+        $repeat = Invoke-eMASClassificationEvidenceCollection -InputResult $mixed.Suxi
+        Assert-eMAST2Equal (ConvertTo-eMAST2StableJson $t2) (ConvertTo-eMAST2StableJson @($repeat.ClassificationEvidence | Where-Object { $_.EvidenceType -like 'Ectd4*' })) 'Mixed repository T2 identities are not deterministic.'
+        Assert-eMAST2SourcePathsResolve -Chain $mixed
+    }
+
     foreach ($row in $manifestRows) {
         $path = Get-eMAST2FixturePath -RelativePath ([string]$row.RelativePath)
         Assert-eMAST2Equal $script:sourceState[[string]$row.RelativePath] (Get-eMAST2Sha256 -Path $path) ('Post-test fixture hash changed: {0}' -f $row.SampleId)
@@ -401,8 +551,8 @@ finally {
 
 $summary = [pscustomobject][ordered]@{
     Suite = 'SubmissionUnitXmlInventory'; Runtime = $PSVersionTable.PSVersion.ToString(); Platform = [Environment]::OSVersion.Platform.ToString()
-    Total = $script:passed + $script:failed; Passed = $script:passed; Failed = $script:failed; FixtureFiles = @($manifestRows).Count
+    Total = $script:passed + $script:failed + $script:skipped; Passed = $script:passed; Failed = $script:failed; Skipped = $script:skipped; FixtureFiles = @($manifestRows).Count
 }
 [System.IO.File]::WriteAllText((Join-Path $resolvedOutputRoot 'submissionunit-xml-inventory-test-summary.json'), ($summary | ConvertTo-Json -Depth 8), (New-Object System.Text.UTF8Encoding($false)))
-Write-Output ('SubmissionUnitXmlInventory tests completed: {0} total, {1} passed, {2} failed; summary={3}' -f $summary.Total, $summary.Passed, $summary.Failed, (Join-Path $resolvedOutputRoot 'submissionunit-xml-inventory-test-summary.json'))
+Write-Output ('SubmissionUnitXmlInventory tests completed: {0} total, {1} passed, {2} failed, {3} skipped; summary={4}' -f $summary.Total, $summary.Passed, $summary.Failed, $summary.Skipped, (Join-Path $resolvedOutputRoot 'submissionunit-xml-inventory-test-summary.json'))
 if ($script:failed -gt 0) { throw ('SubmissionUnitXmlInventory tests failed: {0} check(s).' -f $script:failed) }

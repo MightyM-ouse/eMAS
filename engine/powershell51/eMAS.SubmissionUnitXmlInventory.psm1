@@ -140,6 +140,16 @@ function New-eMASSuxiDocument {
     }
 }
 
+function ConvertTo-eMASSuxiZipEntryKey {
+    param([AllowEmptyString()][string] $Name)
+    return ($Name -replace '\\', '/').Trim('/')
+}
+
+function New-eMASSuxiDuplicateDocument {
+    param([Parameter(Mandatory = $true)][string] $Id, [Parameter(Mandatory = $true)][object] $Descriptor)
+    return New-eMASSuxiDocument -Id $Id -Descriptor $Descriptor -Exists $true -CaptureStatus 'InputUnavailable' -ParseStatus 'NotAttempted' -Facts $null -ParseErrorCode 'SUXI-DUPLICATE-001' -ParseErrorLineNumber $null -ParseErrorLinePosition $null -Diagnostic 'Multiple case-insensitive submissionunit.xml markers were discovered.' -AdditionalReasons @('DuplicateSubmissionUnitFiles')
+}
+
 function Get-eMASSuxiPrimaryReason {
     param([Parameter(Mandatory = $true)][object] $Document)
     $reasons = @($Document.Diagnostics.ReasonCodes)
@@ -161,10 +171,23 @@ function Get-eMASSuxiDocumentCoverage {
     }
 }
 
+function ConvertTo-eMASSuxiFieldReason {
+    param([AllowNull()][string] $Status)
+    switch ($Status) {
+        'Absent' { return 'MandatoryFieldAbsent' }
+        'MultipleValues' { return 'CardinalityViolation' }
+        'Empty' { return 'UnrecognizedProfileMarker' }
+        'UnknownOid' { return 'UnrecognizedProfileMarker' }
+    }
+    return $Status
+}
+
 function Get-eMASSuxiFieldState {
     param([Parameter(Mandatory = $true)][object] $Document, [Parameter(Mandatory = $true)][string] $FieldCode)
 
-    if ($Document.ParseStatus -ne 'Parsed' -or $Document.CaptureStatus -ne 'Available' -or $Document.Structure.StructureStatus -ne 'Recognized' -or $null -eq $Document.SubmissionUnit) {
+    # IG markers sit above submissionUnit, so S-16b leaves them assessable; every other field needs the singleton unit.
+    $unitRequired = ($FieldCode -ne 'ECTD4_IG_OID')
+    if ($Document.ParseStatus -ne 'Parsed' -or $Document.CaptureStatus -ne 'Available' -or $Document.Structure.StructureStatus -ne 'Recognized' -or ($unitRequired -and $null -eq $Document.SubmissionUnit)) {
         return [pscustomobject]@{ Status = 'NotAssessed'; Count = 0; Reason = Get-eMASSuxiPrimaryReason -Document $Document }
     }
     $values = @()
@@ -179,11 +202,18 @@ function Get-eMASSuxiFieldState {
     $recognized = @($values | Where-Object { $recognizedNames -contains $_.Status }).Count
     $bad = @($values | Where-Object { $recognizedNames -notcontains $_.Status })
     if ($bad.Count -eq 0 -and $values.Count -gt 0) { return [pscustomobject]@{ Status = 'Collected'; Count = $recognized; Reason = $null } }
-    if ($recognized -gt 0) { return [pscustomobject]@{ Status = 'Partial'; Count = $recognized; Reason = [string]$bad[0].Status } }
-    $badStatus = $(if ($bad.Count -gt 0) { [string]$bad[0].Status } else { 'MandatoryFieldAbsent' })
-    $collectionStatus = $(if ($badStatus -eq 'Absent') { 'Collected' } else { 'NotAssessed' })
-    $reason = $(if ($badStatus -eq 'Absent') { 'MandatoryFieldAbsent' } elseif ($badStatus -eq 'MultipleValues') { 'CardinalityViolation' } elseif ($badStatus -eq 'Empty') { 'UnrecognizedProfileMarker' } else { $badStatus })
-    return [pscustomobject]@{ Status = $collectionStatus; Count = 0; Reason = $reason }
+    if ($recognized -gt 0) { return [pscustomobject]@{ Status = 'Partial'; Count = $recognized; Reason = ConvertTo-eMASSuxiFieldReason -Status ([string]$bad[0].Status) } }
+    if ($values.Count -eq 0) {
+        # S-18: a parsed, recognized message without the element is assessed absence, unless a parent was
+        # dropped for cardinality, in which case absence cannot be asserted.
+        if (@($Document.Diagnostics.ReasonCodes) -contains 'CardinalityViolation' -and $FieldCode -ne 'ECTD4_IG_OID') {
+            return [pscustomobject]@{ Status = 'NotAssessed'; Count = 0; Reason = 'CardinalityViolation' }
+        }
+        return [pscustomobject]@{ Status = 'Collected'; Count = 0; Reason = 'MandatoryFieldAbsent' }
+    }
+    $allAbsent = (@($bad | Where-Object { $_.Status -ne 'Absent' }).Count -eq 0)
+    $collectionStatus = $(if ($allAbsent) { 'Collected' } else { 'NotAssessed' })
+    return [pscustomobject]@{ Status = $collectionStatus; Count = 0; Reason = ConvertTo-eMASSuxiFieldReason -Status ([string]$bad[0].Status) }
 }
 
 function Get-eMASSuxiCoverageRows {
@@ -251,12 +281,18 @@ function Invoke-eMASSubmissionUnitXmlInventory {
     $documents = New-Object System.Collections.ArrayList
     $zipStream = $null
     $zipArchive = $null
+    $zipEntryCounts = New-Object 'System.Collections.Generic.Dictionary[string,int]' ([System.StringComparer]::OrdinalIgnoreCase)
     try {
         if ($sourceKind -eq 'Zip') {
             try { Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue } catch { }
             try { Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue } catch { }
             $zipStream = New-Object System.IO.FileStream($resolvedSourcePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
             $zipArchive = New-Object System.IO.Compression.ZipArchive($zipStream, [System.IO.Compression.ZipArchiveMode]::Read, $false)
+            foreach ($archiveEntry in $zipArchive.Entries) {
+                $entryKey = ConvertTo-eMASSuxiZipEntryKey -Name ([string]$archiveEntry.FullName)
+                if (-not $zipEntryCounts.ContainsKey($entryKey)) { $zipEntryCounts[$entryKey] = 0 }
+                $zipEntryCounts[$entryKey] = [int]$zipEntryCounts[$entryKey] + 1
+            }
         }
 
         for ($index = 0; $index -lt $descriptors.Count; $index++) {
@@ -267,13 +303,20 @@ function Invoke-eMASSubmissionUnitXmlInventory {
                 continue
             }
             if ($descriptor.MarkerFiles.Count -gt 1) {
-                [void]$documents.Add((New-eMASSuxiDocument -Id $id -Descriptor $descriptor -Exists $true -CaptureStatus 'InputUnavailable' -ParseStatus 'NotAttempted' -Facts $null -ParseErrorCode 'SUXI-DUPLICATE-001' -ParseErrorLineNumber $null -ParseErrorLinePosition $null -Diagnostic 'Multiple case-insensitive submissionunit.xml markers were discovered.' -AdditionalReasons @('DuplicateSubmissionUnitFiles')))
+                [void]$documents.Add((New-eMASSuxiDuplicateDocument -Id $id -Descriptor $descriptor))
                 continue
             }
 
             $stream = $null
             try {
                 if ($sourceKind -eq 'Zip') {
+                    # RD keys its inventory case-insensitively, so aliases of the marker never reach SUXI as separate
+                    # records. Count the archive's own entries before selecting one; never choose a winner.
+                    $markerKey = ConvertTo-eMASSuxiZipEntryKey -Name ([string]$descriptor.FileRecord.ContainerPath)
+                    if ($zipEntryCounts.ContainsKey($markerKey) -and [int]$zipEntryCounts[$markerKey] -gt 1) {
+                        [void]$documents.Add((New-eMASSuxiDuplicateDocument -Id $id -Descriptor $descriptor))
+                        continue
+                    }
                     $entry = $zipArchive.GetEntry([string]$descriptor.FileRecord.ContainerPath)
                     if ($null -eq $entry) {
                         [void]$documents.Add((New-eMASSuxiDocument -Id $id -Descriptor $descriptor -Exists $true -CaptureStatus 'InputUnavailable' -ParseStatus 'NotAttempted' -Facts $null -ParseErrorCode 'XML-ZIP-ENTRY-001' -ParseErrorLineNumber $null -ParseErrorLinePosition $null -Diagnostic 'The discovered submissionunit.xml entry was unavailable.' -AdditionalReasons @('SourceXmlUnavailable')))
@@ -286,6 +329,14 @@ function Invoke-eMASSubmissionUnitXmlInventory {
                     $xmlPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedSourcePath $relativePlatformPath))
                     $sourcePrefix = $resolvedSourcePath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
                     if (-not $xmlPath.StartsWith($sourcePrefix, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'SUXI-PATH-002 Discovered XML path escaped SourcePath.' }
+                    $unitDirectory = [System.IO.Path]::GetDirectoryName($xmlPath)
+                    if ([System.IO.Directory]::Exists($unitDirectory)) {
+                        $markerNames = @([System.IO.Directory]::GetFiles($unitDirectory) | Where-Object { [System.IO.Path]::GetFileName($_).Equals('submissionunit.xml', [System.StringComparison]::OrdinalIgnoreCase) })
+                        if ($markerNames.Count -gt 1) {
+                            [void]$documents.Add((New-eMASSuxiDuplicateDocument -Id $id -Descriptor $descriptor))
+                            continue
+                        }
+                    }
                     if (-not [System.IO.File]::Exists($xmlPath)) {
                         [void]$documents.Add((New-eMASSuxiDocument -Id $id -Descriptor $descriptor -Exists $true -CaptureStatus 'InputUnavailable' -ParseStatus 'NotAttempted' -Facts $null -ParseErrorCode 'XML-FILE-001' -ParseErrorLineNumber $null -ParseErrorLinePosition $null -Diagnostic 'The discovered submissionunit.xml file was unavailable.' -AdditionalReasons @('SourceXmlUnavailable')))
                         continue

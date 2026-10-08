@@ -323,7 +323,7 @@ function Get-eMASEctd4SubmissionUnitFacts {
         [void]$submissions.Add([pscustomobject][ordered]@{
             SubmissionOrdinal = $submissionIndex + 1
             SequenceNumber = $sequenceNumber
-            IdItems = [object[]](Get-eMASEctd4IdItems -Parent $submission)
+            IdItems = [object[]]@(Get-eMASEctd4IdItems -Parent $submission)
             Code = $submissionCode
             Applications = [object[]]@($applications)
         })
