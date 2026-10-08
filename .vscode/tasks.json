@@ -1,0 +1,92 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "eMAS: MS-04 Quick Check",
+      "detail": "Preflight, committed freeze manifests, focused T2, T4 engine and T4 oracle. No input needed.",
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-File",
+        "${workspaceFolder}/tools/demo/Invoke-eMASMS04Demo.ps1",
+        "-Mode",
+        "QuickCheck"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "focus": true }
+    },
+    {
+      "label": "eMAS: MS-04 Full Regression",
+      "detail": "15 established gates plus focused T2. External corpora come from ~/.config/emas/ms04-demo-runner.json; suites needing an absent corpus are reported as SKIP.",
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-File",
+        "${workspaceFolder}/tools/demo/Invoke-eMASMS04Demo.ps1",
+        "-Mode",
+        "FullRegression"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "focus": true }
+    },
+    {
+      "label": "eMAS: MS-04 Demo",
+      "detail": "Runs the real Pre-Sales script on a dossier you choose. Identification needs a Runtime JSON; VERIFIED needs an independent expected Identification/1.0 document.",
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-File",
+        "${workspaceFolder}/tools/demo/Invoke-eMASMS04Demo.ps1",
+        "-Mode",
+        "MS04Demo",
+        "-SourcePath",
+        "${input:emasMs04DemoSourcePath}",
+        "-RuntimeConfigurationPath",
+        "${input:emasMs04DemoRuntimeConfigurationPath}",
+        "-ExpectedIdentificationPath",
+        "${input:emasMs04DemoExpectedIdentificationPath}",
+        "-SubmissionUnitXmlInventory",
+        "${input:emasMs04DemoSubmissionUnitXmlInventory}"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "focus": true }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "emasMs04DemoSourcePath",
+      "type": "promptString",
+      "description": "Dossier to assess: full path to a folder or .zip (in Finder, Option-Command-C copies the full path)."
+    },
+    {
+      "id": "emasMs04DemoRuntimeConfigurationPath",
+      "type": "promptString",
+      "description": "Runtime JSON for identification (optional). Leave empty to run evidence only; identification will then be BLOCKED.",
+      "default": ""
+    },
+    {
+      "id": "emasMs04DemoExpectedIdentificationPath",
+      "type": "promptString",
+      "description": "Independent expected Identification/1.0 document (optional). Leave empty if you have none; the demo then cannot be VERIFIED.",
+      "default": ""
+    },
+    {
+      "id": "emasMs04DemoSubmissionUnitXmlInventory",
+      "type": "pickString",
+      "description": "Also collect T2 eCTD v4 SubmissionUnit XML facts?",
+      "options": ["Exclude", "Include"],
+      "default": "Exclude"
+    }
+  ]
+}
