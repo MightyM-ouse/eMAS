@@ -8,6 +8,7 @@
 - Accepted design/demo baseline: `ab06d567ad0f158c0d62b3d396951a90dca81fec`
 - Worker branch: `implementation/emas-ms04-ectd4-submissionunit-xml-inventory`
 - Worker parent: latest `origin/demo/end-to-end-mvp`
+- Draft PR: [#65](https://github.com/MightyM-ouse/eMAS/pull/65) into `coordination/emas-ms04-ectd4-submissionunit-implementation-task`
 - Platform: macOS, PowerShell Core 7.5.2
 - Implementation status: **NOT STARTED — formal baseline stop condition**
 
@@ -79,4 +80,4 @@ Authorize a test-only update to `tests/repository-discovery-candidate-semantics/
 - FDA v1.5.1 OID/source retrieval (D-3): open; no mapping may be invented.
 - Native Windows PowerShell 5.1 T1b/T2 qualification: open and not claimed.
 - Unrelated Windows PS5.1 RuntimeConfiguration UTF-8 CI defect: out of scope and untouched.
-- Draft PR and fixed-SHA implementation review: pending because implementation has not started.
+- Draft PR #65 is report-only and remains draft. Fixed-SHA implementation review is pending because implementation has not started.

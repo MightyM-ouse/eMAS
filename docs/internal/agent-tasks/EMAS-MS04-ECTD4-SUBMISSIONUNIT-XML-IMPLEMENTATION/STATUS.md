@@ -21,7 +21,7 @@
 | T2 focused tests T-1…T-21 | NOT RUN |
 | Historical/T1b record and ID compatibility | MUST BE TESTED |
 | BXI, RD, T4/projection | UNCHANGED BY CONTRACT |
-| Codex draft PR | PENDING blocked-report publication |
+| Codex draft PR | [#65](https://github.com/MightyM-ouse/eMAS/pull/65) OPEN AS DRAFT; blocked-report only |
 | ChatGPT fixed-SHA implementation review | PENDING CODEX |
 | User implementation merge approval | REQUIRED; NOT GIVEN |
 | Merge of implementation | NOT AUTHORIZED |
