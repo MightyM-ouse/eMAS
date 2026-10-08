@@ -16,7 +16,15 @@ Open the repository folder in VS Code and choose **Terminal → Run Task…**:
 | **eMAS: MS-04 Full Regression** | The 15 established gates plus focused T2 | None. Corpora are read from the optional settings file (see below). |
 | **eMAS: MS-04 Demo** | The real Pre-Sales evidence and identification routes on a dossier you choose | Dossier path. Runtime JSON and expected outcome are optional. |
 
-The terminal prints the overall result and the paths to `summary.html` and `run-manifest.json`. In the VS Code terminal, Cmd-click the `file://` link to open the report.
+The terminal ends with a `RESULT:` banner, followed by the paths to `summary.html` and `run-manifest.json`. In the VS Code terminal, Cmd-click the `file://` link to open the report.
+
+**How VS Code shows the result.** The tasks pass `-ExitCodePolicy Task`. VS Code treats any non-zero exit as "task failed", so under this policy a run that completed without a failure exits 0. That covers `PASS`, `VERIFIED`, `PASS_WITH_SKIPS` and `EXECUTED_UNVERIFIED`. Read the `RESULT:` banner and the report for the actual, qualified result:
+- `PASS_WITH_SKIPS` is printed as "not an unqualified PASS".
+- `EXECUTED_UNVERIFIED` is printed as "not a PASS".
+
+`FAIL`, `BLOCKED`, `UNVERIFIED` and `INCOMPLETE` still exit non-zero, so VS Code marks them failed. The manifest keeps `OverallStatus` unchanged and records both `ExitCode` and `StrictExitCode`.
+
+The task definitions were exercised by running their exact command lines. Clicking them in the VS Code UI has not been tested.
 
 Prerequisites:
 - PowerShell 7 (`pwsh`) on `PATH`;
@@ -53,6 +61,7 @@ pwsh -NoProfile -File tools/demo/Invoke-eMASMS04Demo.ps1 -Mode MS04Demo -SourceP
 | `-StageTimeoutSeconds` | Per-stage limit (default 1800). The process tree is terminated when it is exceeded. |
 | `-UserSettingsPath` / `-NoUserSettings` | Choose or ignore the settings file |
 | `-OpenReport` | Open `summary.html` when the run ends. A failure to open never changes the verdict. |
+| `-ExitCodePolicy` | `Strict` (default, for scripts and CI) or `Task` (used by the VS Code tasks; see below) |
 
 Paths must be absolute or start with `~/`. Surrounding quotes from pasted paths are removed. Paths containing `..` segments are refused.
 
@@ -86,17 +95,20 @@ Only `OutputRoot`, `Wave1CorpusRoot`, `Wave1FreezeManifestPath` and `Wave1DCorpu
 
 Exit codes:
 
-| Code | Result |
-|---|---|
-| 0 | PASS / VERIFIED |
-| 1 | FAIL |
-| 2 | PASS_WITH_SKIPS |
-| 3 | EXECUTED_UNVERIFIED / UNVERIFIED |
-| 4 | BLOCKED |
-| 5 | INCOMPLETE |
-| 6 | Refused before a run folder was created (unsafe output path, bad settings) |
+| Result | `Strict` (default) | `Task` (VS Code) |
+|---|---|---|
+| PASS / VERIFIED | 0 | 0 |
+| PASS_WITH_SKIPS | 2 | 0 |
+| EXECUTED_UNVERIFIED | 3 | 0 |
+| UNVERIFIED | 3 | 3 |
+| FAIL | 1 | 1 |
+| BLOCKED | 4 | 4 |
+| INCOMPLETE | 5 | 5 |
+| Refused before a run folder was created (unsafe output path, bad settings) | 6 | 6 |
 
-A QuickCheck on a checkout without the external Wave 1 corpus is `PASS_WITH_SKIPS` (exit 2), because the T2 SD-090 mixed v3/v4 check needs SD-002.
+The policy changes only the process exit code. `OverallStatus`, the report and the manifest are identical under both policies, and skipped checks are never counted as passed.
+
+A QuickCheck on a checkout without the external Wave 1 corpus is `PASS_WITH_SKIPS`, because the T2 SD-090 mixed v3/v4 check needs SD-002. That is exit 2 under `Strict` and exit 0 under `Task`.
 
 ### Expected counts
 
@@ -184,6 +196,14 @@ Pre-Sales stdout echoes the full result document. It is kept in `stdout.log` onl
   - `EvidenceSource.DocumentSha256`. It hashes the in-memory, timestamped evidence document, so it differs between otherwise identical runs.
 
   The expected document must come from you or from an approved source. The runner never generates it from actual output.
+- **Verification outcomes.**
+
+  | Expected document | Verification stage | Overall result |
+  |---|---|---|
+  | Not supplied | `SKIP` | `EXECUTED_UNVERIFIED` |
+  | Supplied, but missing, not JSON, or not `Identification/1.0` | `BLOCKED` | `BLOCKED` |
+  | Supplied and different from the output | `FAIL` | `FAIL` |
+  | Supplied and equal to the output | `VERIFIED` | `VERIFIED`, only if no other stage is `BLOCKED` or `FAIL` |
 
 ## Tests
 

@@ -440,6 +440,12 @@ function Get-eMASOverallVerdict {
         if ($null -eq $identification -or $identification.Status -ne 'EXECUTED_UNVERIFIED') {
             return [pscustomobject]@{ Status = 'BLOCKED'; Reason = 'Identification did not run (see blocked stages). An end-to-end demo PASS is not possible.' }
         }
+        # A supplied but unusable input (e.g. an invalid expected-outcome document) is BLOCKED,
+        # never folded into EXECUTED_UNVERIFIED, which is reserved for "no expectation supplied".
+        $blocked = @($Stages | Where-Object { $_.Status -eq 'BLOCKED' } | ForEach-Object { [string]$_.Id })
+        if ($blocked.Count -gt 0) {
+            return [pscustomobject]@{ Status = 'BLOCKED'; Reason = ('Identification executed, but a supplied input could not be used ({0}); the demo cannot be verified until it is corrected.' -f ($blocked -join ', ')) }
+        }
         if ($null -ne $verification -and $verification.Status -eq 'VERIFIED') {
             return [pscustomobject]@{ Status = 'VERIFIED'; Reason = 'The observed Identification/1.0 document matched the supplied independent expected document under the documented comparison profile. This is not a regulatory compliance claim.' }
         }
@@ -456,7 +462,12 @@ function Get-eMASOverallVerdict {
 }
 
 function Get-eMASExitCode {
-    param([Parameter(Mandatory = $true)][string] $Status)
+    # Strict (default): every qualified status has its own non-zero code.
+    # Task (VS Code tasks): a completed run that found no failure exits 0 so the editor does not
+    # report "task failed"; the qualified OverallStatus is unchanged and printed as a banner.
+    # FAIL, BLOCKED, UNVERIFIED and INCOMPLETE stay non-zero under both policies.
+    param([Parameter(Mandatory = $true)][string] $Status, [ValidateSet('Strict', 'Task')][string] $Policy = 'Strict')
+    if ($Policy -eq 'Task' -and @('PASS', 'VERIFIED', 'PASS_WITH_SKIPS', 'EXECUTED_UNVERIFIED') -contains $Status) { return 0 }
     switch ($Status) {
         'PASS' { return 0 } 'VERIFIED' { return 0 } 'FAIL' { return 1 } 'PASS_WITH_SKIPS' { return 2 }
         'EXECUTED_UNVERIFIED' { return 3 } 'UNVERIFIED' { return 3 } 'BLOCKED' { return 4 } 'INCOMPLETE' { return 5 }

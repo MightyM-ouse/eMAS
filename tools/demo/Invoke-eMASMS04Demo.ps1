@@ -21,8 +21,11 @@ Every run writes a new directory under -OutputRoot containing run-manifest.json,
 summary.html and per-stage logs and observed JSON. The repository, source,
 configuration and corpora are only read.
 
-Exit codes: 0 PASS/VERIFIED, 1 FAIL, 2 PASS_WITH_SKIPS, 3 EXECUTED_UNVERIFIED/UNVERIFIED,
-4 BLOCKED, 5 INCOMPLETE, 6 refused before a run directory could be created.
+Exit codes (-ExitCodePolicy Strict, the default): 0 PASS/VERIFIED, 1 FAIL, 2 PASS_WITH_SKIPS,
+3 EXECUTED_UNVERIFIED/UNVERIFIED, 4 BLOCKED, 5 INCOMPLETE, 6 refused before a run directory
+could be created. With -ExitCodePolicy Task (used by the VS Code tasks), PASS_WITH_SKIPS and
+EXECUTED_UNVERIFIED also exit 0 so the editor does not report a completed run as "failed";
+the qualified OverallStatus in the manifest, report and terminal banner is unchanged.
 
 .EXAMPLE
 pwsh -NoProfile -File tools/demo/Invoke-eMASMS04Demo.ps1 -Mode QuickCheck
@@ -73,7 +76,11 @@ param(
     [switch] $NoUserSettings,
 
     # Open summary.html in the default browser when the run ends. Failure to open never changes the verdict.
-    [switch] $OpenReport
+    [switch] $OpenReport,
+
+    # Strict: distinct non-zero code per qualified result. Task: completed runs without a failure exit 0 (VS Code tasks).
+    [ValidateSet('Strict', 'Task')]
+    [string] $ExitCodePolicy = 'Strict'
 )
 
 Set-StrictMode -Version 2.0
@@ -209,7 +216,7 @@ $manifest = [ordered]@{
     Run = [ordered]@{
         RunId = $runId; Mode = $Mode; State = 'InProgress'
         StartedAtUtc = $startedAtUtc.ToString('o'); CompletedAtUtc = $null; ElapsedSeconds = $null
-        OverallStatus = 'INCOMPLETE'; OverallReason = 'Run in progress.'; ExitCode = $null
+        OverallStatus = 'INCOMPLETE'; OverallReason = 'Run in progress.'; ExitCode = $null; StrictExitCode = $null; ExitCodePolicy = $ExitCodePolicy
         ScenarioId = 'MS-04'; Phase = 'PreSales'
     }
     Repository = [ordered]@{
@@ -559,8 +566,8 @@ function Invoke-eMASDemoVerificationStage {
     $r.StartedAtUtc = [DateTime]::UtcNow.ToString('o')
     $observed = Join-Path $IdentificationStage.Directory 'observed/identification.json'
     if ($IdentificationStage.Record.Status -ne 'EXECUTED_UNVERIFIED') { $r.Status = 'BLOCKED'; $r.Reasons = @('Not executed: there is no successfully produced Identification document to verify.'); return }
-    if ($demoInputs.ExpectedState -eq 'NotSupplied') { $r.Status = 'BLOCKED'; $r.Reasons = @('Not executed: no independent expected-outcome document was supplied (-ExpectedIdentificationPath). The runner never generates expected results from the actual output.'); return }
-    if ($demoInputs.ExpectedState -ne 'Present') { $r.Status = 'BLOCKED'; $r.Reasons = @('Not executed: ' + $demoInputs.ExpectedReason); return }
+    if ($demoInputs.ExpectedState -eq 'NotSupplied') { $r.Status = 'SKIP'; $r.Reasons = @('Not executed: no independent expected-outcome document was supplied (-ExpectedIdentificationPath), so the demo stays EXECUTED_UNVERIFIED. The runner never generates expected results from the actual output.'); return }
+    if ($demoInputs.ExpectedState -ne 'Present') { $r.Status = 'BLOCKED'; $r.Reasons = @('Not executed: the supplied expected-outcome document cannot be used. ' + $demoInputs.ExpectedReason); return }
     $comparison = Compare-eMASIdentificationDocument -ObservedPath $observed -ExpectedPath $expectedValue -VolatileFields @($catalog.IdentificationVolatileFields)
     $r.Details = [ordered]@{ ComparisonProfile = 'SemanticJsonEquality (object key order ignored, array order significant)'; VolatileFieldsRemoved = (@($catalog.IdentificationVolatileFields) -join ', '); Equal = $comparison.Equal }
     $r.DurationSeconds = 0
@@ -699,7 +706,8 @@ finally {
     $verdict = Get-eMASOverallVerdict -Mode $Mode -Stages @($manifest.Stages) -Completed $completed
     $manifest.Run.OverallStatus = $verdict.Status
     $manifest.Run.OverallReason = $verdict.Reason
-    $manifest.Run.ExitCode = Get-eMASExitCode -Status $verdict.Status
+    $manifest.Run.StrictExitCode = Get-eMASExitCode -Status $verdict.Status -Policy 'Strict'
+    $manifest.Run.ExitCode = Get-eMASExitCode -Status $verdict.Status -Policy $ExitCodePolicy
     $manifest.Run.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $manifest.Run.ElapsedSeconds = [math]::Round($runWatch.Elapsed.TotalSeconds, 3)
     Save-eMASRunEvidence
@@ -713,13 +721,24 @@ finally {
 
 Write-eMASRunnerLine ''
 if ($null -ne $runnerError) { [Console]::Error.WriteLine('Runner internal error: ' + $manifest.Run.RunnerError) }
+$bannerRule = '=' * 72
+Write-eMASRunnerLine $bannerRule
+Write-eMASRunnerLine ('  RESULT: {0}' -f ($manifest.Run.OverallStatus -replace '_', ' '))
+switch ($manifest.Run.OverallStatus) {
+    'PASS_WITH_SKIPS' { Write-eMASRunnerLine '  Every executed check passed, but some checks were SKIPPED. This is not an unqualified PASS.' }
+    'EXECUTED_UNVERIFIED' { Write-eMASRunnerLine '  The real route ran, but no independent expected outcome verified it. This is not a PASS.' }
+}
+if ($manifest.Run.ExitCode -ne $manifest.Run.StrictExitCode) {
+    Write-eMASRunnerLine ('  Exit code {0} (Task policy) means "completed without a failure", not an unqualified PASS; strict code {1}.' -f $manifest.Run.ExitCode, $manifest.Run.StrictExitCode)
+}
+Write-eMASRunnerLine $bannerRule
 Write-eMASRunnerLine ('eMAS MS-04 {0}: {1}' -f $Mode, $manifest.Run.OverallStatus)
 Write-eMASRunnerLine ('  {0}' -f $manifest.Run.OverallReason)
 Write-eMASRunnerLine ('  Commit   {0} ({1}; worktree clean at start: {2})' -f $manifest.Repository.HeadSha, $manifest.Repository.Branch, $manifest.Repository.WorktreeClean)
 Write-eMASRunnerLine ('  Summary  {0}' -f $summaryPath)
 Write-eMASRunnerLine ('  Report   {0}' -f ([System.Uri]::new($summaryPath)).AbsoluteUri)
 Write-eMASRunnerLine ('  Manifest {0}' -f $manifestPath)
-Write-eMASRunnerLine ('  Exit code {0}' -f $manifest.Run.ExitCode)
+Write-eMASRunnerLine ('  Exit code {0} (policy {1}; strict {2})' -f $manifest.Run.ExitCode, $ExitCodePolicy, $manifest.Run.StrictExitCode)
 
 if ($OpenReport) {
     try {

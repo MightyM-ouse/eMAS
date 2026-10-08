@@ -137,7 +137,7 @@ function New-eMASRunSummaryHtml {
     [void]$sb.Append('<h2>Run overview</h2><div class="scroll"><table><tbody>')
     $overview = [ordered]@{
         'Mode' = $run.Mode; 'Started (UTC)' = $run.StartedAtUtc; 'Completed (UTC)' = $run.CompletedAtUtc; 'Elapsed seconds' = $run.ElapsedSeconds
-        'Runner exit code' = $run.ExitCode; 'Git commit' = $Manifest.Repository.HeadSha; 'Git branch' = $Manifest.Repository.Branch
+        'Runner exit code' = $(if ($null -ne $run.PSObject.Properties['StrictExitCode'] -and $null -ne $run.StrictExitCode -and $run.StrictExitCode -ne $run.ExitCode) { '{0} (policy {1}: completed without a failure; strict code {2})' -f $run.ExitCode, $run.ExitCodePolicy, $run.StrictExitCode } else { $run.ExitCode }); 'Git commit' = $Manifest.Repository.HeadSha; 'Git branch' = $Manifest.Repository.Branch
         'Worktree clean at start' = $Manifest.Repository.WorktreeClean; 'Repository root' = $Manifest.Repository.Root
         'Run directory' = $Manifest.Outputs.RunDirectory
     }

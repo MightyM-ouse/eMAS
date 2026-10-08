@@ -222,7 +222,7 @@ Invoke-eMASCheck -Name 'RT-07 MS04Demo with synthetic test-only Runtime JSON and
     Assert-eMASEqual 'ORACLE_IDO_01' $document.RuntimeConfig.ConfigurationId 'Runtime JSON identity.'
     Assert-eMASTrue ((@($identification.Reasons) -join ' ') -match 'projection v1 does not consume') 'The T2/T4 v1 limitation must be stated.'
     Assert-eMASTrue ((@($identification.Reasons) -join ' ') -match 'not an approved release configuration') 'A DEV export must not be presented as approved.'
-    Assert-eMASEqual 'BLOCKED' (Get-eMASStage $run.Manifest 'DEMO-VERIFICATION').Status 'Verification status.'
+    Assert-eMASEqual 'SKIP' (Get-eMASStage $run.Manifest 'DEMO-VERIFICATION').Status 'No expectation supplied: verification is SKIP, not BLOCKED.'
     $source = @($run.Manifest.Inputs | Where-Object { $_.Role -eq 'Dossier source' })[0]
     Assert-eMASTrue ($source.UnchangedAfterRun -eq $true -and $source.Sha256 -eq (Get-eMASFileSha256 $v4Fixture)) 'Source ZIP must be unchanged.'
 }
@@ -264,8 +264,13 @@ Invoke-eMASCheck -Name 'RT-09 Comparator and verdict units: volatile fields and 
         [pscustomobject]@{ Id = 'DEMO-EVIDENCE'; Status = 'EXECUTED_UNVERIFIED' }, [pscustomobject]@{ Id = 'DEMO-IDENTIFICATION'; Status = 'EXECUTED_UNVERIFIED' },
         [pscustomobject]@{ Id = 'DEMO-VERIFICATION'; Status = 'VERIFIED' }, [pscustomobject]@{ Id = 'IMMUTABILITY'; Status = 'PASS' })
     Assert-eMASEqual 'VERIFIED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $stages).Status 'VERIFIED verdict.'
+    $stages[2].Status = 'SKIP'
+    Assert-eMASEqual 'EXECUTED_UNVERIFIED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $stages).Status 'No expected document supplied.'
     $stages[2].Status = 'BLOCKED'
-    Assert-eMASEqual 'EXECUTED_UNVERIFIED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $stages).Status 'No expected document.'
+    Assert-eMASEqual 'BLOCKED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $stages).Status 'An unusable supplied expected document must be BLOCKED, not EXECUTED_UNVERIFIED.'
+    $stages[2].Status = 'VERIFIED'
+    $withBlockedInput = @($stages) + @([pscustomobject]@{ Id = 'DEMO-INPUTS'; Status = 'BLOCKED' })
+    Assert-eMASEqual 'BLOCKED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $withBlockedInput).Status 'VERIFIED must not survive another BLOCKED stage.'
     $stages[1].Status = 'BLOCKED'
     Assert-eMASEqual 'BLOCKED' (Get-eMASOverallVerdict -Mode 'MS04Demo' -Stages $stages).Status 'No identification.'
     $stages[2].Status = 'VERIFIED'; $stages[3].Status = 'FAIL'; $stages[1].Status = 'EXECUTED_UNVERIFIED'
@@ -330,6 +335,47 @@ Invoke-eMASCheck -Name 'RT-24 MS04Demo with a directory source: real evidence ro
     $source = @($run.Manifest.Inputs | Where-Object { $_.Role -eq 'Dossier source' })[0]
     Assert-eMASEqual 'Directory' $source.Kind 'Source kind.'
     Assert-eMASTrue ($source.UnchangedAfterRun -eq $true -and $source.Sha256 -eq $before.Sha256 -and (Get-eMASTreeDigest -Root $directorySource).Sha256 -eq $before.Sha256) 'Directory source must be unchanged.'
+}
+
+Invoke-eMASCheck -Name 'RT-26 MS04Demo supplied expectation contract: invalid or missing expected document is BLOCKED, distinct from not supplied' -Action {
+    $notIdentification = Join-Path $scratch 'expected-not-identification.json'
+    [System.IO.File]::WriteAllText($notIdentification, '{"ContractId":"eMAS.MS04.PreSales.ScannerObservations/1.0"}')
+    $malformed = Join-Path $scratch 'expected-malformed.json'
+    [System.IO.File]::WriteAllText($malformed, '{"ContractId": ')
+    $absent = Join-Path $scratch 'expected-absent.json'
+    foreach ($case in @(@{ Label = 'wrong-contract'; Path = $notIdentification }, @{ Label = 'malformed'; Path = $malformed }, @{ Label = 'absent'; Path = $absent })) {
+        foreach ($policy in @('Strict', 'Task')) {
+            $run = Invoke-eMASRunner -Arguments ([string[]](@('-Mode', 'MS04Demo', '-SourcePath', $v4Fixture, '-RuntimeConfigurationPath', (Join-Path $oracleCase 'runtime-config.json'), '-ExpectedIdentificationPath', $case.Path, '-ExitCodePolicy', $policy) + $common)) -Label ('demo-expected-' + $case.Label + '-' + $policy)
+            Assert-eMASRunEvidence -Run $run
+            Assert-eMASEqual 'BLOCKED' $run.Manifest.Run.OverallStatus ('{0}/{1}: overall status.' -f $case.Label, $policy)
+            Assert-eMASEqual 4 $run.ExitCode ('{0}/{1}: BLOCKED exits 4 under every policy.' -f $case.Label, $policy)
+            Assert-eMASEqual 'BLOCKED' (Get-eMASStage $run.Manifest 'DEMO-VERIFICATION').Status ('{0}/{1}: verification status.' -f $case.Label, $policy)
+            Assert-eMASEqual 'EXECUTED_UNVERIFIED' (Get-eMASStage $run.Manifest 'DEMO-IDENTIFICATION').Status ('{0}/{1}: identification still executed.' -f $case.Label, $policy)
+            Assert-eMASTrue ($run.Manifest.Run.OverallReason -match 'DEMO-INPUTS') ('{0}/{1}: reason must name the blocked input stage.' -f $case.Label, $policy)
+        }
+    }
+}
+
+Invoke-eMASCheck -Name 'RT-25 VS Code Task exit policy: completed PASS_WITH_SKIPS exits 0 with an explicit banner; OverallStatus and strict code unchanged' -Action {
+    foreach ($status in @('PASS', 'VERIFIED', 'PASS_WITH_SKIPS', 'EXECUTED_UNVERIFIED', 'UNVERIFIED', 'BLOCKED', 'FAIL', 'INCOMPLETE')) {
+        $strict = Get-eMASExitCode -Status $status -Policy 'Strict'
+        $task = Get-eMASExitCode -Status $status -Policy 'Task'
+        $expectedTask = $(if (@('PASS', 'VERIFIED', 'PASS_WITH_SKIPS', 'EXECUTED_UNVERIFIED') -contains $status) { 0 } else { $strict })
+        Assert-eMASEqual $expectedTask $task ('Task code for ' + $status)
+        if (@('UNVERIFIED', 'BLOCKED', 'FAIL', 'INCOMPLETE') -contains $status) { Assert-eMASTrue ($task -ne 0) ($status + ' must stay non-zero under the Task policy.') }
+    }
+    Assert-eMASEqual 2 (Get-eMASExitCode -Status 'PASS_WITH_SKIPS') 'Default policy must remain Strict.'
+    $run = Invoke-eMASRunner -Arguments ([string[]](@('-Mode', 'QuickCheck', '-ExitCodePolicy', 'Task') + $common)) -Label 'quick-task'
+    Assert-eMASRunEvidence -Run $run
+    Assert-eMASEqual 0 $run.ExitCode 'Task policy process exit code.'
+    Assert-eMASEqual 'PASS_WITH_SKIPS' $run.Manifest.Run.OverallStatus 'OverallStatus must not change with the exit policy.'
+    Assert-eMASEqual 2 $run.Manifest.Run.StrictExitCode 'Strict code must still be recorded.'
+    Assert-eMASEqual 'Task' $run.Manifest.Run.ExitCodePolicy 'Policy must be recorded.'
+    Assert-eMASTrue ($run.Stdout.Contains('RESULT: PASS WITH SKIPS') -and $run.Stdout.Contains('This is not an unqualified PASS.')) 'The terminal banner must state PASS WITH SKIPS explicitly.'
+    Assert-eMASTrue ($run.Stdout.Contains('not an unqualified PASS; strict code 2')) 'The terminal must explain the Task exit code.'
+    $html = [System.IO.File]::ReadAllText((Join-Path $run.RunDirectory 'summary.html'))
+    Assert-eMASTrue ($html.Contains('PASS WITH SKIPS') -and $html.Contains('strict code 2')) 'summary.html must show the qualified result and the strict code.'
+    Assert-eMASEqual 1 @($run.Manifest.Stages | Where-Object { $_.Id -eq 'T2-SUXI' -and $_.Counts.Skipped -eq 1 -and $_.Counts.Passed -eq 21 }).Count 'Skipped checks must not be counted as passed.'
 }
 
 # ---------------------------------------------------------------------------
@@ -499,6 +545,7 @@ Invoke-eMASCheck -Name 'RT-22 Static: VS Code tasks are one-click, process-type,
         $joined = @($task.args) -join ' '
         Assert-eMASTrue ($joined -notmatch '/Users/|/home/|C:\\\\') ('{0} contains a personal path.' -f $task.label)
         Assert-eMASTrue ($joined.Contains('tools/demo/Invoke-eMASMS04Demo.ps1')) ('{0} must call the runner.' -f $task.label)
+        Assert-eMASTrue ($joined.Contains('-ExitCodePolicy Task')) ('{0} must use the Task exit-code policy.' -f $task.label)
     }
     $quick = @($tasks.tasks | Where-Object { $_.label -eq 'eMAS: MS-04 Quick Check' })[0]
     Assert-eMASTrue (-not ((@($quick.args) -join ' ').Contains('${input:'))) 'Quick Check must need no input.'

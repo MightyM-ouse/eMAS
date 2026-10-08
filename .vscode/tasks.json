@@ -12,7 +12,9 @@
         "-File",
         "${workspaceFolder}/tools/demo/Invoke-eMASMS04Demo.ps1",
         "-Mode",
-        "QuickCheck"
+        "QuickCheck",
+        "-ExitCodePolicy",
+        "Task"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "group": "test",
@@ -30,7 +32,9 @@
         "-File",
         "${workspaceFolder}/tools/demo/Invoke-eMASMS04Demo.ps1",
         "-Mode",
-        "FullRegression"
+        "FullRegression",
+        "-ExitCodePolicy",
+        "Task"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "group": "test",
@@ -56,7 +60,9 @@
         "-ExpectedIdentificationPath",
         "${input:emasMs04DemoExpectedIdentificationPath}",
         "-SubmissionUnitXmlInventory",
-        "${input:emasMs04DemoSubmissionUnitXmlInventory}"
+        "${input:emasMs04DemoSubmissionUnitXmlInventory}",
+        "-ExitCodePolicy",
+        "Task"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": [],
