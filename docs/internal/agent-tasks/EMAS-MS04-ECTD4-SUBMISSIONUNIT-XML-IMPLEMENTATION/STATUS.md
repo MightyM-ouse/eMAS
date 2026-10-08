@@ -2,7 +2,7 @@
 
 **Task:** `EMAS-MS04-ECTD4-SUBMISSIONUNIT-XML-IMPLEMENTATION`
 **Roadmap:** MS-04 / T2 eCTD v4 SubmissionUnitXmlInventory
-**Overall status:** `IMPLEMENTED_AND_LOCALLY_QUALIFIED / FIXED_SHA_REVIEW_PENDING`
+**Overall status:** `CLAUDE_REMEDIATION_APPLIED / FIXED_SHA_RE-REVIEW_PENDING`
 **Authoritative accepted-design baseline:** `ab06d567ad0f158c0d62b3d396951a90dca81fec`
 **Latest demo parent used by worker:** `fd8927f2b5c072c3378efdcf95c2fd93e2a173dd`
 **Task-order head:** `7126831414bd613d92d014ae3e7e43f30486eca7`
@@ -23,8 +23,10 @@
 | Windows PS7.6 / macOS PS7.6 CI | PASS, focused T2 21/21 on both |
 | Native Windows PowerShell 5.1 T2 qualification | PASS, focused T2 21/21; aggregate job red only on known unrelated UTF-8 test |
 | FDA v1.5.1 / `.18.6` D-3 | OPEN; `.18.6` remains `UnknownOid` |
-| Case-colliding ZIP markers | OPEN FOR CENTRAL DISPOSITION; RD collapses case-insensitive path keys before SUXI |
-| ChatGPT fixed-SHA review | PENDING |
+| Case-colliding ZIP markers | SUXI: CLOSED by Claude remediation M-1 (fail closed on case, exact-duplicate and backslash aliases); RD/BXI-wide alias risk: OPEN, separate scoped RD task |
+| Claude independent review (`9adcdfa`) | CHANGES_REQUIRED; central remediation authorized in comment `6065519912` |
+| Claude remediation M-1, M-2, coverage, typed arrays, docs | APPLIED; local focused 22/22 and 15/15 gates PASS (see below) |
+| ChatGPT fixed-SHA re-review | PENDING |
 | User merge approval | REQUIRED; NOT GIVEN |
 | Merge | NOT AUTHORIZED |
 
@@ -50,3 +52,24 @@ unchanged.
   upstream change was made; central review must disposition the limitation.
 - PR #65 must remain draft and unmerged until fixed-SHA central review and an
   explicit user decision.
+
+## Claude remediation (2026-10-08)
+
+Author: Claude, acting as bounded corrective implementer under central
+authorization [`6065519912`](https://github.com/MightyM-ouse/eMAS/pull/65#issuecomment-6065519912),
+starting from reviewed head `9adcdfa`. Codex's evidence above is unchanged and
+remains Codex's; the results in this section are Claude's reruns only.
+
+| Item | Status |
+|---|---|
+| M-1 real-source ZIP/directory marker aliases | FIXED in SUXI only; RD/BXI/SafeXml/CEC unchanged |
+| M-2 mixed v3/v4 regression (design SD-090) | ADDED; needs `-Wave1CorpusRoot`, otherwise reported as SKIP, not PASS |
+| S-16b IG coverage, partial-row reason codes, absent markers (S-18) | FIXED |
+| Typed empty `Submissions[].IdItems` | FIXED |
+| S-27 / S-28 / component sequence retention | RECORDED as deviations in `reports/CODEX.md` |
+| Focused suite (macOS, pwsh 7.5.2) | PASS 22/22 with corpus; 21 PASS + 1 SKIP without corpus |
+| 15 baseline/regression gates (macOS, pwsh 7.5.2) | PASS 15/15; B3 12/12 (86/150); T4 28/28; oracle 23/23 |
+| New-head CI (Windows PS5.1, Windows PS7.6, macOS PS7.6) | PENDING at commit time; run IDs are reported in the PR comment for the fixed head |
+| Native PS5.1 T1b qualification | OPEN (the PS5.1 CI lane runs only RuntimeConfiguration, T4, oracle and SUXI) |
+| RD/BXI-wide path-alias collision | OPEN; needs a separately approved RD task |
+| FDA v1.5.1 / `.18.6` D-3 | OPEN |

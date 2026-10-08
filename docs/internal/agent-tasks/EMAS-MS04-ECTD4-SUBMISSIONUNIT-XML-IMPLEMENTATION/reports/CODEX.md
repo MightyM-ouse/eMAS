@@ -215,3 +215,120 @@ added. All 15 original baseline gates passed again, in addition to focused T2
   self-embedded because changing this file would change that SHA.
 - PR #65 remains draft and must not be merged without central fixed-SHA review
   and explicit user approval.
+
+---
+
+## Claude remediation (2026-10-08) — appended; Codex's report above is unchanged
+
+**Author:** Claude, acting as bounded corrective implementer.
+**Authorization:** central reconciliation [`6065519912`](https://github.com/MightyM-ouse/eMAS/pull/65#issuecomment-6065519912) of the Claude independent review [`6065356160`](https://github.com/MightyM-ouse/eMAS/pull/65#issuecomment-6065356160).
+**Starting head:** `9adcdfa323d0e62fb4ae20c0d8a956c0f33087a4`, re-confirmed as the PR #65 head before editing.
+
+Every result in this section is from Claude's own reruns. Codex's evidence above stays as Codex recorded it.
+
+### Files changed (authorized list only)
+
+| File | Change |
+|---|---|
+| `engine/powershell51/eMAS.SubmissionUnitXmlInventory.psm1` | M-1 alias guard; field-coverage mechanics |
+| `engine/powershell51/private/eMAS.Ectd4SubmissionUnit.ps1` | typed empty `Submissions[].IdItems` |
+| `tests/submissionunit-xml-inventory/Test-eMASSubmissionUnitXmlInventory.ps1` | M-1 end-to-end checks; M-2 regression; tightened T-1, T-10, T-12, T-19, T-20; SKIP accounting |
+| this report and `STATUS.md` | this section |
+
+No fixture, manifest, RD, BXI, SafeXml, CEC, T4, schema, workflow or frozen byte changed. The adversarial ZIPs and the mixed repository are assembled in the test's temp directory from existing immutable bytes.
+
+### M-1 — real-source marker aliases fail closed
+
+RD keys its inventory case-insensitively, after normalising `\` to `/`. Aliases of `submissionunit.xml` therefore reach SUXI as a single RD file record. Before this fix, SUXI parsed whichever ZIP entry came first, without any diagnostic.
+
+**What SUXI now does:**
+- **ZIP input:** counts the already-open `ZipArchive.Entries` by normalised key (`\` → `/`, trimmed, `OrdinalIgnoreCase`). It does this before selecting or opening the marker entry.
+- **Directory input:** counts the files in the selected unit folder whose names are `submissionunit.xml` under `OrdinalIgnoreCase`.
+- **When the count is greater than 1:** the unit takes the existing S-28 shape:
+  - `SUXI-DUPLICATE-001` / `DuplicateSubmissionUnitFiles`, `ParseStatus=NotAttempted`, no facts;
+  - document and field coverage `NotAssessed`;
+  - **zero `Ectd4*` CEC records**;
+  - no winner is chosen.
+- RD's inventory model is never mutated or re-enumerated, and CEC still never opens XML.
+
+**Tests:** T-20 now runs the full RD → BXI → SUXI → CEC chain over four real archives. The FDA bytes come from SD-029 and the EU bytes from SD-028.
+
+| Variant | Archive entries |
+|---|---|
+| case alias, FDA first | `1/submissionunit.xml`, then `1/SubmissionUnit.xml` |
+| case alias, EU first | the same two entries in reverse order |
+| exact duplicate | two entries both named `1/submissionunit.xml` |
+| backslash alias | `1/submissionunit.xml` plus `1\submissionunit.xml` |
+
+For each archive, the test checks that the entry names were written verbatim. It also checks that RD still collapses them to one record: if RD changes later, that assertion fails, which flags the separate limitation.
+
+The earlier injected-RD-model check is kept but relabelled. It is no longer presented as end-to-end proof.
+
+**Limits:**
+- The directory branch cannot be exercised on the case-insensitive macOS and Windows test file systems. It is covered only by inspection.
+- **The RD/BXI-wide alias risk stays OPEN** and needs its own scoped RD task. For example, BXI is also affected for v3 `index.xml`.
+
+### M-2 — mixed v3/v4 regression (design SD-090)
+
+New check "SD-090 (design) mixed v3/v4 repository…" assembles a temporary repository from three frozen sources:
+- Wave 1 **SD-002**, hash-verified against `WAVE1_FREEZE_MANIFEST.csv`;
+- an `eu-v4/1` unit from SD-028;
+- an independent `us-v4/1` unit from SD-029.
+
+It asserts:
+- 2 SUXI documents, both `Available`;
+- BXI XML documents are present;
+- pre-T2 CEC evidence, including its EvidenceIds, is JSON-identical with and without SUXI, and has no T2 properties;
+- 17 T2 records (8 EU + 9 US) whose IDs continue the pre-T2 sequence;
+- a repeated CEC run gives identical T2 records;
+- every `SourcePath` resolves.
+
+SD-002 is internal test material and is not in the repository, so the check needs `-Wave1CorpusRoot`. Without it the check is reported as **SKIP** and counted separately; it is never counted as PASS. CI does not supply the corpus.
+
+**SD-090 label divergence:** in the accepted design, SD-090 names this mixed repository. Codex's committed fixtures `SD-090/eu.xml` and `SD-090/fda.xml` instead hold the EU `.6.1.3` (`RegisteredWithoutPublishedGuide`) case and an unused FDA companion. Those frozen files were not renamed, moved or modified. The mixed regression is built in temp and carries the design label in its test name.
+
+### Coverage and status mechanics
+
+- **S-16b:** `ECTD4_IG_OID` no longer requires a singleton `submissionUnit`. A duplicated unit now gives IG `Collected` with `RecordsProduced` equal to the emitted IG records (2 for the FDA test). Unit and submission fields stay `NotAssessed`.
+- **Reason vocabulary:** partial and zero-record field rows both map raw values to §8 reason codes:
+  - `Absent` → `MandatoryFieldAbsent`;
+  - `MultipleValues` → `CardinalityViolation`;
+  - `UnknownOid` / `Empty` → `UnrecognizedProfileMarker`.
+  - Example: SD-077's IG row is now `Partial / UnrecognizedProfileMarker / 1`.
+- **Absent markers (S-18 consistency):**
+  - A parsed, recognised message with no receiver IG items now gives IG `Collected / MandatoryFieldAbsent / 0` (SD-078). Before, it was `NotAssessed`.
+  - Other fields with no values follow the same rule, except when the document already records a `CardinalityViolation`. In that case a parent may have been dropped, so absence is not asserted (`NotAssessed / CardinalityViolation`).
+  - Missing, unavailable and unparsed XML stays `NotAssessed`.
+- **Field counts** equal the emitted CEC evidence, because recognition (`Known` / `WholeNumberInRange` / recognised IG) implies `Occurrences = 1`.
+
+### Typed empty arrays
+
+`Submissions[].IdItems` is now `[]`, not `null`, when a submission has no id items. T-12 checks the compressed JSON and a depth-64 round trip; the CI PS5.1 lane runs the same test.
+
+### Recorded deviations and limitations (not verified conformance)
+
+1. **S-28 capture status.** For duplicate markers the implementation emits `CaptureStatus=InputUnavailable` / `ParseStatus=NotAttempted`. Design S-28 lists `Available`. This is kept as a conservative deviation: no source is selected or read.
+2. **S-27 unplaced markers.** No SUXI document or `NotApplicable / UnplacedMarkerNotInventoried` row is emitted for a marker outside a unit folder. The fact survives only as RD's `UnplacedSubmissionUnitMarker` observation.
+3. **Component-level sequence retention.** When a `componentOf1` does not contain exactly one `submission`, the component is skipped with `CardinalityViolation`. Its already-read `SequenceNumber` observations are not retained, so the inventory is not fully lossless at that level. No evidence is fabricated.
+
+Changing any of these would add inventory rows or fields, which would change the accepted model. Per the authorization, these are recorded rather than redesigned.
+
+### Claude verification (macOS arm64, Darwin 25.6, PowerShell 7.5.2)
+
+| Command (repository root) | Result |
+|---|---|
+| `tests/submissionunit-xml-inventory/Test-eMASSubmissionUnitXmlInventory.ps1 -OutputRoot <tmp> -Wave1CorpusRoot /private/tmp/emas-t1b-wave1-ref` | **PASS 22/22**; 22/22 synthetic hashes before and after |
+| the same, without `-Wave1CorpusRoot` | 21 PASS, 0 FAIL, 1 SKIP (M-2) |
+| Negative control: new tests against the unfixed `9adcdfa` production code | 3 FAIL (T-10 reason leak, T-12 `IdItems` null, T-20 S-16b) |
+| Negative control: new tests with only the M-1 ZIP guard removed | T-20 FAIL (`alias-case-fda-first: alias ambiguity was not rejected`) |
+| RD, BXI, RI, RR, MRI, DCC, CMI, CEC (Wave 1 frozen corpus `/private/tmp/emas-t1b-wave1-ref`) | PASS each; 19 ZIP hashes; Wave1E 22 hashes |
+| T1b regional XML | PASS 10/10; 11/11 read-only |
+| Wave1E | PASS 22/22 + 2/2 |
+| Wave1D (`-CorpusRoot <Wave1D package> -Wave1CorpusRoot /private/tmp/emas-t1b-wave1-ref`) | PASS 61/61; 8 frozen hashes |
+| Root-level | PASS |
+| B3 | PASS 12/12, including historical 86 / additive 150 |
+| T4 engine / accepted oracle | PASS 28/28 / 23/23 |
+
+The worktree was clean apart from the authorized files. New-head CI results are reported in the PR #65 comment for the fixed SHA, so that this file does not need to embed its own commit's CI.
+
+**Still OPEN:** RD/BXI-wide alias collision (separate RD task), FDA v1.5.1 / `.18.6` D-3, native PS5.1 T1b qualification, and the unrelated PS5.1 RuntimeConfiguration UTF-8 failure.
