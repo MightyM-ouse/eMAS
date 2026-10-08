@@ -23,6 +23,19 @@ $script:eMASB3PhysicalMarkerEvidenceTypes = @(
     'UtilityDtdFolderMarker'
 )
 
+$script:eMASB3RegionalEnvelopeEvidenceTypes = @(
+    'EuEnvelopeCountry',
+    'EuAgencyCode',
+    'EuProcedureType',
+    'EuSubmissionType',
+    'EuSubmissionUnitType'
+)
+
+$script:eMASB3AdditiveEvidenceTypes = @(
+    $script:eMASB3PhysicalMarkerEvidenceTypes
+    $script:eMASB3RegionalEnvelopeEvidenceTypes
+)
+
 $checks = New-Object System.Collections.ArrayList
 $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('emas-rd-b3-{0}' -f [guid]::NewGuid().ToString('N'))
 $sourceRoot = Join-Path $temporaryRoot 'source'
@@ -47,7 +60,7 @@ function Get-eMASB3SortedText {
 
 function Get-eMASB3HistoricalClassificationEvidence {
     param([AllowEmptyCollection()][object[]] $Records)
-    return @($Records | Where-Object { $script:eMASB3PhysicalMarkerEvidenceTypes -notcontains $_.EvidenceType })
+    return @($Records | Where-Object { $script:eMASB3AdditiveEvidenceTypes -notcontains $_.EvidenceType })
 }
 
 function Invoke-eMASB3Check {
@@ -188,7 +201,7 @@ try {
         $fullRecords = @($wrapped.ClassificationEvidence)
         $historicalRecords = @(Get-eMASB3HistoricalClassificationEvidence -Records $fullRecords)
         Assert-eMASB3Equal 86 $historicalRecords.Count 'Year-wrapped SD-002 historical classification-evidence count differs.'
-        Assert-eMASB3Equal 101 $fullRecords.Count 'Year-wrapped SD-002 additive classification-evidence count differs.'
+        Assert-eMASB3Equal 150 $fullRecords.Count 'Year-wrapped SD-002 additive classification-evidence count differs.'
         $coverage = @($wrapped.CollectionCoverage | Where-Object { $_.CheckId -eq 'ClassificationEvidenceCollection' -and $_.SubjectType -eq 'Repository' })
         Assert-eMASB3Equal 1 $coverage.Count 'Year-wrapped SD-002 CEC repository coverage count differs.'
         Assert-eMASB3Equal $fullRecords.Count $coverage[0].RecordsProduced 'Year-wrapped SD-002 CEC records-produced differs from the full additive result.'
