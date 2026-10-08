@@ -36,6 +36,9 @@ param(
     [switch] $IncludeBackboneXmlInventory,
 
     [Parameter(Mandatory = $false, ParameterSetName = 'RepositoryDiscovery')]
+    [switch] $IncludeSubmissionUnitXmlInventory,
+
+    [Parameter(Mandatory = $false, ParameterSetName = 'RepositoryDiscovery')]
     [switch] $IncludeReferenceInventory,
 
     [Parameter(Mandatory = $false, ParameterSetName = 'RepositoryDiscovery')]
@@ -71,6 +74,33 @@ if ($PSCmdlet.ParameterSetName -eq 'Initialization') {
 }
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+function Restore-eMASSubmissionUnitXmlCapability {
+    param([Parameter(Mandatory = $true)][object] $Result)
+    if (-not $IncludeSubmissionUnitXmlInventory) { return $Result }
+    $current = @($Result.Execution.Capabilities | Where-Object { $_ -ne 'SubmissionUnitXmlInventory' })
+    $rebuilt = New-Object System.Collections.ArrayList
+    foreach ($capability in $current) {
+        [void]$rebuilt.Add($capability)
+        if ($capability -eq 'BackboneXmlInventory') { [void]$rebuilt.Add('SubmissionUnitXmlInventory') }
+    }
+    $Result.Execution.Capabilities = [object[]]@($rebuilt)
+    $Result.Execution.ScannerName = 'eMAS.' + (@($rebuilt) -join '+')
+    return $Result
+}
+
+function Write-eMASPreSalesResult {
+    param(
+        [Parameter(Mandatory = $true)][object] $Result,
+        [Parameter(Mandatory = $true)][string] $Path
+    )
+    $parent = Split-Path -Parent $Path
+    if (-not [string]::IsNullOrWhiteSpace($parent) -and -not [System.IO.Directory]::Exists($parent)) {
+        [void][System.IO.Directory]::CreateDirectory($parent)
+    }
+    $json = $Result | ConvertTo-Json -Depth 64
+    [System.IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 $configurationIdentity = $null
 $configuration = $null
 if ($IncludeIdentificationInterpretation -and [string]::IsNullOrWhiteSpace($RuntimeConfigurationPath)) {
@@ -102,7 +132,7 @@ $repositoryDiscoveryParameters = @{
     Phase = $Phase
     ConfigurationIdentity = $configurationIdentity
 }
-if (-not $IncludeBackboneXmlInventory -and -not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+if (-not $IncludeBackboneXmlInventory -and -not $IncludeSubmissionUnitXmlInventory -and -not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $repositoryDiscoveryParameters.OutputPath = $OutputPath
     Invoke-eMASRepositoryDiscovery @repositoryDiscoveryParameters
     return
@@ -120,19 +150,34 @@ Import-Module -Name $backboneXmlInventoryModule -Force -ErrorAction Stop
 $backboneXmlInventoryResult = Invoke-eMASBackboneXmlInventory `
     -SourcePath $SourcePath `
     -RepositoryDiscoveryResult $repositoryDiscoveryResult `
-    -OutputPath $(if ($IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    -OutputPath $(if ($IncludeSubmissionUnitXmlInventory -or $IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
 
-if (-not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+if (-not $IncludeSubmissionUnitXmlInventory -and -not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
     $backboneXmlInventoryResult
     return
+}
+
+$postBackboneResult = $backboneXmlInventoryResult
+if ($IncludeSubmissionUnitXmlInventory) {
+    $submissionUnitXmlInventoryModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.SubmissionUnitXmlInventory.psm1'
+    Import-Module -Name $submissionUnitXmlInventoryModule -Force -ErrorAction Stop
+    $postBackboneResult = Invoke-eMASSubmissionUnitXmlInventory `
+        -SourcePath $SourcePath `
+        -InputResult $backboneXmlInventoryResult `
+        -OutputPath $(if ($IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+
+    if (-not $IncludeReferenceInventory -and -not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        $postBackboneResult
+        return
+    }
 }
 
 # Identification-only mode uses the shortest factual chain:
 # RepositoryDiscovery -> BackboneXmlInventory -> ClassificationEvidenceCollection -> IdentificationInterpretation.
 # Reference/missing-reference/checksum capabilities run only when their switches are explicitly requested.
 $deepCheckRequested = $IncludeReferenceInventory -or $IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation
-if ($IncludeIdentificationInterpretation -and -not $deepCheckRequested) {
-    $classificationEvidenceInput = $backboneXmlInventoryResult
+if (($IncludeIdentificationInterpretation -or $IncludeSubmissionUnitXmlInventory) -and -not $deepCheckRequested) {
+    $classificationEvidenceInput = $postBackboneResult
 }
 else {
     $referenceInventoryModule = Join-Path $repositoryRoot 'engine/powershell51/eMAS.ReferenceInventory.psm1'
@@ -140,10 +185,12 @@ else {
     $referenceInventoryResult = Invoke-eMASReferenceInventory `
         -SourcePath $SourcePath `
         -RepositoryDiscoveryResult $repositoryDiscoveryResult `
-        -BackboneXmlInventoryResult $backboneXmlInventoryResult `
+        -BackboneXmlInventoryResult $postBackboneResult `
         -OutputPath $(if ($IncludeReferenceResolution -or $IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    $referenceInventoryResult = Restore-eMASSubmissionUnitXmlCapability -Result $referenceInventoryResult
 
     if (-not $IncludeReferenceResolution -and -not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        if ($IncludeSubmissionUnitXmlInventory) { Write-eMASPreSalesResult -Result $referenceInventoryResult -Path $OutputPath }
         $referenceInventoryResult
         return
     }
@@ -155,8 +202,10 @@ else {
         -RepositoryDiscoveryResult $repositoryDiscoveryResult `
         -ReferenceInventoryResult $referenceInventoryResult `
         -OutputPath $(if ($IncludeMissingReferenceInterpretation -or $IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    $referenceResolutionResult = Restore-eMASSubmissionUnitXmlCapability -Result $referenceResolutionResult
 
     if (-not $IncludeMissingReferenceInterpretation -and -not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        if ($IncludeSubmissionUnitXmlInventory) { Write-eMASPreSalesResult -Result $referenceResolutionResult -Path $OutputPath }
         $referenceResolutionResult
         return
     }
@@ -166,8 +215,10 @@ else {
     $missingReferenceInterpretationResult = Invoke-eMASMissingReferenceInterpretation `
         -ReferenceResolutionResult $referenceResolutionResult `
         -OutputPath $(if ($IncludeDeclaredChecksumComparison -or $IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    $missingReferenceInterpretationResult = Restore-eMASSubmissionUnitXmlCapability -Result $missingReferenceInterpretationResult
 
     if (-not $IncludeDeclaredChecksumComparison -and -not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        if ($IncludeSubmissionUnitXmlInventory) { Write-eMASPreSalesResult -Result $missingReferenceInterpretationResult -Path $OutputPath }
         $missingReferenceInterpretationResult
         return
     }
@@ -178,8 +229,10 @@ else {
         -SourcePath $SourcePath `
         -MissingReferenceInterpretationResult $missingReferenceInterpretationResult `
         -OutputPath $(if ($IncludeChecksumMismatchInterpretation -or $IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    $declaredChecksumComparisonResult = Restore-eMASSubmissionUnitXmlCapability -Result $declaredChecksumComparisonResult
 
     if (-not $IncludeChecksumMismatchInterpretation -and -not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        if ($IncludeSubmissionUnitXmlInventory) { Write-eMASPreSalesResult -Result $declaredChecksumComparisonResult -Path $OutputPath }
         $declaredChecksumComparisonResult
         return
     }
@@ -189,8 +242,10 @@ else {
     $checksumMismatchInterpretationResult = Invoke-eMASChecksumMismatchInterpretation `
         -DeclaredChecksumComparisonResult $declaredChecksumComparisonResult `
         -OutputPath $(if ($IncludeClassificationEvidenceCollection -or $IncludeIdentificationInterpretation) { $null } else { $OutputPath })
+    $checksumMismatchInterpretationResult = Restore-eMASSubmissionUnitXmlCapability -Result $checksumMismatchInterpretationResult
 
     if (-not $IncludeClassificationEvidenceCollection -and -not $IncludeIdentificationInterpretation) {
+        if ($IncludeSubmissionUnitXmlInventory) { Write-eMASPreSalesResult -Result $checksumMismatchInterpretationResult -Path $OutputPath }
         $checksumMismatchInterpretationResult
         return
     }
