@@ -383,3 +383,197 @@ Test-only fixes from the first full suite pass:
 7. **No CI change.** The runner's tests are not wired into `.github/workflows/**`, which is outside the allowlist. They were run locally only.
 
 The PR stays draft. Neither the worker nor the demo branch is merged. ChatGPT reviews the fixed PR head, and the user decides any merge.
+
+---
+
+## Continuation (2026-10-09) — central handoff [`6070807590`](https://github.com/MightyM-ouse/eMAS/pull/67#issuecomment-6070807590)
+
+The handoff was written before draft PR [#68](https://github.com/MightyM-ouse/eMAS/pull/68) and the section above were published. I continued from the same branch; nothing was restarted or rewritten. I did not open a second PR: #68 is the single draft worker PR.
+
+**This section supersedes the section above:**
+- The implementation SHA is now `753995d40f2bb1be895c57145b75dbb840229a2f`.
+- All verdict and exit-code statements below replace the earlier ones. In particular, the demo verification stage with no expected document is now `SKIP`; the earlier section says `BLOCKED`.
+
+### Handoff items 1–2: final tests, re-run at a clean fixed commit
+
+Platform: macOS 26.6.2 (Darwin 25.6.0) arm64, PowerShell Core 7.5.2, .NET 9.0.6. The worktree was clean (0 entries) before and after, and HEAD was unchanged. Corpora are the same local external paths as above.
+
+**Runner test suite at `753995d`:**
+
+| Variant | Result | Summary file |
+|---|---|---|
+| With corpora | **26 total, 26 passed, 0 failed, 0 skipped**, exit 0 | `~/eMAS-MS04-Runs/_runner-tests-753995d-corpora/demo-runner-test-summary.json` |
+| Without corpora | **26 total, 25 passed, 0 failed, 1 skipped**. RT-03 SKIP: corpora not supplied. Exit 0. | `~/eMAS-MS04-Runs/_runner-tests-753995d-nocorpora/demo-runner-test-summary.json` |
+
+The two runs execute the same IDs:
+- RT-01 to RT-24 as listed above, with RT-07, RT-09 and RT-22 tightened for the new contracts;
+- the new RT-25 (exit policy) and RT-26 (expectation contract).
+
+The suite writes its run folders under `runs/` in the same directory as its summary file.
+
+**Runner modes.** All runs below are in `~/eMAS-MS04-Runs/753995d/`, use `-NoUserSettings`, and the exit codes are the runner's process exit codes.
+
+| Run folder | Command (`tools/demo/Invoke-eMASMS04Demo.ps1 …`) | Overall | Exit (policy) |
+|---|---|---|---|
+| `20261008-231126-QuickCheck-46e5884f` | `-Mode QuickCheck` | **PASS_WITH_SKIPS** (detail below) | 2 (Strict) |
+| `20261008-231140-QuickCheck-eca4b527` | `-Mode QuickCheck -ExitCodePolicy Task` | **PASS_WITH_SKIPS** (same counts) | 0 (Task; strict 2 recorded) |
+| `20261008-231155-QuickCheck-83ba95e9` | `-Mode QuickCheck -Wave1CorpusRoot <W1>` | **PASS** (QuickCheck coverage only): T2 22/22, T4 28/28, oracle 23/23 | 0 |
+| `20261008-231210-FullRegression-807bc2c2` | `-Mode FullRegression` | **PASS_WITH_SKIPS** (detail below) | 2 |
+| `20261008-231226-FullRegression-418328b8` | `-Mode FullRegression -Wave1CorpusRoot <W1> -Wave1DCorpusRoot <W1D>` | **PASS** (detail below) | 0 |
+| `20261008-231359-MS04Demo-ea958462` | `-Mode MS04Demo -SourcePath <SD-063 fixture.zip>` | **BLOCKED**: identification not executed | 4 |
+| `20261008-231400-MS04Demo-18a99942` | `… -RuntimeConfigurationPath tests/fixtures/runtime-config/invalid-malformed.json` | **FAIL**: real loader `CFG-FILE-009`, no Identification document | 1 |
+| `20261008-231401-MS04Demo-77b9a8ad` | `… -RuntimeConfigurationPath <IDO-01 runtime-config.json> -SubmissionUnitXmlInventory Include` | **EXECUTED_UNVERIFIED**; verification `SKIP` | 3 |
+| `20261008-231403-MS04Demo-0897802a` | the same, with `-ExitCodePolicy Task` | **EXECUTED_UNVERIFIED** | 0 (Task; strict 3) |
+| `20261008-231405-MS04Demo-54e1a288` | `… <IDO-01 config> -ExpectedIdentificationPath <file whose ContractId is ScannerObservations>` | **BLOCKED** (detail below) | 4 |
+| `20261008-231407-MS04Demo-4a31a11f` | `… <IDO-01 config> -ExpectedIdentificationPath <IDO-01 expected-identification.json>` | **FAIL**: verification mismatch with path-level differences | 1 |
+
+**QuickCheck without corpus.** T2 21/22 + SD-090 SKIP, T4 28/28, oracle 23/23. Freeze manifests SUXI 22/22 and WAVE1E 22/22. Immutability PASS.
+
+**FullRegression without corpora.**
+- PASS: T2 (21 + 1 SKIP), T4, oracle, T1b 10/10, W1E 24/24.
+- 11 corpus suites `SKIP` with the cause stated.
+
+**FullRegression with corpora** (93.0 s): 15/15 gates plus T2 22/22, with the same counts as above:
+
+| Gate | Count |
+|---|---|
+| W1 RD | 13 |
+| W1 BXI | 24 |
+| W1 RI | 28 |
+| W1 RR | 31 |
+| W1 MRI | 33 |
+| W1 DCC | 37 |
+| W1 CMI | 54 |
+| W1 CEC | 62 |
+| T1b | 10 |
+| W1E | 24 |
+| W1D | 61 |
+| ROOT | 3 |
+| B3 | 12 |
+| T4 | 28 |
+| Oracle | 23 |
+
+Freeze gates 19/19 (CEC also Wave1E 22/22); corpora unchanged.
+
+**Demo with an unusable expected document.** Identification executed, but `DEMO-INPUTS` and `DEMO-VERIFICATION` are `BLOCKED`.
+
+**Read-only hashes** at `753995d`, identical to the `b6053d1` values above:
+
+| Item | SHA-256 |
+|---|---|
+| `tests/fixtures` (104 files) | `0e9f7151…a5ae5b` |
+| oracle (74 files) | `175dc02d…333097` |
+| `config` | `781bf731…c8da0` |
+| `engine` | `f4b4d8fb…2caea4` |
+| `scripts` | `d4b6b661…b5f36` |
+| Wave 1 corpus tree | `57b01076…60af36` |
+| Wave 1 manifest | `367da81d…bd6ced56` |
+| Wave1D tree | `a15b05f3…e3c87b` |
+
+**Fresh GitHub clone** of `753995d`, in `/private/tmp/emas fresh clone ü 753995d/eMAS` (CRLF scripts, clean, no corpora, no settings file):
+- `-Mode QuickCheck` gives **PASS_WITH_SKIPS**, runner exit 2 (read from its manifest: `Run.ExitCode=2`, `WorktreeClean=True`). Evidence: `~/eMAS-MS04-Runs/_fresh-clone-753995d/20261008-231842-QuickCheck-4c992160/`.
+- The clone was unchanged afterwards.
+
+**VS Code: task-command simulation, not a GUI click.** In the fresh clone, I executed each task's exact `args` from `.vscode/tasks.json` as a no-shell process. `${workspaceFolder}` and the `${input:*}` answers were substituted; the Demo used the SD-063 ZIP and blank optional answers. Runs were written to the default `~/eMAS-MS04-Runs/`.
+
+| Task | Exit | Banner | Run folder |
+|---|---|---|---|
+| Quick Check | 0 | `RESULT: PASS WITH SKIPS` | `20261008-231857-QuickCheck-2b8f27ce` |
+| Full Regression | 0 | `RESULT: PASS WITH SKIPS` | `20261008-231912-FullRegression-21b3a484` |
+| Demo | 4 | `RESULT: BLOCKED` | `20261008-231928-MS04Demo-b4be3ded` |
+
+**An actual click through Terminal → Run Task in the VS Code UI has not been performed or validated.** Only the task command lines were exercised.
+
+Other covered checks, all PASS:
+
+| Area | Checks |
+|---|---|
+| Output safety | RT-18, RT-19, RT-20 |
+| HTML escaping | RT-10, RT-11 |
+| SIGINT/SIGKILL interruption | RT-17 |
+| Missing/invalid/synthetic Runtime JSON | RT-05, RT-06, RT-07 |
+| Process failure handling | RT-12 to RT-16 |
+
+### Handoff item 3: UX for `PASS_WITH_SKIPS` in VS Code
+
+**Problem (verified).** With `type: process`, VS Code reports any non-zero exit as a failed task. Under the original single policy, QuickCheck's expected `PASS_WITH_SKIPS` exited 2, so it looked like an execution failure.
+
+**Decision.** I added `-ExitCodePolicy Strict|Task`.
+
+| Policy | Where it is used | Exit codes |
+|---|---|---|
+| `Strict` | Default; command line and CI | Unchanged (2/3/4/5/1) |
+| `Task` | All three VS Code tasks | 0 for a completed run with no failure: PASS, VERIFIED, PASS_WITH_SKIPS, EXECUTED_UNVERIFIED |
+
+Under `Task`, FAIL (1), UNVERIFIED (3), BLOCKED (4), INCOMPLETE (5) and refusals (6) **stay non-zero**, so VS Code still marks those failed.
+
+**What the policy does not change:**
+- `Run.OverallStatus`;
+- stage statuses and counts;
+- the HTML verdict.
+
+Skipped checks are still never counted as passed.
+
+**How the qualified result is still shown:**
+- The manifest records `ExitCode`, `StrictExitCode` and `ExitCodePolicy`.
+- The terminal ends with a `RESULT:` banner. For PASS_WITH_SKIPS it reads "This is not an unqualified PASS."; for EXECUTED_UNVERIFIED, "This is not a PASS.".
+- Under `Task`, a line explains that "Exit code 0 (Task policy) means 'completed without a failure', not an unqualified PASS; strict code N".
+- `summary.html` shows the strict code next to the process exit code.
+
+**Regression checks.**
+- **RT-25:** the full status × policy mapping table, plus an end-to-end QuickCheck under `Task`. It checks exit 0, OverallStatus `PASS_WITH_SKIPS`, StrictExitCode 2, the banner and HTML text, and that the 21 passed / 1 skipped counts are preserved.
+- **RT-22:** every task passes `-ExitCodePolicy Task`.
+
+**Alternative rejected.** I did not keep exit 2 and rely only on documentation, because the handoff asks to avoid a misleading "execution failed" impression.
+
+### Handoff item 4: MS04Demo verdict precedence
+
+**Problem confirmed in code at `b6053d1`.** The demo branch of `Get-eMASOverallVerdict` returned `EXECUTED_UNVERIFIED` before the generic `BLOCKED` check. A supplied expected document that was missing, not JSON, or not `Identification/1.0` therefore produced `EXECUTED_UNVERIFIED`. That is the same label as "no expectation supplied".
+
+It could never yield VERIFIED or a success label, because VERIFIED needs an equal comparison. But it conflated the two cases.
+
+**Contract implemented and tested:**
+
+| Expected document | `DEMO-VERIFICATION` | Overall |
+|---|---|---|
+| Not supplied | `SKIP` | `EXECUTED_UNVERIFIED` (strict exit 3) |
+| Supplied but missing, malformed JSON, or wrong ContractId | `BLOCKED` (DEMO-INPUTS also BLOCKED) | `BLOCKED` (exit 4 under both policies); the reason names the blocked stages |
+| Supplied and different | `FAIL` | `FAIL` |
+| Supplied and equal | `VERIFIED` | `VERIFIED`, only when no stage is BLOCKED or FAIL |
+
+**Regression checks.**
+- **RT-26:** wrong ContractId, malformed JSON and absent path, each under `Strict` and `Task`.
+- **RT-09:** verdict units, including "VERIFIED does not survive another BLOCKED stage".
+- **RT-07:** not supplied gives verification `SKIP`.
+
+No regulatory validity is inferred.
+
+### Handoff items 5–6
+
+- **Synthetic config.** The `IDO-01` Runtime JSON plus physical fixture SD-063 is synthetic test policy, not a verified dossier→Identification set. It yields `EXECUTED_UNVERIFIED` at best, and `FAIL` against the mismatching oracle expectation.
+- **No unsupported claims.** No projection-v2 or T2 classification claim is made, and T4 v1 still ignores the T2 types.
+- **Files changed in this continuation** (allowlist only):
+  - `tools/demo/Invoke-eMASMS04Demo.ps1`;
+  - `tools/demo/private/eMAS.MS04DemoRunner.psm1` and `eMAS.MS04DemoReport.psm1`;
+  - `tools/demo/README.md`;
+  - `.vscode/tasks.json`;
+  - `tests/demo-runner/Test-eMASMS04DemoRunner.ps1`;
+  - this report and `STATUS.md`.
+- **Unchanged:** scanner, runtime, T4, oracle, corpora, fixtures, workflows and `.gitignore`.
+
+### Known limitations (unchanged unless stated)
+
+1. **MS-04 business identification VERIFIED is BLOCKED.** There is no approved Runtime JSON and no independent dossier-level expected outcome.
+2. **Comparison profile.** It removes `EvidenceSource.DocumentSha256`, which varies on every dossier run, together with the runner-assigned `ExecutionId` fields. Awaiting central confirmation.
+3. **`.vscode/tasks.json` is force-added** because `.gitignore` ignores `.vscode/`. Awaiting central confirmation.
+4. **External corpora live under `/private/tmp`** and are not in CI. PSScriptAnalyzer was not run; it is not installed. The parser reports 0 errors.
+5. **VS Code GUI click not validated.** Only task-command simulation was done.
+6. **Windows qualification is out of scope.** Windows PS5.1 and PS7.6 runner qualification are not attempted. The PS5.1 UTF-8 CI debt, the RD/BXI alias limitation and FDA D-3 remain out of scope.
+7. **SIGKILL limitation.** A runner killed with SIGKILL cannot stop a child harness that is already running.
+
+### Worker stop state
+
+- Worker branch `implementation/emas-ms04-mac-demo-runner` is pushed.
+- Implementation SHA: `753995d40f2bb1be895c57145b75dbb840229a2f`.
+- The fixed review SHA is the PR #68 head that carries this report. That commit changes only this file and `STATUS.md`, and the SHA is not self-embedded.
+- PR #68 remains **draft**. Nothing was merged. Claude has stopped and awaits ChatGPT's fixed-SHA review and the separate user merge decision.
