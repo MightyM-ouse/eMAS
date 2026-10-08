@@ -1,6 +1,7 @@
 # Claude Report — T2 SubmissionUnit XML Inventory Design (eCTD v4.0)
 
-**Status:** `DESIGN_COMPLETE — READY_FOR_FIXED_SHA_CENTRAL_REVIEW`
+**Status:** `AMENDED (revision 1.1) — READY_FOR_FIXED_SHA_CENTRAL_RE-REVIEW`
+**Reviewed SHA:** `9eae107ae92009bde0bc6d75d33d41c70082760e`. Revision 1.1 resolves central findings F-1, F-2 and F-3 only (§0).
 **Task:** `EMAS-MS04-ECTD4-SUBMISSIONUNIT-XML-INVENTORY` (Roadmap T2). Research and design only; no implementation.
 **Worker branch:** `analysis/emas-ms04-ectd4-submissionunit-xml-inventory-design`
 **Authoritative base:** `09c6e3bbb37f9811e045214cfb6b9bb575ce669e`
@@ -29,6 +30,20 @@
 | **[DES]** | eMAS design proposal |
 | **[CONFLICT]** | Official sources disagree; both are recorded and the conflict is not reconciled |
 | **[GAP]** | An official source exists but could not be inspected; no rule is derived from it |
+
+---
+
+## 0. Revision 1.1 — central review findings F-1 to F-3
+
+The architecture, contract version, the eight evidence types, BXI and T4 are unchanged. Only the items below change.
+
+| Finding | Resolution | Sections changed |
+|---|---|---|
+| **F-1** Nested ordinals could collide in CEC identity | `SourceOrdinal` is now a **per-document, per-EvidenceType ordinal** assigned in one canonical document-order walk, so (`SubmissionUnitXmlId`, `EvidenceType`, `SourceOrdinal`) is unique. A new-record-only `SourcePath` (e.g. `S2/A1/I1`) keeps the exact link to the nested inventory ordinals. Historical and T1b EvidenceIds are unchanged | §10, §13, §15 (SD-085, T-19) |
+| **F-2** Duplicate singleton values had no typed representation | Every coded field uses one typed `CodedValue` object with `Occurrences` and an `Observations[]` array that keeps **every** code/code-system pair in document order. With more than one occurrence no winner is chosen and CEC emits nothing for that field. The sequence number follows the same pattern | §8 (S-16), §10, §13, §15 (SD-082, T-20) |
+| **F-3** Confirmed-missing `submissionunit.xml` used inconsistent statuses | RD-confirmed absence is now `Exists = false`, `ParseStatus = Missing`, `CaptureStatus = InputUnavailable`, coverage `NotAssessed` with reason `SubmissionUnitXmlConfirmedAbsent`. `NotApplicable` is not used for it. It stays distinct from missing-after-discovery, access denied and capability not run | §8 (S-1), §10, §15 (SD-063 reuse, T-21) |
+
+Unchanged open items (not represented as complete): FDA M1 package v1.5.1 and sample retrieval (D-3), and native PS5.1 T1b qualification.
 
 ---
 
@@ -334,8 +349,8 @@ ICH I1 printed page = PDF page − 15. FDA F1 printed page = PDF page − 10. EU
 
 | # | Situation | Capture / Parse | Collection (doc / field) | Reason code | Raw facts kept? | CEC record? | Kind |
 |---|---|---|---|---|---|---|---|
-| S-1 | Unit folder has no `submissionunit.xml` (`DamagedSubmissionUnitCandidate`) | Available / Missing | NotApplicable | `SubmissionUnitXmlAbsent` | Folder only (RD) | none | coverage |
-| S-2 | Marker listed by RD disappears before open | InputUnavailable / NotAttempted | NotAssessed | `SourceXmlUnavailable` | none | none | coverage |
+| S-1 | **RD-confirmed absence**: unit folder listed by RD without `submissionunit.xml` (`DamagedSubmissionUnitCandidate`) | **InputUnavailable / Missing** (`Exists = false`, `FileId = null`) | **NotAssessed** (doc and every field row) | `SubmissionUnitXmlConfirmedAbsent` | none (the absence itself stays the RD observation `DamagedSubmissionUnitMarkerSet`) | none | coverage |
+| S-2 | Marker listed by RD disappears before open | InputUnavailable / NotAttempted (`Exists = true`, `FileId` set) | NotAssessed | `SourceXmlUnavailable` | none | none | coverage |
 | S-3 | Access denied | AccessDenied / NotAttempted | NotAssessed | `SourceXmlAccessDenied` | none | none | coverage |
 | S-4 | Other read error / ZIP entry unavailable | InputUnavailable / NotAttempted | NotAssessed | `SourceXmlUnavailable` | diagnostic code (`XML-READ-001`, `XML-ZIP-ENTRY-001`) | none | coverage |
 | S-5 | Not well formed / safe-reader failure | ParseFailed / ParseFailed | NotAssessed | `SourceXmlParseFailed` | parse error code, line, position | none | parser |
@@ -349,7 +364,8 @@ ICH I1 printed page = PDF page − 15. FDA F1 printed page = PDF page − 10. EU
 | S-13 | Draft or unpublished profile OID (EU `.6.1.2`, `.6.1.3`) | Available | Collected | `ProfileSourceDraft` / `ProfileSourceUnpublished` (informational) | marker + source status | yes (recognition ≠ support) | parser |
 | S-14 | Schema not evaluated | — | doc row always carries `SchemaValidation = NotEvaluated` | `SchemaNotEvaluated` | — | — | coverage (constant) |
 | S-15 | Schema validation failure | **Not applicable**: validation is out of scope (regulator step, L17) | — | — | — | — | — |
-| S-16 | Duplicate singleton (two `submissionUnit`, two `code` on one element) | Available | field: NotAssessed | `CardinalityViolation` | all values (`Values[]`) | none for that field | parser |
+| S-16 | Duplicate singleton value (two `code` elements, two `sequenceNumber` elements, or two `code` attributes' parents) | Available | field: NotAssessed | `CardinalityViolation` | **every** occurrence in `Observations[]` (each code + codeSystem pair, document order; identical duplicates kept, not deduplicated); `Code`/`CodeSystem` = null; `Recognition = MultipleValues` | **none** for that field | parser |
+| S-16b | Duplicate `submissionUnit` element (eCTD4-005) | Available | doc: Partial; unit/submission fields NotAssessed | `MultipleSubmissionUnits` | `Structure.SubmissionUnitCount`; root/ns/markers | root/ns/IG records only; nothing below `submissionUnit` | parser |
 | S-17 | Unexpected cardinality that is allowed by the schema but not the IG (e.g. FDA two application `id.item`) | Available | Collected | `RegionalCardinalityExceeded` (informational) | all items | per-item records (recognised roots) | parser |
 | S-18 | Mandatory element or attribute missing (e.g. no `submissionUnit/code`, no `sequenceNumber`) | Available | field: Collected | `MandatoryFieldAbsent` | `ValueStatus = Absent` | none | parser (assessed absence) |
 | S-19 | Unknown code in a known code-system version | Available | field: NotAssessed | `CodeOutsideCodeSystem` | code + codeSystem kept | **none** | parser |
@@ -365,6 +381,17 @@ ICH I1 printed page = PDF page − 15. FDA F1 printed page = PDF page − 10. EU
 | S-29 | Unit is `AmbiguousRegulatoryUnitFolder` (both `index.xml` and `submissionunit.xml`) | parsed normally | Collected | `AmbiguousUnitFolder` (informational) | facts | records (the unit stays ambiguous at RD) | parser |
 
 All of these stay distinct: absence (S-1, S-18), unavailability (S-2–S-4), parse failure (S-5), unsupported structure or profile (S-7–S-10), invalid value (S-19–S-23) and ambiguity (S-12, S-16).
+
+**Confirmed absence versus other cases (F-3).** The SUXI states for an expected document are kept apart by `Exists`, `ParseStatus` and the reason code, using only the existing vocabularies:
+
+| Case | `Exists` | `ParseStatus` | `CaptureStatus` | Coverage | Reason |
+|---|---|---|---|---|---|
+| RD-confirmed absence (S-1) | `false` | `Missing` | `InputUnavailable` | `NotAssessed` | `SubmissionUnitXmlConfirmedAbsent` |
+| Listed by RD, gone at open (S-2) | `true` | `NotAttempted` | `InputUnavailable` | `NotAssessed` | `SourceXmlUnavailable` |
+| Access denied (S-3) | `true` | `NotAttempted` | `AccessDenied` | `NotAssessed` | `SourceXmlAccessDenied` |
+| Capability not run (S-26) | — | — | — | no SUXI record, no rows, no token | — |
+
+`NotApplicable` is deliberately **not** used for S-1. T4 v1 treats an XmlDocument coverage row with `NotApplicable` as assessed absence, and a later projection could read the same meaning into SUXI rows. A missing message is an unavailable source, not a field that does not apply. Field rows are `NotAssessed`, so no field can ever be read as `AssessedAbsent` (that state is reserved for S-18, a parsed message without the element).
 
 ---
 
@@ -409,14 +436,14 @@ New **top-level** member of ScannerObservations, owned by SUXI: `SubmissionUnitX
   "FileId": "FIL-0042",
   "RelativePath": "1/submissionunit.xml",
   "Exists": true,
-  "CaptureStatus": "Available",
-  "ParseStatus": "Parsed",
+  "CaptureStatus": "Available | InputUnavailable | AccessDenied | ParseFailed",
+  "ParseStatus": "Parsed | ParseFailed | Missing | NotAttempted",
   "ParseErrorCode": null, "ParseErrorLineNumber": null, "ParseErrorLinePosition": null, "Diagnostic": null,
   "SchemaValidation": "NotEvaluated",
   "Structure": {
     "RootLocalName": "PORP_IN000001UV", "RootNamespaceUri": "urn:hl7-org:v3",
     "ItsVersion": "XML_1.0", "SchemaLocationDeclared": "urn:hl7-org:v3 PORP_IN000001UV.xsd",
-    "HasDocumentType": false,
+    "HasDocumentType": false, "SubmissionUnitCount": 1,
     "StructureStatus": "Recognized | UnrecognizedRootElement | UnrecognizedNamespace | NotAttempted"
   },
   "VocabularyId": "ECTD4-SUXI-VOCABULARY/1",
@@ -428,19 +455,21 @@ New **top-level** member of ScannerObservations, owned by SUXI: `SubmissionUnitX
   ],
   "SubmissionUnit": {
     "IdRoot": "…uuid…", "IdRootFormat": "Uuid | NotUuid | Absent",
-    "Code": { "Code": "…", "CodeSystem": "2.16.840.1.113883.3.6905.1.8.1", "Recognition": "Known | CodeOutsideCodeSystem | CodeSystemNotExpectedForElement | UnrecognizedCodeSystem | Absent | MultipleValues", "DisplayNamePresent": false },
+    "Code": { "Occurrences": 1, "Code": "…", "CodeSystem": "2.16.840.1.113883.3.6905.1.8.1", "Recognition": "Known | CodeOutsideCodeSystem | CodeSystemNotExpectedForElement | UnrecognizedCodeSystem | Absent | MultipleValues", "DisplayNamePresent": false,
+              "Observations": [ { "ObservationOrdinal": 1, "Code": "…", "CodeSystem": "…", "DisplayNamePresent": false } ] },
     "StatusCode": "active",
     "SubmissionCount": 1
   },
   "Submissions": [
     { "SubmissionOrdinal": 1,
-      "SequenceNumber": { "Raw": "1", "Value": 1, "ValueStatus": "WholeNumberInRange | SequenceNumberNotInteger | SequenceNumberOutOfRange | Absent | MultipleValues", "MatchesUnitFolderName": "Equal | Different | NotComparable" },
+      "SequenceNumber": { "Occurrences": 1, "Raw": "1", "Value": 1, "ValueStatus": "WholeNumberInRange | SequenceNumberNotInteger | SequenceNumberOutOfRange | Absent | MultipleValues", "MatchesUnitFolderName": "Equal | Different | NotComparable",
+                          "Observations": [ { "ObservationOrdinal": 1, "Raw": "1" } ] },
       "IdItems": [ { "ItemOrdinal": 1, "Root": "…", "RootFormat": "Uuid | Oid | Other", "Extension": "…|null" } ],
-      "Code": { "Code": "…", "CodeSystem": "…", "Recognition": "…", "DisplayNamePresent": false },
+      "Code": { "Occurrences": 1, "Code": "…", "CodeSystem": "…", "Recognition": "…", "DisplayNamePresent": false, "Observations": [ … ] },
       "Applications": [
         { "ApplicationOrdinal": 1,
           "IdItems": [ { "ItemOrdinal": 1, "Root": "…", "RootFormat": "Oid", "RootRecognition": "RecognizedNamespaceOid | NotRecognized", "Extension": "…|null" } ],
-          "Code": { "Code": "…", "CodeSystem": "…", "Recognition": "…", "DisplayNamePresent": false } } ] } ],
+          "Code": { "Occurrences": 1, "Code": "…", "CodeSystem": "…", "Recognition": "…", "DisplayNamePresent": false, "Observations": [ … ] } } ] } ],
   "Diagnostics": { "ContextOfUseCount": 12, "DocumentCount": 9, "ProfileIdPresent": false, "ReasonCodes": [] }
 }
 ```
@@ -456,6 +485,15 @@ New **top-level** member of ScannerObservations, owned by SUXI: `SubmissionUnitX
 - **`IdentifierName`:** stored for traceability, capped at 128 characters. Non-authoritative.
 - **Serialisation depth:** maximum nesting is 7. Writers use `ConvertTo-Json -Depth 64`, as all existing modules do, so PS5.1 is safe.
 - **Unrecognised structure:** when `StructureStatus` is anything other than `Recognized`, only `Structure` and diagnostics are filled. `ProfileMarkers`, `SubmissionUnit` and `Submissions` are empty or null. No fact is guessed.
+- **`CodedValue` (F-2).** `SubmissionUnit.Code`, `Submissions[].Code` and `Applications[].Code` all use this one typed object:
+  - `Occurrences` (int) = number of `code` elements found at that location.
+  - `Observations[]` lists **every** occurrence in document order: `ObservationOrdinal` (1-based), `Code` and `CodeSystem` (each a string, or `null` if that attribute is missing on that occurrence) and `DisplayNamePresent`. Identical duplicates are kept as separate observations.
+  - `Occurrences = 0`: `Code`/`CodeSystem` null, `Recognition = Absent`, `Observations = []`.
+  - `Occurrences = 1`: `Code`/`CodeSystem` copy the single observation, and `Recognition` is evaluated for that pair.
+  - `Occurrences > 1`: `Code`/`CodeSystem` are `null` and `Recognition = MultipleValues`. **No winner is chosen**, no observation is recognised on the parent, and the field is a cardinality failure (S-16).
+  - The same pattern applies to `SequenceNumber` (`Observations[]` of `{ObservationOrdinal, Raw}`; `Value` is null when `Occurrences > 1`).
+  - `Observations[]` is always present (possibly empty), so the shape is identical for valid and invalid input. Maximum nesting rises to 8, still well inside `-Depth 64`.
+- **Confirmed-absent document (F-3).** For S-1 the record carries `Exists = false`, `FileId = null`, `ParseStatus = Missing`, `CaptureStatus = InputUnavailable`, `Structure.StructureStatus = NotAttempted`, `ProfileStatus = NotAttempted`, `SubmissionUnit = null`, `Submissions = []`. `RelativePath` is the expected path `<unit>/submissionunit.xml`.
 
 ---
 
@@ -499,6 +537,8 @@ CEC appends T2 types after the T1b types and emits them only when the `Submissio
 | `Ectd4SubmissionTypeCode` | per submission, `Known` | the code | **Strong** | StructuredXml | `DossierContext` | `….Submissions.Code.Code` |
 | `Ectd4ApplicationTypeCode` | per application, `Known` | the code | **Strong** | StructuredXml | `DossierContext` | `….Submissions.Applications.Code.Code` |
 | `Ectd4ApplicationIdNamespaceOid` | per application id item with `RootRecognition = RecognizedNamespaceOid` | the OID (never the extension) | **Strong** | StructuredXml | `Region` | `….Applications.IdItems.Root` |
+
+**Emission rule for coded fields (F-2):** a code record is emitted only when `Occurrences = 1` **and** `Recognition = Known`. When `Occurrences > 1` (`MultipleValues`), no record of that type is emitted for that field, whether the duplicates are identical or differ in code or code system. The sequence-number record follows the same rule (`Occurrences = 1` and `WholeNumberInRange`).
 | `Ectd4SequenceNumber` | per submission, `WholeNumberInRange` | integer as string | **Supporting** | StructuredXml | `DossierContext` | `….Submissions.SequenceNumber.Value` |
 
 **Strength and tier rationale [DES]:**
@@ -515,7 +555,8 @@ CEC appends T2 types after the T1b types and emits them only when the `Submissio
 
 **Record shape and ID protection** (T1b A-1 pattern):
 - These properties exist **only** on new T2 records:
-  - `SourceOrdinal` (1-based, document order of the marker, submission or application element);
+  - `SourceOrdinal` (see the identity rule below);
+  - `SourcePath`;
   - `SubmissionUnitXmlId`;
   - `ObservedCodeSystem`.
 - Historical records keep their exact shape.
@@ -523,7 +564,19 @@ CEC appends T2 types after the T1b types and emits them only when the `Submissio
 - `SubjectType = SubmissionUnitXml`.
 - `CandidateValue`, `Polarity` and `SourceRuleId` are always `null`.
 - `SourceCapability = SubmissionUnitXmlInventory`.
-- **Sort order:** `SortGroup = 3`, after T1b's group 2, with key (`SortGroup`, `DossierPath`, `SequenceFolder`, `SubmissionUnitXmlId`, `typeIndex`, `SourceOrdinal (D4)`). Every historical `EVD-nnnn` is unchanged; new IDs continue after the maximum.
+- **Source identity for nested items (F-1).**
+  - CEC walks each SUXI document once in a fixed **canonical order**:
+    1. markers by `MarkerOrdinal`;
+    2. the `submissionUnit`;
+    3. submissions by `SubmissionOrdinal`, and inside each submission its applications by `ApplicationOrdinal`, and inside each application its id items by `ItemOrdinal`.
+
+    These are the inventory's document-order ordinals, so the walk is pure document order.
+  - `SourceOrdinal` is a counter **per (`SubmissionUnitXmlId`, `EvidenceType`)**, starting at 1, incremented each time a record of that type is emitted during the walk. It is never reset at a submission or application boundary.
+  - Consequently (`SubmissionUnitXmlId`, `EvidenceType`, `SourceOrdinal`) is unique within a run, even when two submissions each contain application 1 with item 1.
+  - `SourcePath` (string) records the exact nested location in inventory ordinals, so nothing is lost: `M{m}` (marker), `U` (submission unit), `S{k}` (submission), `S{k}/A{a}` (application), `S{k}/A{a}/I{i}` (application id item). Root and namespace records use `R`.
+  - Example: a grouped unit with two submissions, each with one application and one id item, gives `Ectd4ApplicationTypeCode` records with (`SourceOrdinal`, `SourcePath`) = (1, `S1/A1`) and (2, `S2/A1`), and `Ectd4ApplicationIdNamespaceOid` records (1, `S1/A1/I1`) and (2, `S2/A1/I1`).
+  - Because skipped (unrecognised or duplicate) items emit nothing, `SourceOrdinal` counts emitted records only; `SourcePath` always points to the real location.
+- **Sort order:** `SortGroup = 3`, after T1b's group 2, with key (`SortGroup`, `DossierPath`, `SequenceFolder`, `SubmissionUnitXmlId`, `typeIndex`, `SourceOrdinal (D4)`). Because `SourceOrdinal` is unique per document and type, the key is unique and needs no insertion-order tie-break. Historical sort keys (groups 0 and 1) and T1b keys (group 2) are untouched, so every historical and T1b `EVD-nnnn` is unchanged; new IDs continue after the maximum.
 
 **Coverage:**
 - **Rows:** one document row and five field rows per SUXI document, all with `SubjectType = SubmissionUnitXml`.
@@ -593,10 +646,11 @@ I checked T4 v1 (`engine/core/eMAS.IdentificationInterpretation.psm1` at the bas
 | SD-079 | Malformed XML | L17 | ParseFailed + line/pos | NotAssessed | all | none |
 | SD-080 | Wrong root and namespace (incl. Wave 1E `discovery-stub`) | [OBS] | UnrecognizedRootElement | NotAssessed | all | none |
 | SD-081 | Missing `submissionUnit/code` and missing `sequenceNumber` | L8, L10 | `Absent` | field Collected / `MandatoryFieldAbsent` | — | none for those |
-| SD-082 | Duplicate `submissionUnit/code` | L8 | `MultipleValues` | `CardinalityViolation` | — | none for field |
+| SD-082 | Duplicate `submissionUnit/code`, two variants: (a) two **different** pairs (FDA `.13.2` code + EU `…6905.1.8.1` code); (b) two **identical** pairs | L8 | `Occurrences = 2`; `Observations` = both pairs in document order (identical pairs kept twice); `Code`/`CodeSystem` null; `Recognition = MultipleValues` | field `NotAssessed` / `CardinalityViolation` | — | **0** `Ectd4SubmissionUnitTypeCode` records; other types unaffected |
 | SD-083 | Unknown code in known FDA `.13.2` | F2 | `CodeOutsideCodeSystem` | NotAssessed | — | none |
 | SD-084 | EU submission-type OID on `submissionUnit/code` | E2 | `CodeSystemNotExpectedForElement` | NotAssessed | — | none |
-| SD-085 | Grouped FDA unit: 2 submissions × 1 application each, distinct sequence numbers | L23 | 2 Submissions, ordinals 1–2 | Collected | grouping meaning | records ×2 with `SourceOrdinal` |
+| SD-085 | Grouped FDA unit: 2 submissions, each with **application ordinal 1** and **id item ordinal 1** (repeated local ordinals), distinct sequence numbers | L23 | 2 Submissions; each `Applications[0].ApplicationOrdinal = 1`, `IdItems[0].ItemOrdinal = 1` | Collected | grouping meaning | `Ectd4SubmissionTypeCode` (1,`S1`),(2,`S2`); `Ectd4ApplicationTypeCode` (1,`S1/A1`),(2,`S2/A1`); `Ectd4ApplicationIdNamespaceOid` (1,`S1/A1/I1`),(2,`S2/A1/I1`); `Ectd4SequenceNumber` (1,`S1`),(2,`S2`); all EvidenceIds distinct |
+| SD-063 (reuse, read-only) | RD-confirmed absence: Wave 1E "Damaged fallback marker set" (`DamagedSubmissionUnitCandidate`) | Wave 1E frozen | `Exists = false`, `ParseStatus = Missing`, `CaptureStatus = InputUnavailable`, `FileId = null` | doc + field rows `NotAssessed` / `InputUnavailable` / `SubmissionUnitXmlConfirmedAbsent`; **no** `NotApplicable` | everything | none |
 | SD-086 | Two units of one EU activity (seq 1 and 2, same submission id) | L28 | identical submission id facts per unit, **no aggregate** | Collected | lifecycle link | per unit |
 | SD-087 | Access denied / unavailable (directory, permission-staged at test time) | [OBS] BXI pattern | none | NotAssessed / `SourceXmlAccessDenied` | all | none |
 | SD-088 | Directory and ZIP forms of SD-028 | Wave 1E pattern | identical inventory and CEC (except volatile fields) | — | — | identical |
@@ -625,6 +679,9 @@ I checked T4 v1 (`engine/core/eMAS.IdentificationInterpretation.psm1` at the bas
 | T-16 | T4 engine tests 28/28 and oracle 23/23 are unchanged |
 | T-17 | The T4 short pipeline with and without SUXI gives identical Identification output |
 | T-18 | The code-list tables match the source artefact hashes (table provenance test) |
+| T-19 | (F-1) For every run, (`SubmissionUnitXmlId`, `EvidenceType`, `SourceOrdinal`) is unique and each `SourcePath` resolves to an inventory element; SD-085 gives the exact pairs listed above; shuffling input order gives identical EvidenceIds; historical and T1b EvidenceIds are byte-identical |
+| T-20 | (F-2) SD-082 (a) and (b): every observation preserved in order with its own code system; parent `Code`/`CodeSystem` null; no CEC record for the field; same for a duplicated `sequenceNumber` (synthetic variant of SD-081); JSON round-trip keeps `Observations[]` on PS5.1 and PS7.6 |
+| T-21 | (F-3) SD-063: confirmed-absence states exactly as above; contrast cases S-2 (file deleted between RD and SUXI, `Exists = true`, `SourceXmlUnavailable`), S-3 (`AccessDenied`) and S-26 (not run: no record, no row, no token) each produce their own distinct combination; no SUXI row uses `NotApplicable` for a unit folder |
 
 ---
 

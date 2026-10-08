@@ -4,7 +4,7 @@
 **Roadmap ID:** T2
 **Authoritative base commit:** 09c6e3bbb37f9811e045214cfb6b9bb575ce669e
 **Coordination branch:** coordination/emas-ms04-ectd4-submissionunit-xml-inventory
-**Overall status:** CLAUDE_DESIGN_REPORT_PUBLISHED / READY_FOR_FIXED_SHA_CENTRAL_REVIEW
+**Overall status:** CLAUDE_REPORT_AMENDED_REV_1_1 / READY_FOR_FIXED_SHA_CENTRAL_RE-REVIEW
 
 | Gate | Status |
 |---|---|
@@ -24,7 +24,12 @@
 | BXI/CEC impact | BXI unchanged; CEC +8 factual types (7 Strong, 1 Supporting; StructuredXml); historical shape/EvidenceIds protected |
 | T4/projection decision | DEFERRED — no prerequisite (report §14) |
 | Fixture/test design | DONE — SD-028, SD-029, SD-075…SD-090 + tests T-1…T-18 |
-| ChatGPT fixed-SHA central review | READY |
+| ChatGPT fixed-SHA central review | CHANGES REQUESTED on 9eae107 (F-1, F-2, F-3) → amended in report revision 1.1 (§0); READY FOR RE-REVIEW |
+| F-1 nested CEC identity | RESOLVED IN DESIGN — per-document, per-type SourceOrdinal + SourcePath; SD-085, T-19 |
+| F-2 duplicate singleton values | RESOLVED IN DESIGN — typed CodedValue with Observations[]; no CEC emission on MultipleValues; SD-082, T-20 |
+| F-3 confirmed-missing submissionunit.xml | RESOLVED IN DESIGN — Exists=false / Missing / InputUnavailable / NotAssessed / SubmissionUnitXmlConfirmedAbsent; SD-063 reuse, T-21 |
+| FDA M1 v1.5.1 / samples retrieval (D-3) | OPEN — not complete |
+| Native PS5.1 T1b qualification | OPEN — separate item, not complete |
 | User design acceptance | NOT READY |
 | Codex implementation task | NOT AUTHORIZED |
 | T2 merge | NOT AUTHORIZED |
