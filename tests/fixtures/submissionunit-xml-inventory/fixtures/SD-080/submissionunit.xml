@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- eMAS synthetic T2 fixture — not a regulator-validated message -->
+<discovery-stub xmlns="urn:example:wrong"><submissionUnit/></discovery-stub>

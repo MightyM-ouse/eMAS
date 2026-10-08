@@ -9,7 +9,10 @@ $script:eMASCecTypeOrder = @(
     'CommonBackbonePresence', 'CommonBackbonePath', 'RegionalBackbonePresence', 'RegionalBackbonePath',
     'XmlRootElement', 'XmlNamespace', 'DtdVersion', 'DocumentTypeName', 'DtdSystemIdentifier', 'DtdPublicIdentifier',
     'RegulatoryUnitKind', 'SubmissionUnitMarkerFile', 'TocFileMarker', 'ChecksumFileMarker', 'UtilityDtdFolderMarker',
-    'EuEnvelopeCountry', 'EuAgencyCode', 'EuProcedureType', 'EuSubmissionType', 'EuSubmissionUnitType'
+    'EuEnvelopeCountry', 'EuAgencyCode', 'EuProcedureType', 'EuSubmissionType', 'EuSubmissionUnitType',
+    'Ectd4MessageRootElement', 'Ectd4MessageNamespace', 'Ectd4ImplementationGuideOid',
+    'Ectd4SubmissionUnitTypeCode', 'Ectd4SubmissionTypeCode', 'Ectd4ApplicationTypeCode',
+    'Ectd4ApplicationIdNamespaceOid', 'Ectd4SequenceNumber'
 )
 $script:eMASCecTypeSpec = @{
     DossierRootPath          = @{ Dimension = 'DossierContext'; Strength = 'Weak'; SourceTier = 'FolderNameHeuristic' }
@@ -36,6 +39,14 @@ $script:eMASCecTypeSpec = @{
     EuProcedureType          = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
     EuSubmissionType         = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
     EuSubmissionUnitType     = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4MessageRootElement = @{ Dimension = 'TechnicalFormat'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4MessageNamespace = @{ Dimension = 'TechnicalFormat'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4ImplementationGuideOid = @{ Dimension = 'SpecificationProfile'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4SubmissionUnitTypeCode = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4SubmissionTypeCode = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4ApplicationTypeCode = @{ Dimension = 'DossierContext'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4ApplicationIdNamespaceOid = @{ Dimension = 'Region'; Strength = 'Strong'; SourceTier = 'StructuredXml' }
+    Ectd4SequenceNumber = @{ Dimension = 'DossierContext'; Strength = 'Supporting'; SourceTier = 'StructuredXml' }
 }
 $script:eMASCecRegionalEnvelopeTypeByField = @{
     EU_ENVELOPE_COUNTRY = 'EuEnvelopeCountry'
@@ -130,7 +141,10 @@ function New-eMASCecDraft {
         [Parameter(Mandatory = $true)][string] $SourceCapability,
         [Parameter(Mandatory = $true)][string] $SourceField,
         [int] $SortGroup = 0,
-        [AllowNull()][object] $SourceOrdinal
+        [AllowNull()][object] $SourceOrdinal,
+        [AllowNull()][string] $SourcePath,
+        [AllowNull()][string] $SubmissionUnitXmlId,
+        [AllowNull()][string] $ObservedCodeSystem
     )
 
     $spec = $script:eMASCecTypeSpec[$EvidenceType]
@@ -139,6 +153,9 @@ function New-eMASCecDraft {
     $typeIndex = [array]::IndexOf($script:eMASCecTypeOrder, $EvidenceType)
     # New evidence is sorted after the accepted historical catalogue so existing records retain stable IDs.
     $sortKey = '{0:D2}{1}{2}{1}{3}{1}{4}{1}{5:D2}{1}{6}' -f $SortGroup, [char]1, $DossierPath, [string]$SequenceFolder, [string]$SequenceRelativePath, $typeIndex, [string]$RelativePath
+    if ($SortGroup -eq 3) {
+        $sortKey = '{0:D2}{1}{2}{1}{3}{1}{4}{1}{5:D2}' -f $SortGroup, [char]1, $DossierPath, [string]$SequenceFolder, [string]$SubmissionUnitXmlId, $typeIndex
+    }
     $hasSourceOrdinal = $PSBoundParameters.ContainsKey('SourceOrdinal')
     if ($hasSourceOrdinal) { $sortKey += ('{0}{1:D4}' -f [char]1, [int]$SourceOrdinal) }
     $record = [pscustomobject][ordered]@{
@@ -165,13 +182,22 @@ function New-eMASCecDraft {
     if ($hasSourceOrdinal) {
         $record | Add-Member -MemberType NoteProperty -Name SourceOrdinal -Value ([int]$SourceOrdinal)
     }
+    if ($PSBoundParameters.ContainsKey('SourcePath')) {
+        $record | Add-Member -MemberType NoteProperty -Name SourcePath -Value $(if ([string]::IsNullOrWhiteSpace($SourcePath)) { $null } else { $SourcePath })
+    }
+    if ($PSBoundParameters.ContainsKey('SubmissionUnitXmlId')) {
+        $record | Add-Member -MemberType NoteProperty -Name SubmissionUnitXmlId -Value $(if ([string]::IsNullOrWhiteSpace($SubmissionUnitXmlId)) { $null } else { $SubmissionUnitXmlId })
+    }
+    if ($PSBoundParameters.ContainsKey('ObservedCodeSystem')) {
+        $record | Add-Member -MemberType NoteProperty -Name ObservedCodeSystem -Value $(if ([string]::IsNullOrWhiteSpace($ObservedCodeSystem)) { $null } else { $ObservedCodeSystem })
+    }
     return [pscustomobject]@{ SortKey = $sortKey; Record = $record }
 }
 
 function New-eMASCecCoverage {
     param(
         [string] $CheckId = 'ClassificationEvidenceCollection',
-        [Parameter(Mandatory = $true)][ValidateSet('Repository', 'XmlDocument')][string] $SubjectType,
+        [Parameter(Mandatory = $true)][ValidateSet('Repository', 'XmlDocument', 'SubmissionUnitXml')][string] $SubjectType,
         [Parameter(Mandatory = $true)][string] $SubjectId,
         [Parameter(Mandatory = $true)][string] $CaptureStatus,
         [Parameter(Mandatory = $true)][ValidateSet('Collected', 'Partial', 'NotAssessed', 'NotApplicable')][string] $CollectionStatus,
@@ -251,6 +277,61 @@ function Get-eMASCecRegionalFieldCoverage {
         -CaptureStatus $captureStatus -CollectionStatus $collectionStatus -RecordsProduced $RecordsProduced -ReasonCode $reasonCode
 }
 
+function Add-eMASCecSubmissionUnitDraft {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][System.Collections.ArrayList] $Drafts,
+        [Parameter(Mandatory = $true)][hashtable] $Counters,
+        [Parameter(Mandatory = $true)][hashtable] $RecordCounts,
+        [Parameter(Mandatory = $true)][string] $EvidenceType,
+        [Parameter(Mandatory = $true)][object] $Document,
+        [Parameter(Mandatory = $true)][hashtable] $Common,
+        [Parameter(Mandatory = $true)][string] $SourcePath,
+        [Parameter(Mandatory = $true)][string] $SourceField,
+        [AllowNull()][object] $ObservedValue,
+        [AllowNull()][string] $ObservedCodeSystem
+    )
+
+    $counterKey = '{0}|{1}' -f [string]$Document.SubmissionUnitXmlId, $EvidenceType
+    if (-not $Counters.ContainsKey($counterKey)) { $Counters[$counterKey] = 0 }
+    $Counters[$counterKey] = [int]$Counters[$counterKey] + 1
+    $countKey = '{0}|{1}' -f [string]$Document.SubmissionUnitXmlId, $EvidenceType
+    if (-not $RecordCounts.ContainsKey($countKey)) { $RecordCounts[$countKey] = 0 }
+    $RecordCounts[$countKey] = [int]$RecordCounts[$countKey] + 1
+
+    $parameters = @{
+        EvidenceType = $EvidenceType; ObservedValue = $ObservedValue; CaptureStatus = 'Available'; SourceField = $SourceField
+        SortGroup = 3; SourceOrdinal = [int]$Counters[$counterKey]; SourcePath = $SourcePath
+        SubmissionUnitXmlId = [string]$Document.SubmissionUnitXmlId
+    }
+    if ($PSBoundParameters.ContainsKey('ObservedCodeSystem')) { $parameters.ObservedCodeSystem = $ObservedCodeSystem }
+    foreach ($key in $Common.Keys) { $parameters[$key] = $Common[$key] }
+    [void]$Drafts.Add((New-eMASCecDraft @parameters))
+}
+
+function Get-eMASCecSubmissionUnitCoverageRecordCount {
+    param(
+        [Parameter(Mandatory = $true)][hashtable] $RecordCounts,
+        [Parameter(Mandatory = $true)][string] $SubmissionUnitXmlId,
+        [Parameter(Mandatory = $true)][string] $CheckId
+    )
+
+    $types = @()
+    switch ($CheckId) {
+        'SubmissionUnitXmlField:ECTD4_IG_OID' { $types = @('Ectd4ImplementationGuideOid') }
+        'SubmissionUnitXmlField:ECTD4_SU_TYPE' { $types = @('Ectd4SubmissionUnitTypeCode') }
+        'SubmissionUnitXmlField:ECTD4_SUBMISSION_TYPE' { $types = @('Ectd4SubmissionTypeCode') }
+        'SubmissionUnitXmlField:ECTD4_APPLICATION_TYPE' { $types = @('Ectd4ApplicationTypeCode') }
+        'SubmissionUnitXmlField:ECTD4_SEQUENCE_NUMBER' { $types = @('Ectd4SequenceNumber') }
+        default { $types = @($script:eMASCecTypeOrder | Where-Object { $_ -like 'Ectd4*' }) }
+    }
+    $count = 0
+    foreach ($type in $types) {
+        $key = '{0}|{1}' -f $SubmissionUnitXmlId, $type
+        if ($RecordCounts.ContainsKey($key)) { $count += [int]$RecordCounts[$key] }
+    }
+    return $count
+}
+
 function Invoke-eMASClassificationEvidenceCollection {
     <#
     .SYNOPSIS
@@ -282,11 +363,17 @@ function Invoke-eMASClassificationEvidenceCollection {
     $workingResult = ($InputResult | ConvertTo-Json -Depth 64) | ConvertFrom-Json
     $drafts = New-Object System.Collections.ArrayList
     $coverage = New-Object System.Collections.ArrayList
+    $submissionUnitCoverage = New-Object System.Collections.ArrayList
     foreach ($item in @($workingResult.CollectionCoverage)) {
-        if ($item.CheckId -ne 'ClassificationEvidenceCollection') { [void]$coverage.Add($item) }
+        $checkId = [string]$item.CheckId
+        if ($checkId -eq 'SubmissionUnitXmlInventory' -or $checkId.StartsWith('SubmissionUnitXmlField:', [System.StringComparison]::Ordinal)) {
+            [void]$submissionUnitCoverage.Add($item)
+        }
+        elseif ($checkId -ne 'ClassificationEvidenceCollection') { [void]$coverage.Add($item) }
     }
     $xmlCoverage = New-Object System.Collections.ArrayList
     $regionalFieldCoverage = New-Object System.Collections.ArrayList
+    $submissionUnitRecordCounts = @{}
     $inventoryAvailable = ([string](Get-eMASCecPropertyValue -InputObject $workingResult.Repository -Name 'InventoryCaptureStatus') -eq 'Available')
 
     if ($inventoryAvailable) {
@@ -466,6 +553,74 @@ function Invoke-eMASClassificationEvidenceCollection {
             }
             foreach ($draft in $xmlDrafts) { [void]$drafts.Add($draft) }
         }
+
+        # Optional T2 facts. CEC consumes only the already-populated SUXI model and never reopens XML.
+        if ($capabilities -contains 'SubmissionUnitXmlInventory') {
+            $sourceCounters = @{}
+            foreach ($document in @($workingResult.SubmissionUnitXmlDocuments | Sort-Object SubmissionUnitXmlId)) {
+                if ([string]$document.CaptureStatus -ne 'Available' -or [string]$document.ParseStatus -ne 'Parsed' -or [string]$document.Structure.StructureStatus -ne 'Recognized') { continue }
+                $sequence = $sequenceById[[string]$document.SequenceId]
+                $dossierPath = [string]$dossierPathById[[string]$document.DossierId]
+                $sequencePath = [string]$sequence.RelativePath
+                $sequenceFolder = Get-eMASCecChildPath -ParentPath $dossierPath -ChildPath $sequencePath
+                if ($null -eq $sequenceFolder) { $sequenceFolder = $sequencePath }
+                $relativePath = [string]$document.RelativePath
+                $sequenceRelativePath = Get-eMASCecChildPath -ParentPath $sequencePath -ChildPath $relativePath
+                if ($null -eq $sequenceRelativePath) { $sequenceRelativePath = $relativePath }
+                $common = @{
+                    DossierPath = $dossierPath; SequenceFolder = $sequenceFolder; SequenceRelativePath = $sequenceRelativePath; XmlKind = $null
+                    RelativePath = $relativePath; DossierId = [string]$document.DossierId; SequenceId = [string]$document.SequenceId; XmlId = $null
+                    SubjectType = 'SubmissionUnitXml'; SourceCapability = 'SubmissionUnitXmlInventory'
+                }
+
+                Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4MessageRootElement' `
+                    -Document $document -Common $common -SourcePath 'R' -SourceField 'SubmissionUnitXmlDocuments.Structure.RootLocalName' -ObservedValue ([string]$document.Structure.RootLocalName)
+                Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4MessageNamespace' `
+                    -Document $document -Common $common -SourcePath 'R' -SourceField 'SubmissionUnitXmlDocuments.Structure.RootNamespaceUri' -ObservedValue ([string]$document.Structure.RootNamespaceUri)
+
+                foreach ($marker in @($document.ProfileMarkers | Sort-Object MarkerOrdinal)) {
+                    if ([string]$marker.Recognition -notin @('RecognizedIchIg','RecognizedRegionalIg')) { continue }
+                    Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4ImplementationGuideOid' `
+                        -Document $document -Common $common -SourcePath ('M{0}' -f [int]$marker.MarkerOrdinal) -SourceField 'SubmissionUnitXmlDocuments.ProfileMarkers.Root' -ObservedValue ([string]$marker.Root)
+                }
+
+                if ($null -eq $document.SubmissionUnit) { continue }
+                $unitCode = $document.SubmissionUnit.Code
+                if ([int]$unitCode.Occurrences -eq 1 -and [string]$unitCode.Recognition -eq 'Known') {
+                    Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4SubmissionUnitTypeCode' `
+                        -Document $document -Common $common -SourcePath 'U' -SourceField 'SubmissionUnitXmlDocuments.SubmissionUnit.Code.Code' -ObservedValue ([string]$unitCode.Code) -ObservedCodeSystem ([string]$unitCode.CodeSystem)
+                }
+
+                foreach ($submission in @($document.Submissions | Sort-Object SubmissionOrdinal)) {
+                    $submissionPath = 'S{0}' -f [int]$submission.SubmissionOrdinal
+                    $submissionCode = $submission.Code
+                    if ([int]$submissionCode.Occurrences -eq 1 -and [string]$submissionCode.Recognition -eq 'Known') {
+                        Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4SubmissionTypeCode' `
+                            -Document $document -Common $common -SourcePath $submissionPath -SourceField 'SubmissionUnitXmlDocuments.Submissions.Code.Code' -ObservedValue ([string]$submissionCode.Code) -ObservedCodeSystem ([string]$submissionCode.CodeSystem)
+                    }
+
+                    foreach ($application in @($submission.Applications | Sort-Object ApplicationOrdinal)) {
+                        $applicationPath = '{0}/A{1}' -f $submissionPath, [int]$application.ApplicationOrdinal
+                        $applicationCode = $application.Code
+                        if ([int]$applicationCode.Occurrences -eq 1 -and [string]$applicationCode.Recognition -eq 'Known') {
+                            Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4ApplicationTypeCode' `
+                                -Document $document -Common $common -SourcePath $applicationPath -SourceField 'SubmissionUnitXmlDocuments.Submissions.Applications.Code.Code' -ObservedValue ([string]$applicationCode.Code) -ObservedCodeSystem ([string]$applicationCode.CodeSystem)
+                        }
+                        foreach ($item in @($application.IdItems | Sort-Object ItemOrdinal)) {
+                            if ([string]$item.RootRecognition -ne 'RecognizedNamespaceOid') { continue }
+                            Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4ApplicationIdNamespaceOid' `
+                                -Document $document -Common $common -SourcePath ('{0}/I{1}' -f $applicationPath, [int]$item.ItemOrdinal) -SourceField 'SubmissionUnitXmlDocuments.Submissions.Applications.IdItems.Root' -ObservedValue ([string]$item.Root)
+                        }
+                    }
+
+                    $sequenceNumber = $submission.SequenceNumber
+                    if ([int]$sequenceNumber.Occurrences -eq 1 -and [string]$sequenceNumber.ValueStatus -eq 'WholeNumberInRange') {
+                        Add-eMASCecSubmissionUnitDraft -Drafts $drafts -Counters $sourceCounters -RecordCounts $submissionUnitRecordCounts -EvidenceType 'Ectd4SequenceNumber' `
+                            -Document $document -Common $common -SourcePath $submissionPath -SourceField 'SubmissionUnitXmlDocuments.Submissions.SequenceNumber.Value' -ObservedValue ([string]$sequenceNumber.Value)
+                    }
+                }
+            }
+        }
     }
 
     # Deterministic ordinal ordering and EVD-nnnn identity continuing any existing evidence.
@@ -507,12 +662,27 @@ function Invoke-eMASClassificationEvidenceCollection {
     }
     foreach ($row in $xmlCoverage) { [void]$coverage.Add($row) }
     foreach ($row in $regionalFieldCoverage) { [void]$coverage.Add($row) }
+    foreach ($row in $submissionUnitCoverage) {
+        $recordsProduced = Get-eMASCecSubmissionUnitCoverageRecordCount -RecordCounts $submissionUnitRecordCounts -SubmissionUnitXmlId ([string]$row.SubjectId) -CheckId ([string]$row.CheckId)
+        $updated = [ordered]@{
+            CheckId = [string]$row.CheckId
+            SubjectType = [string]$row.SubjectType
+            SubjectId = [string]$row.SubjectId
+            CaptureStatus = [string]$row.CaptureStatus
+            CollectionStatus = [string]$row.CollectionStatus
+            RecordsProduced = $recordsProduced
+            ReasonCode = Get-eMASCecPropertyValue -InputObject $row -Name 'ReasonCode'
+        }
+        $schemaValidation = Get-eMASCecPropertyValue -InputObject $row -Name 'SchemaValidation'
+        if ($null -ne $schemaValidation) { $updated.SchemaValidation = $schemaValidation }
+        [void]$coverage.Add([pscustomobject]$updated)
+    }
     [void]$coverage.Add((New-eMASCecCoverage -SubjectType 'Repository' -SubjectId 'REP-0001' -CaptureStatus $repositoryCaptureStatus -CollectionStatus $repositoryCollectionStatus -RecordsProduced $items.Count -ReasonCode $repositoryReasonCode))
 
     $workingResult.ClassificationEvidence = [object[]]@($existingEvidence)
     $workingResult.CollectionCoverage = [object[]]@($coverage)
     $workingResult.Execution.ScannerName = ('{0}+ClassificationEvidenceCollection' -f [string]$workingResult.Execution.ScannerName)
-    $workingResult.Execution.ScannerVersion = '0.10.0'
+    $workingResult.Execution.ScannerVersion = $(if ($capabilities -contains 'SubmissionUnitXmlInventory') { '0.11.0' } else { '0.10.0' })
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $workingResult.Execution.Capabilities = [object[]](@($capabilities) + 'ClassificationEvidenceCollection')
     if ($workingResult.Execution.CompletionStatus -eq 'Completed' -and $repositoryCollectionStatus -ne 'Collected') {
