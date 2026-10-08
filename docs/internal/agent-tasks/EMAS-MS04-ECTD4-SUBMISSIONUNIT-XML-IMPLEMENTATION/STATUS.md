@@ -20,8 +20,8 @@
 | T1b / Wave1E / Wave1D / root / B3 | PASS |
 | T4 engine / accepted oracle | PASS, 28/28 and 23/23 |
 | Historical/T1a/T1b compatibility | PASS; existing records and IDs unchanged in equivalent runs |
-| Windows PS7.6 / macOS PS7.6 CI | CONFIGURED; remote CI result pending push |
-| Native Windows PowerShell 5.1 T2 qualification | PENDING / NOT CLAIMED |
+| Windows PS7.6 / macOS PS7.6 CI | PASS, focused T2 21/21 on both |
+| Native Windows PowerShell 5.1 T2 qualification | PASS, focused T2 21/21; aggregate job red only on known unrelated UTF-8 test |
 | FDA v1.5.1 / `.18.6` D-3 | OPEN; `.18.6` remains `UnknownOid` |
 | Case-colliding ZIP markers | OPEN FOR CENTRAL DISPOSITION; RD collapses case-insensitive path keys before SUXI |
 | ChatGPT fixed-SHA review | PENDING |
@@ -39,8 +39,9 @@ unchanged.
 
 ## Open items
 
-- Native Windows PowerShell 5.1 execution remains pending; the unrelated
-  RuntimeConfiguration UTF-8 failure is not part of T2 and was not changed.
+- Native Windows PowerShell 5.1 focused T2 execution passed 21/21 in CI run
+  `37811308221`. The aggregate job remains red only on the known unrelated
+  RuntimeConfiguration UTF-8 expectation (27/28), which was not changed.
 - FDA M1 v1.5.1 package/sample retrieval remains D-3. No OID was inferred.
 - RD's existing case-insensitive inventory hashtable collapses a real ZIP's
   `submissionunit.xml` / `SubmissionUnit.xml` collision before SUXI receives

@@ -184,10 +184,13 @@ added. All 15 original baseline gates passed again, in addition to focused T2
 ## Compatibility and CI status
 
 - Local macOS PowerShell 7.5.2: PASS as above.
-- macOS PowerShell 7.6 CI: configured, pending remote execution.
-- Windows PowerShell 7.6 CI: configured, pending remote execution.
-- Native Windows PowerShell 5.1 CI: configured, pending remote execution;
-  qualification is **PENDING / NOT CLAIMED**.
+- macOS PowerShell 7.6 CI: PASS, including focused T2 21/21.
+- Windows PowerShell 7.6 CI: PASS, including focused T2 21/21.
+- Native Windows PowerShell 5.1 focused T2 qualification: PASS 21/21.
+- The aggregate Windows PowerShell 5.1 job remains red only because its earlier
+  RuntimeConfiguration suite fails the pre-existing UTF-8 expectation (27/28);
+  the T2 step, T4 engine and T4 oracle all passed. CI run:
+  `37811308221`.
 - The unrelated Windows PS5.1 RuntimeConfiguration UTF-8 expectation remains
   out of scope and unchanged.
 
