@@ -208,6 +208,7 @@ function Invoke-eMASReferenceInventory {
     Processes only successfully parsed CommonBackbone and RegionalBackbone documents selected
     by BackboneXmlInventory. It preserves raw leaf attributes and deliberately performs no
     target resolution, checksum calculation/comparison, lifecycle resolution, or classification.
+    New US regional candidates require corroborated recognition and declared DTD 3.3.
     #>
     [CmdletBinding()]
     param(
@@ -313,6 +314,15 @@ function Invoke-eMASReferenceInventory {
                 [void]$coverage.Add((Get-eMASReferenceUnavailableCoverage -XmlDocument $xmlDocument))
                 continue
             }
+            # The new US candidate role does not authorize unknown reference profiles.
+            # Existing common/EU selection and extraction remain unchanged.
+            if ($xmlDocument.PSObject.Properties.Name -contains 'RegionalRecognition' -and $null -ne $xmlDocument.RegionalRecognition -and
+                $xmlDocument.RegionalRecognition.PathProfileFamily -eq 'US_M1') {
+                if ($xmlDocument.RegionalRecognition.RecognitionStatus -ne 'Matched' -or $xmlDocument.DeclaredVersion -cne '3.3') {
+                    [void]$coverage.Add((New-eMASReferenceCoverage -XmlId $xmlDocument.XmlId -CaptureStatus 'NotCollected' -RecordsProduced 0 -ReasonCode 'UnsupportedRegionalReferenceProfile'))
+                    continue
+                }
+            }
             if ([string]::IsNullOrWhiteSpace([string]$xmlDocument.FileId) -or -not $fileById.ContainsKey([string]$xmlDocument.FileId)) {
                 [void]$coverage.Add((New-eMASReferenceCoverage -XmlId $xmlDocument.XmlId -CaptureStatus 'InputUnavailable' -RecordsProduced 0 -ReasonCode 'SourceXmlFileRecordUnavailable'))
                 continue
@@ -406,7 +416,7 @@ function Invoke-eMASReferenceInventory {
     $workingResult.ClassificationEvidence = [object[]]@()
     $workingResult.CollectionCoverage = [object[]]@($coverage)
     $workingResult.Execution.ScannerName = 'eMAS.RepositoryDiscovery+BackboneXmlInventory+ReferenceInventory'
-    $workingResult.Execution.ScannerVersion = '0.3.0'
+    $workingResult.Execution.ScannerVersion = '0.4.0'
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $workingResult.Execution.Capabilities = [object[]]@('RepositoryDiscovery', 'BackboneXmlInventory', 'ReferenceInventory')
     $referenceCoverageGaps = @($perXmlReferenceCoverage | Where-Object { $_.CaptureStatus -ne 'Available' }).Count

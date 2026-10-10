@@ -1,0 +1,1298 @@
+{
+  "VerificationDate": "2026-10-10",
+  "Runtime": "7.6.6",
+  "InputCount": 15,
+  "SourceFilesUnchanged": 376,
+  "Publication": "Counts only; mapping and detailed scans must remain local",
+  "Inputs": [
+    {
+      "SampleId": "S01",
+      "InputType": "Directory",
+      "PhysicalFiles": 17,
+      "PhysicalXml": 2,
+      "SubmissionUnitFiles": 2,
+      "CommonIndexFiles": 0,
+      "Dossiers": 1,
+      "Sequences": 2,
+      "SequenceKinds": {
+        "SubmissionUnitFolder": 2
+      },
+      "Xml": 0,
+      "XmlParse": {},
+      "XmlKinds": {},
+      "RegionalRecognition": {},
+      "RegionalFamilies": {},
+      "SubmissionUnits": 2,
+      "SuParse": {
+        "Parsed": 2
+      },
+      "SuProfiles": {
+        "MarkersRecognized": 2
+      },
+      "SuStructure": {
+        "Recognized": 2
+      },
+      "Evidence": 31,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 2,
+        "CtdModuleFolders": 2,
+        "DossierRootPath": 1,
+        "Ectd4ApplicationIdNamespaceOid": 2,
+        "Ectd4ApplicationTypeCode": 2,
+        "Ectd4ImplementationGuideOid": 4,
+        "Ectd4MessageNamespace": 2,
+        "Ectd4MessageRootElement": 2,
+        "Ectd4SequenceNumber": 2,
+        "Ectd4SubmissionTypeCode": 2,
+        "Ectd4SubmissionUnitTypeCode": 2,
+        "Module1RegionalFolder": 2,
+        "RegulatoryUnitKind": 2,
+        "SequenceFolder": 2,
+        "SubmissionUnitMarkerFile": 2
+      },
+      "References": 0,
+      "Resolution": {},
+      "Checksums": {},
+      "Operations": {},
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "SubmissionUnitFoldersObserved": 1
+      },
+      "CoverageReasons": {
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 17,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 2,
+        "Xml": 0,
+        "Evidence": 13,
+        "References": 0,
+        "Resolution": {},
+        "Checksums": {}
+      }
+    },
+    {
+      "SampleId": "S02",
+      "InputType": "Directory",
+      "PhysicalFiles": 26,
+      "PhysicalXml": 2,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 3,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 2
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "Other": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1,
+        "UnsupportedPath": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 15,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "Module1RegionalFolder": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 14,
+      "Resolution": {
+        "ResolvedPresent": 14
+      },
+      "Checksums": {
+        "Matched": 14
+      },
+      "Operations": {
+        "new": 14
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8,
+        "UnsupportedPath": 1
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 26,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 3,
+        "Evidence": 15,
+        "References": 14,
+        "Resolution": {
+          "ResolvedPresent": 14
+        },
+        "Checksums": {
+          "Matched": 14
+        }
+      }
+    },
+    {
+      "SampleId": "S03",
+      "InputType": "Directory",
+      "PhysicalFiles": 139,
+      "PhysicalXml": 11,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 5,
+      "Dossiers": 1,
+      "Sequences": 5,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 5
+      },
+      "Xml": 11,
+      "XmlParse": {
+        "Parsed": 11
+      },
+      "XmlKinds": {
+        "CommonBackbone": 5,
+        "Other": 1,
+        "RegionalBackbone": 5
+      },
+      "RegionalRecognition": {
+        "Matched": 5
+      },
+      "RegionalFamilies": {
+        "EU_M1": 5
+      },
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 150,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 5,
+        "CommonBackbonePath": 5,
+        "CommonBackbonePresence": 5,
+        "CtdModuleFolders": 5,
+        "DocumentTypeName": 10,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 10,
+        "DtdVersion": 10,
+        "EuAgencyCode": 10,
+        "EuEnvelopeCountry": 10,
+        "EuProcedureType": 10,
+        "EuSubmissionType": 10,
+        "EuSubmissionUnitType": 9,
+        "Module1RegionalFolder": 5,
+        "RegionalBackbonePath": 5,
+        "RegionalBackbonePresence": 5,
+        "RegulatoryUnitKind": 5,
+        "SequenceFolder": 5,
+        "UtilityDtdFolderMarker": 5,
+        "XmlNamespace": 10,
+        "XmlRootElement": 10
+      },
+      "References": 94,
+      "Resolution": {
+        "NotApplicable": 1,
+        "ResolvedPresent": 93
+      },
+      "Checksums": {
+        "Matched": 93,
+        "NotApplicable": 1
+      },
+      "Operations": {
+        "append": 1,
+        "delete": 1,
+        "new": 88,
+        "replace": 4
+      },
+      "ModifiedFileRelationships": 6,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1
+      },
+      "CoverageReasons": {
+        "FieldNotDefinedInProfile": 1,
+        "NoPhysicalHref": 4,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 139,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 5,
+        "Xml": 11,
+        "Evidence": 150,
+        "References": 94,
+        "Resolution": {
+          "NotApplicable": 1,
+          "ResolvedPresent": 93
+        },
+        "Checksums": {
+          "Matched": 93,
+          "NotApplicable": 1
+        }
+      }
+    },
+    {
+      "SampleId": "S04",
+      "InputType": "Directory",
+      "PhysicalFiles": 7,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 3,
+      "Resolution": {
+        "ResolvedPresent": 3
+      },
+      "Checksums": {
+        "Matched": 3
+      },
+      "Operations": {
+        "new": 3
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 7,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 3,
+        "Resolution": {
+          "ResolvedPresent": 3
+        },
+        "Checksums": {
+          "Matched": 3
+        }
+      }
+    },
+    {
+      "SampleId": "S05",
+      "InputType": "Directory",
+      "PhysicalFiles": 7,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 3,
+      "Resolution": {
+        "ResolvedPresent": 3
+      },
+      "Checksums": {
+        "Matched": 3
+      },
+      "Operations": {
+        "new": 3
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 7,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 3,
+        "Resolution": {
+          "ResolvedPresent": 3
+        },
+        "Checksums": {
+          "Matched": 3
+        }
+      }
+    },
+    {
+      "SampleId": "S06",
+      "InputType": "Directory",
+      "PhysicalFiles": 7,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 3,
+      "Resolution": {
+        "ResolvedPresent": 3
+      },
+      "Checksums": {
+        "Matched": 3
+      },
+      "Operations": {
+        "new": 3
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 7,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 3,
+        "Resolution": {
+          "ResolvedPresent": 3
+        },
+        "Checksums": {
+          "Matched": 3
+        }
+      }
+    },
+    {
+      "SampleId": "S07",
+      "InputType": "Directory",
+      "PhysicalFiles": 12,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 8,
+      "Resolution": {
+        "ResolvedPresent": 8
+      },
+      "Checksums": {
+        "Matched": 8
+      },
+      "Operations": {
+        "new": 8
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 12,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 8,
+        "Resolution": {
+          "ResolvedPresent": 8
+        },
+        "Checksums": {
+          "Matched": 8
+        }
+      }
+    },
+    {
+      "SampleId": "S08",
+      "InputType": "Directory",
+      "PhysicalFiles": 12,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 8,
+      "Resolution": {
+        "ResolvedPresent": 8
+      },
+      "Checksums": {
+        "Matched": 8
+      },
+      "Operations": {
+        "new": 8
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 12,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 8,
+        "Resolution": {
+          "ResolvedPresent": 8
+        },
+        "Checksums": {
+          "Matched": 8
+        }
+      }
+    },
+    {
+      "SampleId": "S09",
+      "InputType": "Directory",
+      "PhysicalFiles": 12,
+      "PhysicalXml": 1,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 2,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 1
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "RegionalBackbone": 1
+      },
+      "RegionalRecognition": {
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {},
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 14,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 1,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 1,
+        "DtdVersion": 1,
+        "RegionalBackbonePresence": 1,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 1,
+        "XmlRootElement": 1
+      },
+      "References": 8,
+      "Resolution": {
+        "ResolvedPresent": 8
+      },
+      "Checksums": {
+        "Matched": 8
+      },
+      "Operations": {
+        "new": 8
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "SourceXmlMissing": 8
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 12,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 1,
+        "Xml": 2,
+        "Evidence": 14,
+        "References": 8,
+        "Resolution": {
+          "ResolvedPresent": 8
+        },
+        "Checksums": {
+          "Matched": 8
+        }
+      }
+    },
+    {
+      "SampleId": "S10",
+      "InputType": "Directory",
+      "PhysicalFiles": 58,
+      "PhysicalXml": 12,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 2,
+      "Dossiers": 1,
+      "Sequences": 2,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 2
+      },
+      "Xml": 14,
+      "XmlParse": {
+        "Missing": 2,
+        "Parsed": 12
+      },
+      "XmlKinds": {
+        "CommonBackbone": 2,
+        "Other": 8,
+        "RegionalBackbone": 4
+      },
+      "RegionalRecognition": {
+        "Matched": 2,
+        "NotAttempted": 2
+      },
+      "RegionalFamilies": {
+        "US_M1": 2
+      },
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 43,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 2,
+        "CommonBackbonePath": 2,
+        "CommonBackbonePresence": 2,
+        "CtdModuleFolders": 2,
+        "DocumentTypeName": 4,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 4,
+        "DtdVersion": 4,
+        "Module1RegionalFolder": 2,
+        "RegionalBackbonePath": 2,
+        "RegionalBackbonePresence": 4,
+        "RegulatoryUnitKind": 2,
+        "SequenceFolder": 2,
+        "UtilityDtdFolderMarker": 2,
+        "XmlNamespace": 4,
+        "XmlRootElement": 4
+      },
+      "References": 42,
+      "Resolution": {
+        "ResolvedPresent": 42
+      },
+      "Checksums": {
+        "Matched": 42
+      },
+      "Operations": {
+        "append": 1,
+        "new": 40,
+        "replace": 1
+      },
+      "ModifiedFileRelationships": 2,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 2
+      },
+      "CoverageReasons": {
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "RegionalEnvelopeExtractionNotImplemented": 2,
+        "SourceXmlMissing": 16
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 58,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 2,
+        "Xml": 14,
+        "Evidence": 43,
+        "References": 42,
+        "Resolution": {
+          "ResolvedPresent": 42
+        },
+        "Checksums": {
+          "Matched": 42
+        }
+      }
+    },
+    {
+      "SampleId": "S11",
+      "InputType": "Directory",
+      "PhysicalFiles": 11,
+      "PhysicalXml": 4,
+      "SubmissionUnitFiles": 0,
+      "CommonIndexFiles": 1,
+      "Dossiers": 1,
+      "Sequences": 1,
+      "SequenceKinds": {
+        "NumericSequenceDirectory": 1
+      },
+      "Xml": 5,
+      "XmlParse": {
+        "Missing": 1,
+        "Parsed": 4
+      },
+      "XmlKinds": {
+        "CommonBackbone": 1,
+        "Other": 2,
+        "RegionalBackbone": 2
+      },
+      "RegionalRecognition": {
+        "Matched": 1,
+        "NotAttempted": 1
+      },
+      "RegionalFamilies": {
+        "US_M1": 1
+      },
+      "SubmissionUnits": 0,
+      "SuParse": {},
+      "SuProfiles": {},
+      "SuStructure": {},
+      "Evidence": 22,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 1,
+        "CommonBackbonePath": 1,
+        "CommonBackbonePresence": 1,
+        "CtdModuleFolders": 1,
+        "DocumentTypeName": 2,
+        "DossierRootPath": 1,
+        "DtdSystemIdentifier": 2,
+        "DtdVersion": 2,
+        "Module1RegionalFolder": 1,
+        "RegionalBackbonePath": 1,
+        "RegionalBackbonePresence": 2,
+        "RegulatoryUnitKind": 1,
+        "SequenceFolder": 1,
+        "UtilityDtdFolderMarker": 1,
+        "XmlNamespace": 2,
+        "XmlRootElement": 2
+      },
+      "References": 6,
+      "Resolution": {
+        "ResolvedPresent": 4,
+        "UnsafePath": 2
+      },
+      "Checksums": {
+        "Matched": 4,
+        "NotAssessed": 2
+      },
+      "Operations": {
+        "new": 6
+      },
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "MissingRegionalBackbone": 1
+      },
+      "CoverageReasons": {
+        "OneOrMoreChecksumComparisonsNotAssessed": 2,
+        "OneOrMoreReferencesNotAssessed": 1,
+        "OneOrMoreSourceXmlDocumentsUnavailable": 1,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "PathEscapesDossier": 4,
+        "RegionalEnvelopeExtractionNotImplemented": 1,
+        "SourceXmlMissing": 8,
+        "TargetUnavailable": 4
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 11,
+      "ExecutionStatus": "CompletedWithCollectionGaps",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "CompletedWithCollectionGaps",
+        "Sequences": 1,
+        "Xml": 5,
+        "Evidence": 22,
+        "References": 6,
+        "Resolution": {
+          "ResolvedPresent": 4,
+          "UnsafePath": 2
+        },
+        "Checksums": {
+          "Matched": 4,
+          "NotAssessed": 2
+        }
+      }
+    },
+    {
+      "SampleId": "S12",
+      "InputType": "Directory",
+      "PhysicalFiles": 19,
+      "PhysicalXml": 2,
+      "SubmissionUnitFiles": 2,
+      "CommonIndexFiles": 0,
+      "Dossiers": 1,
+      "Sequences": 2,
+      "SequenceKinds": {
+        "SubmissionUnitFolder": 2
+      },
+      "Xml": 0,
+      "XmlParse": {},
+      "XmlKinds": {},
+      "RegionalRecognition": {},
+      "RegionalFamilies": {},
+      "SubmissionUnits": 2,
+      "SuParse": {
+        "Parsed": 2
+      },
+      "SuProfiles": {
+        "MarkersRecognized": 2
+      },
+      "SuStructure": {
+        "Recognized": 2
+      },
+      "Evidence": 29,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 2,
+        "CtdModuleFolders": 2,
+        "DossierRootPath": 1,
+        "Ectd4ApplicationTypeCode": 2,
+        "Ectd4ImplementationGuideOid": 4,
+        "Ectd4MessageNamespace": 2,
+        "Ectd4MessageRootElement": 2,
+        "Ectd4SequenceNumber": 2,
+        "Ectd4SubmissionTypeCode": 2,
+        "Ectd4SubmissionUnitTypeCode": 2,
+        "Module1RegionalFolder": 2,
+        "RegulatoryUnitKind": 2,
+        "SequenceFolder": 2,
+        "SubmissionUnitMarkerFile": 2
+      },
+      "References": 0,
+      "Resolution": {},
+      "Checksums": {},
+      "Operations": {},
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "SubmissionUnitFoldersObserved": 1
+      },
+      "CoverageReasons": {
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 19,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 2,
+        "Xml": 0,
+        "Evidence": 13,
+        "References": 0,
+        "Resolution": {},
+        "Checksums": {}
+      }
+    },
+    {
+      "SampleId": "S13",
+      "InputType": "Directory",
+      "PhysicalFiles": 19,
+      "PhysicalXml": 2,
+      "SubmissionUnitFiles": 2,
+      "CommonIndexFiles": 0,
+      "Dossiers": 1,
+      "Sequences": 2,
+      "SequenceKinds": {
+        "SubmissionUnitFolder": 2
+      },
+      "Xml": 0,
+      "XmlParse": {},
+      "XmlKinds": {},
+      "RegionalRecognition": {},
+      "RegionalFamilies": {},
+      "SubmissionUnits": 2,
+      "SuParse": {
+        "Parsed": 2
+      },
+      "SuProfiles": {
+        "MarkersRecognized": 2
+      },
+      "SuStructure": {
+        "Recognized": 2
+      },
+      "Evidence": 29,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 2,
+        "CtdModuleFolders": 2,
+        "DossierRootPath": 1,
+        "Ectd4ApplicationTypeCode": 2,
+        "Ectd4ImplementationGuideOid": 4,
+        "Ectd4MessageNamespace": 2,
+        "Ectd4MessageRootElement": 2,
+        "Ectd4SequenceNumber": 2,
+        "Ectd4SubmissionTypeCode": 2,
+        "Ectd4SubmissionUnitTypeCode": 2,
+        "Module1RegionalFolder": 2,
+        "RegulatoryUnitKind": 2,
+        "SequenceFolder": 2,
+        "SubmissionUnitMarkerFile": 2
+      },
+      "References": 0,
+      "Resolution": {},
+      "Checksums": {},
+      "Operations": {},
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "SubmissionUnitFoldersObserved": 1
+      },
+      "CoverageReasons": {
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 19,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 2,
+        "Xml": 0,
+        "Evidence": 13,
+        "References": 0,
+        "Resolution": {},
+        "Checksums": {}
+      }
+    },
+    {
+      "SampleId": "S14",
+      "InputType": "Directory",
+      "PhysicalFiles": 13,
+      "PhysicalXml": 2,
+      "SubmissionUnitFiles": 2,
+      "CommonIndexFiles": 0,
+      "Dossiers": 1,
+      "Sequences": 2,
+      "SequenceKinds": {
+        "SubmissionUnitFolder": 2
+      },
+      "Xml": 0,
+      "XmlParse": {},
+      "XmlKinds": {},
+      "RegionalRecognition": {},
+      "RegionalFamilies": {},
+      "SubmissionUnits": 2,
+      "SuParse": {
+        "Parsed": 2
+      },
+      "SuProfiles": {
+        "UnrecognizedProfileMarker": 2
+      },
+      "SuStructure": {
+        "Recognized": 2
+      },
+      "Evidence": 21,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 2,
+        "CtdModuleFolders": 2,
+        "DossierRootPath": 1,
+        "Ectd4ImplementationGuideOid": 2,
+        "Ectd4MessageNamespace": 2,
+        "Ectd4MessageRootElement": 2,
+        "Ectd4SequenceNumber": 2,
+        "Module1RegionalFolder": 2,
+        "RegulatoryUnitKind": 2,
+        "SequenceFolder": 2,
+        "SubmissionUnitMarkerFile": 2
+      },
+      "References": 0,
+      "Resolution": {},
+      "Checksums": {},
+      "Operations": {},
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "SubmissionUnitFoldersObserved": 1
+      },
+      "CoverageReasons": {
+        "ExternalReferenceNotResolved": 2,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "UnrecognizedCodeSystem": 6,
+        "UnrecognizedProfileMarker": 2
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 13,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 2,
+        "Xml": 0,
+        "Evidence": 13,
+        "References": 0,
+        "Resolution": {},
+        "Checksums": {}
+      }
+    },
+    {
+      "SampleId": "S15",
+      "InputType": "Directory",
+      "PhysicalFiles": 17,
+      "PhysicalXml": 3,
+      "SubmissionUnitFiles": 3,
+      "CommonIndexFiles": 0,
+      "Dossiers": 1,
+      "Sequences": 3,
+      "SequenceKinds": {
+        "SubmissionUnitFolder": 3
+      },
+      "Xml": 0,
+      "XmlParse": {},
+      "XmlKinds": {},
+      "RegionalRecognition": {},
+      "RegionalFamilies": {},
+      "SubmissionUnits": 3,
+      "SuParse": {
+        "Parsed": 3
+      },
+      "SuProfiles": {
+        "UnrecognizedProfileMarker": 3
+      },
+      "SuStructure": {
+        "Recognized": 3
+      },
+      "Evidence": 30,
+      "EvidenceTypes": {
+        "ChecksumFileMarker": 3,
+        "CtdModuleFolders": 3,
+        "DossierRootPath": 1,
+        "Ectd4ImplementationGuideOid": 3,
+        "Ectd4MessageNamespace": 3,
+        "Ectd4MessageRootElement": 3,
+        "Ectd4SequenceNumber": 3,
+        "Module1RegionalFolder": 2,
+        "RegulatoryUnitKind": 3,
+        "SequenceFolder": 3,
+        "SubmissionUnitMarkerFile": 3
+      },
+      "References": 0,
+      "Resolution": {},
+      "Checksums": {},
+      "Operations": {},
+      "ModifiedFileRelationships": 0,
+      "Findings": {},
+      "Observations": {
+        "ExactSequenceChildrenObserved": 1,
+        "SubmissionUnitFoldersObserved": 1
+      },
+      "CoverageReasons": {
+        "ExternalReferenceNotResolved": 3,
+        "OutsideDeclaredChecksumComparisonScope": 1,
+        "OutsideReferenceResolutionScope": 2,
+        "UnrecognizedCodeSystem": 9,
+        "UnrecognizedProfileMarker": 3
+      },
+      "PhysicalPresenceDisagreements": 0,
+      "InventoryFiles": 17,
+      "ExecutionStatus": "Completed",
+      "Identification": "Not executed: no approved assessment configuration supplied",
+      "Historical": {
+        "ExecutionStatus": "Completed",
+        "Sequences": 3,
+        "Xml": 0,
+        "Evidence": 18,
+        "References": 0,
+        "Resolution": {},
+        "Checksums": {}
+      }
+    }
+  ],
+  "NativeRuntimeAgreement": "5.1.26100.9444: all per-input summaries match 7.6.6",
+  "LifecycleAudit": {
+    "ModifiedFileRelationships": 8,
+    "UniqueHistoricalTargets": 6,
+    "DanglingHistoricalFragments": 2,
+    "CurrentAttributesMatch": 8,
+    "EarlierSequencePaths": 8,
+    "AutomatedLifecycleValidation": "Not implemented"
+  },
+  "Qualification": "Unqualified, unvalidated technical pre-sales verification only",
+  "IndependentChecksumAudit": {
+    "ResolvedTargetsChecked": 186,
+    "Md5Agreements": 186,
+    "Disagreements": 0,
+    "UnsafeTargetsOpened": 0
+  },
+  "FinalDemoRunner": {
+    "Runtime": "7.6.6",
+    "Total": 26,
+    "Passed": 20,
+    "Failed": 4,
+    "Skipped": 2,
+    "WorkspaceImmutability": "PASS",
+    "Qualification": "Not established"
+  }
+}

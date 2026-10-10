@@ -19,6 +19,7 @@ coverage/
 demo/output/
 
 # Customer and project evidence must never be committed
+tests/sample-data/
 customer-data/
 customer-reports/
 project-evidence/

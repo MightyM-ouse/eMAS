@@ -206,7 +206,7 @@ foreach ($file in @($fixtureState.Keys)) {
 $failureCount = @($checks | Where-Object { $_.Status -eq 'FAIL' }).Count
 $summary = [pscustomobject][ordered]@{
     TaskId = 'EMAS-MS04-REGIONAL-XML-EVIDENCE-T1B-EU-ENVELOPE'
-    Platform = [pscustomobject][ordered]@{ PSEdition = $PSVersionTable.PSEdition; PSVersion = $PSVersionTable.PSVersion.ToString(); OS = $PSVersionTable.OS }
+    Platform = [pscustomobject][ordered]@{ PSEdition = $PSVersionTable.PSEdition; PSVersion = $PSVersionTable.PSVersion.ToString(); OS = $(if ($PSVersionTable.ContainsKey('OS')) { $PSVersionTable.OS } else { [System.Environment]::OSVersion.VersionString }) }
     FixtureCount = $fixtureState.Count; FixtureHashesVerifiedBeforeAndAfter = $fixtureState.Count
     CheckCount = $checks.Count; PassCount = @($checks | Where-Object { $_.Status -eq 'PASS' }).Count; FailCount = $failureCount
     OverallStatus = $(if ($failureCount -eq 0) { 'PASS' } else { 'FAIL' }); Checks = [object[]]@($checks)

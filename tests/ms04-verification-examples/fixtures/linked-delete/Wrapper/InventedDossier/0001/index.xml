@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ich:ectd xmlns:ich="http://www.ich.org/ectd" dtd-version="3.2">
+  <leaf ID="SYN-DELETE" operation="delete" modified-file="../0000/index.xml#SYN-HISTORICAL"><title>Invented deletion</title></leaf>
+</ich:ectd>

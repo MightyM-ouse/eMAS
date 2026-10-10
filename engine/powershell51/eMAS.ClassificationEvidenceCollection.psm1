@@ -485,6 +485,11 @@ function Invoke-eMASClassificationEvidenceCollection {
             $sequenceRelativePath = Get-eMASCecChildPath -ParentPath $sequencePath -ChildPath $xmlPath
             if ($null -eq $sequenceRelativePath) { $sequenceRelativePath = $xmlPath }
             $common = @{ DossierPath = $dossierPath; SequenceFolder = $sequenceFolder; SequenceRelativePath = $sequenceRelativePath; XmlKind = $xmlKind; RelativePath = $xmlPath; DossierId = [string]$xml.DossierId; SequenceId = [string]$xml.SequenceId; XmlId = [string]$xml.XmlId; SubjectType = 'XmlDocument'; SourceCapability = 'BackboneXmlInventory' }
+            $recognition = Get-eMASCecPropertyValue -InputObject $xml -Name 'RegionalRecognition'
+            $isUsRegional = ($xmlKind -eq 'RegionalBackbone' -and
+                ((Get-eMASCecPropertyValue -InputObject $recognition -Name 'PathProfileFamily') -eq 'US_M1' -or $sequenceRelativePath -ieq 'm1/us/us-regional.xml'))
+            # New US facts follow all existing groups, including T1b and T2.
+            if ($isUsRegional) { $common.SortGroup = 4 }
 
             $exists = Get-eMASCecPropertyValue -InputObject $xml -Name 'Exists'
             $parseStatus = [string](Get-eMASCecPropertyValue -InputObject $xml -Name 'ParseStatus')
@@ -515,7 +520,7 @@ function Invoke-eMASClassificationEvidenceCollection {
                     $structuredCount++
                 }
 
-                if ($xmlKind -eq 'RegionalBackbone') {
+                if ($xmlKind -eq 'RegionalBackbone' -and -not $isUsRegional) {
                     $regionalEnvelope = Get-eMASCecPropertyValue -InputObject $xml -Name 'RegionalEnvelope'
                     foreach ($fieldCode in @($script:eMASCecRegionalEnvelopeTypeByField.Keys | Sort-Object { [array]::IndexOf(@('EU_ENVELOPE_COUNTRY','EU_AGENCY_CODE','EU_PROCEDURE_TYPE','EU_SUBMISSION_TYPE','EU_SUBMISSION_UNIT_TYPE'), $_) })) {
                         $fieldFacts = New-Object System.Collections.ArrayList
@@ -546,12 +551,17 @@ function Invoke-eMASClassificationEvidenceCollection {
                 $unavailableCapture = $(if ($xmlCaptureStatus -eq 'AccessDenied') { 'AccessDenied' } else { 'InputUnavailable' })
                 [void]$xmlCoverage.Add((New-eMASCecCoverage -SubjectType 'XmlDocument' -SubjectId ([string]$xml.XmlId) -CaptureStatus $unavailableCapture -CollectionStatus 'NotAssessed' -RecordsProduced $xmlDrafts.Count -ReasonCode 'SourceXmlUnavailable'))
             }
-            if ($xmlKind -eq 'RegionalBackbone' -and -not ($existsKnown -and [bool]$exists -and $parseStatus -eq 'Parsed' -and $xmlCaptureStatus -eq 'Available')) {
+            if ($xmlKind -eq 'RegionalBackbone' -and -not $isUsRegional -and -not ($existsKnown -and [bool]$exists -and $parseStatus -eq 'Parsed' -and $xmlCaptureStatus -eq 'Available')) {
                 foreach ($fieldCode in @('EU_ENVELOPE_COUNTRY','EU_AGENCY_CODE','EU_PROCEDURE_TYPE','EU_SUBMISSION_TYPE','EU_SUBMISSION_UNIT_TYPE')) {
                     [void]$regionalFieldCoverage.Add((Get-eMASCecRegionalFieldCoverage -XmlDocument $xml -FieldCode $fieldCode -Fields @() -RecordsProduced 0))
                 }
             }
             foreach ($draft in $xmlDrafts) { [void]$drafts.Add($draft) }
+            if ($isUsRegional) {
+                $reason = $(if (-not $exists) { 'SourceXmlMissing' } elseif ($parseStatus -eq 'ParseFailed') { 'SourceXmlParseFailed' } elseif ($xmlCaptureStatus -ne 'Available') { 'SourceXmlUnavailable' } else { 'RegionalEnvelopeExtractionNotImplemented' })
+                [void]$regionalFieldCoverage.Add((New-eMASCecCoverage -CheckId 'RegionalEnvelopeExtraction:US_M1' -SubjectType 'XmlDocument' -SubjectId ([string]$xml.XmlId) `
+                    -CaptureStatus 'NotCollected' -CollectionStatus 'NotAssessed' -RecordsProduced 0 -ReasonCode $reason))
+            }
         }
 
         # Optional T2 facts. CEC consumes only the already-populated SUXI model and never reopens XML.
@@ -682,7 +692,7 @@ function Invoke-eMASClassificationEvidenceCollection {
     $workingResult.ClassificationEvidence = [object[]]@($existingEvidence)
     $workingResult.CollectionCoverage = [object[]]@($coverage)
     $workingResult.Execution.ScannerName = ('{0}+ClassificationEvidenceCollection' -f [string]$workingResult.Execution.ScannerName)
-    $workingResult.Execution.ScannerVersion = $(if ($capabilities -contains 'SubmissionUnitXmlInventory') { '0.11.0' } else { '0.10.0' })
+    $workingResult.Execution.ScannerVersion = $(if ($capabilities -contains 'SubmissionUnitXmlInventory') { '0.13.0' } else { '0.12.0' })
     $workingResult.Execution.CompletedAtUtc = [DateTime]::UtcNow.ToString('o')
     $workingResult.Execution.Capabilities = [object[]](@($capabilities) + 'ClassificationEvidenceCollection')
     if ($workingResult.Execution.CompletionStatus -eq 'Completed' -and $repositoryCollectionStatus -ne 'Collected') {
