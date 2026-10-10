@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE fda-regional:fda-regional SYSTEM "https://www.accessdata.fda.gov/static/eCTD/us-regional-v3-3.dtd">
+<?xml-stylesheet type="text/xsl" href="https://www.accessdata.fda.gov/static/eCTD/us-regional.xsl"?>
+<fda-regional:fda-regional xmlns:fda-regional="http://www.ich.org/fda" dtd-version="3.3" xml:lang="text" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <admin>
+    <applicant-info>
+      <id>123456789</id>
+      <company-name>big company</company-name>
+      <submission-description>my test submission</submission-description>
+      <applicant-contacts>
+        <applicant-contact>
+          <applicant-contact-name applicant-contact-type="fdaact2">Support</applicant-contact-name>
+          <telephones>
+            <telephone telephone-number-type="fdatnt1">+4845603423</telephone>
+          </telephones>
+          <emails>
+            <email>support@extedo.com</email>
+          </emails>
+        </applicant-contact>
+      </applicant-contacts>
+    </applicant-info>
+    <application-set>
+      <application application-containing-files="true">
+        <application-information>
+          <application-number application-type="fdaat1">123456</application-number>
+        </application-information>
+        <submission-information>
+          <submission-id submission-type="fdast1">0001</submission-id>
+          <sequence-number submission-sub-type="fdasst4">0002</sequence-number>
+          <form form-type="fdaft2">
+            <leaf ID="ID00002435" application-version="PDF 1.7" checksum="86f90151974575acd110e95f369275c7" checksum-type="MD5" operation="new" xlink:href="11-forms/356h.pdf">
+              <title>356h</title>
+            </leaf>
+          </form>
+        </submission-information>
+      </application>
+    </application-set>
+  </admin>
+
+  <m1-regional>
+    <m1-2-cover-letters>
+      <leaf ID="ID00002436" application-version="PDF 1.6" checksum="5385749e122d9b19e20aa1891690d985" checksum-type="MD5" operation="new" xlink:href="12-cover-letter/cover-letter.pdf">
+        <title>cover-letter</title>
+      </leaf>
+    </m1-2-cover-letters>
+  </m1-regional>
+
+</fda-regional:fda-regional>

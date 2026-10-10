@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RegulatoryActivities>
+	<RegulatoryActivity
+		id="1"
+		title="MAA"
+		status="Approved">
+		<Sequence>0000</Sequence>
+		<Sequence>0001</Sequence>
+	</RegulatoryActivity>
+	<RegulatoryActivity
+		id="2"
+		title="Type II VAR"
+		status="In Progress">
+		<Sequence>0002</Sequence>
+	</RegulatoryActivity>
+	<RegulatoryActivity
+		id="3"
+		title="Type IA Var"
+		status="Approved">
+		<Sequence>0003</Sequence>
+		<Sequence>0004</Sequence>
+	</RegulatoryActivity>
+</RegulatoryActivities>

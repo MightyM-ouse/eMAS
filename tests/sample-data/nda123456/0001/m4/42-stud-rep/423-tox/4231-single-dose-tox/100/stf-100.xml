@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:study SYSTEM "../../../../../util/dtd/ich-stf-v2-2.dtd">
+<?xml-stylesheet type='text/xsl' href='../../../../../util/style/ich-stf-stylesheet-2-3.xsl'?>
+<ectd:study xmlns:ectd="http://www.ich.org/ectd" dtd-version="2.2" xml:lang="en" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <study-identifier>
+    <title>Study No. 100 STF</title>
+    <study-id>100</study-id>
+    <category info-type="ich" name="species">mouse</category>
+    <category info-type="ich" name="species">rat</category>
+    <category info-type="ich" name="route-of-admin">oral</category>
+  </study-identifier>
+
+  <study-document>
+    <doc-content xlink:href="../../../../../../0001/index.xml#ID00010259">
+      <file-tag info-type="us" name="analysis-program"/>
+    </doc-content>
+  </study-document>
+
+</ectd:study>

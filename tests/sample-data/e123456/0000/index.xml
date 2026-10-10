@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00013401" checksum="07fb9f5f9f0604fe8cde6cb76663f7c1" checksum-type="MD5" operation="new" xlink:href="m1/ca/ca-regional.xml">
+      <title>ca-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m2-common-technical-document-summaries>
+    <m2-3-quality-overall-summary>
+      <m2-3-s-drug-substance manufacturer="mymanufacturer" substance="mysubstance" xml:lang="en">
+        <leaf ID="ID00009526" application-version="PDF 1.6" checksum="35ffe9d2e30da39b9d3f3224618ca087" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-substance.pdf">
+          <title>drug-substance</title>
+        </leaf>
+      </m2-3-s-drug-substance>
+      <m2-3-p-drug-product dosageform="tablets" manufacturer="mymanufacturer" product-name="wonderpill" xml:lang="en">
+        <leaf ID="ID00009515" application-version="PDF 1.6" checksum="36e1c4038721d651888548c8b46aee6a" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-product-5mg-tablets.pdf">
+          <title>drug-product-5mg-tablets</title>
+        </leaf>
+      </m2-3-p-drug-product>
+    </m2-3-quality-overall-summary>
+  </m2-common-technical-document-summaries>
+
+  <m3-quality>
+    <m3-2-body-of-data>
+      <m3-2-s-drug-substance manufacturer="mymanufacturer" substance="mysubstance" xml:lang="en">
+        <m3-2-s-1-general-information>
+          <m3-2-s-1-2-structure>
+            <leaf ID="ID00009524" application-version="PDF 1.6" checksum="d9a40dea988cbedcab67bc7cb6b8f6cf" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/structure.pdf">
+              <title>replace</title>
+            </leaf>
+          </m3-2-s-1-2-structure>
+          <m3-2-s-1-3-general-properties>
+            <leaf ID="ID00009518" application-version="PDF 1.6" checksum="4633b2b78b68311548d7d2b55f8ec17c" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/general-properties-1.pdf">
+              <title>general-properties</title>
+            </leaf>
+            <leaf ID="ID00009525" application-version="PDF 1.6" checksum="8b9a8acece0fe42983f4bef2c390a11b" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/general-properties-2.pdf">
+              <title>append</title>
+            </leaf>
+          </m3-2-s-1-3-general-properties>
+        </m3-2-s-1-general-information>
+      </m3-2-s-drug-substance>
+      <m3-2-p-drug-product dosageform="tablets" manufacturer="mymanufacturer" product-name="wonderpill" xml:lang="en">
+        <m3-2-p-1-description-and-composition-of-the-drug-product>
+          <leaf ID="ID00009519" application-version="PDF 1.6" checksum="0129d718c124d9286c0a61630afadb23" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/wonderpill-tablets/32p1-desc-comp/description-and-composition-5mg-tablets.pdf">
+            <title>description-and-composition-5mg-tablets</title>
+          </leaf>
+        </m3-2-p-1-description-and-composition-of-the-drug-product>
+        <m3-2-p-4-control-of-excipients excipient="myexcipient" xml:lang="en">
+          <m3-2-p-4-2-analytical-procedures>
+            <leaf ID="ID00009520" application-version="PDF 1.6" checksum="3d94268e6d242db72c4f384f76b26dcb" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/wonderpill-tablets/32p4-contr-excip/myexcipient/analytical-procedures.pdf">
+              <title>analytical-procedures</title>
+            </leaf>
+          </m3-2-p-4-2-analytical-procedures>
+        </m3-2-p-4-control-of-excipients>
+      </m3-2-p-drug-product>
+    </m3-2-body-of-data>
+  </m3-quality>
+
+  <m4-nonclinical-study-reports>
+    <m4-3-literature-references>
+      <leaf ID="ID00009528" application-version="PDF 1.6" checksum="6606008a8de608a387031f5766288172" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-and-smith-1998.pdf">
+        <title>jones-and-smith-1998</title>
+      </leaf>
+      <leaf ID="ID00009529" application-version="PDF 1.6" checksum="1335b6362a6c0752d052212f77341d36" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/mullins-fox-and-jones-2004.pdf">
+        <title>mullins-fox-and-jones-2004</title>
+      </leaf>
+      <leaf ID="ID00009530" application-version="PDF 1.6" checksum="86c7be4c4afbd4d3e8c4f0950f29eebc" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/williams-et-al-2000.pdf">
+        <title>williams-et-al-2000</title>
+      </leaf>
+      <leaf ID="ID00009531" application-version="PDF 1.6" checksum="cf9ce62db40f4f053f88b5eea2c9d117" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-2003.pdf">
+        <title>jones-2003</title>
+      </leaf>
+      <leaf ID="ID00009527" application-version="PDF 1.6" checksum="d0adcd95e8892a93c21ae4a2b495574d" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/literature-references.pdf">
+        <title>literature-references</title>
+      </leaf>
+    </m4-3-literature-references>
+  </m4-nonclinical-study-reports>
+
+  <m5-clinical-study-reports>
+    <m5-4-literature-references>
+      <leaf ID="ID00009521" application-version="PDF 1.6" checksum="84c5d83caf3c4b1b328e1dcda03effbe" checksum-type="MD5" operation="new" xlink:href="m5/54-lit-ref/refersource-1-10.pdf">
+        <title>refersource-1-10</title>
+      </leaf>
+    </m5-4-literature-references>
+  </m5-clinical-study-reports>
+
+</ectd:ectd>

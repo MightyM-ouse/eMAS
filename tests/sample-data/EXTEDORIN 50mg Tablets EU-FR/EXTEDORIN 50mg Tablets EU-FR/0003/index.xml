@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00000899" checksum="0cc84d3f801f901c7682743bf1779a07" checksum-type="MD5" operation="new" xlink:href="m1/eu/eu-regional.xml">
+      <title>eu-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m2-common-technical-document-summaries>
+    <m2-3-quality-overall-summary>
+      <m2-3-p-drug-product dosageform="50 mg Tablets" manufacturer="EXTEDO Pharma" product-name="EXTEDORIN" xml:lang="en">
+        <leaf ID="ID00000982" application-version="PDF 1.4" checksum="271aa0001594c5a405508eec2c411d8a" checksum-type="MD5" modified-file="../0000/index.xml#ID00000316" operation="replace" xlink:href="m2/23-qos/drug-product.pdf">
+          <title>drug-product</title>
+        </leaf>
+      </m2-3-p-drug-product>
+    </m2-3-quality-overall-summary>
+  </m2-common-technical-document-summaries>
+
+</ectd:ectd>

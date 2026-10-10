@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00002440" checksum="475388196f40e9650be8c8dc4f4f3a79" checksum-type="MD5" operation="new" xlink:href="m1/us/us-regional.xml">
+      <title>us-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m3-quality>
+    <m3-2-body-of-data>
+      <m3-2-s-drug-substance manufacturer="mymanufacturer" substance="mysubstance" xml:lang="en">
+        <m3-2-s-1-general-information>
+          <m3-2-s-1-2-structure>
+            <leaf ID="ID00002818" checksum="01e7f6e85d4ac2eb4eb77ee6a3c316ba" checksum-type="MD5" operation="new" xlink:href="../../nda123456/0001/m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/structure.pdf">
+              <title>replace</title>
+            </leaf>
+          </m3-2-s-1-2-structure>
+        </m3-2-s-1-general-information>
+      </m3-2-s-drug-substance>
+    </m3-2-body-of-data>
+  </m3-quality>
+
+  <m4-nonclinical-study-reports>
+    <m4-2-study-reports>
+      <m4-2-3-toxicology>
+        <m4-2-3-1-single-dose-toxicity>
+          <leaf ID="ID00002820" checksum="593f46430995fe948b28401dd3933d27" checksum-type="MD5" operation="new" version="STF Version 2.2" xlink:href="m4/42-stud-rep/423-tox/4231-single-dose-tox/100/stf-100.xml" xlink:type="simple">
+            <title>Study No. 100 STF</title>
+          </leaf>
+          <leaf ID="ID00002845" checksum="005bc6f62d6267159c475b78d264c9c1" checksum-type="MD5" operation="new" xlink:href="../../nda123456/0001/m4/datasets/100/analysis/legacy/programs/study-report-116.pdf" xlink:type="simple">
+            <title>study-report-116</title>
+          </leaf>
+        </m4-2-3-1-single-dose-toxicity>
+      </m4-2-3-toxicology>
+    </m4-2-study-reports>
+  </m4-nonclinical-study-reports>
+
+</ectd:ectd>

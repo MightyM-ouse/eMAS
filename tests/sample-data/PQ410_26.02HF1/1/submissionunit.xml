@@ -1,0 +1,546 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PORP_IN000001UV xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="urn:hl7-org:v3 PORP_IN000001UV.xsd" ITSVersion="XML_1.0" xmlns="urn:hl7-org:v3">
+  <id />
+  <creationTime />
+  <interactionId />
+  <processingCode />
+  <processingModeCode />
+  <acceptAckCode />
+  <receiver typeCode="RCV">
+    <device classCode="DEV" determinerCode="INSTANCE">
+      <id>
+        <item identifierName="ICH eCTD v4.0 IG v1.6" root="2.16.840.1.113883.3.989.2.2.1.11.5" />
+        <item identifierName="EU M1 IG v1.3" root="2.16.840.1.113883.3.989.5.1.1.6.1.3" />
+      </id>
+    </device>
+  </receiver>
+  <sender typeCode="SND">
+    <device classCode="DEV" determinerCode="INSTANCE">
+      <id>
+        <item />
+      </id>
+    </device>
+  </sender>
+  <controlActProcess classCode="ACTN" moodCode="EVN">
+    <subject typeCode="SUBJ">
+      <submissionUnit classCode="ACT" moodCode="EVN">
+        <id root="4004bfca-ee2f-44be-8f61-c9e681c2939f" />
+        <code code="100000155047" codeSystem="2.16.840.1.113883.3.6905.1.8.1" />
+        <title value="1" />
+        <statusCode code="active" />
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="dd020475-a718-4633-bc7f-06a62dd94725" />
+            <code code="ich_3.2.p.4.2" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="89217562-a943-4879-be91-ee1dbf3b48be" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="e062b76af2c744b18f1e572a428be7af" codeSystem="78718347197e4c46b76dee85c78c3472" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="086911e3e960498bab69b63593b4dce5" codeSystem="4d8503ae33684620af6006f403a5a46a" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="f48edb68d2814410a1d497453276fb79" codeSystem="82aaa534b8f345d6bec167d85d5516c0" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="724606d126ef4e5aad436d35cfccb16e" codeSystem="8a1b383e72f44873a31f4752e67e8a7f" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="bb4bd112-e2de-4445-8f6d-e48517d51f1f" />
+            <code code="100000164030" codeSystem="2.16.840.1.113883.3.6905.1.17.2" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="f7a145c7-0655-4ae5-b9c3-87e7cf18f6aa" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="en" codeSystem="2.16.840.1.113883.3.6905.1.16.1" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="100000000390" codeSystem="2.16.840.1.113883.3.6905.1.1.2" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="200000051364" codeSystem="2.16.840.1.113883.3.6905.1.19.3" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="b929c276-b2df-4a40-8984-8f08cd32d53c" />
+            <code code="100000164029" codeSystem="2.16.840.1.113883.3.6905.1.17.2" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="57ab5b04-3f56-4f02-b6f9-cef0a3f4b011" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="en" codeSystem="2.16.840.1.113883.3.6905.1.16.1" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="100000000390" codeSystem="2.16.840.1.113883.3.6905.1.1.2" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="200000012465" codeSystem="2.16.840.1.113883.3.6905.1.19.3" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="68f9659a-59db-4701-b407-bfc76df6d0bd" />
+            <code code="ich_3.2.p.1" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="6ecc3f12-bc45-4194-81f3-6ba15cd9956c" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="e062b76af2c744b18f1e572a428be7af" codeSystem="78718347197e4c46b76dee85c78c3472" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="086911e3e960498bab69b63593b4dce5" codeSystem="4d8503ae33684620af6006f403a5a46a" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="f48edb68d2814410a1d497453276fb79" codeSystem="82aaa534b8f345d6bec167d85d5516c0" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="810af852-83b0-4f62-a184-e6147dd1c34b" />
+            <code code="ich_2.3.p" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="88ce08e9-9214-4d16-be3b-d2c2ac89f1c0" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="086911e3e960498bab69b63593b4dce5" codeSystem="4d8503ae33684620af6006f403a5a46a" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="f48edb68d2814410a1d497453276fb79" codeSystem="82aaa534b8f345d6bec167d85d5516c0" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="30a1b1d9-0f38-4371-b6c5-38a9c1c1affe" />
+            <code code="ich_2.3.s" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="430c9c70-b629-4388-9745-8d3df0cb32e7" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="2c0e8850441e42da960eb5d5a30fd0eb" codeSystem="f1af8d8e1bf54c93bf2b99261200c4be" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="e062b76af2c744b18f1e572a428be7af" codeSystem="78718347197e4c46b76dee85c78c3472" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="f0449fd4-8ca5-4211-bc3c-b73a53ad0118" />
+            <code code="100000164029" codeSystem="2.16.840.1.113883.3.6905.1.17.2" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="ac1a7a0a-c7b1-4946-90a0-8593b4c48be0" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="en" codeSystem="2.16.840.1.113883.3.6905.1.16.1" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="100000000390" codeSystem="2.16.840.1.113883.3.6905.1.1.2" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="200000051363" codeSystem="2.16.840.1.113883.3.6905.1.19.3" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="835afa3f-4c93-4b94-8e7a-e806c06da444" />
+            <code code="ich_3.2.s.1" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="08bc3aa3-1b3d-4550-acb4-9bef2c2b1407" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="2c0e8850441e42da960eb5d5a30fd0eb" codeSystem="f1af8d8e1bf54c93bf2b99261200c4be" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="e062b76af2c744b18f1e572a428be7af" codeSystem="78718347197e4c46b76dee85c78c3472" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="b62ed336-95cc-4a2a-a356-08f960aacbd3" />
+            <code code="100000164030" codeSystem="2.16.840.1.113883.3.6905.1.17.2" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="da4f2820-d38b-454d-8c33-09fa9586fcda" />
+              </documentReference>
+            </derivedFrom>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="en" codeSystem="2.16.840.1.113883.3.6905.1.16.1" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="100000000390" codeSystem="2.16.840.1.113883.3.6905.1.1.2" />
+              </keyword>
+            </referencedBy>
+            <referencedBy typeCode="REFR">
+              <keyword classCode="OBS" moodCode="EVN">
+                <code code="200000051362" codeSystem="2.16.840.1.113883.3.6905.1.19.3" />
+              </keyword>
+            </referencedBy>
+          </contextOfUse>
+        </component>
+        <component typeCode="COMP">
+          <priorityNumber value="1000" />
+          <contextOfUse classCode="DOC" moodCode="EVN">
+            <id root="d54be8f5-f8c7-472a-bcaa-116228e679e0" />
+            <code code="ich_5.4" codeSystem="2.16.840.1.113883.3.989.2.2.1.1.5" />
+            <statusCode code="active" />
+            <derivedFrom typeCode="DRIV">
+              <documentReference classCode="DOC" moodCode="EVN">
+                <id root="cfa20aa0-5882-49e4-877f-af46ca8299df" />
+              </documentReference>
+            </derivedFrom>
+          </contextOfUse>
+        </component>
+        <componentOf1 typeCode="COMP">
+          <sequenceNumber value="1" />
+          <submission classCode="ACT" moodCode="EVN">
+            <id>
+              <item extension="123456" root="0c7f2c93-297f-4a10-8e2b-a8e6eff1b277" />
+            </id>
+            <code code="100000155689" codeSystem="2.16.840.1.113883.3.6905.1.11.2" />
+            <callBackContact typeCode="CALLBCK">
+              <contactParty classCode="CON">
+                <id root="3ceedc27-bdbc-4df6-abe7-0fdd7899c7b4" />
+                <code code="200000043407" codeSystem="2.16.840.1.113883.3.6905.1.6.1" />
+                <statusCode code="active" />
+                <contactPerson classCode="PSN" determinerCode="INSTANCE">
+                  <id />
+                  <name>
+                    <part value="Support" qualifier="BR" type="TITLE" />
+                  </name>
+                  <telecom xsi:type="BAG_TEL">
+                    <item capabilities="voice" use="MC" value="+4845603423" />
+                  </telecom>
+                  <asAgent classCode="AGNT">
+                    <representedOrganization classCode="ORG" determinerCode="INSTANCE">
+                      <id />
+                      <name>
+                        <part value="EXTEDO" />
+                      </name>
+                    </representedOrganization>
+                  </asAgent>
+                </contactPerson>
+              </contactParty>
+            </callBackContact>
+            <subject2 typeCode="SUBJ">
+              <review classCode="REV" moodCode="RQO">
+                <id root="5aacefdb-d5d6-4545-ac59-978ca94f8719" />
+                <statusCode code="active" />
+                <subject1 typeCode="SBJ">
+                  <manufacturedProduct classCode="MANU">
+                    <id root="4265acc3-41f0-41f0-b4ce-e671483bb97b" />
+                    <manufacturedProduct classCode="MMAT" determinerCode="KIND">
+                      <code code="100000073684" codeSystem="2.16.840.1.113883.3.6905.1.14.1" />
+                      <name>
+                        <part language="en" value="wonderpill" />
+                      </name>
+                      <asNamedEntity classCode="IDENT">
+                        <assigningTerritory classCode="STATE" determinerCode="INSTANCE">
+                          <code code="100000000390" codeSystem="2.16.840.1.113883.3.6905.1.1.2" />
+                        </assigningTerritory>
+                      </asNamedEntity>
+                      <ingredient classCode="ACTI">
+                        <ingredientSubstance classCode="MAT" determinerCode="KIND">
+                          <name>
+                            <part code="0000" codeSystem="2.16.840.1.113883.3.6905.2.1" value="myingredient" />
+                          </name>
+                        </ingredientSubstance>
+                      </ingredient>
+                    </manufacturedProduct>
+                  </manufacturedProduct>
+                </subject1>
+                <author typeCode="AUT">
+                  <territorialAuthority classCode="TERR">
+                    <governingAuthority classCode="PUB" determinerCode="INSTANCE">
+                      <id root="7626a3cc-b1fd-42b1-a031-035754e21376" />
+                      <name>
+                        <part code="100000160628" codeSystem="2.16.840.1.113883.3.6905.1.12.1" />
+                      </name>
+                    </governingAuthority>
+                  </territorialAuthority>
+                </author>
+              </review>
+            </subject2>
+            <subject3 typeCode="SUBJ">
+              <mode classCode="POLICY" moodCode="EVN">
+                <code code="100000155554" codeSystem="2.16.840.1.113883.3.6905.1.10.1" />
+              </mode>
+            </subject3>
+            <componentOf typeCode="COMP">
+              <application classCode="ACT" moodCode="EVN">
+                <id>
+                  <item extension="123456" root="33f7f07c-8250-46d9-a14e-48ebc461dc39" />
+                </id>
+                <code code="100000116047" codeSystem="2.16.840.1.113883.3.6905.1.4.1" />
+                <holder typeCode="HLD">
+                  <applicant classCode="SPNSR">
+                    <sponsorOrganization classCode="ORG" determinerCode="INSTANCE">
+                      <id>
+                        <item extension="0987654" root="234567" />
+                      </id>
+                      <name>
+                        <part value="EXTEDO" />
+                      </name>
+                    </sponsorOrganization>
+                  </applicant>
+                </holder>
+                <subject typeCode="SUBJ">
+                  <reviewProcedure classCode="POLICY" moodCode="EVN">
+                    <code code="100000155059" codeSystem="2.16.840.1.113883.3.6905.1.7.1" />
+                  </reviewProcedure>
+                </subject>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="89217562-a943-4879-be91-ee1dbf3b48be" />
+                    <title value="analytical-procedures" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m3/32-prod/analytical-procedures.pdf" />
+                      <integrityCheck>CEB31B8C7D34D45521EA9BBBBC97620133551880F97BFD868CFDA5A23F901F6B</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="f7a145c7-0655-4ae5-b9c3-87e7cf18f6aa" />
+                    <title value="annex" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m1/annex.pdf" />
+                      <integrityCheck>3EC746A64F87D2E5477DF3FAD17E51163873017E9F7452D80237EAD6CF7E3CEC</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="57ab5b04-3f56-4f02-b6f9-cef0a3f4b011" />
+                    <title value="cover-letter" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m1/cover-letter.pdf" />
+                      <integrityCheck>ADE8B82EC5323AEE8A259F0B23D39E9392E78BB18FDF222EDB6B0F440DAF7ADC</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="6ecc3f12-bc45-4194-81f3-6ba15cd9956c" />
+                    <title value="description-and-composition-5mg-tablets" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m3/32-prod/description-and-composition-5mg-tablets.pdf" />
+                      <integrityCheck>436B15BC2ECC62E91A594FF60DD20D87E91FCEC611DD220B1370CFA957017B7A</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="88ce08e9-9214-4d16-be3b-d2c2ac89f1c0" />
+                    <title value="drug-product-5mg-tablets" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m2/drug-product-5mg-tablets.pdf" />
+                      <integrityCheck>68F84A7C25FBF5F89A2EC8AF15122D3DF85F1FEFC2A31A279D5AB4086FFA03C4</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="430c9c70-b629-4388-9745-8d3df0cb32e7" />
+                    <title value="drug-substance" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m2/drug-substance.pdf" />
+                      <integrityCheck>83149FEC0CE3243D088544A12B51E3AD94F4DBA4FCA488CFC71823A39DAED06A</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="ac1a7a0a-c7b1-4946-90a0-8593b4c48be0" />
+                    <title value="ema-tracking-var" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m1/ema-tracking-var.pdf" />
+                      <integrityCheck>4C3CC92E4B00CC9DDD2CA9A4CDC68D39CC581E90A8444D26D8C1BCA44CBFDC0C</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="08bc3aa3-1b3d-4550-acb4-9bef2c2b1407" />
+                    <title value="general-properties" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m3/32-sub/general-properties.pdf" />
+                      <integrityCheck>87688D188CB8BFA360EDBE4220E2AEAFC2865F6F28C30B6057865FBE0D7683F5</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="da4f2820-d38b-454d-8c33-09fa9586fcda" />
+                    <title value="maa_human_v1.26.0.0" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m1/maa_human_v1-26-0-0.pdf" />
+                      <integrityCheck>4DE12F02C3829D48B315B2EC1EA5E18E4A2193C008E080855EEDB57CCD17D8CA</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <component typeCode="COMP">
+                  <document classCode="DOC" moodCode="DEF">
+                    <id root="cfa20aa0-5882-49e4-877f-af46ca8299df" />
+                    <title value="refersource-1-10" />
+                    <text integrityCheckAlgorithm="SHA256">
+                      <reference value="m5/54-lit/refersource-1-10.pdf" />
+                      <integrityCheck>DE4D34F02C3C2603F8214E0BCC738268951559264D4CC162108D281994CD9CB1</integrityCheck>
+                    </text>
+                  </document>
+                </component>
+                <referencedBy typeCode="REFR">
+                  <keywordDefinition classCode="OBS" moodCode="DEF">
+                    <code code="ich_keyword_type_2" codeSystem="2.16.840.1.113883.3.989.2.2.1.5.4" />
+                    <statusCode code="active" />
+                    <value>
+                      <item code="2c0e8850441e42da960eb5d5a30fd0eb" codeSystem="f1af8d8e1bf54c93bf2b99261200c4be">
+                        <displayName value="mysubstance" />
+                      </item>
+                    </value>
+                  </keywordDefinition>
+                </referencedBy>
+                <referencedBy typeCode="REFR">
+                  <keywordDefinition classCode="OBS" moodCode="DEF">
+                    <code code="ich_keyword_type_3" codeSystem="2.16.840.1.113883.3.989.2.2.1.5.4" />
+                    <statusCode code="active" />
+                    <value>
+                      <item code="e062b76af2c744b18f1e572a428be7af" codeSystem="78718347197e4c46b76dee85c78c3472">
+                        <displayName value="mymanufacturer" />
+                      </item>
+                    </value>
+                  </keywordDefinition>
+                </referencedBy>
+                <referencedBy typeCode="REFR">
+                  <keywordDefinition classCode="OBS" moodCode="DEF">
+                    <code code="ich_keyword_type_5" codeSystem="2.16.840.1.113883.3.989.2.2.1.5.4" />
+                    <statusCode code="active" />
+                    <value>
+                      <item code="f48edb68d2814410a1d497453276fb79" codeSystem="82aaa534b8f345d6bec167d85d5516c0">
+                        <displayName value="5mg tablets" />
+                      </item>
+                    </value>
+                  </keywordDefinition>
+                </referencedBy>
+                <referencedBy typeCode="REFR">
+                  <keywordDefinition classCode="OBS" moodCode="DEF">
+                    <code code="ich_keyword_type_4" codeSystem="2.16.840.1.113883.3.989.2.2.1.5.4" />
+                    <statusCode code="active" />
+                    <value>
+                      <item code="086911e3e960498bab69b63593b4dce5" codeSystem="4d8503ae33684620af6006f403a5a46a">
+                        <displayName value="wonderpill" />
+                      </item>
+                    </value>
+                  </keywordDefinition>
+                </referencedBy>
+                <referencedBy typeCode="REFR">
+                  <keywordDefinition classCode="OBS" moodCode="DEF">
+                    <code code="ich_keyword_type_6" codeSystem="2.16.840.1.113883.3.989.2.2.1.5.4" />
+                    <statusCode code="active" />
+                    <value>
+                      <item code="724606d126ef4e5aad436d35cfccb16e" codeSystem="8a1b383e72f44873a31f4752e67e8a7f">
+                        <displayName value="myexcipient" />
+                      </item>
+                    </value>
+                  </keywordDefinition>
+                </referencedBy>
+              </application>
+            </componentOf>
+          </submission>
+        </componentOf1>
+      </submissionUnit>
+    </subject>
+  </controlActProcess>
+</PORP_IN000001UV>

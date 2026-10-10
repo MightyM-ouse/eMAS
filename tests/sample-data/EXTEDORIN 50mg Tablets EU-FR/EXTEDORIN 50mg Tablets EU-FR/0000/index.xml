@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00000345" checksum="da10b58219445d5682c54c08e771a4a0" checksum-type="MD5" operation="new" xlink:href="m1/eu/eu-regional.xml">
+      <title>eu-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m2-common-technical-document-summaries>
+    <m2-3-quality-overall-summary>
+      <m2-3-s-drug-substance manufacturer="API AG" substance="EXTEDOFIL" xml:lang="en">
+        <leaf ID="ID00001786" application-version="PDF 1.5" checksum="b2872bb0e2b8e035ee044101b9ef98af" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-substance.pdf">
+          <title>Drug Substance</title>
+        </leaf>
+      </m2-3-s-drug-substance>
+      <m2-3-p-drug-product dosageform="50 mg Tablets" manufacturer="EXTEDO Pharma" product-name="EXTEDORIN" xml:lang="en">
+        <leaf ID="ID00000316" application-version="PDF 1.4" checksum="3d44c64f68413f810cbe477d08233344" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-product.pdf">
+          <title>Drug Product-50mg Tablets</title>
+        </leaf>
+      </m2-3-p-drug-product>
+    </m2-3-quality-overall-summary>
+  </m2-common-technical-document-summaries>
+
+  <m3-quality>
+    <m3-2-body-of-data>
+      <m3-2-s-drug-substance manufacturer="API AG" substance="EXTEDOFIL" xml:lang="en">
+        <m3-2-s-1-general-information>
+          <m3-2-s-1-1-nomenclature>
+            <leaf ID="ID00000318" application-version="PDF 1.4" checksum="e5cf3cae696a765548e7b9deb2a1d2f3" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s1-gen-info/nomenclature.pdf">
+              <title>nomenclature</title>
+            </leaf>
+          </m3-2-s-1-1-nomenclature>
+          <m3-2-s-1-2-structure>
+            <leaf ID="ID00000319" application-version="PDF 1.4" checksum="472484bd8a17d8d1679e28d1409bfd95" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s1-gen-info/structure.pdf">
+              <title>structure</title>
+            </leaf>
+          </m3-2-s-1-2-structure>
+          <m3-2-s-1-3-general-properties>
+            <leaf ID="ID00000317" application-version="PDF 1.5" checksum="8838441f2b38d480d9e243d639762c2c" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s1-gen-info/general-properties.pdf">
+              <title>general-properties</title>
+            </leaf>
+          </m3-2-s-1-3-general-properties>
+        </m3-2-s-1-general-information>
+        <m3-2-s-2-manufacture>
+          <m3-2-s-2-1-manufacturer>
+            <leaf ID="ID00000324" application-version="PDF 1.4" checksum="becfbaed65161aaccbc928a1c7020b1a" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/manufacturer.pdf">
+              <title>manufacturer</title>
+            </leaf>
+          </m3-2-s-2-1-manufacturer>
+          <m3-2-s-2-2-description-of-manufacturing-process-and-process-controls>
+            <leaf ID="ID00000322" application-version="PDF 1.6" checksum="bfd60b0b43e927bb51d005a1cd9d94b1" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/manuf-process-and-controls.pdf">
+              <title>Description of Manufacturing Process</title>
+            </leaf>
+          </m3-2-s-2-2-description-of-manufacturing-process-and-process-controls>
+          <m3-2-s-2-3-control-of-materials>
+            <leaf ID="ID00000320" application-version="PDF 1.4" checksum="e3e16af65d6b0d0502efe05860141ab7" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/control-of-materials.pdf">
+              <title>Control of Materials-32s23</title>
+            </leaf>
+          </m3-2-s-2-3-control-of-materials>
+          <m3-2-s-2-4-controls-of-critical-steps-and-intermediates>
+            <leaf ID="ID00000321" application-version="PDF 1.4" checksum="fd4b77df96d61d710918d9a907c3dd6f" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/control-critical-steps.pdf">
+              <title>control-critical-steps-1</title>
+            </leaf>
+          </m3-2-s-2-4-controls-of-critical-steps-and-intermediates>
+          <m3-2-s-2-5-process-validation-and-or-evaluation>
+            <leaf ID="ID00000325" application-version="PDF 1.4" checksum="688a0eb48db52b9d181be896abf13cde" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/process-validation.pdf">
+              <title>process-validation</title>
+            </leaf>
+          </m3-2-s-2-5-process-validation-and-or-evaluation>
+          <m3-2-s-2-6-manufacturing-process-development>
+            <leaf ID="ID00000323" application-version="PDF 1.4" checksum="5a0bab79341a021baacd0751e9d6afbf" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s2-manuf/manuf-process-development.pdf">
+              <title>manuf-process-development-1</title>
+            </leaf>
+          </m3-2-s-2-6-manufacturing-process-development>
+        </m3-2-s-2-manufacture>
+        <m3-2-s-3-characterisation>
+          <m3-2-s-3-1-elucidation-of-structure-and-other-characteristics>
+            <leaf ID="ID00000326" application-version="PDF 1.4" checksum="9c90a7cf409185cd0e04d7a446f46d26" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s3-charac/elucidation-of-structure.pdf">
+              <title>32S31_elucidation-of-structure</title>
+            </leaf>
+          </m3-2-s-3-1-elucidation-of-structure-and-other-characteristics>
+          <m3-2-s-3-2-impurities>
+            <leaf ID="ID00000327" application-version="PDF 1.4" checksum="994443ea12b37303016b465eace37559" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s3-charac/impurities.pdf">
+              <title>32S32_impurities</title>
+            </leaf>
+          </m3-2-s-3-2-impurities>
+        </m3-2-s-3-characterisation>
+        <m3-2-s-4-control-of-drug-substance>
+          <m3-2-s-4-1-specification>
+            <leaf ID="ID00000328" application-version="PDF 1.4" checksum="3c26f74516e23f9043230fb41431f958" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s4-contr-drug-sub/32s41-spec/specification.pdf">
+              <title>32S41_specification</title>
+            </leaf>
+          </m3-2-s-4-1-specification>
+          <m3-2-s-4-2-analytical-procedures>
+            <leaf ID="ID00000329" application-version="PDF 1.4" checksum="289ccbacdd4546ea9607b18816eb1105" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s4-contr-drug-sub/32s42-analyt-proc/32s42-analytical-procedure-assay.pdf">
+              <title>32S42_analytical-procedure-assay</title>
+            </leaf>
+          </m3-2-s-4-2-analytical-procedures>
+          <m3-2-s-4-3-validation-of-analytical-procedures>
+            <leaf ID="ID00000330" application-version="PDF 1.4" checksum="5386f07bd869727245eeb69a80afb407" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s4-contr-drug-sub/32s43-val-analyt-proc/32s43-validation-analyt-procedure-assay.pdf">
+              <title>32S43_validation-analyt-procedure-assay</title>
+            </leaf>
+          </m3-2-s-4-3-validation-of-analytical-procedures>
+          <m3-2-s-4-4-batch-analyses>
+            <leaf ID="ID00000331" application-version="PDF 1.4" checksum="f8ab31db985b3c919c0cbc3742bb661b" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s4-contr-drug-sub/32s44-batch-analys/batch-analyses.pdf">
+              <title>32S44_batch-analyses</title>
+            </leaf>
+          </m3-2-s-4-4-batch-analyses>
+          <m3-2-s-4-5-justification-of-specification>
+            <leaf ID="ID00000332" application-version="PDF 1.4" checksum="ce3cf7f18094bdbb4ec3cdd2251ca22e" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s4-contr-drug-sub/32s45-justif-spec/justification-of-specification.pdf">
+              <title>32S45_justification-of-specification</title>
+            </leaf>
+          </m3-2-s-4-5-justification-of-specification>
+        </m3-2-s-4-control-of-drug-substance>
+        <m3-2-s-5-reference-standards-or-materials>
+          <leaf ID="ID00000333" application-version="PDF 1.4" checksum="2de8c64988443d3d02ca3fe993d46da7" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s5-ref-stand/reference-standards.pdf">
+            <title>reference-standard-other</title>
+          </leaf>
+        </m3-2-s-5-reference-standards-or-materials>
+        <m3-2-s-6-container-closure-system>
+          <leaf ID="ID00000334" application-version="PDF 1.4" checksum="ae55bc77eb399d46becae3acd8252ccc" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s6-cont-closure-sys/container-closure-system.pdf">
+            <title>container-closure-system</title>
+          </leaf>
+        </m3-2-s-6-container-closure-system>
+        <m3-2-s-7-stability>
+          <m3-2-s-7-1-stability-summary-and-conclusions>
+            <leaf ID="ID00000335" application-version="PDF 1.4" checksum="f688e77a4c58bd3c24c147daedb7e79d" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s7-stab/stability-summary.pdf">
+              <title>32S71_stability-summary</title>
+            </leaf>
+          </m3-2-s-7-1-stability-summary-and-conclusions>
+          <m3-2-s-7-2-post-approval-stability-protocol-and-stability-commitment>
+            <leaf ID="ID00000336" application-version="PDF 1.4" checksum="e5e717c85bc5a26dd8fd7d95e00ebaba" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s7-stab/postapproval-stability.pdf">
+              <title>32S72_postapproval-stability</title>
+            </leaf>
+          </m3-2-s-7-2-post-approval-stability-protocol-and-stability-commitment>
+          <m3-2-s-7-3-stability-data>
+            <leaf ID="ID00000337" application-version="PDF 1.4" checksum="f8afef266dda512c52678baa5d1d9a76" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/extedofil-apiag/32s7-stab/stability-data.pdf">
+              <title>32S73_stability-data</title>
+            </leaf>
+          </m3-2-s-7-3-stability-data>
+        </m3-2-s-7-stability>
+      </m3-2-s-drug-substance>
+      <m3-2-p-drug-product dosageform="50 mg Tablets" manufacturer="EXTEDO Pharma" product-name="EXTEDORIN" xml:lang="en">
+        <m3-2-p-1-description-and-composition-of-the-drug-product>
+          <leaf ID="ID00000338" application-version="PDF 1.6" checksum="a7d8106f92d31a53d30c441c58ea8b91" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p1-desc-comp/description-and-composition.pdf">
+            <title>description-and-composition</title>
+          </leaf>
+        </m3-2-p-1-description-and-composition-of-the-drug-product>
+        <m3-2-p-2-pharmaceutical-development>
+          <leaf ID="ID00001628" application-version="PDF 1.4" checksum="3c3b75b2a43113cc566b84c158a976a9" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p2-pharm-dev/pharmaceutical-development.pdf">
+            <title>pharmaceutical-development</title>
+          </leaf>
+        </m3-2-p-2-pharmaceutical-development>
+        <m3-2-p-3-manufacture>
+          <m3-2-p-3-1-manufacturers>
+            <leaf ID="ID00001631" application-version="PDF 1.6" checksum="f19c4d6efb096a1d7190aa3c4c780e1e" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p3-manuf/manufacturers.pdf">
+              <title>manufacturer</title>
+            </leaf>
+          </m3-2-p-3-1-manufacturers>
+          <m3-2-p-3-2-batch-formula>
+            <leaf ID="ID00001633" application-version="PDF 1.4" checksum="6275619f4a5a0c7e6476af10c8a55052" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p3-manuf/batch-formula-50mg.pdf">
+              <title>batch-formula-50mg</title>
+            </leaf>
+          </m3-2-p-3-2-batch-formula>
+          <m3-2-p-3-4-controls-of-critical-steps-and-intermediates>
+            <leaf ID="ID00001636" application-version="PDF 1.4" checksum="1f2a16a67ca10fe59486e27b3db243b3" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p3-manuf/control-critical-steps-50mg.pdf">
+              <title>control-critical-steps-50mg</title>
+            </leaf>
+          </m3-2-p-3-4-controls-of-critical-steps-and-intermediates>
+        </m3-2-p-3-manufacture>
+        <m3-2-p-4-control-of-excipients excipient="magnesium-stearate" xml:lang="en">
+          <m3-2-p-4-1-specifications>
+            <leaf ID="ID00001647" application-version="PDF 1.5" checksum="224c38947b2b37495f83821f902b2e40" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/magnesiumstearate/specifications.pdf">
+              <title>specifications</title>
+            </leaf>
+          </m3-2-p-4-1-specifications>
+          <m3-2-p-4-2-analytical-procedures>
+            <leaf ID="ID00001649" application-version="PDF 1.5" checksum="e4907c5362bc8b68fda0d647b320994c" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/magnesiumstearate/analytical-procedures.pdf">
+              <title>analytical-procedures</title>
+            </leaf>
+          </m3-2-p-4-2-analytical-procedures>
+          <m3-2-p-4-3-validation-of-analytical-procedures>
+            <leaf ID="ID00001651" application-version="PDF 1.5" checksum="4e3894f6b7f24367f84012a512cf69b2" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/magnesiumstearate/validation-analyt-procedures.pdf">
+              <title>validation-analyt-procedures</title>
+            </leaf>
+          </m3-2-p-4-3-validation-of-analytical-procedures>
+          <m3-2-p-4-4-justification-of-specifications>
+            <leaf ID="ID00001653" application-version="PDF 1.5" checksum="8134e572091fdfb8b1e123033c99e6be" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/magnesiumstearate/justification-of-specifications.pdf">
+              <title>justification-of-specifications</title>
+            </leaf>
+          </m3-2-p-4-4-justification-of-specifications>
+          <m3-2-p-4-5-excipients-of-human-or-animal-origin>
+            <leaf ID="ID00001655" application-version="PDF 1.5" checksum="8bb20340db727d6595c60f7e7d71a199" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/excipients-human-animal.pdf">
+              <title>excipients-human-animal</title>
+            </leaf>
+          </m3-2-p-4-5-excipients-of-human-or-animal-origin>
+          <m3-2-p-4-6-novel-excipients>
+            <leaf ID="ID00001657" application-version="PDF 1.5" checksum="2202709e7474b800cc3b9974fa59cf27" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/novel-excipients.pdf">
+              <title>novel-excipients</title>
+            </leaf>
+          </m3-2-p-4-6-novel-excipients>
+        </m3-2-p-4-control-of-excipients>
+        <m3-2-p-4-control-of-excipients excipient="crosscarmellose-sodium" xml:lang="en">
+          <m3-2-p-4-1-specifications>
+            <leaf ID="ID00001660" application-version="PDF 1.5" checksum="f78a17d4b23f7b8e13e65750bcad0b35" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/crosscarmellosesodium/specifications.pdf">
+              <title>specifications</title>
+            </leaf>
+          </m3-2-p-4-1-specifications>
+          <m3-2-p-4-2-analytical-procedures>
+            <leaf ID="ID00001662" application-version="PDF 1.4" checksum="a79d09b59ae2602b8f63763a61091615" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/crosscarmellosesodium/analytical-procedures.pdf">
+              <title>analytical-procedures</title>
+            </leaf>
+          </m3-2-p-4-2-analytical-procedures>
+          <m3-2-p-4-3-validation-of-analytical-procedures>
+            <leaf ID="ID00001664" application-version="PDF 1.5" checksum="66aa4b474c8f34e00fd66549faeb825c" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/crosscarmellosesodium/validation-analyt-procedures.pdf">
+              <title>validation-analyt-procedures</title>
+            </leaf>
+          </m3-2-p-4-3-validation-of-analytical-procedures>
+          <m3-2-p-4-4-justification-of-specifications>
+            <leaf ID="ID00001666" application-version="PDF 1.5" checksum="03c9839ceaf19cb4cad5630e14f99787" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/crosscarmellosesodium/justification-of-specifications.pdf">
+              <title>justification-of-specifications</title>
+            </leaf>
+          </m3-2-p-4-4-justification-of-specifications>
+          <m3-2-p-4-5-excipients-of-human-or-animal-origin>
+            <leaf ID="ID00001668" checksum="8bb20340db727d6595c60f7e7d71a199" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/excipients-human-animal.pdf">
+              <title>excipients-human-animal</title>
+            </leaf>
+          </m3-2-p-4-5-excipients-of-human-or-animal-origin>
+          <m3-2-p-4-6-novel-excipients>
+            <leaf ID="ID00001670" checksum="2202709e7474b800cc3b9974fa59cf27" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p4-contr-excip/novel-excipients.pdf">
+              <title>novel-excipients</title>
+            </leaf>
+          </m3-2-p-4-6-novel-excipients>
+        </m3-2-p-4-control-of-excipients>
+        <m3-2-p-5-control-of-drug-product>
+          <m3-2-p-5-1-specifications>
+            <leaf ID="ID00001673" application-version="PDF 1.4" checksum="ac1497fe554f047ebdfc867709530599" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p5-contr-drug-prod/32p51-spec/specifications.pdf">
+              <title>specifications</title>
+            </leaf>
+          </m3-2-p-5-1-specifications>
+          <m3-2-p-5-2-analytical-procedures>
+            <leaf ID="ID00001675" application-version="PDF 1.4" checksum="c06a7a9d159394b7a6b8835a9a6ddf0b" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p5-contr-drug-prod/32p52-analyt-proc/analytical-procedure-appearance.pdf">
+              <title>analytical-procedure-appearance</title>
+            </leaf>
+          </m3-2-p-5-2-analytical-procedures>
+        </m3-2-p-5-control-of-drug-product>
+        <m3-2-p-6-reference-standards-or-materials>
+          <leaf ID="ID00001681" application-version="PDF 1.4" checksum="bc734b5fd3b70187cb9252b147092e48" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p6-ref-stand/reference-standards-primary.pdf">
+            <title>reference-standards-primary</title>
+          </leaf>
+        </m3-2-p-6-reference-standards-or-materials>
+        <m3-2-p-7-container-closure-system>
+          <leaf ID="ID00001683" application-version="PDF 1.4" checksum="f802828164b68aa3e71f1c775eddc930" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p7-cont-closure-sys/container-closure-system.pdf">
+            <title>container-closure-system</title>
+          </leaf>
+        </m3-2-p-7-container-closure-system>
+        <m3-2-p-8-stability>
+          <m3-2-p-8-2-post-approval-stability-protocol-and-stability-commitment>
+            <leaf ID="ID00001687" application-version="PDF 1.4" checksum="824d3fdd726c14bb9a571a99a1d38f1b" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/extedorin-50mgtablets/32p8-stab/postapproval-stability.pdf">
+              <title>postapproval-stability</title>
+            </leaf>
+          </m3-2-p-8-2-post-approval-stability-protocol-and-stability-commitment>
+        </m3-2-p-8-stability>
+      </m3-2-p-drug-product>
+      <m3-2-r-regional-information>
+        <leaf ID="ID00001694" application-version="PDF 1.4" checksum="a1603d13f5f1eff9a1dfd2de282a365a" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32r-reg-info/origin.pdf">
+          <title>origin</title>
+        </leaf>
+      </m3-2-r-regional-information>
+    </m3-2-body-of-data>
+    <m3-3-literature-references>
+      <leaf ID="ID00001696" application-version="PDF 1.6" checksum="7d7c6fca2aea84218c96a2da342de41f" checksum-type="MD5" operation="new" xlink:href="m3/33-lit-ref/literature-references-toc.pdf">
+        <title>Literature References TOC</title>
+      </leaf>
+      <leaf ID="ID00001697" application-version="PDF 1.4" checksum="f0d6125c78d00190018bf42ddc5ab6ad" checksum-type="MD5" operation="new" xlink:href="m3/33-lit-ref/jones-2003.pdf">
+        <title>jones-2003</title>
+      </leaf>
+      <leaf ID="ID00001698" application-version="PDF 1.4" checksum="267e5bb6aa3a30ec952a967c52e3ebd0" checksum-type="MD5" operation="new" xlink:href="m3/33-lit-ref/jones-and-smith-1998.pdf">
+        <title>jones-and-smith-1998</title>
+      </leaf>
+      <leaf ID="ID00001699" application-version="PDF 1.4" checksum="cd4393b6173da75f4a8de1b8adbe26d6" checksum-type="MD5" operation="new" xlink:href="m3/33-lit-ref/mullins-fox-and-jones-2004.pdf">
+        <title>mullins-fox-and-jones-2004</title>
+      </leaf>
+      <leaf ID="ID00001700" application-version="PDF 1.4" checksum="e26d7177a0507e8ab889208e8b1d1011" checksum-type="MD5" operation="new" xlink:href="m3/33-lit-ref/williams-et-al-2000.pdf">
+        <title>williams-et-al-2000</title>
+      </leaf>
+    </m3-3-literature-references>
+  </m3-quality>
+
+  <m5-clinical-study-reports>
+    <m5-3-clinical-study-reports>
+      <m5-3-1-reports-of-biopharmaceutic-studies>
+        <m5-3-1-1-bioavailability-study-reports>
+          <node-extension ID="ID00000688">
+            <title>study 100</title>
+            <leaf ID="ID00001172" application-version="PDF 1.5" checksum="ee08754a1e3f04ed945f2e8b869e94e2" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-toc.pdf">
+              <title>eur-gbr-TOC</title>
+            </leaf>
+            <leaf ID="ID00001166" application-version="PDF 1.6" checksum="212860d0ccd5abf30c082b0e053409f8" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part1.pdf">
+              <title>eur-gbr-Part1</title>
+            </leaf>
+            <leaf ID="ID00001167" application-version="PDF 1.6" checksum="9d1eb3450ccf15915f292a864be3c753" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part2.pdf">
+              <title>eur-gbr-Part2</title>
+            </leaf>
+            <leaf ID="ID00001168" application-version="PDF 1.4" checksum="3ef96aba5be3b6ec5aa6e6621ec0ddee" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part3.pdf">
+              <title>eur-gbr-Part3</title>
+            </leaf>
+            <leaf ID="ID00001169" application-version="PDF 1.4" checksum="3f77b945aebee521698640b29b2b9f80" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part4.pdf">
+              <title>eur-gbr-Part4</title>
+            </leaf>
+            <leaf ID="ID00001170" application-version="PDF 1.6" checksum="13892f87f1fe94e7fe1b6400f8ee136c" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part5.pdf">
+              <title>eur-gbr-Part5</title>
+            </leaf>
+            <leaf ID="ID00001171" application-version="PDF 1.4" checksum="a5960cc83679adc26fa674412cc352e0" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5311-ba-stud-rep/study100/eur-gbr-part6.pdf">
+              <title>eur-gbr-Part6</title>
+            </leaf>
+          </node-extension>
+        </m5-3-1-1-bioavailability-study-reports>
+        <m5-3-1-4-reports-of-bioanalytical-and-analytical-methods-for-human-studies>
+          <node-extension ID="ID00000699">
+            <title>Study A98209: Validation of a Method for the Determination of EPL 423,998 and Metabolite EPL 422,512 in Buffer Using High-Performance Liquid Chromatography with Ultraviolet Absorbance Detection</title>
+            <leaf ID="ID00001758" application-version="PDF 1.4" checksum="ff425419d39a37c42d4600d9e4b0cb1d" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5314-bioanalyt-analyt-met/a98209/a98209.pdf">
+              <title>a98209</title>
+            </leaf>
+          </node-extension>
+          <node-extension ID="ID00000701">
+            <title>Study A200161: Validation of a High Performance Liquid Chromatographic Mass Spectrometric Method for the Determination of EPL 423,998 and EPL 422,512 in Human Plasma (Heparin)</title>
+            <leaf ID="ID00001760" application-version="PDF 1.4" checksum="a3dc9ebd704b3a7d138044e31ac6bf29" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/531-rep-biopharm-stud/5314-bioanalyt-analyt-met/a200161/a200161.pdf">
+              <title>a200161</title>
+            </leaf>
+          </node-extension>
+        </m5-3-1-4-reports-of-bioanalytical-and-analytical-methods-for-human-studies>
+      </m5-3-1-reports-of-biopharmaceutic-studies>
+    </m5-3-clinical-study-reports>
+    <m5-4-literature-references>
+      <leaf ID="ID00001782" application-version="PDF 1.4" checksum="f1b497b62f3fceacb7b8f32983f5b5ba" checksum-type="MD5" operation="new" xlink:href="m5/54-lit-ref/kellogg-2003.pdf">
+        <title>kellogg-2003</title>
+      </leaf>
+      <leaf ID="ID00001783" application-version="PDF 1.4" checksum="fa9d68ddb8c43d8146987328fe06487c" checksum-type="MD5" operation="new" xlink:href="m5/54-lit-ref/williams-2000.pdf">
+        <title>williams-2000</title>
+      </leaf>
+    </m5-4-literature-references>
+  </m5-clinical-study-reports>
+
+</ectd:ectd>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00000345" checksum="b36afaec4b8d028e84606d5f80cd0ecc" checksum-type="MD5" operation="new" xlink:href="m1/eu/eu-regional.xml">
+      <title>eu-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+</ectd:ectd>

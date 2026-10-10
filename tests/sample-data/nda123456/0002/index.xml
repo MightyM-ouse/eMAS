@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00002092" checksum="41fd40daa2c77ce920b73302ed546bfe" checksum-type="MD5" operation="new" xlink:href="m1/us/us-regional.xml">
+      <title>us-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m4-nonclinical-study-reports>
+    <m4-2-study-reports>
+      <m4-2-3-toxicology>
+        <m4-2-3-1-single-dose-toxicity>
+          <leaf ID="ID00002293" checksum="782486e5152b68d024fd3ea27145b051" checksum-type="MD5" modified-file="../0001/index.xml#ID00002293" operation="append" version="STF Version 2.2" xlink:href="m4/42-stud-rep/423-tox/4231-single-dose-tox/100/stf-100.xml" xlink:type="simple">
+            <title>Study No. 100 STF</title>
+          </leaf>
+          <leaf ID="ID00002437" application-version="PDF 1.6" checksum="b93562ebce89be7fc5f18d5f2287dcb6" checksum-type="MD5" modified-file="../0001/index.xml#ID00002319" operation="replace" xlink:href="m4/datasets/100/analysis/legacy/programs/replace.pdf" xlink:type="simple">
+            <title>replace</title>
+          </leaf>
+        </m4-2-3-1-single-dose-toxicity>
+      </m4-2-3-toxicology>
+    </m4-2-study-reports>
+  </m4-nonclinical-study-reports>
+
+</ectd:ectd>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m2-common-technical-document-summaries>
+    <m2-2-introduction>
+      <leaf ID="ID00006978" application-version="PDF 1.6" checksum="68d593e00b31a9858d0ae2de2f94cd2e" checksum-type="MD5" operation="new" xlink:href="m2/22-intro/introduction.pdf">
+        <title>introduction</title>
+      </leaf>
+    </m2-2-introduction>
+    <m2-5-clinical-overview>
+      <leaf ID="ID00006987" checksum="2a4446a7517fcefeab160266b2e8fc8a" checksum-type="MD5" operation="new" xlink:href="m2/25-clin-over/clinical-overview.docx">
+        <title>clinical-overview</title>
+      </leaf>
+      <leaf ID="ID00006988" application-version="PDF 1.6" checksum="a83394e7d021c64a54124a1f464ef747" checksum-type="MD5" operation="new" xlink:href="m2/25-clin-over/clinical-overview.pdf">
+        <title>clinical-overview</title>
+      </leaf>
+    </m2-5-clinical-overview>
+  </m2-common-technical-document-summaries>
+
+  <m4-nonclinical-study-reports>
+    <m4-3-literature-references>
+      <leaf ID="ID00007139" application-version="PDF 1.6" checksum="e35989793fc6b02b0b3b79f6d4ea637e" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-2003.pdf">
+        <title>jones-2003</title>
+      </leaf>
+      <leaf ID="ID00007140" application-version="PDF 1.6" checksum="575316327f8b4fa3b0778ee3859d2ea7" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-and-smith-1998.pdf">
+        <title>jones-and-smith-1998</title>
+      </leaf>
+      <leaf ID="ID00007141" application-version="PDF 1.6" checksum="b582a9a79896b79c6654432f39945d49" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/mullins-fox-and-jones-2004.pdf">
+        <title>mullins-fox-and-jones-2004</title>
+      </leaf>
+      <leaf ID="ID00007142" application-version="PDF 1.6" checksum="911529076243ce3b352aa8e3db52bc33" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/williams-et-al-2000.pdf">
+        <title>williams-et-al-2000</title>
+      </leaf>
+      <leaf ID="ID00007138" application-version="PDF 1.6" checksum="1cbfcb81e8f67d5cde90541f672fc525" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/literature-references.pdf">
+        <title>literature-references</title>
+      </leaf>
+    </m4-3-literature-references>
+  </m4-nonclinical-study-reports>
+
+</ectd:ectd>

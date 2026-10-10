@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m2-common-technical-document-summaries>
+    <m2-2-introduction>
+      <leaf ID="ID00005805" application-version="PDF 1.6" checksum="4cf04888b5016d79ca661bd5c9a1bb60" checksum-type="MD5" operation="new" xlink:href="m2/22-intro/introduction.pdf">
+        <title>introduction</title>
+      </leaf>
+    </m2-2-introduction>
+    <m2-5-clinical-overview>
+      <leaf ID="ID00005807" application-version="PDF 1.7" checksum="b9a9082fcaf7441fca9e34516626452b" checksum-type="MD5" operation="new" xlink:href="m2/25-clin-over/clinical-overview-1.pdf">
+        <title>clinical-overview</title>
+      </leaf>
+      <leaf ID="ID00005806" application-version="PDF 1.6" checksum="3f164d0d1ddf0a35a9a0289687b44068" checksum-type="MD5" operation="new" xlink:href="m2/25-clin-over/clinical-overview-2.pdf">
+        <title>clinical-overview</title>
+      </leaf>
+    </m2-5-clinical-overview>
+  </m2-common-technical-document-summaries>
+
+</ectd:ectd>

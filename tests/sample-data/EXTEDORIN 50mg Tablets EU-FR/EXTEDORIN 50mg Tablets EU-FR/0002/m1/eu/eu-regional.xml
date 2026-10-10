@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE eu:eu-backbone SYSTEM "../../util/dtd/eu-regional.dtd">
+<?xml-stylesheet type="text/xsl" href="../../util/style/eu-regional.xsl"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="3.0.1" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <eu-envelope>
+    <envelope country="fr">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission type="maa">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="initial"/>
+      <applicant>EXTEDO S.A.R.L</applicant>
+      <agency code="FR-ANSM"/>
+      <procedure type="mutual-recognition"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0002</sequence>
+      <related-sequence>0002</related-sequence>
+      <submission-description>MRP Upgrade Sequence</submission-description>
+    </envelope>
+    <envelope country="nl">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission type="maa">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="initial"/>
+      <applicant>EXTEDO Netherlands N.V.</applicant>
+      <agency code="NL-MEB"/>
+      <procedure type="mutual-recognition"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0002</sequence>
+      <related-sequence>0002</related-sequence>
+      <submission-description>MRP Upgrade Sequence</submission-description>
+    </envelope>
+    <envelope country="de">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission type="maa">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="initial"/>
+      <applicant>EXTEDO Pharma GmbH</applicant>
+      <agency code="DE-BFARM"/>
+      <procedure type="mutual-recognition"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0002</sequence>
+      <related-sequence>0002</related-sequence>
+      <submission-description>MRP Upgrade Sequence</submission-description>
+    </envelope>
+  </eu-envelope>
+
+  <m1-eu>
+    <m1-0-cover>
+      <specific country="common">
+        <leaf ID="ID00000959" application-version="PDF 1.5" checksum="a95d5163484f935ab1f5aad175b06a08" checksum-type="MD5" operation="new" xlink:href="10-cover/common/common-tracking.pdf">
+          <title>tracking table - MRP - 0002</title>
+        </leaf>
+        <leaf ID="ID00000958" application-version="PDF 1.5" checksum="dd0de869b6c726f493aafe93b003b78b" checksum-type="MD5" operation="new" xlink:href="10-cover/common/common-cover.pdf">
+          <title>Cover Letter 0002 - MRP</title>
+        </leaf>
+      </specific>
+    </m1-0-cover>
+    <m1-3-pi>
+      <m1-3-1-spc-label-pl>
+        <pi-doc country="nl" type="spc" xml:lang="nl">
+          <leaf ID="ID00000967" application-version="PDF 1.4" checksum="4b5c7de1b5fdc564ddae8715893129c9" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/nl/nl/nl-spc.pdf">
+            <title>SmPC 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="nl" type="impack" xml:lang="nl">
+          <leaf ID="ID00000966" application-version="PDF 1.4" checksum="358488660c933e9d5f573203e079e169" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/nl/nl/nl-impack.pdf">
+            <title>Immediate Packaging 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="de" type="spc" xml:lang="de">
+          <leaf ID="ID00000962" application-version="PDF 1.4" checksum="ebcd942569707817d5415ea95177f26d" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/de/de/de-spc.pdf">
+            <title>SmPC 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="de" type="impack" xml:lang="de">
+          <leaf ID="ID00000963" application-version="PDF 1.4" checksum="6bc7486c8829c233c088db88225817b2" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/de/de/de-impack.pdf">
+            <title>Immediate Packaging 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+      </m1-3-1-spc-label-pl>
+      <m1-3-2-mockup>
+        <specific country="common">
+          <leaf ID="ID00000968" checksum="a12535985b0586a7c2eaec433fd99785" checksum-type="MD5" operation="new" xlink:href="13-pi/132-mockup/common/common-mockup.gif">
+            <title>mockup_en</title>
+          </leaf>
+        </specific>
+      </m1-3-2-mockup>
+    </m1-3-pi>
+  </m1-eu>
+
+</eu:eu-backbone>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE eu:eu-backbone SYSTEM "../../util/dtd/eu-regional.dtd">
+<?xml-stylesheet type="text/xsl" href="../../util/style/eu-regional.xsl"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="2.0" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <eu-envelope>
+    <envelope country="fr">
+      <submission type="initial-maa">
+        <tracking>
+          <number>FR/H/7323/001</number>
+        </tracking>
+      </submission>
+      <applicant>EXTEDO S.A.R.L</applicant>
+      <agency code="FR-ANSM"/>
+      <procedure type="national"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0000</sequence>
+      <submission-description>Initial MAA</submission-description>
+    </envelope>
+  </eu-envelope>
+
+  <m1-eu>
+    <m1-0-cover>
+      <specific country="fr">
+        <leaf ID="ID00001437" application-version="PDF 1.5" checksum="bdb98e6a5ab5b9c7028bc4f5f49e729d" checksum-type="MD5" operation="new" xlink:href="10-cover/fr/fr-cover.pdf">
+          <title>Cover Letter</title>
+        </leaf>
+      </specific>
+    </m1-0-cover>
+    <m1-2-form>
+      <specific country="fr">
+        <leaf ID="ID00001441" application-version="PDF 1.9.8" checksum="e665aa521e27d42cb28faf5e499c3b8e" checksum-type="MD5" operation="new" xlink:href="12-form/fr/fr-form.pdf">
+          <title>FR_maa_human_v1.23.1.2</title>
+        </leaf>
+      </specific>
+    </m1-2-form>
+    <m1-3-pi>
+      <m1-3-1-spc-label-pl>
+        <pi-doc country="fr" type="combined" xml:lang="fr">
+          <leaf ID="ID00001446" application-version="PDF 1.6" checksum="404d0c383e397313bbed7578cab94a4f" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/fr/fr/fr-combined.pdf">
+            <title>combined_FR</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="fr" type="impack" xml:lang="fr">
+          <leaf ID="ID00001160" application-version="PDF 1.4" checksum="fd28b57ae8275064814fd647637cd26b" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/fr/fr/fr-impack.pdf">
+            <title>Immediate Packaging 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="fr" type="pl" xml:lang="fr">
+          <leaf ID="ID00001162" application-version="PDF 1.4" checksum="f32f049cdaf8fda6844a993a14a02113" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/fr/fr/fr-pl.pdf">
+            <title>Package Leaflet 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+        <pi-doc country="fr" type="spc" xml:lang="fr">
+          <leaf ID="ID00001164" application-version="PDF 1.4" checksum="189880f4f7baf2ee8775c4ea01705fd9" checksum-type="MD5" operation="new" xlink:href="13-pi/131-spclabelpl/fr/fr/fr-spc.pdf">
+            <title>SmPC 50mg Tablets</title>
+          </leaf>
+        </pi-doc>
+      </m1-3-1-spc-label-pl>
+      <m1-3-2-mockup>
+        <specific country="fr">
+          <leaf ID="ID00001165" checksum="f6074562f5e8bb7e5249b9a8582ab0e1" checksum-type="MD5" operation="new" xlink:href="13-pi/132-mockup/fr/fr-mockup.gif">
+            <title>mockup_fr</title>
+          </leaf>
+        </specific>
+      </m1-3-2-mockup>
+    </m1-3-pi>
+  </m1-eu>
+
+</eu:eu-backbone>

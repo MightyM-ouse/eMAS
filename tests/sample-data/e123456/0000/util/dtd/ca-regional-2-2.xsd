@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="hcsc_ectd" xmlns:xlink="http://www.w3.org/1999/xlink" targetNamespace="hcsc_ectd" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlink.xsd"/>
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+	<!--
+================================
+Note to Editors:
+Allowable business values may be changed by updating the "enumeration" lines 
+below using only a text editor. Use the existing lines as an exact model. Do 
+not modify any other content herein without advanced XML knowledge.
+
+Related schemas xlink.xsd and xml.xsd MUST accompany (be accessible to) this 
+schema. Refer to the import namespace declarations above.
+
+Any set of changes should be reflected in the attribute "schema-version" as 
+well as the change history below. 
+
+See document "HC Module1 v2 Requirements Analysis" for background and rules.
+-->
+	<!-- 
+CHANGE HISTORY:
+2012-05-21  v2.2    Updated from HC review (MU)
+2012-01-16	v2.1   	Synchronized with ICH: xlink attributes for leaf  LLS (JW)
+2012-01-15	v2.1 Draft	Cleaned data-types, aux. schema refs per JW	LLS (CM)
+2012-01-10	v2.1 Draft	Updated re 1.7.1 and reg-trans-info		LLS (CM)
+2011-12-21	v2.1 Draft	Updated after internal review			LLS (CM)
+2011-12-09	v2.1 Draft	Updated re element names & sequence, etc	LLS (CM)
+2011-11-15	v2.0 Draft	As delivered to HC for final review 		LLS (CM)
+2011-11-14	v2.0 Draft	Updated from HC review re Introduction		LLS (CM)
+2011-11-11	v2.0 Draft	Updated from HC review and discussions		LLS (CM)
+2011-10-20	v2.0 Draft	Initial version of schema from sample XML	LLS (JW)
+
+================================
+-->
+	<!-- 
+################################
+ Health Canada root definition  
+################################
+-->
+	<xs:element name="hcsc_ectd">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ectd-regulatory-transaction-information"/>
+				<xs:element ref="m1-administrative-and-product-information"/>
+			</xs:sequence>
+			<xs:attribute name="schema-version" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:decimal">
+						<xs:enumeration value="2.2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<!--
+################################
+Health Canada specific data types 
+################################
+-->
+	<!--
+================================
+Probable values to change begin here
+================================
+-->
+	<xs:simpleType name="ca-dossier-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Biologic Dossier"/>
+			<xs:enumeration value="Pharmaceutical Dossier"/>
+			<xs:enumeration value="Drug Master File Dossier"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ca-regulatory-activity-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NDS"/>
+			<xs:enumeration value="SNDS"/>
+			<xs:enumeration value="SNDS-C"/>
+			<xs:enumeration value="ANDS"/>
+			<xs:enumeration value="SANDS"/>
+			<xs:enumeration value="NC"/>
+			<xs:enumeration value="CTA"/>
+			<xs:enumeration value="CTA-A"/>
+			<xs:enumeration value="DINA"/>
+			<xs:enumeration value="DINB"/>
+			<xs:enumeration value="PDC"/>
+			<xs:enumeration value="PDC-B"/>
+			<xs:enumeration value="PSUR-C"/>
+			<xs:enumeration value="PSUR-PV"/>
+			<xs:enumeration value="UD-PV"/>
+			<xs:enumeration value="RMP-PV"/>
+			<xs:enumeration value="Level III"/>
+			<xs:enumeration value="YBPR"/>
+			<xs:enumeration value="MPNDS"/>
+			<xs:enumeration value="MPSNDS"/>
+			<xs:enumeration value="MPNC"/>
+			<xs:enumeration value="MPDIN"/>
+			<xs:enumeration value="PRECTA"/>
+			<xs:enumeration value="PRNDS"/>
+			<xs:enumeration value="PRSNDS"/>
+			<xs:enumeration value="PAND"/>
+			<xs:enumeration value="DMF type I"/>
+			<xs:enumeration value="DMF type II"/>
+			<xs:enumeration value="DMF type III"/>
+			<xs:enumeration value="DMF type IV"/>
+			<xs:enumeration value="EU NDS"/>
+			<xs:enumeration value="EU SNDS"/>
+			<xs:enumeration value="UDRA"/>
+			<xs:enumeration value="DSUR" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ca-regulatory-activity-lead">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Pharmaceutical"/>
+			<xs:enumeration value="Biological"/>
+			<xs:enumeration value="Post-Market Pharmacovigilance"/>
+			<xs:enumeration value="Drug Master File"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--
+================================
+Probable values to change end here
+================================
+-->
+	<xs:simpleType name="ca-dossier-id">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-z][0-9]{6}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ca-sequence-no">
+		<xs:restriction base="xs:integer">
+			<xs:pattern value="[0-9]{4}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ca-leaf-ext">
+		<xs:sequence minOccurs="0" maxOccurs="unbounded">
+			<xs:choice>
+				<xs:element ref="leaf"/>
+				<xs:element ref="node-extension"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<!--
+################################
+ ICH specific schema data types 
+################################
+-->
+	<xs:simpleType name="ich-checksum-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="MD5"/>
+			<xs:enumeration value="md5"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ich-leaf-operations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="new"/>
+			<xs:enumeration value="append"/>
+			<xs:enumeration value="replace"/>
+			<xs:enumeration value="delete"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--
+================================
+Leaf content per ICH                                              
+================================
+-->
+	<xs:element name="leaf">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="title"/>
+				<xs:element ref="link-text" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="ID" type="xs:ID" use="required"/>
+			<xs:attribute name="operation" type="ich-leaf-operations" use="required"/>
+			<xs:attribute ref="xlink:href"/>
+			<xs:attribute name="modified-file" type="xs:string"/>
+			<xs:attribute name="checksum-type" type="ich-checksum-type"/>
+			<xs:attribute name="checksum" type="xs:string"/>
+			<xs:attribute name="application-version" type="xs:string"/>
+			<xs:attribute name="version" type="xs:string"/>
+			<xs:attribute name="keywords" type="xs:string"/>
+			<xs:attribute name="font-library" type="xs:string"/>
+			<xs:attribute ref="xlink:type"/>
+			<xs:attribute ref="xlink:role"/>
+			<xs:attribute ref="xlink:show"/>
+			<xs:attribute ref="xlink:actuate"/>
+			<xs:attribute ref="xml:lang"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="node-extension">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="title"/>
+				<xs:element ref="leaf" maxOccurs="unbounded"/>
+				<xs:element ref="node-extension" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="ID" type="xs:ID"/>
+			<xs:attribute ref="xml:lang"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="title">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="ID" type="xs:ID"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="link-text">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="xref" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="ID" type="xs:ID"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xref">
+		<xs:complexType>
+			<xs:attribute name="ID" type="xs:ID" use="required"/>
+			<xs:attribute ref="xlink:type"/>
+			<xs:attribute ref="xlink:role"/>
+			<xs:attribute ref="xlink:title"/>
+			<xs:attribute ref="xlink:href"/>
+			<xs:attribute ref="xlink:show"/>
+		</xs:complexType>
+	</xs:element>
+	<!--
+################################
+Health Canada introductory content (meta data) structure
+################################
+-->
+	<xs:element name="ectd-regulatory-transaction-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="applicant"/>
+				<xs:element ref="product-name"/>
+				<xs:element ref="dossier-identifier"/>
+				<xs:element ref="dossier-type"/>
+				<xs:element ref="regulatory-activity-type"/>
+				<xs:element ref="regulatory-activity-lead"/>
+				<xs:element ref="sequence-number"/>
+				<xs:element ref="sequence-description"/>
+				<xs:element ref="related-sequence-number" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="applicant" type="xs:string"/>
+	<xs:element name="product-name" type="xs:string"/>
+	<xs:element name="dossier-identifier" type="ca-dossier-id"/>
+	<xs:element name="dossier-type" type="ca-dossier-type"/>
+	<xs:element name="regulatory-activity-type" type="ca-regulatory-activity-type"/>
+	<xs:element name="regulatory-activity-lead" type="ca-regulatory-activity-lead"/>
+	<xs:element name="sequence-number" type="ca-sequence-no"/>
+	<xs:element name="sequence-description" type="xs:string"/>
+	<xs:element name="related-sequence-number" type="ca-sequence-no"/>
+	<!--
+################################
+Health Canada business content structure 
+################################
+-->
+	<xs:element name="m1-administrative-and-product-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-0-correspondence" minOccurs="0"/>
+				<xs:element ref="m1-2-administrative-information" minOccurs="0"/>
+				<xs:element ref="m1-3-product-information" minOccurs="0"/>
+				<xs:element ref="m1-4-health-canada-summaries" minOccurs="0"/>
+				<xs:element ref="m1-5-environmental-assessment-statement" minOccurs="0"/>
+				<xs:element ref="m1-6-regional-clinical-information" minOccurs="0"/>
+				<xs:element ref="m1-7-clinical-trial-information" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-0-correspondence">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-0-1-cover-letter" minOccurs="0"/>
+				<xs:element ref="m1-0-2-life-cycle-management-table" minOccurs="0"/>
+				<xs:element ref="m1-0-3-copy-of-health-canada-issued-correspondence" minOccurs="0"/>
+				<xs:element ref="m1-0-4-health-canada-solicited-information" minOccurs="0"/>
+				<xs:element ref="m1-0-5-meeting-information" minOccurs="0"/>
+				<xs:element ref="m1-0-6-request-for-reconsideration-documentation" minOccurs="0"/>
+				<xs:element ref="m1-0-7-general-note-to-reviewer" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-0-1-cover-letter" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-2-life-cycle-management-table" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-3-copy-of-health-canada-issued-correspondence" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-4-health-canada-solicited-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-5-meeting-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-6-request-for-reconsideration-documentation" type="ca-leaf-ext"/>
+	<xs:element name="m1-0-7-general-note-to-reviewer" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-administrative-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-2-1-application-forms" minOccurs="0"/>
+				<xs:element ref="m1-2-2-fee-forms" minOccurs="0"/>
+				<xs:element ref="m1-2-3-certification-and-attestation-forms" minOccurs="0"/>
+				<xs:element ref="m1-2-4-intellectual-property-information" minOccurs="0"/>
+				<xs:element ref="m1-2-5-compliance-and-site-Information" minOccurs="0"/>
+				<xs:element ref="m1-2-6-authorization-for-sharing-information" minOccurs="0"/>
+				<xs:element ref="m1-2-7-international-information" minOccurs="0"/>
+				<xs:element ref="m1-2-8-post-authorization-information" minOccurs="0"/>
+				<xs:element ref="m1-2-9-other-administrative-information" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-2-1-application-forms" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-2-fee-forms" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-3-certification-and-attestation-forms" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-4-intellectual-property-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-2-4-1-patent-information" minOccurs="0"/>
+				<xs:element ref="m1-2-4-2-data-protection-information" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-2-4-1-patent-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-4-2-data-protection-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-compliance-and-site-Information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-2-5-1-clinical-trial-site-information-form" minOccurs="0"/>
+				<xs:element ref="m1-2-5-2-establishment-licensing" minOccurs="0"/>
+				<xs:element ref="m1-2-5-3-good-clinical-practices" minOccurs="0"/>
+				<xs:element ref="m1-2-5-4-good-laboratory-practices" minOccurs="0"/>
+				<xs:element ref="m1-2-5-5-good-manufacturing-practices" minOccurs="0"/>
+				<xs:element ref="m1-2-5-6-good-pharmacovigilance-practices" minOccurs="0"/>
+				<xs:element ref="m1-2-5-7-other-compliance-and-site-information-documents" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-2-5-1-clinical-trial-site-information-form" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-2-establishment-licensing" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-3-good-clinical-practices" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-4-good-laboratory-practices" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-5-good-manufacturing-practices" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-6-good-pharmacovigilance-practices" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-5-7-other-compliance-and-site-information-documents" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-6-authorization-for-sharing-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-7-international-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-8-post-authorization-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-2-9-other-administrative-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-product-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-3-1-product-monograph" minOccurs="0"/>
+				<xs:element ref="m1-3-2-inner-and-outer-labels" minOccurs="0"/>
+				<xs:element ref="m1-3-3-non-canadian-labelling" minOccurs="0"/>
+				<xs:element ref="m1-3-4-investigators-brochure" minOccurs="0"/>
+				<xs:element ref="m1-3-5-reference-product-labelling" minOccurs="0"/>
+				<xs:element ref="m1-3-6-certified-product-information-document" minOccurs="0"/>
+				<xs:element ref="m1-3-7-look-alike-sound-alike-assessment" minOccurs="0"/>
+				<xs:element ref="m1-3-8-pharmacovigilance-information" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-3-1-product-monograph" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-2-inner-and-outer-labels" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-3-non-canadian-labelling" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-4-investigators-brochure" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-5-reference-product-labelling" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-6-certified-product-information-document" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-7-look-alike-sound-alike-assessment" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-8-pharmacovigilance-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-3-8-1-pharmacovigilance-plan" minOccurs="0"/>
+				<xs:element ref="m1-3-8-2-risk-management-plan" minOccurs="0"/>
+				<xs:element ref="m1-3-8-3-risk-communications" minOccurs="0"/>
+				<xs:element ref="m1-3-8-4-other-pharmacovigilance-information" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-3-8-1-pharmacovigilance-plan" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-8-2-risk-management-plan" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-8-3-risk-communications" type="ca-leaf-ext"/>
+	<xs:element name="m1-3-8-4-other-pharmacovigilance-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-4-health-canada-summaries">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-4-1-pseat-cta" minOccurs="0"/>
+				<xs:element ref="m1-4-2-comprehensive-summary-bioequivalence" minOccurs="0"/>
+				<xs:element ref="m1-4-3-multidisciplinary-tabular-summaries" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-4-1-pseat-cta" type="ca-leaf-ext"/>
+	<xs:element name="m1-4-2-comprehensive-summary-bioequivalence" type="ca-leaf-ext"/>
+	<xs:element name="m1-4-3-multidisciplinary-tabular-summaries" type="ca-leaf-ext"/>
+	<xs:element name="m1-5-environmental-assessment-statement" type="ca-leaf-ext"/>
+	<xs:element name="m1-6-regional-clinical-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-6-1-comparative-bioavailability-information" minOccurs="0"/>
+				<xs:element ref="m1-6-2-company-core-data-sheets" minOccurs="0"/>
+				<xs:element ref="m1-6-3-priority-review-requests" minOccurs="0"/>
+				<xs:element ref="m1-6-4-notice-of-compliance-with-conditions" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-6-1-comparative-bioavailability-information" type="ca-leaf-ext"/>
+	<xs:element name="m1-6-2-company-core-data-sheets" type="ca-leaf-ext"/>
+	<xs:element name="m1-6-3-priority-review-requests" type="ca-leaf-ext"/>
+	<xs:element name="m1-6-4-notice-of-compliance-with-conditions" type="ca-leaf-ext"/>
+	<xs:element name="m1-7-clinical-trial-information">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="m1-7-1-study-protocol" minOccurs="0"/>
+				<xs:element ref="m1-7-2-informed-consent-forms" minOccurs="0"/>
+				<xs:element ref="m1-7-3-canadian-research-ethics-board-refusals" minOccurs="0"/>
+				<xs:element ref="m1-7-4-information-on-prior-related-applications" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="m1-7-1-study-protocol" type="ca-leaf-ext"/>
+	<xs:element name="m1-7-2-informed-consent-forms" type="ca-leaf-ext"/>
+	<xs:element name="m1-7-3-canadian-research-ethics-board-refusals" type="ca-leaf-ext"/>
+	<xs:element name="m1-7-4-information-on-prior-related-applications" type="ca-leaf-ext"/>
+</xs:schema>

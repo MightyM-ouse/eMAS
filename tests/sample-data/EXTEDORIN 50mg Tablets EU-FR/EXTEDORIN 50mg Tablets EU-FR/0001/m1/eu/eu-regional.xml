@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE eu:eu-backbone SYSTEM "../../util/dtd/eu-regional.dtd">
+<?xml-stylesheet type="text/xsl" href="../../util/style/eu-regional.xsl"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="3.0.1" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <eu-envelope>
+    <envelope country="fr">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission type="maa">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="response"/>
+      <applicant>EXTEDO S.A.R.L</applicant>
+      <agency code="FR-ANSM"/>
+      <procedure type="national"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0001</sequence>
+      <related-sequence>0000</related-sequence>
+      <submission-description>Supplemental Information in M2/M3, Upgrade M1</submission-description>
+    </envelope>
+  </eu-envelope>
+
+  <m1-eu>
+    <m1-0-cover>
+      <specific country="fr">
+        <leaf ID="ID00000903" application-version="PDF 1.5" checksum="ecf003078c4897424c391724e610465b" checksum-type="MD5" operation="new" xlink:href="10-cover/fr/fr-cover.pdf">
+          <title>Cover Letter 0001</title>
+        </leaf>
+      </specific>
+    </m1-0-cover>
+    <m1-2-form>
+      <specific country="fr">
+        <leaf ID="ID00000904" application-version="PDF 1.9.8" checksum="e665aa521e27d42cb28faf5e499c3b8e" checksum-type="MD5" operation="new" xlink:href="12-form/fr/fr-form-eaf-0001.pdf">
+          <title>FR_maa_human_v1.23.1.2 - 0001</title>
+        </leaf>
+      </specific>
+    </m1-2-form>
+  </m1-eu>
+
+</eu:eu-backbone>

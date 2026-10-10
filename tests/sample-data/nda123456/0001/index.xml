@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:ectd SYSTEM "util/dtd/ich-ectd-3-2.dtd">
+<?xml-stylesheet type="text/xsl" href="util/style/ectd-2-0.xsl"?>
+<ectd:ectd xmlns:ectd="http://www.ich.org/ectd" dtd-version="3.2" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <m1-administrative-information-and-prescribing-information>
+    <leaf ID="ID00010031" checksum="81d57eb6e4ce0cc28ad3a44f372e7663" checksum-type="MD5" operation="new" xlink:href="m1/us/us-regional.xml">
+      <title>us-regional.xml</title>
+    </leaf>
+  </m1-administrative-information-and-prescribing-information>
+
+  <m2-common-technical-document-summaries>
+    <m2-3-quality-overall-summary>
+      <m2-3-s-drug-substance manufacturer="mymanufacturer" substance="mysubstance" xml:lang="en">
+        <leaf ID="ID00009526" application-version="PDF 1.6" checksum="44794815eed580f372f466564f93002c" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-substance.pdf">
+          <title>drug-substance</title>
+        </leaf>
+      </m2-3-s-drug-substance>
+      <m2-3-p-drug-product dosageform="5mg tablets" manufacturer="mymanufacturer" product-name="wonderpill" xml:lang="en">
+        <leaf ID="ID00009515" application-version="PDF 1.6" checksum="c8b955f5ce2bd858990bfeb8eeceec0e" checksum-type="MD5" operation="new" xlink:href="m2/23-qos/drug-product-5mg-tablets.pdf">
+          <title>drug-product-5mg-tablets</title>
+        </leaf>
+      </m2-3-p-drug-product>
+    </m2-3-quality-overall-summary>
+  </m2-common-technical-document-summaries>
+
+  <m3-quality>
+    <m3-2-body-of-data>
+      <m3-2-s-drug-substance manufacturer="mymanufacturer" substance="mysubstance" xml:lang="en">
+        <m3-2-s-1-general-information>
+          <m3-2-s-1-2-structure>
+            <leaf ID="ID00009524" application-version="PDF 1.6" checksum="923e441a322defbf1e9ecd3b996ac238" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/structure.pdf">
+              <title>replace</title>
+            </leaf>
+          </m3-2-s-1-2-structure>
+          <m3-2-s-1-3-general-properties>
+            <leaf ID="ID00009518" application-version="PDF 1.6" checksum="63ece1bc7182b7fb685a11389ae6b124" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/general-properties-1.pdf">
+              <title>general-properties</title>
+            </leaf>
+            <leaf ID="ID00009525" application-version="PDF 1.6" checksum="096aea910d563403d8ea2aeac5f61f73" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32s-drug-sub/mysubstance-mymanufacturer/32s1-gen-info/general-properties-2.pdf">
+              <title>append</title>
+            </leaf>
+          </m3-2-s-1-3-general-properties>
+        </m3-2-s-1-general-information>
+      </m3-2-s-drug-substance>
+      <m3-2-p-drug-product dosageform="5mg tablets" manufacturer="mymanufacturer" product-name="wonderpill" xml:lang="en">
+        <m3-2-p-1-description-and-composition-of-the-drug-product>
+          <leaf ID="ID00009519" application-version="PDF 1.6" checksum="a4ff4a0f3e28740716060dc5b8dac673" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/wonderpill-5mgtablets/32p1-desc-comp/description-and-composition-5mg-tablets.pdf">
+            <title>description-and-composition-5mg-tablets</title>
+          </leaf>
+        </m3-2-p-1-description-and-composition-of-the-drug-product>
+        <m3-2-p-4-control-of-excipients excipient="myexcipient" xml:lang="en">
+          <m3-2-p-4-2-analytical-procedures>
+            <leaf ID="ID00009520" application-version="PDF 1.6" checksum="05efd7b82a1dddb860b4adbf7c479600" checksum-type="MD5" operation="new" xlink:href="m3/32-body-data/32p-drug-prod/wonderpill-5mgtablets/32p4-contr-excip/myexcipient/analytical-procedures.pdf">
+              <title>analytical-procedures</title>
+            </leaf>
+          </m3-2-p-4-2-analytical-procedures>
+        </m3-2-p-4-control-of-excipients>
+      </m3-2-p-drug-product>
+    </m3-2-body-of-data>
+  </m3-quality>
+
+  <m4-nonclinical-study-reports>
+    <m4-2-study-reports>
+      <m4-2-3-toxicology>
+        <m4-2-3-1-single-dose-toxicity>
+          <leaf ID="ID00010233" checksum="5ca478243b430a4e54680aad5e1014ed" checksum-type="MD5" operation="new" version="STF Version 2.2" xlink:href="m4/42-stud-rep/423-tox/4231-single-dose-tox/100/stf-100.xml" xlink:type="simple">
+            <title>Study No. 100 STF</title>
+          </leaf>
+          <leaf ID="ID00010259" application-version="PDF 1.6" checksum="ece118852cd86e3e255b636fa794c279" checksum-type="MD5" operation="new" xlink:href="m4/datasets/100/analysis/legacy/programs/study-report-116.pdf" xlink:type="simple">
+            <title>study-report-116</title>
+          </leaf>
+        </m4-2-3-1-single-dose-toxicity>
+        <m4-2-3-2-repeat-dose-toxicity>
+          <leaf ID="ID00010261" checksum="d8c943f1eff9da430558d634569515f6" checksum-type="MD5" operation="new" version="STF Version 2.2" xlink:href="m4/42-stud-rep/423-tox/4232-repeat-dose-tox/200/stf-200.xml" xlink:type="simple">
+            <title>Study No. 200 STF</title>
+          </leaf>
+          <leaf ID="ID00010286" application-version="PDF 1.6" checksum="8db129297ddfa7fa6dda96f1ec666ee6" checksum-type="MD5" operation="new" xlink:href="m4/datasets/200/tabulations/legacy/split/study-report-119.pdf" xlink:type="simple">
+            <title>study-report-119</title>
+          </leaf>
+        </m4-2-3-2-repeat-dose-toxicity>
+        <m4-2-3-4-carcinogenicity>
+          <m4-2-3-4-1-long-term-studies>
+            <leaf ID="ID00010288" checksum="45c13dbc13e7d6ac973374bb7d296b0d" checksum-type="MD5" operation="new" version="STF Version 2.2" xlink:href="m4/42-stud-rep/423-tox/4234-carcigen/42341-lt-stud/300/stf-300.xml" xlink:type="simple">
+              <title>Study No. 300 STF</title>
+            </leaf>
+            <leaf ID="ID00010312" application-version="PDF 1.6" checksum="627402c84a4ffc91c923398b8617fad9" checksum-type="MD5" operation="new" xlink:href="m4/datasets/300/misc/study-report-121.pdf" xlink:type="simple">
+              <title>study-report-121</title>
+            </leaf>
+          </m4-2-3-4-1-long-term-studies>
+        </m4-2-3-4-carcinogenicity>
+      </m4-2-3-toxicology>
+    </m4-2-study-reports>
+    <m4-3-literature-references>
+      <leaf ID="ID00009528" application-version="PDF 1.6" checksum="1440b0d14df067838c964f551b72bc28" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-and-smith-1998.pdf">
+        <title>jones-and-smith-1998</title>
+      </leaf>
+      <leaf ID="ID00009529" application-version="PDF 1.6" checksum="5f26c8c6e53e1b7c291807db078101fe" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/mullins-fox-and-jones-2004.pdf">
+        <title>mullins-fox-and-jones-2004</title>
+      </leaf>
+      <leaf ID="ID00009530" application-version="PDF 1.6" checksum="8305931bd925b512f147ae566cd12dd5" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/williams-et-al-2000.pdf">
+        <title>williams-et-al-2000</title>
+      </leaf>
+      <leaf ID="ID00009531" application-version="PDF 1.6" checksum="9e85e88ea63af90eebb6f08db14d1855" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/jones-2003.pdf">
+        <title>jones-2003</title>
+      </leaf>
+      <leaf ID="ID00009527" application-version="PDF 1.6" checksum="ea20074e752bcc8f936af0aa0e12a6e1" checksum-type="MD5" operation="new" xlink:href="m4/43-lit-ref/literature-references.pdf">
+        <title>literature-references</title>
+      </leaf>
+    </m4-3-literature-references>
+  </m4-nonclinical-study-reports>
+
+  <m5-clinical-study-reports>
+    <m5-3-clinical-study-reports>
+      <m5-3-5-reports-of-efficacy-and-safety-studies indication="myindication" xml:lang="en">
+        <m5-3-5-1-study-reports-of-controlled-clinical-studies-pertinent-to-the-claimed-indication>
+          <leaf ID="ID00010319" checksum="b948ba703791a730049b2e77e0fc886f" checksum-type="MD5" operation="new" version="STF Version 2.2" xlink:href="m5/53-clin-stud-rep/535-rep-effic-safety-stud/myindication/5351-stud-rep-contr/cdisc01/stf-cdisc01.xml" xlink:type="simple">
+            <title>Study No. CDISC01 STF</title>
+          </leaf>
+          <leaf ID="ID00010361" checksum="e2211e3b5aba2ae16a4d15ee5b74162e" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/535-rep-effic-safety-stud/myindication/5351-stud-rep-contr/cdisc01/efficacy.xpt" xlink:type="simple">
+            <title>efficacy</title>
+          </leaf>
+          <leaf ID="ID00010360" application-version="PDF 1.6" checksum="7dbc5059e846e74c36958c80c9d84386" checksum-type="MD5" operation="new" xlink:href="m5/53-clin-stud-rep/535-rep-effic-safety-stud/myindication/5351-stud-rep-contr/cdisc01/study-body-report.pdf" xlink:type="simple">
+            <title>study-body-report</title>
+          </leaf>
+          <leaf ID="ID00010370" checksum="5a8a8c843774fd4ce518c605a031e6ca" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/analysis/adam/datasets/ts.xpt" xlink:type="simple">
+            <title>ts</title>
+          </leaf>
+          <leaf ID="ID00010366" application-version="PDF 1.6" checksum="ca1994a22d70e0a75c52f9818c03ff8d" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/analysis/legacy/datasets/split/study-report-115.pdf" xlink:type="simple">
+            <title>study-report-115</title>
+          </leaf>
+          <leaf ID="ID00010367" application-version="PDF 1.6" checksum="12ae7f6541a032dcb394b573558099ba" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/analysis/legacy/datasets/study-report-117.pdf" xlink:type="simple">
+            <title>study-report-117</title>
+          </leaf>
+          <leaf ID="ID00010364" application-version="PDF 1.6" checksum="a8f63341c2d28ec550e7fcf930509c3e" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/misc/study-report-113.pdf" xlink:type="simple">
+            <title>study-report-113</title>
+          </leaf>
+          <leaf ID="ID00010365" application-version="PDF 1.6" checksum="597dd4daae6ae4db2c6c44b31a8cff45" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/misc/study-report-114.pdf" xlink:type="simple">
+            <title>study-report-114</title>
+          </leaf>
+          <leaf ID="ID00010369" application-version="PDF 1.6" checksum="3509c052b658418fb2cae09ec16fb8fb" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/misc/study-report-120.pdf" xlink:type="simple">
+            <title>study-report-120</title>
+          </leaf>
+          <leaf ID="ID00010362" application-version="PDF 1.6" checksum="663750fcc8a838a77e113a91d5d8091f" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/tabulations/legacy/split/study-report-111.pdf" xlink:type="simple">
+            <title>study-report-111</title>
+          </leaf>
+          <leaf ID="ID00010363" application-version="PDF 1.6" checksum="a134dfea0f0d4176d5f899c82c540c0b" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/tabulations/legacy/study-report-112.pdf" xlink:type="simple">
+            <title>study-report-112</title>
+          </leaf>
+          <leaf ID="ID00010368" application-version="PDF 1.6" checksum="4a11d85884f34a5742070f0978f2c2c1" checksum-type="MD5" operation="new" xlink:href="m5/datasets/cdisc01/tabulations/legacy/study-report-118.pdf" xlink:type="simple">
+            <title>study-report-118</title>
+          </leaf>
+        </m5-3-5-1-study-reports-of-controlled-clinical-studies-pertinent-to-the-claimed-indication>
+      </m5-3-5-reports-of-efficacy-and-safety-studies>
+    </m5-3-clinical-study-reports>
+    <m5-4-literature-references>
+      <leaf ID="ID00009521" application-version="PDF 1.6" checksum="87f0f0131ed651fb1abac51ddc0be6ff" checksum-type="MD5" operation="new" xlink:href="m5/54-lit-ref/refersource-1-10.pdf">
+        <title>refersource-1-10</title>
+      </leaf>
+    </m5-4-literature-references>
+  </m5-clinical-study-reports>
+
+</ectd:ectd>

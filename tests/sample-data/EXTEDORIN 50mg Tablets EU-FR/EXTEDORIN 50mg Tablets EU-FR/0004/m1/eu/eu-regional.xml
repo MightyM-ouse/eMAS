@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE eu:eu-backbone SYSTEM "../../util/dtd/eu-regional.dtd">
+<?xml-stylesheet type="text/xsl" href="../../util/style/eu-regional.xsl"?>
+<eu:eu-backbone xmlns:eu="http://europa.eu.int" dtd-version="3.1" xmlns:xlink="http://www.w3c.org/1999/xlink">
+
+  <eu-envelope>
+    <envelope country="fr">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission mode="single" type="var-type1a">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="response"/>
+      <applicant>EXTEDO S.A.R.L</applicant>
+      <agency code="FR-ANSM"/>
+      <procedure type="mutual-recognition"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0004</sequence>
+      <related-sequence>0003</related-sequence>
+      <submission-description>Address change of MAH in DE</submission-description>
+    </envelope>
+    <envelope country="de">
+      <identifier>d3f56600-6aa6-4c0f-aec9-78ed093d514b</identifier>
+      <submission mode="single" type="var-type1a">
+        <procedure-tracking>
+          <number>FR/H/7323/001</number>
+        </procedure-tracking>
+      </submission>
+      <submission-unit type="response"/>
+      <applicant>EXTEDO S.A.R.L</applicant>
+      <agency code="DE-BFARM"/>
+      <procedure type="mutual-recognition"/>
+      <invented-name>EXTEDORIN</invented-name>
+      <inn>EXTEDOFIL</inn>
+      <sequence>0004</sequence>
+      <related-sequence>0003</related-sequence>
+      <submission-description>Address change of MAH in DE</submission-description>
+    </envelope>
+  </eu-envelope>
+
+  <m1-eu>
+    <m1-0-cover>
+      <specific country="common">
+        <leaf ID="ID00000727" application-version="PDF 1.5" checksum="0ef99421e6c043ea6c9ea9690b8d54d0" checksum-type="MD5" operation="new" xlink:href="10-cover/common/common-cover.pdf">
+          <title>common-cover</title>
+        </leaf>
+        <leaf ID="ID00000728" application-version="PDF 1.5" checksum="35b5fe5e4571ad1ea740c5000a084f94" checksum-type="MD5" operation="new" xlink:href="10-cover/common/common-tracking.pdf">
+          <title>common-tracking</title>
+        </leaf>
+      </specific>
+    </m1-0-cover>
+    <m1-responses>
+      <specific country="de">
+        <leaf ID="ID00000731" application-version="PDF 1.5" checksum="693fce6b6c9690b400cdbd30762fbfca" checksum-type="MD5" operation="new" xlink:href="responses/de/de-responses.pdf">
+          <title>responses</title>
+        </leaf>
+      </specific>
+    </m1-responses>
+  </m1-eu>
+
+</eu:eu-backbone>

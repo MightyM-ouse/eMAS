@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE ectd:study SYSTEM "../../../../../../util/dtd/ich-stf-v2-2.dtd">
+<?xml-stylesheet type='text/xsl' href='../../../../../../util/style/ich-stf-stylesheet-2-3.xsl'?>
+<ectd:study xmlns:ectd="http://www.ich.org/ectd" dtd-version="2.2" xml:lang="en" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <study-identifier>
+    <title>Study No. CDISC01 STF</title>
+    <study-id>CDISC01</study-id>
+    <category info-type="ich" name="type-of-control">placebo</category>
+  </study-identifier>
+
+  <study-document>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010361">
+      <file-tag info-type="us" name="antiviral"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010360">
+      <file-tag info-type="ich" name="study-report-body"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010370">
+      <file-tag info-type="us" name="analysis-dataset-adam"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010366">
+      <file-tag info-type="us" name="analysis-dataset-legacy"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010367">
+      <file-tag info-type="us" name="analysis-data-definition"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010364">
+      <file-tag info-type="us" name="data-listing-dataset"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010365">
+      <file-tag info-type="us" name="data-listing-data-definition"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010369">
+      <file-tag info-type="us" name="annotated-crf"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010362">
+      <file-tag info-type="us" name="data-tabulation-dataset-legacy"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010363">
+      <file-tag info-type="us" name="data-tabulation-data-definition"/>
+    </doc-content>
+    <doc-content xlink:href="../../../../../../../0001/index.xml#ID00010368">
+      <file-tag info-type="us" name="annotated-crf"/>
+    </doc-content>
+  </study-document>
+
+</ectd:study>
